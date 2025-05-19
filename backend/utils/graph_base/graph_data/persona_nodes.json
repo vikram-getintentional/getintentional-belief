@@ -1,0 +1,386 @@
+[
+  {
+    "id": "23a99173-038f-4369-8505-4ec87e033a80",
+    "title": "business analyst",
+    "seniority": "mid-senior level",
+    "department": "business intelligence"
+  },
+  {
+    "id": "3fdc46ee-5c49-45a9-a8f3-d67a8c633895",
+    "title": "data scientist",
+    "seniority": "mid-senior level",
+    "department": "data science"
+  },
+  {
+    "id": "6e5354de-0524-45e2-9a4a-fe9a1f1c88a2",
+    "title": "product manager",
+    "seniority": "mid-senior level",
+    "department": "product management"
+  },
+  {
+    "id": "e3217e96-d8a2-4a9b-a8d1-0f16bb434602",
+    "title": "data analyst",
+    "seniority": "mid-senior level",
+    "department": "data science"
+  },
+  {
+    "id": "d237c397-e95d-4e6f-8348-e7138188de0c",
+    "title": "software engineer",
+    "seniority": "mid-senior level",
+    "department": "engineering"
+  },
+  {
+    "id": "971386fd-c806-451a-a6fe-c1bbd691ee8e",
+    "title": "data engineer",
+    "seniority": "mid-senior level",
+    "department": "data engineering"
+  },
+  {
+    "id": "20485c98-182a-44bb-8584-1cfc13a7d069",
+    "title": "business intelligence analyst",
+    "seniority": "mid-senior level",
+    "department": "business intelligence"
+  },
+  {
+    "id": "014bc4cc-2c5a-47bc-8bf0-7489e97dadfb",
+    "title": "data analyst",
+    "seniority": "mid-senior level",
+    "department": "data analysis"
+  },
+  {
+    "id": "28cf0da9-2ebd-4839-8c6d-eef3e2e2168f",
+    "title": "business analyst",
+    "seniority": "mid-level",
+    "department": "business intelligence"
+  },
+  {
+    "id": "d377c0f8-9e43-4787-9bfa-52a0e97cc8b7",
+    "title": "manager",
+    "seniority": "senior",
+    "department": "strategy"
+  },
+  {
+    "id": "49cca9bd-7937-42f4-9b71-2aeff98170e2",
+    "title": "data analyst",
+    "seniority": "mid-level",
+    "department": "business intelligence"
+  },
+  {
+    "id": "9be4049f-2c23-443a-bbf8-bef4fece4ea7",
+    "title": "manager",
+    "seniority": "senior",
+    "department": "operations"
+  },
+  {
+    "id": "ebd892f3-c017-48da-b3ce-48601ce09efd",
+    "title": "data scientist",
+    "seniority": "mid-level",
+    "department": "data science"
+  },
+  {
+    "id": "fd93e249-2d84-4941-a5b1-97017f50caae",
+    "title": "application developer",
+    "seniority": "mid-level",
+    "department": "it"
+  },
+  {
+    "id": "999476d9-2c96-4b54-a5ad-19ff948cff95",
+    "title": "product manager",
+    "seniority": "senior",
+    "department": "product development"
+  },
+  {
+    "id": "02874a23-0c51-4207-ba71-6fc61128d30d",
+    "title": "data administrator",
+    "seniority": "mid-level",
+    "department": "it"
+  },
+  {
+    "id": "893242aa-a696-4c63-a62e-00a7808bd812",
+    "title": "data analyst",
+    "seniority": "mid-level",
+    "department": "analytics"
+  },
+  {
+    "id": "3e2ca485-e97d-4476-b536-ac7f7daa467a",
+    "title": "business intelligence manager",
+    "seniority": "senior",
+    "department": "business intelligence"
+  },
+  {
+    "id": "488f45fc-656b-4c01-8874-8c3babda63ed",
+    "title": "operations manager",
+    "seniority": "senior",
+    "department": "operations"
+  },
+  {
+    "id": "f15daac4-b443-41f2-bf38-e6c0b6c53fc2",
+    "title": "data engineer",
+    "seniority": "mid-level",
+    "department": "data engineering"
+  },
+  {
+    "id": "1d2239a8-f91d-4fa6-99a7-28ff0e9e1093",
+    "title": "it manager",
+    "seniority": "senior",
+    "department": "it"
+  },
+  {
+    "id": "1f20d789-6fb2-4c75-8ff9-b32098ce9cd3",
+    "title": "data visualization specialist",
+    "seniority": "mid-level",
+    "department": "data science"
+  },
+  {
+    "id": "918a5dd5-1f8e-46ec-b407-acdc583fc443",
+    "title": "business intelligence analyst",
+    "seniority": "mid-level",
+    "department": "business intelligence"
+  },
+  {
+    "id": "4e511378-5e7c-4e88-a49d-6bb2969c6a01",
+    "title": "ai specialist",
+    "seniority": "senior",
+    "department": "ai and machine learning"
+  },
+  {
+    "id": "e4577221-0d47-4286-82e0-bbf2212082e4",
+    "title": "data architect",
+    "seniority": "senior",
+    "department": "data architecture"
+  },
+  {
+    "id": "c1ba6cf1-9b75-4349-b92e-da573e4f78a3",
+    "title": "subscription manager",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "0e0be80c-407c-4b19-b696-30c4be9fafc5",
+    "title": "pricing analyst",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "title": "customer success manager",
+    "seniority": "mid-level",
+    "department": "customer success"
+  },
+  {
+    "id": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "title": "accountant",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "a5c06bd0-5a19-46f0-8740-0e9144ecb377",
+    "title": "sales manager",
+    "seniority": "mid-level",
+    "department": "sales"
+  },
+  {
+    "id": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "title": "ux designer",
+    "seniority": "mid-level",
+    "department": "design"
+  },
+  {
+    "id": "af9e3fbb-8852-4c2f-a4af-eccc8d376bc2",
+    "title": "security officer",
+    "seniority": "senior-level",
+    "department": "security"
+  },
+  {
+    "id": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "title": "product manager",
+    "seniority": "mid-level",
+    "department": "product"
+  },
+  {
+    "id": "061af372-da58-4618-bff3-15dc28de4181",
+    "title": "subscription manager",
+    "seniority": "mid-level",
+    "department": "sales"
+  },
+  {
+    "id": "597518dd-5c4c-40e9-8e2f-92d17a6c704f",
+    "title": "pricing strategist",
+    "seniority": "senior",
+    "department": "marketing"
+  },
+  {
+    "id": "251b87fd-3d13-4e91-84f3-fc4eece3978c",
+    "title": "compliance officer",
+    "seniority": "senior",
+    "department": "finance"
+  },
+  {
+    "id": "b15901bf-a350-4343-b352-a205ffd8157c",
+    "title": "promotions manager",
+    "seniority": "mid-level",
+    "department": "marketing"
+  },
+  {
+    "id": "640b9e44-becd-4070-9485-90f482063771",
+    "title": "data security officer",
+    "seniority": "senior",
+    "department": "it"
+  },
+  {
+    "id": "3739ed2d-27b3-4799-82ec-ba465b5f829a",
+    "title": "financial controller",
+    "seniority": "senior-level",
+    "department": "finance"
+  },
+  {
+    "id": "dbfb1237-a072-4d4d-8f70-9d6fabeb1bd9",
+    "title": "compliance officer",
+    "seniority": "senior-level",
+    "department": "legal"
+  },
+  {
+    "id": "4f580f6b-4ccb-4c8c-b111-8241bc969bb8",
+    "title": "finance manager",
+    "seniority": "senior-level",
+    "department": "finance"
+  },
+  {
+    "id": "30474e00-e8de-42e5-8564-a63dec893d76",
+    "title": "e-commerce manager",
+    "seniority": "mid-level",
+    "department": "sales"
+  },
+  {
+    "id": "cadd2aea-306d-488e-8b72-04376fc603f5",
+    "title": "security officer",
+    "seniority": "senior-level",
+    "department": "it"
+  },
+  {
+    "id": "4b0cc925-4a84-4d1b-b282-ee18aaab0ef0",
+    "title": "subscription manager",
+    "seniority": "mid-level",
+    "department": "customer service"
+  },
+  {
+    "id": "9ca51d62-b311-4bb4-bf8e-6d26d4a595c7",
+    "title": "compliance officer",
+    "seniority": "senior",
+    "department": "legal"
+  },
+  {
+    "id": "49b95daf-6803-4fd1-82d0-ceb999c48706",
+    "title": "pricing analyst",
+    "seniority": "mid-level",
+    "department": "sales"
+  },
+  {
+    "id": "fc70bfae-b82f-4298-b16d-5fe35d683e75",
+    "title": "customer retention specialist",
+    "seniority": "mid-level",
+    "department": "marketing"
+  },
+  {
+    "id": "cad8576a-b636-4ccf-988b-bd930b42ae3a",
+    "title": "financial compliance officer",
+    "seniority": "senior-level",
+    "department": "finance"
+  },
+  {
+    "id": "b07b4b0e-9b4f-49fd-ab38-fc00d53e5d5c",
+    "title": "sales representative",
+    "seniority": "entry-level",
+    "department": "sales"
+  },
+  {
+    "id": "9426fefd-6d7a-4509-8c91-9b9308b954c9",
+    "title": "customer success manager",
+    "seniority": "mid-level",
+    "department": "customer service"
+  },
+  {
+    "id": "bc8285d1-75d0-4a3e-b65a-55ec2278c5b3",
+    "title": "ui/ux designer",
+    "seniority": "mid-level",
+    "department": "design"
+  },
+  {
+    "id": "184873dc-02be-41f8-be43-638b3d61c3eb",
+    "title": "chief financial officer",
+    "seniority": "executive",
+    "department": "finance"
+  },
+  {
+    "id": "22c6dd9f-bc1a-47d1-8e74-24d5933e3a02",
+    "title": "chief security officer",
+    "seniority": "executive",
+    "department": "security"
+  },
+  {
+    "id": "d9805cd4-9a25-4826-abb2-d61b8e0163fa",
+    "title": "billing manager",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "2900e92e-e995-4fd2-9c48-a53d430f5fb6",
+    "title": "pricing analyst",
+    "seniority": "junior-level",
+    "department": "finance"
+  },
+  {
+    "id": "54f72d97-5251-4ffa-b14e-e20247eeb2db",
+    "title": "finance manager",
+    "seniority": "unknown",
+    "department": "finance"
+  },
+  {
+    "id": "3e290207-d5c1-48d9-baa8-5d7cf5c46351",
+    "title": "ux designer",
+    "seniority": "junior-level",
+    "department": "design"
+  },
+  {
+    "id": "f70c747c-8c26-44be-9ec3-5b994629fd9e",
+    "title": "billing manager",
+    "seniority": "mid-senior level",
+    "department": "finance"
+  },
+  {
+    "id": "7cbd12ee-4208-4869-a65a-5143b16a0efd",
+    "title": "pricing analyst",
+    "seniority": "mid-level",
+    "department": "marketing"
+  },
+  {
+    "id": "f449661c-a3f8-490e-856e-9ebd6951a520",
+    "title": "compliance officer",
+    "seniority": "senior level",
+    "department": "legal"
+  },
+  {
+    "id": "02412d6c-9fa0-4bc6-a1c0-b33296b12928",
+    "title": "sales manager",
+    "seniority": "mid-senior level",
+    "department": "sales"
+  },
+  {
+    "id": "1e52e4ab-5469-4761-ace1-09c4c1c37e18",
+    "title": "product manager",
+    "seniority": "mid-senior level",
+    "department": "product"
+  },
+  {
+    "id": "21fda13a-ed7b-4bc1-9137-8bc75b1d33f5",
+    "title": "security officer",
+    "seniority": "senior level",
+    "department": "it"
+  },
+  {
+    "id": "3110d6a0-90a3-4384-b6a2-c040d060c360",
+    "title": "security officer",
+    "seniority": "senior",
+    "department": "security"
+  }
+]

@@ -1,0 +1,406 @@
+[
+  {
+    "id": "f4ab17eb-6c7f-4b26-ac90-eb114d4b74ae",
+    "description": "decision-making based on data-driven insights"
+  },
+  {
+    "id": "b3ae18f4-a626-4687-9f0f-9d6d33ffe8bc",
+    "description": "collaborative business analysis and decision-making"
+  },
+  {
+    "id": "2a005338-366f-4110-b284-fde8449831ba",
+    "description": "data analysis and collaboration"
+  },
+  {
+    "id": "8cf255b1-3272-4916-9a28-bb7a7a128964",
+    "description": "development of data-driven applications"
+  },
+  {
+    "id": "1c17c783-e55b-4a7d-8c48-fd777eada8c8",
+    "description": "deep data analysis for business insights"
+  },
+  {
+    "id": "acc4c0b4-a23b-48db-bfde-e5a08fe547f9",
+    "description": "visualization of data-driven insights"
+  },
+  {
+    "id": "979713dd-995b-4372-9203-b73a4ef1ca2a",
+    "description": "interpretation of data for business insights"
+  },
+  {
+    "id": "50b9c053-4cc1-425d-9700-b81d9ed8b365",
+    "description": "data management and preparation"
+  },
+  {
+    "id": "934baa38-df82-4fcb-8bb7-3d9bfd0adad7",
+    "description": "analyzing business performance and making strategic decisions"
+  },
+  {
+    "id": "daaae0c2-0a3c-4b05-810a-69637bf2fdb2",
+    "description": "monitoring business kpis and collaborating on strategic decisions"
+  },
+  {
+    "id": "e1255381-e1ac-45bd-893f-867be5978700",
+    "description": "collaborating on data analysis and visualization"
+  },
+  {
+    "id": "fab5cb5e-6e44-4de5-93bb-9618ecf84924",
+    "description": "building and maintaining custom applications"
+  },
+  {
+    "id": "54b8416f-c096-44a4-aa51-464e70e0c4f1",
+    "description": "analyzing and visualizing business data"
+  },
+  {
+    "id": "a86d5124-415b-422d-99bf-3884e4000707",
+    "description": "analyzing business performance and identifying issues"
+  },
+  {
+    "id": "36ccc10a-3be8-4de4-8237-0e410efdffa9",
+    "description": "managing and shaping business data for analysis"
+  },
+  {
+    "id": "b17e42b4-9053-428f-8598-0e4c81dcae1f",
+    "description": "data interpretation and decision making based on insights"
+  },
+  {
+    "id": "8575e6ac-4df5-433b-87d6-7dca80a8c7dc",
+    "description": "collaborative decision making based on real-time data"
+  },
+  {
+    "id": "fa1ece65-3a15-4ad0-a5d3-8db06c646d9b",
+    "description": "application development and integration of analytics"
+  },
+  {
+    "id": "33eae3bb-d056-4f65-a1e6-db6be3d835d7",
+    "description": "data analysis and insight generation"
+  },
+  {
+    "id": "1c1b5b68-f6f8-4ce2-acb7-b11ddfa4424b",
+    "description": "data visualization and interpretation"
+  },
+  {
+    "id": "2e10a19c-2f43-4abe-8306-8db0accf76d0",
+    "description": "automated data analysis and insight generation"
+  },
+  {
+    "id": "c1a78733-7577-4f6d-ba16-242da2161639",
+    "description": "data management and shaping for analysis"
+  },
+  {
+    "id": "6080df78-ca7a-4915-935d-2fe0fa53b224",
+    "description": "subscription management"
+  },
+  {
+    "id": "b3c3adcf-de95-484e-ac70-d2885421e191",
+    "description": "pricing strategy development"
+  },
+  {
+    "id": "855e7578-a412-4763-9d77-c6a8fca0d011",
+    "description": "customer retention"
+  },
+  {
+    "id": "08206a92-7760-43e8-bdc4-fa777d244886",
+    "description": "revenue recognition"
+  },
+  {
+    "id": "a96a71d6-bddd-4da7-ba24-ec634c7a9b1e",
+    "description": "sales and customer success"
+  },
+  {
+    "id": "d44a16ec-6b1c-429d-a1a3-a8d80ea4b399",
+    "description": "user experience improvement"
+  },
+  {
+    "id": "7c9009b6-1874-4eec-8095-43b9fc30e250",
+    "description": "security and compliance"
+  },
+  {
+    "id": "a604c829-af71-4122-a43d-73bab8339205",
+    "description": "product management"
+  },
+  {
+    "id": "1789e60e-7d01-4d8b-b665-756ca99f949d",
+    "description": "manage and oversee subscription operations"
+  },
+  {
+    "id": "a3c9d441-520f-4213-8ebe-f0d95465a439",
+    "description": "design and implement pricing strategies"
+  },
+  {
+    "id": "1c102542-1079-4c2e-bf79-5e10d937930d",
+    "description": "monitor customer behavior and implement retention strategies"
+  },
+  {
+    "id": "03130f04-96d3-4998-a116-70ccb9a3b7dc",
+    "description": "ensure financial compliance"
+  },
+  {
+    "id": "64c405b5-2386-407c-937a-a0fcd04af23b",
+    "description": "develop and manage promotional strategies"
+  },
+  {
+    "id": "6d3125be-849e-433d-b26f-b7889f598281",
+    "description": "design and optimize user checkout experience"
+  },
+  {
+    "id": "546ff878-af9f-42de-9ab9-e81af9944a97",
+    "description": "ensure data security and regulatory compliance"
+  },
+  {
+    "id": "40002242-65e0-4ba8-81a4-dd9b7214816e",
+    "description": "manage product feature access and bundling"
+  },
+  {
+    "id": "18574611-622d-438c-b3e4-004dd90d84c7",
+    "description": "oversee subscription management"
+  },
+  {
+    "id": "24284220-4682-4152-bbeb-1f69b8a30376",
+    "description": "design and implement pricing models"
+  },
+  {
+    "id": "c0d45640-286b-4c6f-ae9f-2d0ee94f1dd9",
+    "description": "analyze customer retention"
+  },
+  {
+    "id": "dda76627-394d-4e32-8668-53e457feb5ac",
+    "description": "manage revenue recognition"
+  },
+  {
+    "id": "1af7567c-b5ef-45f7-8901-9d57f24a422f",
+    "description": "manage sales discounts and trials"
+  },
+  {
+    "id": "7575c5cb-79ea-466e-a6e4-fc011a63cffc",
+    "description": "optimize user checkout process"
+  },
+  {
+    "id": "02d27843-f2d2-4441-bcd5-2e8064b698be",
+    "description": "manage security and compliance"
+  },
+  {
+    "id": "54761028-cc59-48f9-9cca-85559d43f9a6",
+    "description": "manage product entitlements"
+  },
+  {
+    "id": "e1fed623-647d-4ae0-9620-b1cff10ec329",
+    "description": "managing and tracking subscriptions"
+  },
+  {
+    "id": "88283dfa-de83-4191-a3d5-71cdddfd1601",
+    "description": "setting up and managing pricing models"
+  },
+  {
+    "id": "01506aa8-58d8-442e-b1d5-34e8e1186628",
+    "description": "customer retention and churn management"
+  },
+  {
+    "id": "1b22dbfa-8f53-487d-84a6-2ce36bbcfa4e",
+    "description": "managing revenue recognition"
+  },
+  {
+    "id": "9a4193c0-d52a-4e39-a638-765dacee56f9",
+    "description": "managing discounts and trials"
+  },
+  {
+    "id": "d317d63d-8865-4b3d-9aed-11273a53ac71",
+    "description": "managing checkout flows"
+  },
+  {
+    "id": "914872c0-ceb0-4bad-906f-fd04aec7c9fd",
+    "description": "ensuring security and compliance"
+  },
+  {
+    "id": "c00301bc-647d-4cc1-8895-6368e4a67e64",
+    "description": "managing feature entitlements"
+  },
+  {
+    "id": "8c68ba39-c554-4d4d-883d-5dd188798466",
+    "description": "manage and track customer subscriptions"
+  },
+  {
+    "id": "bca3d2cd-64dc-4317-9bb9-35092642a18c",
+    "description": "analyze customer behavior and implement retention strategies"
+  },
+  {
+    "id": "6c07001b-7227-48de-9c0c-6a33dff20c0f",
+    "description": "ensure accurate revenue recognition and compliance"
+  },
+  {
+    "id": "beb61e3e-ae44-4637-a8b1-9d2b487b5a1b",
+    "description": "create and manage promotional offers"
+  },
+  {
+    "id": "d2676f9a-2dc6-4467-b2f4-ba087cd5cc12",
+    "description": "design and implement user-friendly checkout flows"
+  },
+  {
+    "id": "b4af9499-041f-45ff-8f4f-ea2c2df0aa7c",
+    "description": "ensure secure transactions and regulatory compliance"
+  },
+  {
+    "id": "7e47352d-a97d-43bc-81ad-36af27b95611",
+    "description": "manage product feature entitlements"
+  },
+  {
+    "id": "bc625ba7-1790-49d3-8088-fbf895323a45",
+    "description": "managing customer subscriptions"
+  },
+  {
+    "id": "24020312-08c1-4090-9334-0a01b315f876",
+    "description": "setting pricing models"
+  },
+  {
+    "id": "a6ac6879-bf47-4ffd-ad64-726758f74c6a",
+    "description": "analyzing customer retention"
+  },
+  {
+    "id": "5cadf77f-1209-4aeb-9f24-1c6b2124f0ba",
+    "description": "ensuring financial compliance"
+  },
+  {
+    "id": "63ba36a2-b229-41a5-817a-092f0c36fa18",
+    "description": "creating and offering discounts and trials"
+  },
+  {
+    "id": "b5291df1-0b50-4f89-bea2-b5c891e8c389",
+    "description": "designing user interfaces"
+  },
+  {
+    "id": "bbedf91f-78fc-4db3-861f-2443052b31f8",
+    "description": "managing security and compliance"
+  },
+  {
+    "id": "539ab4f4-a51b-484b-ab9d-65bd86e923f9",
+    "description": "managing product features"
+  },
+  {
+    "id": "44bd444f-4cad-47fe-8e63-6be8ed9052e5",
+    "description": "managing and overseeing subscription operations"
+  },
+  {
+    "id": "fac43d2c-ed65-4386-92cf-298edc9868a5",
+    "description": "setting and adjusting pricing models"
+  },
+  {
+    "id": "072c6708-3c93-47e5-b30a-d55aa44f85c1",
+    "description": "analyzing customer behavior and implementing retention strategies"
+  },
+  {
+    "id": "bd79f5f9-88fa-422e-a1f4-c84648591872",
+    "description": "ensuring accurate and compliant revenue recognition"
+  },
+  {
+    "id": "64520d31-134f-4a24-862e-56506403190b",
+    "description": "creating and offering discounts and managing trials"
+  },
+  {
+    "id": "50017643-2fa2-4921-b8dc-023b06fd7a20",
+    "description": "designing and implementing checkout flows"
+  },
+  {
+    "id": "3f05288d-138a-4ecd-8979-8cdd1f127704",
+    "description": "ensuring business operations are secure and compliant"
+  },
+  {
+    "id": "6d6d3c4a-b499-47f8-9c88-8d1b02c33072",
+    "description": "managing and testing feature entitlements"
+  },
+  {
+    "id": "449e107b-f414-42ae-9de2-79970b1c4b8f",
+    "description": "setting pricing structures"
+  },
+  {
+    "id": "0d8369c7-5a94-49d3-ab8c-ef68bce9e7e1",
+    "description": "managing customer churn"
+  },
+  {
+    "id": "5fe09143-9f54-401d-943a-4bfac991f184",
+    "description": "managing customer self-service options"
+  },
+  {
+    "id": "8ae2f992-421b-4204-86cf-44de02e64ea3",
+    "description": "manage subscriptions, billing, and invoicing"
+  },
+  {
+    "id": "64971363-96cf-43ec-a084-aefa2cdd567f",
+    "description": "define and implement pricing models"
+  },
+  {
+    "id": "64584b41-b476-4ad6-ac27-e46041ea0808",
+    "description": "ensure revenue recognition is in compliance with gaap"
+  },
+  {
+    "id": "a3b305bd-e66e-4acc-bf19-7ec30f31e2ec",
+    "description": "design and manage user interfaces and checkout flows"
+  },
+  {
+    "id": "1c862ba8-678d-4ec4-a1b3-8ad9675acbc4",
+    "description": "ensure security and compliance"
+  },
+  {
+    "id": "79d6cc21-43ac-474a-8f2c-6b335c0cd7ca",
+    "description": "manage feature entitlements for different plans"
+  },
+  {
+    "id": "5250e1e3-7063-4f7f-9595-0cdc17e4dee9",
+    "description": "subscription management and billing"
+  },
+  {
+    "id": "387c2989-621f-4a18-ab87-9e4e7b5255fd",
+    "description": "pricing strategy and implementation"
+  },
+  {
+    "id": "2d093e40-e800-420b-a0a2-8ab590066afd",
+    "description": "customer retention and churn prevention"
+  },
+  {
+    "id": "22d4e056-3922-43d9-85f4-a5cb3cdf4c4a",
+    "description": "revenue recognition and compliance"
+  },
+  {
+    "id": "3aeec9fa-1b2f-44ef-a7a1-a8127fd54b7b",
+    "description": "sales promotions and trial management"
+  },
+  {
+    "id": "fcf582a7-f90d-4539-9c9c-c292341de02e",
+    "description": "user experience design and optimization"
+  },
+  {
+    "id": "76ba6df9-1d9a-42e9-bfa8-11375153b12d",
+    "description": "security management and compliance"
+  },
+  {
+    "id": "8ea34a9e-5374-42a1-802a-da4e21ce01f1",
+    "description": "product feature management and pricing"
+  },
+  {
+    "id": "48b75f8f-7e08-4ab7-951f-6dd08acd2168",
+    "description": "manage customer subscriptions"
+  },
+  {
+    "id": "38de29ac-befd-4d47-8519-0ed914908562",
+    "description": "analyze customer churn and devise retention strategies"
+  },
+  {
+    "id": "d866e514-da8b-439a-b2be-f486057b6f99",
+    "description": "ensure accurate and compliant revenue recognition"
+  },
+  {
+    "id": "cb41aa55-c332-4fae-8300-44756a2f0fb9",
+    "description": "manage discount and trial offers"
+  },
+  {
+    "id": "befd761d-03a0-445a-8496-3572f771d343",
+    "description": "optimize checkout process"
+  },
+  {
+    "id": "04fcc1f5-22e4-4ee5-b0bc-00e4decf0f1d",
+    "description": "ensure secure transactions and compliance"
+  },
+  {
+    "id": "78cfb3ff-ed85-4f41-8566-110c18bd6e8f",
+    "description": "manage feature entitlements"
+  }
+]

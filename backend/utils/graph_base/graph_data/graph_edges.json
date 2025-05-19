@@ -1,0 +1,3285 @@
+[
+  {
+    "id": "f1b4b27f-2061-4330-8d29-a08cd06303f1",
+    "source": "103ed70d-7616-4d55-b50c-a5252a524516",
+    "target": "842b8d31-b46b-4136-9705-10493aa3436f",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "d41c3c3b-3c06-4be4-8c83-fa5a7cffc34e",
+    "source": "842b8d31-b46b-4136-9705-10493aa3436f",
+    "target": "f4ab17eb-6c7f-4b26-ac90-eb114d4b74ae",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "e32c34cf-233c-4e9b-a1fc-1c8411d23c34",
+    "source": "f4ab17eb-6c7f-4b26-ac90-eb114d4b74ae",
+    "target": "23a99173-038f-4369-8505-4ec87e033a80",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "6667dde1-4277-49a6-a405-360a97e0c084",
+    "source": "f4ab17eb-6c7f-4b26-ac90-eb114d4b74ae",
+    "target": "3fdc46ee-5c49-45a9-a8f3-d67a8c633895",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "75cd5752-6b59-4ab2-ae11-742a1ffa75ee",
+    "source": "03620ae1-f7dd-44d7-9915-3984d6bf0af0",
+    "target": "043ff7da-e20e-46c7-97fa-9b6cd9c475f1",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "cdd4af3e-7c47-49a3-8cd3-4a93181ce1b7",
+    "source": "043ff7da-e20e-46c7-97fa-9b6cd9c475f1",
+    "target": "b3ae18f4-a626-4687-9f0f-9d6d33ffe8bc",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "182480b6-ebda-49c9-a0b2-a69862a20c31",
+    "source": "b3ae18f4-a626-4687-9f0f-9d6d33ffe8bc",
+    "target": "23a99173-038f-4369-8505-4ec87e033a80",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "2a5e7168-5951-417c-bf9b-da6b54a0f578",
+    "source": "b3ae18f4-a626-4687-9f0f-9d6d33ffe8bc",
+    "target": "6e5354de-0524-45e2-9a4a-fe9a1f1c88a2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "dca7fdea-3c2e-4562-8b7c-32809c31a2f5",
+    "source": "14c286e4-75e2-4449-a062-59aff0de3db5",
+    "target": "3a0490b9-4147-468e-af6e-5ca3305f8280",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "68633f22-68fb-435b-8c94-75e331b56878",
+    "source": "3a0490b9-4147-468e-af6e-5ca3305f8280",
+    "target": "2a005338-366f-4110-b284-fde8449831ba",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "4271d0b0-b032-44a6-9369-c1d5329688b2",
+    "source": "2a005338-366f-4110-b284-fde8449831ba",
+    "target": "e3217e96-d8a2-4a9b-a8d1-0f16bb434602",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "3b3e9478-4993-45f8-9a43-842a8f0ff68c",
+    "source": "2a005338-366f-4110-b284-fde8449831ba",
+    "target": "3fdc46ee-5c49-45a9-a8f3-d67a8c633895",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "0fb3ade1-8549-4100-b6b0-05f628d0afb5",
+    "source": "ef201440-6585-46d0-99a4-1181a444dea8",
+    "target": "25b3ff51-346a-4b40-9736-03fdb0d5cc55",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "7fa9a29f-b67b-4b3d-b25e-c66502edbef8",
+    "source": "25b3ff51-346a-4b40-9736-03fdb0d5cc55",
+    "target": "8cf255b1-3272-4916-9a28-bb7a7a128964",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "619c2bb5-fc7d-4d5c-aaa9-6aa85374d8ee",
+    "source": "8cf255b1-3272-4916-9a28-bb7a7a128964",
+    "target": "d237c397-e95d-4e6f-8348-e7138188de0c",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "27a4ede4-2798-445f-9a1b-979992faf3bc",
+    "source": "8cf255b1-3272-4916-9a28-bb7a7a128964",
+    "target": "971386fd-c806-451a-a6fe-c1bbd691ee8e",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "26569a94-9f6f-421c-9af0-def225b771d6",
+    "source": "0b54d500-28e8-450e-af2a-3af73348f850",
+    "target": "946a5844-227e-44ee-84be-d78c9b58f37c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "f360ca48-2932-4919-a865-be58d8c5011d",
+    "source": "946a5844-227e-44ee-84be-d78c9b58f37c",
+    "target": "1c17c783-e55b-4a7d-8c48-fd777eada8c8",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "36c746c7-260a-469a-83a7-f759a46f06ed",
+    "source": "1c17c783-e55b-4a7d-8c48-fd777eada8c8",
+    "target": "3fdc46ee-5c49-45a9-a8f3-d67a8c633895",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "d6829c58-7c71-4134-8945-1103d1652d44",
+    "source": "1c17c783-e55b-4a7d-8c48-fd777eada8c8",
+    "target": "20485c98-182a-44bb-8584-1cfc13a7d069",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ed8f8208-b550-4191-99ab-eee5ec8bcadd",
+    "source": "e65b8968-267f-4fd0-9698-04e7292138bc",
+    "target": "97576fd1-ae33-42ee-bbbe-2777eb8598ae",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "0f39e38c-c1da-49d9-a5e4-71f9e23217eb",
+    "source": "97576fd1-ae33-42ee-bbbe-2777eb8598ae",
+    "target": "acc4c0b4-a23b-48db-bfde-e5a08fe547f9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "f78f00a0-4d76-476b-8098-74aa38635ecd",
+    "source": "acc4c0b4-a23b-48db-bfde-e5a08fe547f9",
+    "target": "014bc4cc-2c5a-47bc-8bf0-7489e97dadfb",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "2406063d-c9e4-40df-bd05-4677611664f1",
+    "source": "acc4c0b4-a23b-48db-bfde-e5a08fe547f9",
+    "target": "20485c98-182a-44bb-8584-1cfc13a7d069",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "0536fc72-33f8-471b-880f-2cac8a5ccb8f",
+    "source": "88e9e331-3d69-4e32-b159-29f660e02ce1",
+    "target": "89252c99-602d-46cd-a6b6-5c7cde1cb04e",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "44076da3-b4cc-42fa-a94f-700cf7e0e100",
+    "source": "89252c99-602d-46cd-a6b6-5c7cde1cb04e",
+    "target": "979713dd-995b-4372-9203-b73a4ef1ca2a",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "a72174c4-4911-49ec-8aca-c6acaff6b4e0",
+    "source": "979713dd-995b-4372-9203-b73a4ef1ca2a",
+    "target": "3fdc46ee-5c49-45a9-a8f3-d67a8c633895",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b8dc054a-c687-466d-a4aa-de3e033b8e9d",
+    "source": "979713dd-995b-4372-9203-b73a4ef1ca2a",
+    "target": "20485c98-182a-44bb-8584-1cfc13a7d069",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "45d45263-8422-4579-a2f6-ba6f02f2227c",
+    "source": "6662d2fa-37b1-4337-ad77-ee62d9ef3ece",
+    "target": "38c35b18-aa75-47ff-946c-c7a6a5a8e13b",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "2921ce76-129d-420a-8b45-9d1c395db7d0",
+    "source": "38c35b18-aa75-47ff-946c-c7a6a5a8e13b",
+    "target": "50b9c053-4cc1-425d-9700-b81d9ed8b365",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "e5527ffa-4bc4-4055-9a2c-5ce2e253ad88",
+    "source": "50b9c053-4cc1-425d-9700-b81d9ed8b365",
+    "target": "014bc4cc-2c5a-47bc-8bf0-7489e97dadfb",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4d4dbc67-74e9-43e2-af11-1b68a7aaeb9f",
+    "source": "50b9c053-4cc1-425d-9700-b81d9ed8b365",
+    "target": "971386fd-c806-451a-a6fe-c1bbd691ee8e",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "86c1abfe-c981-42d9-b98e-1c24d365091e",
+    "source": "lack of accessible, trustworthy insights for business decision-making",
+    "target": "Automated Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "aa4ffd35-9c17-43a7-81b9-7e398df41c5f",
+    "source": "difficulty in collaboration and action-taking from insights",
+    "target": "Analyst Studio with collaborative notebooks",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "0b6d1d99-0256-40ed-b5c8-567e86eac3a5",
+    "source": "lack of integrated platform for data analysis",
+    "target": "Analyst Studio with collaborative notebooks",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "efac7a85-947f-453b-8b6b-7021579873fb",
+    "source": "difficulty in understanding complex business data",
+    "target": "Automated Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "667938ab-486f-42f7-81ca-fd4b98d9af7e",
+    "source": "difficulty in interpreting data and diagnosing problems",
+    "target": "Automated Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "5626d99c-8ad8-4f94-8d8b-0557a268d769",
+    "source": "difficulty in embedding analytics into custom applications",
+    "target": "Smart Apps to integrate dashboards and analytics into any application",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "f6a18357-833b-4795-a96c-884c948e5c5b",
+    "source": "difficulty in managing and shaping data",
+    "target": "Any Data, Anywhere",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "f4ad1758-e223-48ae-ae35-b586abbc0d4c",
+    "source": "inability to visualize insights across multiple data sources",
+    "target": "AI-Augmented Dashboards",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "a2dc01ed-54e6-4a56-855f-6c8ed4118f79",
+    "source": "103ed70d-7616-4d55-b50c-a5252a524516",
+    "target": "558aa626-820b-4c89-8dc8-716c49f23ff1",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "abf60cc0-145d-4630-baa6-caad30975eda",
+    "source": "558aa626-820b-4c89-8dc8-716c49f23ff1",
+    "target": "934baa38-df82-4fcb-8bb7-3d9bfd0adad7",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "0530c7e9-6edd-4546-b188-f99e522e7ed5",
+    "source": "934baa38-df82-4fcb-8bb7-3d9bfd0adad7",
+    "target": "28cf0da9-2ebd-4839-8c6d-eef3e2e2168f",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "0c78d867-9610-402e-b264-3edae767bb77",
+    "source": "934baa38-df82-4fcb-8bb7-3d9bfd0adad7",
+    "target": "d377c0f8-9e43-4787-9bfa-52a0e97cc8b7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "9e5d0eea-e7fe-4e80-bd9a-330060f71626",
+    "source": "03620ae1-f7dd-44d7-9915-3984d6bf0af0",
+    "target": "5bcbd77d-d9bc-4628-aaf7-7f205e000d94",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "9552646d-eb90-436e-8a4b-bbbe7e84ef60",
+    "source": "5bcbd77d-d9bc-4628-aaf7-7f205e000d94",
+    "target": "daaae0c2-0a3c-4b05-810a-69637bf2fdb2",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "d333b5fa-50c6-406b-92f5-304551925c38",
+    "source": "daaae0c2-0a3c-4b05-810a-69637bf2fdb2",
+    "target": "49cca9bd-7937-42f4-9b71-2aeff98170e2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "78a29ee9-4c3e-46eb-bbba-563478dbf494",
+    "source": "daaae0c2-0a3c-4b05-810a-69637bf2fdb2",
+    "target": "9be4049f-2c23-443a-bbf8-bef4fece4ea7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "facd1027-df22-436f-8d98-7d9bf516cfca",
+    "source": "14c286e4-75e2-4449-a062-59aff0de3db5",
+    "target": "0c5fc95d-bb92-44a9-b973-0454868048a2",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "c1a0bd36-d3ff-42a4-9432-7c3bd03af9fb",
+    "source": "0c5fc95d-bb92-44a9-b973-0454868048a2",
+    "target": "e1255381-e1ac-45bd-893f-867be5978700",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "b256ff31-cc36-49b1-91d8-323f8df282f8",
+    "source": "e1255381-e1ac-45bd-893f-867be5978700",
+    "target": "ebd892f3-c017-48da-b3ce-48601ce09efd",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "231d1bb4-6b5a-4c06-9058-116f420155d4",
+    "source": "e1255381-e1ac-45bd-893f-867be5978700",
+    "target": "49cca9bd-7937-42f4-9b71-2aeff98170e2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "1f6c0909-ecad-4296-a3b6-a00745d0e288",
+    "source": "25b3ff51-346a-4b40-9736-03fdb0d5cc55",
+    "target": "fab5cb5e-6e44-4de5-93bb-9618ecf84924",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "cc111550-5cd0-43d6-9f93-143025ac8174",
+    "source": "fab5cb5e-6e44-4de5-93bb-9618ecf84924",
+    "target": "fd93e249-2d84-4941-a5b1-97017f50caae",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "fed31446-fdac-4dce-b23b-3f978ad80275",
+    "source": "fab5cb5e-6e44-4de5-93bb-9618ecf84924",
+    "target": "999476d9-2c96-4b54-a5ad-19ff948cff95",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "e39cf61a-3c93-4183-8be8-8b3162e0de56",
+    "source": "0b54d500-28e8-450e-af2a-3af73348f850",
+    "target": "9fbf6298-b7ab-471a-897a-0c6069fb380c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "9c750520-cc99-49e0-9da7-7d2dd3281e51",
+    "source": "9fbf6298-b7ab-471a-897a-0c6069fb380c",
+    "target": "934baa38-df82-4fcb-8bb7-3d9bfd0adad7",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "c755dc17-f200-4402-886b-7d2dba0ff9c5",
+    "source": "e65b8968-267f-4fd0-9698-04e7292138bc",
+    "target": "15b41fe5-f2e6-46bb-a335-fe5f58bfcc12",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "1608e1c9-20be-42ab-a0ed-b445bf9eb7f8",
+    "source": "15b41fe5-f2e6-46bb-a335-fe5f58bfcc12",
+    "target": "54b8416f-c096-44a4-aa51-464e70e0c4f1",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "f8dc8a29-69f0-4ab5-abb0-7623e09e0c1d",
+    "source": "54b8416f-c096-44a4-aa51-464e70e0c4f1",
+    "target": "49cca9bd-7937-42f4-9b71-2aeff98170e2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "bb81cbe8-195a-44a5-aa01-810015643709",
+    "source": "54b8416f-c096-44a4-aa51-464e70e0c4f1",
+    "target": "9be4049f-2c23-443a-bbf8-bef4fece4ea7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "3fdf72dc-b04c-44c7-882a-e70ec8fa21e0",
+    "source": "88e9e331-3d69-4e32-b159-29f660e02ce1",
+    "target": "b4b8a566-31e3-45af-a0e4-6ca145251bf9",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "484210a7-09d7-4eba-9633-25176252425b",
+    "source": "b4b8a566-31e3-45af-a0e4-6ca145251bf9",
+    "target": "a86d5124-415b-422d-99bf-3884e4000707",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "935ac274-93e2-471b-b0d9-41eb2c79e3f7",
+    "source": "a86d5124-415b-422d-99bf-3884e4000707",
+    "target": "28cf0da9-2ebd-4839-8c6d-eef3e2e2168f",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "cc865b99-864f-41a7-8b8b-5307447baee4",
+    "source": "a86d5124-415b-422d-99bf-3884e4000707",
+    "target": "d377c0f8-9e43-4787-9bfa-52a0e97cc8b7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "24294429-7244-46c1-b007-1ca6b97af906",
+    "source": "38c35b18-aa75-47ff-946c-c7a6a5a8e13b",
+    "target": "36ccc10a-3be8-4de4-8237-0e410efdffa9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "7ba2d431-d5ea-4b3d-a1f8-f5251179bf19",
+    "source": "36ccc10a-3be8-4de4-8237-0e410efdffa9",
+    "target": "49cca9bd-7937-42f4-9b71-2aeff98170e2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "31e9031e-a89c-4643-9621-c6c121ff927f",
+    "source": "36ccc10a-3be8-4de4-8237-0e410efdffa9",
+    "target": "02874a23-0c51-4207-ba71-6fc61128d30d",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5d1b8c4d-bd30-49f9-b840-31652dd79aa4",
+    "source": "difficulty in obtaining business-ready insights",
+    "target": "AI Analyst for Business-Ready Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "1556e3d2-23dd-4caa-acd2-211e4e3e7b69",
+    "source": "difficulty in obtaining deep, business-context insights",
+    "target": "Automated Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "33be7b66-2cbd-4726-b4be-0a3019c12d2d",
+    "source": "difficulty in interpreting data and identifying underlying problems",
+    "target": "Automated Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "778328d3-6fc0-4984-81bd-1da0d0a2115b",
+    "source": "lack of real-time insights and collaborative decision making",
+    "target": "Live Interactive Dashboards",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "09395e60-13da-4120-840e-4652a1b43e5e",
+    "source": "inefficient collaboration among data teams",
+    "target": "Analyst Studio with collaborative notebooks",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "508ff049-ed5e-4acf-bcb4-d5863fcf52f8",
+    "source": "difficulty in visualizing and understanding data from multiple sources",
+    "target": "AI-Augmented Dashboards",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "deaa3591-0fdf-4ead-8f7f-7a93555d7bf7",
+    "source": "difficulty in managing and shaping data",
+    "target": "Automated Insights",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "60764988-cf7a-4d31-af82-fac60de6c61b",
+    "source": "103ed70d-7616-4d55-b50c-a5252a524516",
+    "target": "5391baa2-b24d-4efe-ac98-a06f56628a1d",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "e86dc70a-8939-4729-ab60-ae4ec7c38cf6",
+    "source": "5391baa2-b24d-4efe-ac98-a06f56628a1d",
+    "target": "b17e42b4-9053-428f-8598-0e4c81dcae1f",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "69a5e0d8-517e-420f-b60d-e30bc8f5a256",
+    "source": "b17e42b4-9053-428f-8598-0e4c81dcae1f",
+    "target": "893242aa-a696-4c63-a62e-00a7808bd812",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "07fa6a11-a33d-427b-9e33-f82aae5ec3d2",
+    "source": "b17e42b4-9053-428f-8598-0e4c81dcae1f",
+    "target": "3e2ca485-e97d-4476-b536-ac7f7daa467a",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b1c26c50-6570-4e29-8865-f077ce0fbce1",
+    "source": "03620ae1-f7dd-44d7-9915-3984d6bf0af0",
+    "target": "22bad550-0fa0-46d5-8c93-ead4ff9547b4",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "edbdfc63-7d45-45e9-a106-cac49cc21b0e",
+    "source": "22bad550-0fa0-46d5-8c93-ead4ff9547b4",
+    "target": "8575e6ac-4df5-433b-87d6-7dca80a8c7dc",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "844881c0-ffb3-49b6-bb4b-48140a49c7ec",
+    "source": "8575e6ac-4df5-433b-87d6-7dca80a8c7dc",
+    "target": "28cf0da9-2ebd-4839-8c6d-eef3e2e2168f",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a68fc234-3745-4064-96f1-1ce841b4eeae",
+    "source": "8575e6ac-4df5-433b-87d6-7dca80a8c7dc",
+    "target": "488f45fc-656b-4c01-8874-8c3babda63ed",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "65cf3b84-de57-4bcc-a978-2fb7a45ed119",
+    "source": "14c286e4-75e2-4449-a062-59aff0de3db5",
+    "target": "680dfc17-0854-4dd8-b697-6171ea25b041",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "4ffbdde8-9837-45b8-93d8-d1fb397e0a8d",
+    "source": "680dfc17-0854-4dd8-b697-6171ea25b041",
+    "target": "2a005338-366f-4110-b284-fde8449831ba",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "4181dbd9-4ef8-4a79-908a-3318e6f51e9c",
+    "source": "2a005338-366f-4110-b284-fde8449831ba",
+    "target": "ebd892f3-c017-48da-b3ce-48601ce09efd",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "2c5a3c2b-e543-47c7-b8c6-779155fec2ec",
+    "source": "2a005338-366f-4110-b284-fde8449831ba",
+    "target": "f15daac4-b443-41f2-bf38-e6c0b6c53fc2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a125de4a-3820-49e1-8a6b-75b3aaf2f294",
+    "source": "ef201440-6585-46d0-99a4-1181a444dea8",
+    "target": "c47a4aeb-82e4-4372-9595-225b81f8d977",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "f49338c2-f97f-492c-9e05-0ecd07255be6",
+    "source": "c47a4aeb-82e4-4372-9595-225b81f8d977",
+    "target": "fa1ece65-3a15-4ad0-a5d3-8db06c646d9b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "16a8f4dd-f044-46c7-86a6-a931e60cbdb2",
+    "source": "fa1ece65-3a15-4ad0-a5d3-8db06c646d9b",
+    "target": "fd93e249-2d84-4941-a5b1-97017f50caae",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4dd7630e-7293-4ff9-ba4e-57a41296998d",
+    "source": "fa1ece65-3a15-4ad0-a5d3-8db06c646d9b",
+    "target": "1d2239a8-f91d-4fa6-99a7-28ff0e9e1093",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ce604cc9-bdc3-4e78-9137-876c0a8b9bd1",
+    "source": "0b54d500-28e8-450e-af2a-3af73348f850",
+    "target": "777ef9ef-f6aa-430c-8f4f-b2dc7bb8909c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "c02fe845-75ef-47c1-b24d-ee9de2c3ae63",
+    "source": "777ef9ef-f6aa-430c-8f4f-b2dc7bb8909c",
+    "target": "33eae3bb-d056-4f65-a1e6-db6be3d835d7",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "413174f7-7d25-490f-80a2-10f9a90ef0f5",
+    "source": "33eae3bb-d056-4f65-a1e6-db6be3d835d7",
+    "target": "893242aa-a696-4c63-a62e-00a7808bd812",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "510c09c5-fefb-4e5c-b1cc-263e55fa46eb",
+    "source": "33eae3bb-d056-4f65-a1e6-db6be3d835d7",
+    "target": "3e2ca485-e97d-4476-b536-ac7f7daa467a",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "437b6f50-5812-41d5-a4d8-ac2cd96d7a54",
+    "source": "e65b8968-267f-4fd0-9698-04e7292138bc",
+    "target": "a7c8e9f1-08bc-4429-86d3-825f778a19f0",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "6a220b81-a7c1-4a2b-b676-6321b54593b8",
+    "source": "a7c8e9f1-08bc-4429-86d3-825f778a19f0",
+    "target": "1c1b5b68-f6f8-4ce2-acb7-b11ddfa4424b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "216a2d27-c146-420a-84d8-ef51a306b2c1",
+    "source": "1c1b5b68-f6f8-4ce2-acb7-b11ddfa4424b",
+    "target": "1f20d789-6fb2-4c75-8ff9-b32098ce9cd3",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ec5b2386-5636-458d-a846-b08d085ff38a",
+    "source": "1c1b5b68-f6f8-4ce2-acb7-b11ddfa4424b",
+    "target": "918a5dd5-1f8e-46ec-b407-acdc583fc443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "546270ee-f4e5-45ac-a2ef-63ff465b9790",
+    "source": "88e9e331-3d69-4e32-b159-29f660e02ce1",
+    "target": "18d658bb-fc8c-4860-b540-0c6071b1a115",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "abfcd84c-8745-47e7-9749-a7af4c34ecd1",
+    "source": "18d658bb-fc8c-4860-b540-0c6071b1a115",
+    "target": "2e10a19c-2f43-4abe-8306-8db0accf76d0",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "d56065c6-d6ce-42aa-b2e5-8e5bc40397a8",
+    "source": "2e10a19c-2f43-4abe-8306-8db0accf76d0",
+    "target": "ebd892f3-c017-48da-b3ce-48601ce09efd",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "280a7284-41cb-48ea-8366-e9d4b66eb28e",
+    "source": "2e10a19c-2f43-4abe-8306-8db0accf76d0",
+    "target": "4e511378-5e7c-4e88-a49d-6bb2969c6a01",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "168af13a-8b98-4862-9fb8-6e0973e3f3ec",
+    "source": "6662d2fa-37b1-4337-ad77-ee62d9ef3ece",
+    "target": "17ddff3f-e4ae-4f0e-9243-18b566065c9b",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "5c8cce81-3bcc-4029-991f-a64068b03026",
+    "source": "17ddff3f-e4ae-4f0e-9243-18b566065c9b",
+    "target": "c1a78733-7577-4f6d-ba16-242da2161639",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "ac681512-141f-42cc-b5ac-d3e864aff916",
+    "source": "c1a78733-7577-4f6d-ba16-242da2161639",
+    "target": "f15daac4-b443-41f2-bf38-e6c0b6c53fc2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5dfb488e-6a16-4beb-99ee-36fcc437dcfb",
+    "source": "c1a78733-7577-4f6d-ba16-242da2161639",
+    "target": "e4577221-0d47-4286-82e0-bbf2212082e4",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "8d18c2f0-0e7f-4633-a494-79d66ee056c6",
+    "source": "lack of accessible, trustworthy insights for business decision-making",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "e9659b5f-0682-4f10-a8c0-8dc86bf2d786",
+    "source": "difficulty in collaboration and action-taking from insights",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "bbef093a-a282-4201-84b4-b7e8b84c81a3",
+    "source": "lack of integrated platform for data analysis",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "ebdf4cf7-0153-4894-80d7-3d7d8b8c5f29",
+    "source": "need for a unified platform for data teams to collaborate and analyze data",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "a47b378e-c573-4b29-a028-697ee057d97f",
+    "source": "difficulty in understanding complex business data",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "4c6ac25e-7578-48c4-a25a-68d519727efb",
+    "source": "difficulty in interpreting data and diagnosing problems",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "cfb7fa37-7a4d-416c-8b4d-0949cedcf75c",
+    "source": "difficulty in embedding analytics into custom applications",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "662f83fd-aeeb-4eaf-a12f-67ad67457efc",
+    "source": "difficulty in managing and shaping data",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "a6ab877e-149d-41d4-9bdb-b61f04ab9ad0",
+    "source": "inability to visualize insights across multiple data sources",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "bf025d72-ce51-4c6f-8ff4-d3fc926b2afd",
+    "source": "difficulty in obtaining business-ready insights",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "10d75f7d-f06a-49f6-b7b4-90afca06da3e",
+    "source": "difficulty in obtaining deep, business-context insights",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "c06cf3ec-4919-4a40-b93c-e316875f6b77",
+    "source": "difficulty in interpreting data and identifying underlying problems",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "cf7b657c-2380-4ae6-b6d7-fa892940bde6",
+    "source": "lack of real-time collaboration on data insights and decision making",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "100ad9a1-4a25-424b-b661-dae591a5ecc3",
+    "source": "lack of real-time insights and collaborative decision making",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "dc43dc03-0493-43c3-91b3-f0b3aa78abb3",
+    "source": "inefficient collaboration among data teams",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "93053656-8b60-481b-8b30-9cd61057b7c2",
+    "source": "difficulty in visualizing and understanding data from multiple sources",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "492eb618-c46e-46e6-8b8b-018ce7b3a6ee",
+    "source": "difficulty in managing and shaping data",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "be775cb2-a833-4944-a407-8ec88e2c41f7",
+    "source": "time-consuming manual data analysis and insight generation",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "08fd7e91-a1d4-4817-8137-f8382a5f903f",
+    "source": "difficulty in integrating analytics into custom applications",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "c9dfac8f-4883-4407-af01-0c01a921dda6",
+    "source": "difficulty in interpreting complex data and deriving actionable insights",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "02911be9-1a37-4866-855e-595ed47b629f",
+    "source": "difficulty in deriving deep insights from large volumes of data",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "d100045a-40d4-4213-822e-86ffa2943f51",
+    "source": "difficulty in managing and shaping data from various sources",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "625e8a94-4fac-4073-ba78-1fa249b62c25",
+    "source": "difficulty in visualizing insights across multiple data sources",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "fd71eba3-e565-41bd-ba15-481fcaa3e552",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "b03f069b-501c-4d21-9433-8a73fee28f31",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "5af7391b-3147-4cd4-83e6-97fca6d275c0",
+    "source": "b03f069b-501c-4d21-9433-8a73fee28f31",
+    "target": "6080df78-ca7a-4915-935d-2fe0fa53b224",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "ea7c46f8-7ef6-48f9-a13f-9839ac345308",
+    "source": "6080df78-ca7a-4915-935d-2fe0fa53b224",
+    "target": "c1ba6cf1-9b75-4349-b92e-da573e4f78a3",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "66ec330b-510a-4ffe-81ce-38d615abf746",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "ee9c87c4-f575-4c52-b74a-8bbad9198653",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "14d01fd5-8ba7-4e1c-9dd1-659ea5ea8e66",
+    "source": "ee9c87c4-f575-4c52-b74a-8bbad9198653",
+    "target": "b3c3adcf-de95-484e-ac70-d2885421e191",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "7640442b-26e5-4946-9142-8d0278f8a453",
+    "source": "b3c3adcf-de95-484e-ac70-d2885421e191",
+    "target": "0e0be80c-407c-4b19-b696-30c4be9fafc5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "29c5a452-616e-44ac-9d13-d77d14e8c80a",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "cd987f98-13dc-46e4-a7d7-4e05348bcb87",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "6530d2e8-b56e-4df2-834c-ed96ffbaf4fd",
+    "source": "cd987f98-13dc-46e4-a7d7-4e05348bcb87",
+    "target": "855e7578-a412-4763-9d77-c6a8fca0d011",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "8e137454-1034-46e2-8a5a-da4fe76a2266",
+    "source": "855e7578-a412-4763-9d77-c6a8fca0d011",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "88271d2b-88e2-4830-8c4c-eeb2896d0837",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "f81d8518-5f94-4ac7-9008-434d537c7068",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "4af7d7e6-bfe6-470c-8ae3-e62ef1f369e8",
+    "source": "f81d8518-5f94-4ac7-9008-434d537c7068",
+    "target": "08206a92-7760-43e8-bdc4-fa777d244886",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "27aac2d3-d21a-4025-beb2-32f0d26e5153",
+    "source": "08206a92-7760-43e8-bdc4-fa777d244886",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "8378e002-b92f-409d-aa78-5c8a86a4d123",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "a9923ac4-a5a5-4336-9ec8-44b9e8ad5139",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "a7777a40-3716-4107-af66-27fe8571bfa9",
+    "source": "a9923ac4-a5a5-4336-9ec8-44b9e8ad5139",
+    "target": "a96a71d6-bddd-4da7-ba24-ec634c7a9b1e",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "fc068283-5fd1-4d64-aa80-2a9f26446e63",
+    "source": "a96a71d6-bddd-4da7-ba24-ec634c7a9b1e",
+    "target": "a5c06bd0-5a19-46f0-8740-0e9144ecb377",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b006d64a-1240-469d-8367-388fe7ebcd01",
+    "source": "a96a71d6-bddd-4da7-ba24-ec634c7a9b1e",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "54a8b387-50f8-4341-bc35-40fd9b31a857",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "c82fdfde-92ea-4087-a928-f39ae21535aa",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "030bc2b5-336b-48c8-a6b7-c0098ad683eb",
+    "source": "c82fdfde-92ea-4087-a928-f39ae21535aa",
+    "target": "d44a16ec-6b1c-429d-a1a3-a8d80ea4b399",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "e096d2ba-866b-4de7-b964-005328619b32",
+    "source": "d44a16ec-6b1c-429d-a1a3-a8d80ea4b399",
+    "target": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b01d2d60-2b57-447a-92e8-f3db8198a599",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "abd03ef5-df42-4d99-bce8-c325dc818937",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "d4973f5f-c3da-42f4-9fcd-05e36770ec21",
+    "source": "abd03ef5-df42-4d99-bce8-c325dc818937",
+    "target": "7c9009b6-1874-4eec-8095-43b9fc30e250",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "db998694-a719-426e-bcee-4c2fb04cd0bc",
+    "source": "7c9009b6-1874-4eec-8095-43b9fc30e250",
+    "target": "af9e3fbb-8852-4c2f-a4af-eccc8d376bc2",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b1fc90f4-99cd-47ab-82eb-cdba9466d41d",
+    "source": "8357091d-7052-47cc-944a-ca3bf351dbff",
+    "target": "8846b5f9-f106-452c-ab00-d0d05a2e96ed",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "52d18e2e-c959-476d-9465-99317f04a177",
+    "source": "8846b5f9-f106-452c-ab00-d0d05a2e96ed",
+    "target": "a604c829-af71-4122-a43d-73bab8339205",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "d51ac8f8-8140-4334-9950-0c2ab116a0f0",
+    "source": "a604c829-af71-4122-a43d-73bab8339205",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "6e17c01a-3b58-4fe7-a6f5-14e377e4cb1e",
+    "source": "difficulty in managing multiple complex subscriptions scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.809877872467041
+  },
+  {
+    "id": "02421bbe-4332-4a08-8fd3-d62af6560dce",
+    "source": "inability to test and scale multiple and customizable pricing structures",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "a7b8ac47-cb69-4503-90ae-9e2464e01b95",
+    "source": "difficulty in predicting churn and retaining customers",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "fa2ed516-f4b4-41e4-bad3-391627023acc",
+    "source": "difficulty in offering discounts and trials",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "3bf43a8e-7a61-415d-af52-978a2b11fd8b",
+    "source": "difficulty in recognizing revenue accurately and on-time",
+    "target": "Revenue Recognition with ASC606",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "8925f1b8-7551-47b9-87cd-fb58da27e447",
+    "source": "difficulty in providing self-service options to users",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "fa97d6ac-37fc-4a46-8db2-47721e246e76",
+    "source": "difficulty in ensuring secure transactions and compliance",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.8267635107040405
+  },
+  {
+    "id": "eca1047f-9cb7-49ce-9656-44bc427031df",
+    "source": "difficulty in managing which features map to what plans",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "f94a5a6b-df13-4880-96c2-6c67a8d21e17",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "0d7b9ef8-a80c-4265-9346-aa58d0940df2",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "f9d627b1-1227-4859-8dfd-6f4abe657b97",
+    "source": "0d7b9ef8-a80c-4265-9346-aa58d0940df2",
+    "target": "1789e60e-7d01-4d8b-b665-756ca99f949d",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "59dc8e15-11f7-44b7-9774-dbf9eb9834dd",
+    "source": "1789e60e-7d01-4d8b-b665-756ca99f949d",
+    "target": "061af372-da58-4618-bff3-15dc28de4181",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "62dc18b6-766f-4d8d-aefb-10a3cfb700bc",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "48c78f6f-3339-4b81-89c6-9c027b90dfdd",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "52b97407-c524-44d0-9558-3b2b72e93781",
+    "source": "48c78f6f-3339-4b81-89c6-9c027b90dfdd",
+    "target": "a3c9d441-520f-4213-8ebe-f0d95465a439",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "f1f2fad0-6df5-4fed-9237-c13d830d21ff",
+    "source": "a3c9d441-520f-4213-8ebe-f0d95465a439",
+    "target": "597518dd-5c4c-40e9-8e2f-92d17a6c704f",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "9fec1902-583b-451a-9454-744448c8430d",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "d577b6dc-3f48-48c6-978e-d3e8dadcaa5a",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "70b77a12-cb32-4670-a5db-b24b3937fafe",
+    "source": "d577b6dc-3f48-48c6-978e-d3e8dadcaa5a",
+    "target": "1c102542-1079-4c2e-bf79-5e10d937930d",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "be715880-e811-4670-be14-e4be9c03b208",
+    "source": "1c102542-1079-4c2e-bf79-5e10d937930d",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4d278162-7705-4593-9c22-33397bfa2c77",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "56eb7d62-ee5e-426a-bf78-c07a9eb5e20a",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "3b8f0b4e-0d31-4a33-9ba8-2606e0e6a279",
+    "source": "56eb7d62-ee5e-426a-bf78-c07a9eb5e20a",
+    "target": "03130f04-96d3-4998-a116-70ccb9a3b7dc",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "11eb5915-ab28-4d02-9ac3-6611132cb8ff",
+    "source": "03130f04-96d3-4998-a116-70ccb9a3b7dc",
+    "target": "251b87fd-3d13-4e91-84f3-fc4eece3978c",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "9ebba124-3e1e-4ac1-aa2a-bf077bb6368a",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "eeff205e-73fd-4a2b-a991-f5ada0454277",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "1280dd68-cf41-49d4-ac16-a33252f428b9",
+    "source": "eeff205e-73fd-4a2b-a991-f5ada0454277",
+    "target": "64c405b5-2386-407c-937a-a0fcd04af23b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "4e6bccde-bf89-4274-8c8b-ca4a43e46344",
+    "source": "64c405b5-2386-407c-937a-a0fcd04af23b",
+    "target": "b15901bf-a350-4343-b352-a205ffd8157c",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "316c2916-1761-4283-8e7b-802f96d60d46",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "c7033d24-4feb-4b99-850a-382076321ab5",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "5f733876-934a-46b4-bc81-fa73a99d3bff",
+    "source": "c7033d24-4feb-4b99-850a-382076321ab5",
+    "target": "6d3125be-849e-433d-b26f-b7889f598281",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "6b980fb7-d403-4a4c-91fa-55a0f1ffaaf4",
+    "source": "6d3125be-849e-433d-b26f-b7889f598281",
+    "target": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5cefdfb2-abe3-4233-845f-5579d845ec9c",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "a453e577-ac50-4bf6-a87b-4efabd1c1e69",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "12390f08-0012-4db1-9590-926229557f13",
+    "source": "a453e577-ac50-4bf6-a87b-4efabd1c1e69",
+    "target": "546ff878-af9f-42de-9ab9-e81af9944a97",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "8762181d-737d-4a21-a704-08daa0fc247a",
+    "source": "546ff878-af9f-42de-9ab9-e81af9944a97",
+    "target": "640b9e44-becd-4070-9485-90f482063771",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b6cbcc0f-a9f1-4d28-bb22-546d62a44836",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "d8bb24f9-b392-4e9c-9bd8-329c51191856",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "031b3dec-8a4d-4a66-a149-1e04f793a3ac",
+    "source": "d8bb24f9-b392-4e9c-9bd8-329c51191856",
+    "target": "40002242-65e0-4ba8-81a4-dd9b7214816e",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "f7ea8fec-69cb-4f8e-9ecd-dba80b16ffa6",
+    "source": "40002242-65e0-4ba8-81a4-dd9b7214816e",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "2891d736-3288-4e54-b4a9-95db8ffda717",
+    "source": "high customer churn rate",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "00e2a815-2712-4583-98a4-b9ad35167046",
+    "source": "poor user experience during checkout",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "1c18aaab-a550-474e-93e8-ca4ba74d0d8a",
+    "source": "difficulty in managing and testing product feature access",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "fd377a8b-b20f-4823-9093-c85d69153d52",
+    "source": "difficulty in managing complex subscription scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.7955394387245178
+  },
+  {
+    "id": "a18c76a5-43ab-4045-a4cf-ee7224ad1ec8",
+    "source": "inability to test and scale multiple pricing structures",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "f453b36d-b61f-4850-bf68-3898f6a4ef7b",
+    "source": "difficulty in maintaining gaap compliance and audit readiness",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "5f01e19a-a424-412f-9cde-459ee132b31b",
+    "source": "inability to offer and manage discounts and trials effectively",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "840112ca-5876-4110-ab56-a43fd47f1484",
+    "source": "data breaches and non-compliance with regulations",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "4110617f-4bcf-4dba-a462-945bb9c94185",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "de9baa91-8e08-4f4e-ada5-b2539b570126",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "592fb7df-2979-40e9-9317-a7aa03232b91",
+    "source": "de9baa91-8e08-4f4e-ada5-b2539b570126",
+    "target": "18574611-622d-438c-b3e4-004dd90d84c7",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "0c28aef9-9a70-4f4b-a668-cb6eb47436e5",
+    "source": "18574611-622d-438c-b3e4-004dd90d84c7",
+    "target": "061af372-da58-4618-bff3-15dc28de4181",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a26fe4eb-858f-41a3-b608-58bb8331a058",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "e81066f7-ec7c-44a7-97a6-faaf62d92a92",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "51494e11-9f5f-4250-b591-6f9e16e045c8",
+    "source": "e81066f7-ec7c-44a7-97a6-faaf62d92a92",
+    "target": "24284220-4682-4152-bbeb-1f69b8a30376",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "18bb464b-83ed-4c4c-8fcc-8a0bd5687b53",
+    "source": "24284220-4682-4152-bbeb-1f69b8a30376",
+    "target": "0e0be80c-407c-4b19-b696-30c4be9fafc5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "72a9ab40-2a35-479b-be8d-534796025619",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "8086783d-8fc9-4e8f-8efe-3011534c864c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "daf83761-9063-4f54-8126-97146d5eb129",
+    "source": "8086783d-8fc9-4e8f-8efe-3011534c864c",
+    "target": "c0d45640-286b-4c6f-ae9f-2d0ee94f1dd9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "2fee2d20-3727-4770-9ab7-82d133eac4b7",
+    "source": "c0d45640-286b-4c6f-ae9f-2d0ee94f1dd9",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "196c8356-8034-4fd6-89eb-63e3886abdf2",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "1aa7511b-8ab2-4aa8-bdaa-2c0469af796b",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "65037017-28f6-4aa8-b034-d145e6cf8e64",
+    "source": "1aa7511b-8ab2-4aa8-bdaa-2c0469af796b",
+    "target": "dda76627-394d-4e32-8668-53e457feb5ac",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "9a547cb2-b405-424c-bca4-4c7d252590eb",
+    "source": "dda76627-394d-4e32-8668-53e457feb5ac",
+    "target": "3739ed2d-27b3-4799-82ec-ba465b5f829a",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "636f3382-388c-469b-84c7-ee6c4610f382",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "7068f26f-2ce2-4fa7-becf-6db824f0f899",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "42f2db03-9771-42aa-a152-41c7b77f418a",
+    "source": "7068f26f-2ce2-4fa7-becf-6db824f0f899",
+    "target": "1af7567c-b5ef-45f7-8901-9d57f24a422f",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "c1217b00-ebef-48e3-a4aa-9d3b3024fe0d",
+    "source": "1af7567c-b5ef-45f7-8901-9d57f24a422f",
+    "target": "a5c06bd0-5a19-46f0-8740-0e9144ecb377",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "92c5ae42-03ea-4813-8217-6c4381d4da24",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "ab1235aa-cae0-4732-9505-3ba1f4394e7c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "c9953ebe-10be-4cfa-bce3-0129fe980236",
+    "source": "ab1235aa-cae0-4732-9505-3ba1f4394e7c",
+    "target": "7575c5cb-79ea-466e-a6e4-fc011a63cffc",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "2653d0b8-058b-453a-8942-cdfb5eb9f319",
+    "source": "7575c5cb-79ea-466e-a6e4-fc011a63cffc",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "e7fc88a6-9389-43d7-ad28-ee27db98ad4c",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "2a8a0bdb-4102-4e86-849f-79802f0ae951",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "3bf7c038-87d7-40e5-8c43-775c167c9e11",
+    "source": "2a8a0bdb-4102-4e86-849f-79802f0ae951",
+    "target": "02d27843-f2d2-4441-bcd5-2e8064b698be",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "740f0437-99fc-49f1-8a58-2c9207840097",
+    "source": "02d27843-f2d2-4441-bcd5-2e8064b698be",
+    "target": "dbfb1237-a072-4d4d-8f70-9d6fabeb1bd9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "1f51df9a-aea5-4739-9147-f685f24cca4c",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "8846b5f9-f106-452c-ab00-d0d05a2e96ed",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "a257752f-26fe-4093-9c4d-f98b09282dc8",
+    "source": "8846b5f9-f106-452c-ab00-d0d05a2e96ed",
+    "target": "54761028-cc59-48f9-9cca-85559d43f9a6",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "a57dcb8c-fbce-41a3-9ed5-26c5c8b14224",
+    "source": "54761028-cc59-48f9-9cca-85559d43f9a6",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "373d7aba-a5d5-48ba-8683-e0e3071cefb6",
+    "source": "difficulty in obtaining deep insights from business data",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "197ed34e-549e-4170-bddd-6446ec7b5317",
+    "source": "difficulty in obtaining deep insights from business data",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "9f3799cc-8c11-4db8-acce-64447a917776",
+    "source": "difficulty in interpreting data and diagnosing problems",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "c3395b2d-0a57-45e7-8017-1db9559ad14f",
+    "source": "difficulty in embedding analytics into custom applications",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "0235e429-cfa4-40d6-8299-af4a2b0ac075",
+    "source": "inefficient collaboration among data teams",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "d8d0949d-d7a8-44a3-85ce-52940ff14af9",
+    "source": "time-consuming manual data analysis and insight generation",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "274d2aa6-6627-4190-93f6-435090cdff81",
+    "source": "difficulty in managing and shaping data from various sources",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "7d0755ba-7533-4e8d-93d4-289f5a9f9ccc",
+    "source": "difficulty in testing and scaling multiple pricing structures",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.7600312232971191
+  },
+  {
+    "id": "d9a99749-908a-402e-a377-9821f7840bdc",
+    "source": "difficulty in offering discounts and trials",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "2b04e326-39f4-4c56-af20-6da1ebbcce47",
+    "source": "challenges in predicting churn and managing cancellations",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "6516bfb8-ec62-4609-a810-585e6108d2a2",
+    "source": "complexity in creating and offering discounts and trials",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "5935de78-89f8-4cf6-af3b-a416b661b819",
+    "source": "challenges in providing end users with self-service options and customizable checkout flows",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.753614068031311
+  },
+  {
+    "id": "80982a84-28a3-440f-8114-ec088b5a8479",
+    "source": "complexity in managing multiple subscriptions scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.782793402671814
+  },
+  {
+    "id": "6f78904b-0871-41ee-90d1-520fa8e8d1ad",
+    "source": "difficulty in recognizing revenue accurately and in compliance with global standards",
+    "target": "Revenue Recognition with ASC606",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "cc7eaf52-ff1a-43f8-9a77-077d71fd1135",
+    "source": "ensuring secure transactions and compliance with relevant regulations",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.8406077027320862
+  },
+  {
+    "id": "63493ffa-9c22-42db-93d7-0926acd6fde9",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "fd0aa98c-7330-4e02-83f5-8124a4415b1d",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "5228420b-b560-4b44-acbf-2751dc993b23",
+    "source": "fd0aa98c-7330-4e02-83f5-8124a4415b1d",
+    "target": "e1fed623-647d-4ae0-9620-b1cff10ec329",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "780ee741-da8d-4d9f-85b8-67d64d5f2105",
+    "source": "e1fed623-647d-4ae0-9620-b1cff10ec329",
+    "target": "061af372-da58-4618-bff3-15dc28de4181",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "9e688580-a458-47b2-9f2a-6820ff0f5245",
+    "source": "ee9c87c4-f575-4c52-b74a-8bbad9198653",
+    "target": "88283dfa-de83-4191-a3d5-71cdddfd1601",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "53719b7f-62fe-4c82-8525-44c668cf7762",
+    "source": "88283dfa-de83-4191-a3d5-71cdddfd1601",
+    "target": "0e0be80c-407c-4b19-b696-30c4be9fafc5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "338f5329-4a26-4e6f-8375-77f6d1613e9c",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "04a0e6bf-ac2a-41b8-b2c9-77fce11efe94",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "c5cd696d-2531-441d-8426-6eca35605986",
+    "source": "04a0e6bf-ac2a-41b8-b2c9-77fce11efe94",
+    "target": "01506aa8-58d8-442e-b1d5-34e8e1186628",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "1c236bdd-0251-43f2-b710-6a0a3380be49",
+    "source": "01506aa8-58d8-442e-b1d5-34e8e1186628",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "89206c15-fd52-48ca-aa4a-fd436c6dfdb4",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "c01ff7bd-003e-4028-bb1a-035d3ae05b29",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "b252cfb5-72a8-4a91-b7b9-15c60b4da509",
+    "source": "c01ff7bd-003e-4028-bb1a-035d3ae05b29",
+    "target": "1b22dbfa-8f53-487d-84a6-2ce36bbcfa4e",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "14b1a469-981a-456c-ac08-1ffc7ad31109",
+    "source": "1b22dbfa-8f53-487d-84a6-2ce36bbcfa4e",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b81e78e8-9d63-4c1d-9fc8-11975b935d9d",
+    "source": "1b22dbfa-8f53-487d-84a6-2ce36bbcfa4e",
+    "target": "4f580f6b-4ccb-4c8c-b111-8241bc969bb8",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "7c71a1d2-f849-421a-8838-c58cb3ad8211",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "fe398d2c-06b5-435d-bde1-f018a8065eb8",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "b6b47b42-1e3f-48a9-9675-523baff223f0",
+    "source": "fe398d2c-06b5-435d-bde1-f018a8065eb8",
+    "target": "9a4193c0-d52a-4e39-a638-765dacee56f9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "c0f29aa5-ec1b-4842-a48f-089c13eff1f1",
+    "source": "9a4193c0-d52a-4e39-a638-765dacee56f9",
+    "target": "a5c06bd0-5a19-46f0-8740-0e9144ecb377",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "98d3970b-3184-4d6b-9407-5912133a595a",
+    "source": "9a4193c0-d52a-4e39-a638-765dacee56f9",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ed49e98a-4e7e-42f4-81bf-6b9115bdedea",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "b679aeb8-b43a-42ec-bb1b-08dc5780659c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "1eb6ab9a-a7fd-42fa-8f95-03b30fd9193c",
+    "source": "b679aeb8-b43a-42ec-bb1b-08dc5780659c",
+    "target": "d317d63d-8865-4b3d-9aed-11273a53ac71",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "2b094343-69d0-4a83-91c0-2bdd0eab4bfd",
+    "source": "d317d63d-8865-4b3d-9aed-11273a53ac71",
+    "target": "30474e00-e8de-42e5-8564-a63dec893d76",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "8bb43db8-07f8-4e4b-89a3-88d1cc99e06e",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "cf3779ae-4741-4c13-b926-64a6119056c0",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "f12ab0ee-6806-4424-bc8c-de6911ca7cd7",
+    "source": "cf3779ae-4741-4c13-b926-64a6119056c0",
+    "target": "914872c0-ceb0-4bad-906f-fd04aec7c9fd",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "b9d4ffe9-9ede-4042-a7c6-46c0aba3a9d9",
+    "source": "914872c0-ceb0-4bad-906f-fd04aec7c9fd",
+    "target": "cadd2aea-306d-488e-8b72-04376fc603f5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "c4bfeea4-9dcd-4f95-8376-08cf7a84dfd8",
+    "source": "914872c0-ceb0-4bad-906f-fd04aec7c9fd",
+    "target": "dbfb1237-a072-4d4d-8f70-9d6fabeb1bd9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "12822860-df0e-4e3b-a0bc-3c5735707d00",
+    "source": "8357091d-7052-47cc-944a-ca3bf351dbff",
+    "target": "81eb2c35-98c8-4e90-9a72-822780e8afdb",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "ff27ff4f-b7d7-4f17-95ed-4d85e8f69037",
+    "source": "81eb2c35-98c8-4e90-9a72-822780e8afdb",
+    "target": "c00301bc-647d-4cc1-8895-6368e4a67e64",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "4e63ceab-53e4-4763-b030-52e4b4d02275",
+    "source": "c00301bc-647d-4cc1-8895-6368e4a67e64",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "aed7aa9a-f415-4a02-9738-4395c4814efe",
+    "source": "lack of insights to predict churn and manage involuntary churn",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "642b2beb-02f2-4cbf-a126-c1db88ce6b79",
+    "source": "difficulties in recognizing revenue accurately and in compliance with global standards",
+    "target": "Revenue Recognition with ASC606",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "d6737b5f-97c2-424a-997e-e931b9f9e1be",
+    "source": "inability to offer discounts and manage trials effectively",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "0338c018-72d9-4f49-a298-0d9eccde1139",
+    "source": "difficulties in managing feature entitlements",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "3790781c-439e-4460-9ef4-36c3fd62f1e3",
+    "source": "difficulties in managing multiple complex subscriptions scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.7754758596420288
+  },
+  {
+    "id": "ed1d0daa-abaf-43b2-95d7-e677416a4c3f",
+    "source": "issues with secure transactions and compliance",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.8333649635314941
+  },
+  {
+    "id": "0cda56cf-ec47-48b5-b024-8b892729d38e",
+    "source": "inability to offer self-service and customizable checkout options",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.7885672450065613
+  },
+  {
+    "id": "12cc86f9-6fd9-4b29-8f74-3a6a553cd1f1",
+    "source": "0d7b9ef8-a80c-4265-9346-aa58d0940df2",
+    "target": "8c68ba39-c554-4d4d-883d-5dd188798466",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "6b58a512-0c20-4025-a302-e8cc2aa0a6b2",
+    "source": "8c68ba39-c554-4d4d-883d-5dd188798466",
+    "target": "4b0cc925-4a84-4d1b-b282-ee18aaab0ef0",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "c505dec5-c37c-42d5-a779-99230237a826",
+    "source": "48c78f6f-3339-4b81-89c6-9c027b90dfdd",
+    "target": "24284220-4682-4152-bbeb-1f69b8a30376",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "bf61934c-7964-4316-9728-9ec5c9289958",
+    "source": "cd987f98-13dc-46e4-a7d7-4e05348bcb87",
+    "target": "bca3d2cd-64dc-4317-9bb9-35092642a18c",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "1abb762f-755b-4aa4-85a5-dccc8bbc1212",
+    "source": "bca3d2cd-64dc-4317-9bb9-35092642a18c",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4f6b59a8-0b27-43e8-bdb6-51f9819a341f",
+    "source": "1aa7511b-8ab2-4aa8-bdaa-2c0469af796b",
+    "target": "6c07001b-7227-48de-9c0c-6a33dff20c0f",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "032d21d3-0693-42c8-b104-9e8070fd53d5",
+    "source": "6c07001b-7227-48de-9c0c-6a33dff20c0f",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "d0086cc7-9224-4af9-939a-f972cef9bdf7",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "d077980a-0a67-4eaf-80bd-4e8137c86c51",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "47dddd5b-a59a-4f9a-a8ef-dbb972f0cc42",
+    "source": "d077980a-0a67-4eaf-80bd-4e8137c86c51",
+    "target": "beb61e3e-ae44-4637-a8b1-9d2b487b5a1b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "ed81403d-e565-407c-9852-1eb18fdec14a",
+    "source": "beb61e3e-ae44-4637-a8b1-9d2b487b5a1b",
+    "target": "a5c06bd0-5a19-46f0-8740-0e9144ecb377",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "72f0875c-c4cb-4a2c-ac75-131c27bc7048",
+    "source": "beb61e3e-ae44-4637-a8b1-9d2b487b5a1b",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a63b8474-9678-4320-a8a6-6903a8e137a4",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "0392fef0-bd8d-4419-8d89-a1dc1190d139",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "994603e0-c42b-41fd-870f-8e893647e371",
+    "source": "0392fef0-bd8d-4419-8d89-a1dc1190d139",
+    "target": "d2676f9a-2dc6-4467-b2f4-ba087cd5cc12",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "ed2e8d8f-00bd-445d-bd20-02f73c7ba365",
+    "source": "d2676f9a-2dc6-4467-b2f4-ba087cd5cc12",
+    "target": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5de7b750-03fa-482b-983a-82b103c497e7",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "5e79cdf8-8feb-458b-8195-3c49026707ac",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "4353c830-e890-4f67-9b17-df7615509d98",
+    "source": "5e79cdf8-8feb-458b-8195-3c49026707ac",
+    "target": "b4af9499-041f-45ff-8f4f-ea2c2df0aa7c",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "939357aa-72e5-46bb-964f-5df8a5236818",
+    "source": "b4af9499-041f-45ff-8f4f-ea2c2df0aa7c",
+    "target": "9ca51d62-b311-4bb4-bf8e-6d26d4a595c7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "1448c60f-9e15-4de2-8241-cab576d9262b",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "efc9c217-e9f4-4e0a-b269-f5fcb6c46a3c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "df35be5e-08bf-4209-87ab-8ca160d7113b",
+    "source": "efc9c217-e9f4-4e0a-b269-f5fcb6c46a3c",
+    "target": "7e47352d-a97d-43bc-81ad-36af27b95611",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "0664f83a-43f8-4c69-8b11-489b645fceb0",
+    "source": "7e47352d-a97d-43bc-81ad-36af27b95611",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "3ec42362-c349-43db-b202-0f8bd9a7069b",
+    "source": "difficulty in providing user-friendly checkout experiences",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "717da7d2-b5e2-4d11-ac58-9b484d0e786a",
+    "source": "difficulty in managing and testing product feature entitlements",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "cf9e4c91-33f8-4a3f-a626-7994f29daf8d",
+    "source": "challenges in ensuring secure transactions and compliance",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.8148854970932007
+  },
+  {
+    "id": "8f465bfc-96bc-4eaa-8ff7-8a6254701cd3",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "9f0cc83f-003c-4da9-805f-3da3b9f24ad9",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "fd72bda2-b210-4c7b-aabb-1bd0b89e60e4",
+    "source": "9f0cc83f-003c-4da9-805f-3da3b9f24ad9",
+    "target": "bc625ba7-1790-49d3-8088-fbf895323a45",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "49bf7948-4fd1-40cc-b30b-a25f2c8e6b6b",
+    "source": "bc625ba7-1790-49d3-8088-fbf895323a45",
+    "target": "4b0cc925-4a84-4d1b-b282-ee18aaab0ef0",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ff702ad1-82c3-4992-8f3e-8a66f7304010",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "1198de3d-568d-4178-931f-64bb4b281c8e",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "191f573e-0e96-497d-89ac-c36603a6e886",
+    "source": "1198de3d-568d-4178-931f-64bb4b281c8e",
+    "target": "24020312-08c1-4090-9334-0a01b315f876",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "cbbcb2d9-3014-4c9e-91fa-ddc5454ba8d1",
+    "source": "24020312-08c1-4090-9334-0a01b315f876",
+    "target": "49b95daf-6803-4fd1-82d0-ceb999c48706",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "d27c3f46-d06d-46a8-b7f5-02e55ba7e277",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "10b0c7c0-1d7b-4d42-9167-0eb08a414668",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "c2512911-34c0-40c2-9b38-631da62e91dc",
+    "source": "10b0c7c0-1d7b-4d42-9167-0eb08a414668",
+    "target": "a6ac6879-bf47-4ffd-ad64-726758f74c6a",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "57c2195c-74c4-4eef-beca-4cc2578c4d78",
+    "source": "a6ac6879-bf47-4ffd-ad64-726758f74c6a",
+    "target": "fc70bfae-b82f-4298-b16d-5fe35d683e75",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ab0e3ae2-acd9-4ca9-b2b8-ef8944dfe300",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "7faa4cf7-d959-4f40-afc0-2060e06a6b1e",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "df2e23f8-913c-4a39-bd56-ffab1a13661f",
+    "source": "7faa4cf7-d959-4f40-afc0-2060e06a6b1e",
+    "target": "5cadf77f-1209-4aeb-9f24-1c6b2124f0ba",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "be0650a6-67e1-40e3-8754-9e31922d5ec8",
+    "source": "5cadf77f-1209-4aeb-9f24-1c6b2124f0ba",
+    "target": "cad8576a-b636-4ccf-988b-bd930b42ae3a",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "3108be9a-1779-457e-b210-df0f52e4da01",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "74a7e4c2-bce6-4953-9b6b-90337e33dbd0",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "3cd5a43b-5e83-48dd-861e-22cd8171162f",
+    "source": "74a7e4c2-bce6-4953-9b6b-90337e33dbd0",
+    "target": "63ba36a2-b229-41a5-817a-092f0c36fa18",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "768fd01f-fd64-4464-8783-54ea280e4ecc",
+    "source": "63ba36a2-b229-41a5-817a-092f0c36fa18",
+    "target": "b07b4b0e-9b4f-49fd-ab38-fc00d53e5d5c",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "eed76f54-0dc3-408b-81d9-6d3106c4dfc4",
+    "source": "63ba36a2-b229-41a5-817a-092f0c36fa18",
+    "target": "9426fefd-6d7a-4509-8c91-9b9308b954c9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "89d3f08a-efc5-4245-8abf-a1a736bc292c",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "29010297-8d80-455e-8840-2e502d87c269",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "d26c23fd-4d35-4f7a-8a21-509638aa3571",
+    "source": "29010297-8d80-455e-8840-2e502d87c269",
+    "target": "b5291df1-0b50-4f89-bea2-b5c891e8c389",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "b1c3f284-b25e-4865-88b2-e57ce8c30882",
+    "source": "b5291df1-0b50-4f89-bea2-b5c891e8c389",
+    "target": "bc8285d1-75d0-4a3e-b65a-55ec2278c5b3",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b698f817-8951-4a98-8f90-75336bb7d6e2",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "c5a698d4-674c-4edd-9b0e-c03251f50a70",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "ef03ace7-ff4d-48b1-9caa-e0e528e8b93d",
+    "source": "c5a698d4-674c-4edd-9b0e-c03251f50a70",
+    "target": "bbedf91f-78fc-4db3-861f-2443052b31f8",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "0303eb12-0bf0-49c8-9981-4d4e29132e98",
+    "source": "bbedf91f-78fc-4db3-861f-2443052b31f8",
+    "target": "cadd2aea-306d-488e-8b72-04376fc603f5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "49f550ec-f852-4d98-a679-1737f009c5a2",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "f30d9bb2-e60b-43c0-ad4f-1cab661f6956",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "40976a66-7c33-4a39-b646-9b65d255eb33",
+    "source": "f30d9bb2-e60b-43c0-ad4f-1cab661f6956",
+    "target": "539ab4f4-a51b-484b-ab9d-65bd86e923f9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "d2a28304-b1d3-4938-9a4b-7a0110f9ab07",
+    "source": "539ab4f4-a51b-484b-ab9d-65bd86e923f9",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4861745f-a19b-4564-8eb1-87d6edd1e1ef",
+    "source": "mapping features to plans",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "0fd35a59-d28d-44ba-8309-7cb650d263b5",
+    "source": "ensuring secure transactions and compliance",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.7951420545578003
+  },
+  {
+    "id": "94aa75b9-95ad-4521-b296-0a6ae39258fe",
+    "source": "managing multiple complex subscription scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.7731850743293762
+  },
+  {
+    "id": "5677e9a1-064c-46db-a6ad-942685a346c7",
+    "source": "adapting to various pricing structures",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "8c65fa99-2275-4cba-801b-e3c283901ddd",
+    "source": "predicting customer churn",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "bb8d0905-7e27-4e46-b279-3100343e45ab",
+    "source": "maintaining gaap compliance and audit readiness",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "43827d08-c42b-442c-96fd-085bfbfc8ba2",
+    "source": "managing discounts and trials",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "c20c3421-82c9-45f0-a5ab-e96f581fdee4",
+    "source": "customizing checkout flows",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "1e047618-844f-4718-a8da-5a8cf535d03e",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "d730b713-bf2f-47df-8a07-5238f76cc5a8",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "173286df-058c-4bb5-9b14-a35378cbf952",
+    "source": "d730b713-bf2f-47df-8a07-5238f76cc5a8",
+    "target": "44bd444f-4cad-47fe-8e63-6be8ed9052e5",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "859b3e1a-89cf-4664-957b-d80d8f001a52",
+    "source": "44bd444f-4cad-47fe-8e63-6be8ed9052e5",
+    "target": "061af372-da58-4618-bff3-15dc28de4181",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "022755ad-9ad4-498d-8877-4eb5368f547b",
+    "source": "ee9c87c4-f575-4c52-b74a-8bbad9198653",
+    "target": "fac43d2c-ed65-4386-92cf-298edc9868a5",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "7f748a3f-fa62-47a6-badf-f1073d05d21c",
+    "source": "fac43d2c-ed65-4386-92cf-298edc9868a5",
+    "target": "597518dd-5c4c-40e9-8e2f-92d17a6c704f",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "7602ffc8-d141-4712-b94d-32be48dcb4e3",
+    "source": "cd987f98-13dc-46e4-a7d7-4e05348bcb87",
+    "target": "072c6708-3c93-47e5-b30a-d55aa44f85c1",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "e775fee5-c1fa-440d-946b-1784893ca1bf",
+    "source": "072c6708-3c93-47e5-b30a-d55aa44f85c1",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "0f5ecdf8-9441-488a-b595-7ead5de15761",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "a5194529-d3b9-4ce8-98a3-2d0e2b899004",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "d14e1f32-dc67-40b5-87a9-60ae6f2c982f",
+    "source": "a5194529-d3b9-4ce8-98a3-2d0e2b899004",
+    "target": "bd79f5f9-88fa-422e-a1f4-c84648591872",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "5d2a3429-b657-43f1-ba29-958b4da26895",
+    "source": "bd79f5f9-88fa-422e-a1f4-c84648591872",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "f99ebdcd-b4cc-4d89-a34a-07e72a3678d9",
+    "source": "bd79f5f9-88fa-422e-a1f4-c84648591872",
+    "target": "184873dc-02be-41f8-be43-638b3d61c3eb",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "154ad11e-d366-4310-ad37-4a342ec46fe6",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "7d92270e-d7b9-4329-9931-64baae7459c8",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "f228317f-662c-4792-acf5-b10bf1cf356c",
+    "source": "7d92270e-d7b9-4329-9931-64baae7459c8",
+    "target": "64520d31-134f-4a24-862e-56506403190b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "62daf460-a643-4654-ae18-f3cae848259e",
+    "source": "64520d31-134f-4a24-862e-56506403190b",
+    "target": "b07b4b0e-9b4f-49fd-ab38-fc00d53e5d5c",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "001d9164-c752-4675-a392-3ad9e0846f26",
+    "source": "64520d31-134f-4a24-862e-56506403190b",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4aed9d94-c5c2-45a0-8859-bc489996f1d5",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "18579007-4efe-4e24-9692-a5170fb804b3",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "9da66417-254f-4a21-be2f-1701cb59e690",
+    "source": "18579007-4efe-4e24-9692-a5170fb804b3",
+    "target": "50017643-2fa2-4921-b8dc-023b06fd7a20",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "c3ac4119-23b7-461c-bb3a-ded23d4c22a7",
+    "source": "50017643-2fa2-4921-b8dc-023b06fd7a20",
+    "target": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "59416f11-b690-4f12-8c18-cf832096547e",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "5ad302d6-874a-487f-9b94-9dbba7298535",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "35d98898-f344-4627-bf68-fa0a99251a8f",
+    "source": "5ad302d6-874a-487f-9b94-9dbba7298535",
+    "target": "3f05288d-138a-4ecd-8979-8cdd1f127704",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "ede5941a-3cdc-49f9-a99d-40a0e8e0e43a",
+    "source": "3f05288d-138a-4ecd-8979-8cdd1f127704",
+    "target": "9ca51d62-b311-4bb4-bf8e-6d26d4a595c7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "d3620e16-8536-41a2-8b4f-0bac3721806b",
+    "source": "3f05288d-138a-4ecd-8979-8cdd1f127704",
+    "target": "22c6dd9f-bc1a-47d1-8e74-24d5933e3a02",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "05faf7f9-3f73-41f9-8baa-bf59b23dd41e",
+    "source": "8357091d-7052-47cc-944a-ca3bf351dbff",
+    "target": "75e996f2-4371-4b74-9418-f26151635b1e",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "eb3132ca-793a-4f49-b641-598f5aa0de4c",
+    "source": "75e996f2-4371-4b74-9418-f26151635b1e",
+    "target": "6d6d3c4a-b499-47f8-9c88-8d1b02c33072",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "95acf537-811d-4e81-a53d-25d2d6def36f",
+    "source": "6d6d3c4a-b499-47f8-9c88-8d1b02c33072",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "54b61107-3ad3-410b-8fc2-2b5462e77072",
+    "source": "challenges in recognizing revenue accurately and in compliance with global standards",
+    "target": "Revenue Recognition with ASC606",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "5819c688-f50f-4375-9995-7d610b9c165a",
+    "source": "inability to customize checkout flows and offer self-service options",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.8276684284210205
+  },
+  {
+    "id": "5f59f29d-e8c3-4107-8b2e-b8d4782053ad",
+    "source": "difficulty in offering discounts and managing trials",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "258d2fdb-45cd-4958-9b98-f7b99a96c4ee",
+    "source": "difficulty in managing and testing feature entitlements",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "82f5ccaa-29e5-4def-bfef-094624e345e1",
+    "source": "difficulty in managing multiple complex subscription scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.7951878905296326
+  },
+  {
+    "id": "ec1d4b1d-a440-4591-bce8-ea98743c498c",
+    "source": "challenges in ensuring secure transactions and compliance with regulations",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.7758278846740723
+  },
+  {
+    "id": "4e09cf3c-c4f2-40f7-957f-88f156f663a6",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "e124af63-4973-46a9-88f1-0c3be1b5e0af",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "696e2e04-8cd9-4df7-b939-b42874907d82",
+    "source": "e124af63-4973-46a9-88f1-0c3be1b5e0af",
+    "target": "bc625ba7-1790-49d3-8088-fbf895323a45",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "bee36393-1c9b-4d21-b445-75225d1428ae",
+    "source": "bc625ba7-1790-49d3-8088-fbf895323a45",
+    "target": "061af372-da58-4618-bff3-15dc28de4181",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "c5db8c9c-79b7-4314-aa41-b07808af03fa",
+    "source": "48c78f6f-3339-4b81-89c6-9c027b90dfdd",
+    "target": "449e107b-f414-42ae-9de2-79970b1c4b8f",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "a12c4cfc-efd2-4f16-8a81-0a782c49463a",
+    "source": "449e107b-f414-42ae-9de2-79970b1c4b8f",
+    "target": "0e0be80c-407c-4b19-b696-30c4be9fafc5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5e15bc33-4d8b-4e78-bbd8-4b35a14f3d74",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "cfb6d32e-f458-4f2d-880a-077bd7e3155a",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "0ec98428-7989-4f7a-a06c-006d40266dbf",
+    "source": "cfb6d32e-f458-4f2d-880a-077bd7e3155a",
+    "target": "0d8369c7-5a94-49d3-ab8c-ef68bce9e7e1",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "71c86f9f-21fd-410d-8558-155cb9e73f46",
+    "source": "0d8369c7-5a94-49d3-ab8c-ef68bce9e7e1",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "ce0e8ea6-646d-457a-a480-0d9a9b73d5c6",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "6624f90b-850c-48c7-8464-19805eb37c16",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "97e8b7fe-ef0b-4b8e-b573-bdc4081686c8",
+    "source": "6624f90b-850c-48c7-8464-19805eb37c16",
+    "target": "1b22dbfa-8f53-487d-84a6-2ce36bbcfa4e",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "416dc807-ccd1-4baf-b799-f3300f188ea9",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "2d08a824-8863-4eda-96af-f4d782718c9b",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "83c6e8d5-cf92-4867-a46d-933be61e002e",
+    "source": "2d08a824-8863-4eda-96af-f4d782718c9b",
+    "target": "9a4193c0-d52a-4e39-a638-765dacee56f9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "e5de40b9-d25e-4b0c-b451-5cea74d7631e",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "7e0ffd0f-1d6f-4534-a10e-9af20e2d8cd7",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "1142fded-2a3a-4082-9034-5a05fa5d87c0",
+    "source": "7e0ffd0f-1d6f-4534-a10e-9af20e2d8cd7",
+    "target": "5fe09143-9f54-401d-943a-4bfac991f184",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "49cdfcd2-843f-40e3-8724-c3d40ebdd82f",
+    "source": "5fe09143-9f54-401d-943a-4bfac991f184",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "28a33b24-41c2-41fe-9d62-be9920418545",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "e8407e1a-1729-4252-800e-223e954388bf",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "25cb1b34-e150-4f41-a64c-e5268ec96d4d",
+    "source": "e8407e1a-1729-4252-800e-223e954388bf",
+    "target": "bbedf91f-78fc-4db3-861f-2443052b31f8",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "06582a5d-bb5e-4bee-b9fd-3d5eed49130c",
+    "source": "bbedf91f-78fc-4db3-861f-2443052b31f8",
+    "target": "dbfb1237-a072-4d4d-8f70-9d6fabeb1bd9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b4fc08ae-88c5-4fbb-aa31-00a6aec2b3e5",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "efab3e1f-9c86-4a9f-bc47-bf11afdb9830",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "57200475-da2e-4f3a-9bf3-04b2fea70bd0",
+    "source": "efab3e1f-9c86-4a9f-bc47-bf11afdb9830",
+    "target": "539ab4f4-a51b-484b-ab9d-65bd86e923f9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "b07cbc6b-848a-4a69-9a49-1d8b63f213e0",
+    "source": "difficulty predicting churn and managing cancellations",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "2a7438f6-70b4-436e-a49f-c7d6e89f76ca",
+    "source": "difficulty ensuring transaction security and compliance",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "641e9ee8-94dd-488e-b157-b51144a0d13c",
+    "source": "difficulty offering discounts and trials",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "bcceb142-820c-472f-817b-a4df6d16fc3d",
+    "source": "difficulty managing feature entitlements",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "2e8771aa-3fa7-4a6d-81f5-b0af155e4d58",
+    "source": "difficulty managing complex subscription scenarios",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "1a2972e4-dd2b-47ee-9918-f43e9ef172aa",
+    "source": "managing multiple complex subscription scenarios",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "fcf42505-fb63-4004-863d-83665cd9214a",
+    "source": "difficulty managing complex subscription scenarios",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "17d9dff7-9c47-44a6-8e98-cb731618afd9",
+    "source": "fd0aa98c-7330-4e02-83f5-8124a4415b1d",
+    "target": "8ae2f992-421b-4204-86cf-44de02e64ea3",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "2a4fb988-ef14-486d-9bbd-65ef9f469291",
+    "source": "8ae2f992-421b-4204-86cf-44de02e64ea3",
+    "target": "d9805cd4-9a25-4826-abb2-d61b8e0163fa",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "572a2670-df3e-4baa-a481-5e335c30af34",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "6d59f7de-5a4e-4224-b67f-8485950a377d",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "1eb9d0e8-1c9b-4eb9-a57d-46d8a8b02925",
+    "source": "6d59f7de-5a4e-4224-b67f-8485950a377d",
+    "target": "64971363-96cf-43ec-a084-aefa2cdd567f",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "9627cc24-b521-412b-8576-352e1b742d9d",
+    "source": "64971363-96cf-43ec-a084-aefa2cdd567f",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "6567eee1-8c88-459d-ac78-472f19f98afe",
+    "source": "64971363-96cf-43ec-a084-aefa2cdd567f",
+    "target": "2900e92e-e995-4fd2-9c48-a53d430f5fb6",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "c8be419b-685d-4238-a5cc-0bfa31db92a9",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "1ef836ae-35c0-48ed-b14d-84d4b7a36264",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "a33767d7-06e9-436a-8513-a76457f3bf1a",
+    "source": "1ef836ae-35c0-48ed-b14d-84d4b7a36264",
+    "target": "bca3d2cd-64dc-4317-9bb9-35092642a18c",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "fd7b075b-afc2-49ca-b6f3-9045105da8e0",
+    "source": "c01ff7bd-003e-4028-bb1a-035d3ae05b29",
+    "target": "64584b41-b476-4ad6-ac27-e46041ea0808",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "abbde103-ddc6-4f8c-8eff-840bf7aadd20",
+    "source": "64584b41-b476-4ad6-ac27-e46041ea0808",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "df0b4369-e998-48fc-b6a3-384e84bfdd3b",
+    "source": "64584b41-b476-4ad6-ac27-e46041ea0808",
+    "target": "54f72d97-5251-4ffa-b14e-e20247eeb2db",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "98058a8f-f3bd-4384-a2a7-e5ed0bd67264",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "5a565f54-f8cb-4a76-980b-6ba3ca3af515",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "e0ad2317-db28-4935-817b-c26bbaa11112",
+    "source": "5a565f54-f8cb-4a76-980b-6ba3ca3af515",
+    "target": "beb61e3e-ae44-4637-a8b1-9d2b487b5a1b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "b6eb2836-df84-47fb-81ac-6218d06eeb51",
+    "source": "beb61e3e-ae44-4637-a8b1-9d2b487b5a1b",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a6745527-e654-48ce-8a07-b9bfa67dc23b",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "882bced4-3f19-455f-b4ec-ef6f53ee8658",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "11825d5d-b276-4ace-8c80-593ff6a39df1",
+    "source": "882bced4-3f19-455f-b4ec-ef6f53ee8658",
+    "target": "a3b305bd-e66e-4acc-bf19-7ec30f31e2ec",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "c00aa715-a77e-428c-85e2-f261da582ad6",
+    "source": "a3b305bd-e66e-4acc-bf19-7ec30f31e2ec",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "065b75c6-43e5-4043-aed3-61de87a70452",
+    "source": "a3b305bd-e66e-4acc-bf19-7ec30f31e2ec",
+    "target": "3e290207-d5c1-48d9-baa8-5d7cf5c46351",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "00f0ab44-fb2c-468f-bd41-a7c32ab0d393",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "9cc150a9-1474-4112-b101-d7460f1603b1",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "858cbb55-6ff5-4466-a73e-09facf32ba67",
+    "source": "9cc150a9-1474-4112-b101-d7460f1603b1",
+    "target": "1c862ba8-678d-4ec4-a1b3-8ad9675acbc4",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "b64db2ef-7594-403f-a7fa-28a827e28730",
+    "source": "1c862ba8-678d-4ec4-a1b3-8ad9675acbc4",
+    "target": "cadd2aea-306d-488e-8b72-04376fc603f5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "6fc15ab9-40b7-466a-b792-f9cafd99ac1f",
+    "source": "1c862ba8-678d-4ec4-a1b3-8ad9675acbc4",
+    "target": "dbfb1237-a072-4d4d-8f70-9d6fabeb1bd9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a57cfebb-cae9-4bfd-9978-e0697eaecf09",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "3c40e03d-750e-4e33-a72d-edd092987d3e",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "c60c4017-2681-4f7a-846f-166898c73d21",
+    "source": "3c40e03d-750e-4e33-a72d-edd092987d3e",
+    "target": "79d6cc21-43ac-474a-8f2c-6b335c0cd7ca",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "97fbe367-df4e-4cd7-8e09-c90a27f27405",
+    "source": "79d6cc21-43ac-474a-8f2c-6b335c0cd7ca",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "957344d6-7533-4f40-b818-abaf607b4916",
+    "source": "lack of insights to predict churn and deflect cancellation attempts",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "1bdc3e67-9829-453f-a446-037abbd0ddbd",
+    "source": "inability to offer flexible discounts and trials to users",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "4e058499-3ca3-4835-ac36-924a3cb0c57b",
+    "source": "inability to scale and test multiple pricing structures",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "3362445c-4a8f-45c8-b3bd-7bb058510d46",
+    "source": "lack of flexibility in managing checkout flows and user interfaces",
+    "target": "Self-Service and Customizable Checkout Flows",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "819990f8-36ca-430c-80fe-93b68d3a87cd",
+    "source": "difficulties in managing feature entitlements for different plans",
+    "target": "Entitlements Managment",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "e55a0267-ccc1-4634-bb87-99b0008443a8",
+    "source": "concerns over secure transactions and compliance with regulations",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.8408956527709961
+  },
+  {
+    "id": "d3894c9b-0166-4a27-aa1f-18ba7e056348",
+    "source": "0d7b9ef8-a80c-4265-9346-aa58d0940df2",
+    "target": "5250e1e3-7063-4f7f-9595-0cdc17e4dee9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "496a8685-c9c0-41f0-9279-84b0d9a21416",
+    "source": "5250e1e3-7063-4f7f-9595-0cdc17e4dee9",
+    "target": "f70c747c-8c26-44be-9ec3-5b994629fd9e",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "327f5e44-35d2-4b8c-9521-81af08d45da8",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "38e24af8-c317-4171-a60e-9d918ad1a720",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "db39d4ec-a215-4802-8d92-9423de822e60",
+    "source": "38e24af8-c317-4171-a60e-9d918ad1a720",
+    "target": "387c2989-621f-4a18-ab87-9e4e7b5255fd",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "6cd3526b-a49f-45c1-a2d4-e3d6d7098786",
+    "source": "387c2989-621f-4a18-ab87-9e4e7b5255fd",
+    "target": "7cbd12ee-4208-4869-a65a-5143b16a0efd",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "fdf12f00-d702-4aeb-b41d-ca4067f16606",
+    "source": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
+    "target": "3b12167c-3fd6-4bd7-8d8b-063fb98c45ec",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "e3d6f577-e117-475a-8b37-b736b1d6c507",
+    "source": "3b12167c-3fd6-4bd7-8d8b-063fb98c45ec",
+    "target": "2d093e40-e800-420b-a0a2-8ab590066afd",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "823d4611-3ebc-458b-a42f-47481ea3aa2c",
+    "source": "2d093e40-e800-420b-a0a2-8ab590066afd",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "946d1d54-5433-47c2-94eb-8b250e67db57",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "f1cbb6b2-3d7a-4d2b-be4d-7956698d39d4",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "264c8bb1-335e-47fd-a0a0-67272fb22786",
+    "source": "f1cbb6b2-3d7a-4d2b-be4d-7956698d39d4",
+    "target": "22d4e056-3922-43d9-85f4-a5cb3cdf4c4a",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "45325713-c5bb-445b-aeb8-c33bba7cc9b9",
+    "source": "22d4e056-3922-43d9-85f4-a5cb3cdf4c4a",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "035eda95-147b-419b-95fe-29e870581ec6",
+    "source": "22d4e056-3922-43d9-85f4-a5cb3cdf4c4a",
+    "target": "f449661c-a3f8-490e-856e-9ebd6951a520",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b5ba9187-291b-4709-9688-e6a09bd5821b",
+    "source": "27486f94-b405-475e-ba08-deb811959292",
+    "target": "69d85968-f993-43e7-aa77-a5e1077eee7f",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "ec42d4c0-6c6e-4149-b5b5-74979423dac8",
+    "source": "69d85968-f993-43e7-aa77-a5e1077eee7f",
+    "target": "3aeec9fa-1b2f-44ef-a7a1-a8127fd54b7b",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "a7607bef-9816-448e-87b4-a3ba156fca11",
+    "source": "3aeec9fa-1b2f-44ef-a7a1-a8127fd54b7b",
+    "target": "02412d6c-9fa0-4bc6-a1c0-b33296b12928",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5711372e-cf70-4d66-b898-601a401e4669",
+    "source": "3aeec9fa-1b2f-44ef-a7a1-a8127fd54b7b",
+    "target": "1e52e4ab-5469-4761-ace1-09c4c1c37e18",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "00d817dd-3917-4404-b85b-dd342f903e6f",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "ebffefc5-2bd7-4a5e-bc7d-95921f488949",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "be082fe6-84cf-4916-a7e8-a70c38dcf757",
+    "source": "ebffefc5-2bd7-4a5e-bc7d-95921f488949",
+    "target": "fcf582a7-f90d-4539-9c9c-c292341de02e",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "d0e26ff6-871c-479c-94d1-95831cd7bdcf",
+    "source": "fcf582a7-f90d-4539-9c9c-c292341de02e",
+    "target": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "b4541b03-e36f-4fd1-ab42-100cce002eb1",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "610ea79c-53b6-4073-8522-6b3de6fc4f51",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "e0ff1445-f494-496d-801f-8ad03dd0189d",
+    "source": "610ea79c-53b6-4073-8522-6b3de6fc4f51",
+    "target": "76ba6df9-1d9a-42e9-bfa8-11375153b12d",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "0ec114ae-2012-467f-96f2-aedeeba8d982",
+    "source": "76ba6df9-1d9a-42e9-bfa8-11375153b12d",
+    "target": "21fda13a-ed7b-4bc1-9137-8bc75b1d33f5",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "0ea40c0f-66a8-4bcc-b726-b115c506d96f",
+    "source": "76ba6df9-1d9a-42e9-bfa8-11375153b12d",
+    "target": "f449661c-a3f8-490e-856e-9ebd6951a520",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "1c549970-6230-499c-ac58-ab3b5b0f149f",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "767f67f6-7ba3-47f0-8ab0-ac8c9ba857c6",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "ac040a59-009a-428a-819e-b0c73e0a26fa",
+    "source": "767f67f6-7ba3-47f0-8ab0-ac8c9ba857c6",
+    "target": "8ea34a9e-5374-42a1-802a-da4e21ce01f1",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "681631d1-951b-4838-aeb3-dfadb5dc25a6",
+    "source": "8ea34a9e-5374-42a1-802a-da4e21ce01f1",
+    "target": "1e52e4ab-5469-4761-ace1-09c4c1c37e18",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "2f91543d-6559-4236-86f9-be3d1ac8b6a7",
+    "source": "high churn rate and low customer lifetime value",
+    "target": "Customer Retention through Reporting and Dunning",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "47d4d347-ca00-4e5a-9faa-d69cf04f49d9",
+    "source": "difficulty in accurate and compliant revenue recognition",
+    "target": "Revenue Recognition with ASC606",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "604bef63-a5db-46a5-a6ae-a8ed6fc7faba",
+    "source": "poor user experience in subscription changes and checkout",
+    "target": "Subscription Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "940fcb78-fb6c-4eab-b2ee-18a1e28b13c1",
+    "source": "inability to test and scale different pricing structures",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "0079c414-d6f3-4454-b89f-ee7c7a8d5835",
+    "source": "concerns over transaction security and regulatory compliance",
+    "target": "Security & Compliance",
+    "type": "solves",
+    "weight": 0.764218270778656
+  },
+  {
+    "id": "35717df8-0caa-4635-a25c-6cb148cae766",
+    "source": "inability to offer flexible discounts and trials",
+    "target": "Deep Discounting and Trial Management",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "dd520006-a23f-4d90-9d34-35b88d00e41b",
+    "source": "difficulty in managing feature access across different plans",
+    "target": "Customizable Pricing Models",
+    "type": "solves",
+    "weight": 0.75
+  },
+  {
+    "id": "93a15f2a-9585-4981-b23d-7fc43ddf5239",
+    "source": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "target": "69f5a2e6-c77d-417b-a027-d12295ca0a38",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "197c3c8f-318c-4ad2-975b-2f6421e5cd8c",
+    "source": "69f5a2e6-c77d-417b-a027-d12295ca0a38",
+    "target": "48b75f8f-7e08-4ab7-951f-6dd08acd2168",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "215ccdbf-a113-4e99-a15b-0446838edf1f",
+    "source": "48b75f8f-7e08-4ab7-951f-6dd08acd2168",
+    "target": "4b0cc925-4a84-4d1b-b282-ee18aaab0ef0",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "dea9bec6-5b8b-490c-91f5-1c4345635695",
+    "source": "b1971516-cb27-49c8-87dc-304e11dd50e8",
+    "target": "7499f45a-482a-4bff-99c8-ca0cc0d1610c",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "faf6953c-0ef6-4292-8d1d-9fd06edce7dc",
+    "source": "7499f45a-482a-4bff-99c8-ca0cc0d1610c",
+    "target": "24284220-4682-4152-bbeb-1f69b8a30376",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "53b69504-1dbe-425e-be63-42a1c0c48f1a",
+    "source": "d577b6dc-3f48-48c6-978e-d3e8dadcaa5a",
+    "target": "38de29ac-befd-4d47-8519-0ed914908562",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "95a23394-50c6-478f-8093-3a69e68d78ff",
+    "source": "38de29ac-befd-4d47-8519-0ed914908562",
+    "target": "ccdb46a4-a3a4-454a-a886-16d2a1ed0c66",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "1bacd5e0-d6f8-485e-bcad-ff4e76cd2423",
+    "source": "287033ed-38dd-4331-abfe-06213254adfd",
+    "target": "f53b7aad-01aa-44dc-90c2-9c780a6b9971",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "6183d865-f899-4f8d-8bda-15c92fb564e5",
+    "source": "f53b7aad-01aa-44dc-90c2-9c780a6b9971",
+    "target": "d866e514-da8b-439a-b2be-f486057b6f99",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "a4539a0b-0d66-4425-8759-973fbbc66353",
+    "source": "d866e514-da8b-439a-b2be-f486057b6f99",
+    "target": "c62bada3-b073-48b4-bba3-7ae152bb8443",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "4ceb81a3-8687-4da7-8366-7f04d614d6d9",
+    "source": "a9923ac4-a5a5-4336-9ec8-44b9e8ad5139",
+    "target": "cb41aa55-c332-4fae-8300-44756a2f0fb9",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "420462e1-7c8d-44dc-85f3-cfcd0281f6be",
+    "source": "cb41aa55-c332-4fae-8300-44756a2f0fb9",
+    "target": "a5c06bd0-5a19-46f0-8740-0e9144ecb377",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "2b128007-3536-47b5-a22a-0a305fce3fd0",
+    "source": "cb41aa55-c332-4fae-8300-44756a2f0fb9",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "142b8d99-fede-46b9-8aed-1942baa0ec79",
+    "source": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
+    "target": "acd7d79f-72b0-4ce6-9dbb-7a2db5cbab6b",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "b8b479bc-f411-44e3-ad60-f1585be50309",
+    "source": "acd7d79f-72b0-4ce6-9dbb-7a2db5cbab6b",
+    "target": "befd761d-03a0-445a-8496-3572f771d343",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "ff16f6b9-dba8-4cbe-bdc9-f24a26c9348b",
+    "source": "befd761d-03a0-445a-8496-3572f771d343",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "7bf80b16-263b-4fd2-97d0-7c5615c256b1",
+    "source": "befd761d-03a0-445a-8496-3572f771d343",
+    "target": "c37dbb84-9a95-4bb3-af94-c3859b4966a9",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "a294e0fc-3c88-4ffa-a83e-040a378e5165",
+    "source": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "target": "52be83b8-9b51-42eb-8031-ce37857641f6",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "e85f1066-0276-43f9-950d-3c11e303a0e5",
+    "source": "52be83b8-9b51-42eb-8031-ce37857641f6",
+    "target": "04fcc1f5-22e4-4ee5-b0bc-00e4decf0f1d",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "730162d7-ac12-43d2-a013-9d96aed4f93e",
+    "source": "04fcc1f5-22e4-4ee5-b0bc-00e4decf0f1d",
+    "target": "3110d6a0-90a3-4384-b6a2-c040d060c360",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "1e68632a-8e4d-43e9-acd6-8bc7feab3dd8",
+    "source": "04fcc1f5-22e4-4ee5-b0bc-00e4decf0f1d",
+    "target": "9ca51d62-b311-4bb4-bf8e-6d26d4a595c7",
+    "type": "performed_by",
+    "weight": 1
+  },
+  {
+    "id": "5c3d0866-3694-4d4a-b814-5c8d0b88ad06",
+    "source": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
+    "target": "f5b6dca5-9d99-43fe-9586-274c8141c2f8",
+    "type": "solves",
+    "weight": 1
+  },
+  {
+    "id": "420028b1-33da-4332-b8d4-528511e68d03",
+    "source": "f5b6dca5-9d99-43fe-9586-274c8141c2f8",
+    "target": "78cfb3ff-ed85-4f41-8566-110c18bd6e8f",
+    "type": "addresses",
+    "weight": 1
+  },
+  {
+    "id": "324fda93-c412-43a4-a7ff-3dd8e8658918",
+    "source": "78cfb3ff-ed85-4f41-8566-110c18bd6e8f",
+    "target": "3b088f12-ebdf-4ea4-80c6-8d311a1d4789",
+    "type": "performed_by",
+    "weight": 1
+  }
+]
