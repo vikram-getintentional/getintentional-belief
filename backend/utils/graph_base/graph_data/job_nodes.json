@@ -402,5 +402,1597 @@
   {
     "id": "78cfb3ff-ed85-4f41-8566-110c18bd6e8f",
     "description": "manage feature entitlements"
+  },
+  {
+    "id": "6af3398d-2988-4028-afdf-1b7c58f9b94c",
+    "description": "pricing strategy and management"
+  },
+  {
+    "id": "4a04f2db-dbb2-4705-a53e-3d955c1d4753",
+    "description": "revenue recognition and accounting"
+  },
+  {
+    "id": "d860b120-7561-47f2-a298-71903e23fa54",
+    "description": "user experience and checkout flow design"
+  },
+  {
+    "id": "80425d7f-d599-4038-929b-a0253ed556a6",
+    "description": "security and compliance management"
+  },
+  {
+    "id": "6255cd64-2ea8-48b8-b708-af82236f3ce7",
+    "description": "product management and feature planning"
+  },
+  {
+    "id": "2032ee23-a798-4e16-bdde-2c594c09d6fe",
+    "description": "overseeing subscription management and invoicing"
+  },
+  {
+    "id": "20ceabae-f9a6-461d-95ee-1a7961e03fb9",
+    "description": "managing customer retention strategies"
+  },
+  {
+    "id": "e5dac0f1-33d6-4690-8ae0-96de49e3cadc",
+    "description": "managing financial reporting and compliance"
+  },
+  {
+    "id": "494e57c4-76d8-40e8-9c18-ff4d22e8fc05",
+    "description": "managing promotional and trial offers"
+  },
+  {
+    "id": "09ef9358-a1be-4b4e-8163-418f1d8e622a",
+    "description": "designing and customizing checkout processes"
+  },
+  {
+    "id": "e005cfec-918f-4a51-b5d8-06fd6974fdba",
+    "description": "managing product features and entitlements"
+  },
+  {
+    "id": "032c4135-3faf-4723-929a-c2b184df9139",
+    "description": "subscription manager"
+  },
+  {
+    "id": "369c0d82-097c-4e25-90b3-c8a5fb2c39ae",
+    "description": "pricing strategist"
+  },
+  {
+    "id": "4a8bf776-c6fa-41a7-9b8c-3a66e2d4e48a",
+    "description": "customer success manager"
+  },
+  {
+    "id": "e178a0e0-10cc-45dc-883f-376a384e3ba6",
+    "description": "accountant"
+  },
+  {
+    "id": "2277f54d-5d11-40ab-b629-a75e8c8f5695",
+    "description": "sales manager"
+  },
+  {
+    "id": "0f4bd4a3-d245-437d-8da4-4403f5eae35b",
+    "description": "product manager"
+  },
+  {
+    "id": "ea232146-0185-47f2-8d6a-c086f5997980",
+    "description": "compliance officer"
+  },
+  {
+    "id": "3dfca970-d8e8-433d-8d9c-9249d65778ce",
+    "description": "overseeing subscription management"
+  },
+  {
+    "id": "6dec9116-07b0-47ff-b531-a5c3569f93d5",
+    "description": "designing and implementing pricing models"
+  },
+  {
+    "id": "65d664d9-9d1c-4d96-97cc-64dc6d039015",
+    "description": "analyzing customer behavior and retention"
+  },
+  {
+    "id": "2c6a8518-29b3-411d-addb-766c6021e21a",
+    "description": "ensuring financial compliance and accuracy"
+  },
+  {
+    "id": "f0e2577c-b58e-4eda-97aa-ee9bd15975a1",
+    "description": "creating sales promotions and trials"
+  },
+  {
+    "id": "17c14f46-ccff-4d07-ad94-b4db8c47325f",
+    "description": "designing and implementing customer-facing interfaces"
+  },
+  {
+    "id": "102cc09f-c6f3-4e87-9ef7-e4abb85934e2",
+    "description": "maintaining system security and regulatory compliance"
+  },
+  {
+    "id": "d2c4b72a-90d8-4a48-8ec0-104510c7b7fd",
+    "description": "managing product features and access levels"
+  },
+  {
+    "id": "0c0dbf3d-eeaf-47f8-ac04-2922b1f7d83e",
+    "description": "creating and managing promotional offers"
+  },
+  {
+    "id": "30e41335-e5f4-4530-87a8-c8acb971f6c3",
+    "description": "improving user experience at checkout"
+  },
+  {
+    "id": "98e17806-c701-40a4-aa47-ef62e6ef0bee",
+    "description": "determining feature access for different plans"
+  },
+  {
+    "id": "00b1e387-ed00-4a01-838e-2b0d02f47e74",
+    "description": "user interface management and checkout flow design"
+  },
+  {
+    "id": "9bb5e801-1a24-4574-92ae-3602bc5d1da7",
+    "description": "product feature management"
+  },
+  {
+    "id": "e10e442c-1570-4b67-8ce8-04d44eee7c32",
+    "description": "develop and implement pricing strategies"
+  },
+  {
+    "id": "0b6c4c7f-c15a-4487-aa17-cbf4aa3f0672",
+    "description": "ensure financial compliance and accurate reporting"
+  },
+  {
+    "id": "fe81d959-3f48-4835-ad03-4f8cf7c5f373",
+    "description": "develop and implement sales strategies"
+  },
+  {
+    "id": "8458bf16-2f24-41a8-899a-839ce136473a",
+    "description": "design and implement user interface and experience"
+  },
+  {
+    "id": "ac18d7b9-e7d1-4c38-ac2b-a0d065c3d64f",
+    "description": "managing product features and plans"
+  },
+  {
+    "id": "9f8a9c8a-022f-4ff4-b9a4-76e91e3a6e8e",
+    "description": "manage subscriptions, billing, and recurring invoices"
+  },
+  {
+    "id": "858b7068-bcfc-4174-8c58-f3da57321f22",
+    "description": "create and implement pricing models"
+  },
+  {
+    "id": "6657a22b-edc1-426c-8bf6-e39561603193",
+    "description": "ensure gaap compliance and prepare for audits"
+  },
+  {
+    "id": "24bd7a44-8a81-4eb9-91c7-27e25ae3d744",
+    "description": "design and optimize checkout process"
+  },
+  {
+    "id": "7832497e-4e52-4b65-86f9-d05d3144cc2c",
+    "description": "manage security protocols and compliance checks"
+  },
+  {
+    "id": "9500fa07-59cc-470f-8bec-e52acec72bf4",
+    "description": "define and manage product feature entitlements"
+  },
+  {
+    "id": "768e0748-698f-4943-b175-ddd1b1d58afe",
+    "description": "customer retention and churn analysis"
+  },
+  {
+    "id": "fc8b610f-d9b5-4f2b-ae5c-fbf22b001c69",
+    "description": "customer experience and checkout flow optimization"
+  },
+  {
+    "id": "e01bd7ca-829f-4f8b-a3e5-2e1e8863031f",
+    "description": "product management and feature access control"
+  },
+  {
+    "id": "17a86e90-3dcf-46d3-a275-2d78c98be46c",
+    "description": "managing subscriptions, invoicing, cancellations, pauses, upgrades, and downgrades"
+  },
+  {
+    "id": "b85346d7-3b66-4d29-aa66-7fd0fb6e52c6",
+    "description": "managing revenue recognition and compliance"
+  },
+  {
+    "id": "dc226952-01f7-456a-b664-5d1e4853e925",
+    "description": "creating and managing discounts and trials"
+  },
+  {
+    "id": "e9ee050b-2f24-40e9-b848-44cbd6fd77bb",
+    "description": "managing customer self-service options and checkout flows"
+  },
+  {
+    "id": "8a1f5706-ada6-454f-a93f-50fb8120a5c0",
+    "description": "managing product features and pricing"
+  },
+  {
+    "id": "5f240ce0-2d5a-4479-a9cc-7a23059fdf64",
+    "description": "oversee and manage subscription processes"
+  },
+  {
+    "id": "58f24b97-20e6-4030-a39b-8383fc2e38dc",
+    "description": "manage revenue recognition and ensure compliance"
+  },
+  {
+    "id": "885edfd0-2598-4fe4-8431-866a4c2d67b5",
+    "description": "develop and manage discount and trial offerings"
+  },
+  {
+    "id": "20dbc58e-dec8-48d9-8f25-47dc93b2c817",
+    "description": "design and implement user interfaces and checkout flows"
+  },
+  {
+    "id": "3f7d7669-01f2-4a44-b234-55ee7d33a487",
+    "description": "manage security protocols and ensure compliance"
+  },
+  {
+    "id": "011e6833-251e-492e-90db-4755bc3896ca",
+    "description": "manage product features and access levels"
+  },
+  {
+    "id": "64cf07ab-c81f-47e1-a63f-857c0f8ccb77",
+    "description": "managing subscriptions, billing, and invoicing"
+  },
+  {
+    "id": "42f1f448-75de-48c8-aa39-be1129ce7274",
+    "description": "ensuring compliance with accounting standards"
+  },
+  {
+    "id": "520ca778-b96e-439a-81aa-d2a08d39eddd",
+    "description": "creating promotional offers and managing trials"
+  },
+  {
+    "id": "1916c70a-7774-4e50-a996-4adcd808cb03",
+    "description": "improving customer experience and reducing friction in the checkout process"
+  },
+  {
+    "id": "00871503-45dd-40ca-8010-a3674cc1d907",
+    "description": "maintaining security and compliance"
+  },
+  {
+    "id": "5d471b92-b540-4cc5-83df-1ac0461ce75c",
+    "description": "customer retention management"
+  },
+  {
+    "id": "1910d42d-6380-45c9-a627-baf2275f7205",
+    "description": "revenue management and compliance"
+  },
+  {
+    "id": "bd630567-2755-4a70-b043-a3da1218c6eb",
+    "description": "user experience and checkout optimization"
+  },
+  {
+    "id": "963c1e79-04b9-4c41-bec5-0912570ca6ae",
+    "description": "product management and pricing"
+  },
+  {
+    "id": "f940b813-0254-4717-a040-6a79239a3f6f",
+    "description": "handling subscription operations such as billing, invoicing, cancellations, pauses, upgrades, downgrades"
+  },
+  {
+    "id": "27f76d96-44aa-42d0-bd36-265c60841f0a",
+    "description": "analyzing customer behavior, predicting churn, managing customer retention"
+  },
+  {
+    "id": "21cc42bd-0b0e-4c6f-9002-8bd722a230a6",
+    "description": "managing revenue recognition, ensuring gaap compliance and audit readiness"
+  },
+  {
+    "id": "90833b68-0ec7-495d-99a0-096149dc2ecc",
+    "description": "creating and managing discount offers and trials"
+  },
+  {
+    "id": "872a9cff-080e-4cc1-8dfa-bbd8025992a6",
+    "description": "managing feature entitlements and testing price sensitivity"
+  },
+  {
+    "id": "92bf59ec-c183-4eef-b833-1b8e557a22fe",
+    "description": "pricing strategy"
+  },
+  {
+    "id": "de0e6438-771f-4af9-bc8f-8d6873a84c99",
+    "description": "user interface management"
+  },
+  {
+    "id": "f6f7a9c9-66e9-42c1-a8f1-4f81bc949d84",
+    "description": "revenue management"
+  },
+  {
+    "id": "71bd8bf4-52bf-4a78-9ba4-0087e4c797c3",
+    "description": "product management and ux design"
+  },
+  {
+    "id": "2d0460e9-038f-466e-95ef-86f3341548a0",
+    "description": "developing and implementing pricing strategies"
+  },
+  {
+    "id": "45d28733-d7a4-4138-a3dd-87d729829024",
+    "description": "ensuring accurate and timely revenue recognition"
+  },
+  {
+    "id": "c1b8b59f-807a-4bfa-a0d7-e28dd8b0c20e",
+    "description": "creating and managing discount and trial offers"
+  },
+  {
+    "id": "ef28a472-7ab9-4f01-b810-4a7ac7221889",
+    "description": "designing and implementing user-friendly checkout flows"
+  },
+  {
+    "id": "5dcc75ba-adc0-4bbb-b291-455ad0808705",
+    "description": "ensuring data security and regulatory compliance"
+  },
+  {
+    "id": "588368be-44a0-46a0-b3b0-a5d91e68da05",
+    "description": "managing and monitoring subscriptions"
+  },
+  {
+    "id": "3effdd17-b076-4f3a-90fb-c3a99c8499fb",
+    "description": "setting up pricing models"
+  },
+  {
+    "id": "2d198022-8020-4ff7-a34b-54d2f273e384",
+    "description": "ensuring accurate revenue recognition"
+  },
+  {
+    "id": "d279c646-7bac-4fa8-8678-68bbc2ecd255",
+    "description": "managing sales promotions and trials"
+  },
+  {
+    "id": "31769624-8c92-44b0-a9c0-ef206d5e2ac6",
+    "description": "designing and implementing user interfaces"
+  },
+  {
+    "id": "7a49dced-293e-4f71-92c5-21c4b76607e9",
+    "description": "managing product features and access rights"
+  },
+  {
+    "id": "9f6e1af7-61b6-49de-9725-54a378f9eda3",
+    "description": "overseeing and managing subscription processes"
+  },
+  {
+    "id": "cf51b0df-3f2a-4891-aea2-a50aad3f34f2",
+    "description": "creating and implementing pricing strategies"
+  },
+  {
+    "id": "e449771f-fcbd-484a-8918-3dba05702ff3",
+    "description": "managing sales promotions and trial offers"
+  },
+  {
+    "id": "b8d371a1-b07e-42d3-a8e8-0f4079d97fe5",
+    "description": "improving user experience in checkout process"
+  },
+  {
+    "id": "04c5a2a1-cd7f-4602-bc88-ca45b4097778",
+    "description": "ensuring data security and compliance"
+  },
+  {
+    "id": "6749fb4b-111d-49c2-8b8e-98c5b42a8b6c",
+    "description": "oversee the subscription process"
+  },
+  {
+    "id": "c4a144c2-1b44-47a8-b7de-868545b77c5b",
+    "description": "create and manage pricing models"
+  },
+  {
+    "id": "70fcf626-2b33-4d99-a705-fcd4001821fc",
+    "description": "monitor customer retention and churn"
+  },
+  {
+    "id": "745c2ef5-c289-4b04-9d95-781fd9560787",
+    "description": "design and manage checkout processes"
+  },
+  {
+    "id": "f8843790-6572-4f64-9485-41de793eb270",
+    "description": "oversee security and compliance"
+  },
+  {
+    "id": "19c723ae-08cf-41c6-b9b8-471b270520cd",
+    "description": "manage product features and bundling"
+  },
+  {
+    "id": "951c74d2-6da3-49a8-978b-c43c93740ca3",
+    "description": "managing subscription lifecycle"
+  },
+  {
+    "id": "07b32e0b-8cd8-49b9-a8a0-45685f148f9c",
+    "description": "managing customer churn and retention"
+  },
+  {
+    "id": "22b719b2-5486-4509-9c13-218d65c89e3f",
+    "description": "managing customer checkout experience"
+  },
+  {
+    "id": "2024c35a-8b34-494d-ba5d-af0c0c08e30b",
+    "description": "customer retention and revenue recovery"
+  },
+  {
+    "id": "b2e17ce2-cdba-41ab-9288-711bf5f14e8c",
+    "description": "sales and trial management"
+  },
+  {
+    "id": "b1c465c1-e35a-4118-a7f8-a20800a04d2a",
+    "description": "product management and feature testing"
+  },
+  {
+    "id": "951b5f17-b056-4aa0-b2c8-2d16b434b76f",
+    "description": "managing and overseeing subscription processes"
+  },
+  {
+    "id": "ddefe2f7-3a0e-4eff-80dc-ac6c5cda755b",
+    "description": "ensuring revenue recognition accuracy and compliance"
+  },
+  {
+    "id": "42b0d357-2ceb-4ad3-8124-6fdee8f092f7",
+    "description": "managing sales and customer success initiatives"
+  },
+  {
+    "id": "5118be3c-d195-4bcc-8ae1-9d858fc9fabb",
+    "description": "designing and implementing customer-facing processes"
+  },
+  {
+    "id": "6bdc89cb-56b8-4eb0-88a1-37bff6a2474a",
+    "description": "ensuring security and compliance in business operations"
+  },
+  {
+    "id": "6513b284-87a8-44f7-8973-24085aa53f25",
+    "description": "managing product features and plan entitlements"
+  },
+  {
+    "id": "9276f71b-f98f-4f7d-80fc-ecba37d26cb5",
+    "description": "product feature and pricing management"
+  },
+  {
+    "id": "758e8e2b-1afc-4545-9c24-88b2acc32279",
+    "description": "managing and overseeing subscription services"
+  },
+  {
+    "id": "369f4576-7a83-4149-bce9-1324aac76137",
+    "description": "setting and managing pricing models"
+  },
+  {
+    "id": "3a417ecd-14cb-4519-9c69-0633f690cd29",
+    "description": "monitoring customer retention and churn"
+  },
+  {
+    "id": "78df00cd-f4ba-492a-8d98-e57cff4dc89f",
+    "description": "ensuring revenue recognition compliance"
+  },
+  {
+    "id": "0a69277d-f246-45d2-9d51-dbc61cf0357d",
+    "description": "managing promotional offers and trials"
+  },
+  {
+    "id": "a5656903-093b-4a2e-a912-6ec5f99b82ec",
+    "description": "optimizing the checkout process"
+  },
+  {
+    "id": "cab1748f-b866-40c0-aacd-e25bf4c33405",
+    "description": "ensuring transaction security and compliance"
+  },
+  {
+    "id": "54d32f5d-201a-4fdf-9689-341d96215d34",
+    "description": "pricing strategy manager"
+  },
+  {
+    "id": "abd22d9e-4738-4e95-9d12-e4180fb00a15",
+    "description": "ui/ux designer"
+  },
+  {
+    "id": "9cf312c6-d377-4f9b-96d6-dfe53995f2fa",
+    "description": "security compliance officer"
+  },
+  {
+    "id": "7090fa50-9f8b-4d7e-9a38-e49f6a4478b7",
+    "description": "manage subscription plans"
+  },
+  {
+    "id": "0977f4d4-ba35-4ed2-aa45-89a7d97c477a",
+    "description": "develop pricing strategies"
+  },
+  {
+    "id": "e9b9ed80-7bac-4ff4-bcd7-deb781707595",
+    "description": "analyze customer behavior and develop retention strategies"
+  },
+  {
+    "id": "1d6c8b51-180c-4a11-b606-3184667ebdf2",
+    "description": "manage financial statements and audits"
+  },
+  {
+    "id": "cb613112-da2e-4305-adff-9fe042834a09",
+    "description": "create and manage promotional campaigns"
+  },
+  {
+    "id": "be9b3968-7cd2-4db7-8fe9-f087d10eb3ee",
+    "description": "design and implement user interfaces"
+  },
+  {
+    "id": "02ff336e-4719-420c-ba7a-49bd6de7e458",
+    "description": "manage product features and access rights"
+  },
+  {
+    "id": "41ae1ffc-40a5-4158-b91b-2d60ea289bb2",
+    "description": "manage and oversee subscription scenarios"
+  },
+  {
+    "id": "24572156-d180-4881-9c08-63d8f6527e2e",
+    "description": "design and manage checkout process"
+  },
+  {
+    "id": "9e8e3fc5-207e-4f22-893b-83935eff196d",
+    "description": "ensure transaction security and regulatory compliance"
+  },
+  {
+    "id": "89d2cdf7-8a8a-4162-a127-9363186820f7",
+    "description": "manage product features and entitlements"
+  },
+  {
+    "id": "5e6afc21-8efe-4dcb-baeb-49f2793484f9",
+    "description": "manage and monitor subscription services"
+  },
+  {
+    "id": "357c66b1-ffbd-4119-93e0-342eec86263e",
+    "description": "create and manage discount and trial offers"
+  },
+  {
+    "id": "51bf1362-f451-4bc9-bbb0-6150f7f65074",
+    "description": "design and implement user interfaces for checkout"
+  },
+  {
+    "id": "cf4fdc43-e55e-4dd8-b859-b5d06536b2c1",
+    "description": "implement and monitor security measures"
+  },
+  {
+    "id": "755f07ad-af0a-44fb-a4fe-5adc79fab79a",
+    "description": "manage feature entitlements for different product plans"
+  },
+  {
+    "id": "53a6ecd7-ba8c-4e8f-ab09-3be909d2f9a6",
+    "description": "designing and implementing user interfaces for self-service and checkout"
+  },
+  {
+    "id": "aa42ce9a-ac76-49e2-b99d-e0f8ab81cef1",
+    "description": "monitor case updates and conduct legal research."
+  },
+  {
+    "id": "c028e5d6-f343-4806-9631-b5f813cd31d4",
+    "description": "coordinate and collaborate on legal cases."
+  },
+  {
+    "id": "b0c15593-f00e-4bde-a62f-b64fad164ec8",
+    "description": "track case progress and make data-driven decisions."
+  },
+  {
+    "id": "1658052e-62bd-4622-93f5-b5a4acad482a",
+    "description": "manage daily tasks, appointments, and hearings."
+  },
+  {
+    "id": "48a10c86-697f-4d2a-ab30-929446cf4236",
+    "description": "access case information and manage tasks anytime, anywhere."
+  },
+  {
+    "id": "eb5879ec-531f-4e80-9c6e-6508f6b62bc9",
+    "description": "stay ahead in the legal game by keeping track of the latest cases."
+  },
+  {
+    "id": "8c5f803c-1d04-473e-8a6d-e0d3f9a321fe",
+    "description": "ensure the security of sensitive legal information."
+  },
+  {
+    "id": "376b0e19-5909-4ff4-ab44-62738a5c47fb",
+    "description": "manage law firm, handle cases, judgments, and communicate with clients seamlessly from anywhere, anytime."
+  },
+  {
+    "id": "83457555-4d21-4f2d-ba20-41bd1d11b59d",
+    "description": "case management and legal research"
+  },
+  {
+    "id": "e8f5cd3c-f1f2-477e-9677-26c2bc853609",
+    "description": "team collaboration and task management"
+  },
+  {
+    "id": "51240bd0-894a-4b32-8702-443cabe6af12",
+    "description": "case progress tracking and decision making"
+  },
+  {
+    "id": "fe5a6b63-a174-4a2c-87e9-498394621fd6",
+    "description": "software navigation and feature utilization"
+  },
+  {
+    "id": "fa60c877-9caa-48bf-aee0-fc46dd4f26d3",
+    "description": "mobile case and task management"
+  },
+  {
+    "id": "be4b2da7-781a-41ba-ab10-014f6a582140",
+    "description": "legal research and case tracking"
+  },
+  {
+    "id": "7b2947e9-88f9-475f-a53b-b0916d34d8bc",
+    "description": "data management and privacy protection"
+  },
+  {
+    "id": "3e1939dd-0f07-4040-835b-00352b16eff8",
+    "description": "remote case management, client communication, and firm management"
+  },
+  {
+    "id": "2f431c01-8c87-4b47-bb9e-19da4f3e80ba",
+    "description": "progress tracking and decision making"
+  },
+  {
+    "id": "2c682542-66c8-4ba2-b0a1-fd920004fc0a",
+    "description": "platform navigation and information access"
+  },
+  {
+    "id": "6c7a1293-fc17-4d39-9a76-623c50aa80a7",
+    "description": "remote task management and information access"
+  },
+  {
+    "id": "e83d82b3-0c20-461d-b783-2902990466d8",
+    "description": "case tracking"
+  },
+  {
+    "id": "cc09beed-85c6-4f8a-854f-1945d3c11e01",
+    "description": "data management and security"
+  },
+  {
+    "id": "868f093f-d5e6-4811-81ee-bf12c913ceb8",
+    "description": "remote law firm management and client communication"
+  },
+  {
+    "id": "5a2b7fd5-7797-49f7-b8dd-7e0ccbf6a16d",
+    "description": "setting up e-commerce platform, managing product catalog"
+  },
+  {
+    "id": "3380de20-5f0d-447f-951e-3c2eed01951b",
+    "description": "maintaining e-commerce platform, managing growth"
+  },
+  {
+    "id": "763a82e2-fc4e-4f57-9eff-535d59315799",
+    "description": "managing orders, invoicing, and reports"
+  },
+  {
+    "id": "06d1d4b6-5dd7-4257-8c85-cd1e9973a204",
+    "description": "analyzing business performance, calculating taxes"
+  },
+  {
+    "id": "ab4d3d3c-7175-4750-a02d-c77c8d71430e",
+    "description": "improving user experience, optimizing website performance"
+  },
+  {
+    "id": "9e924f16-291b-4950-a7ac-021f2b3b9434",
+    "description": "coordinating shipments, managing inventory"
+  },
+  {
+    "id": "a620f557-b480-4833-b54f-88c059b1df49",
+    "description": "improving conversion rates, optimizing checkout process"
+  },
+  {
+    "id": "faa87fd5-6bf9-4664-86ac-c33db2dbe91e",
+    "description": "building mobile presence, attracting and retaining customers"
+  },
+  {
+    "id": "996d4af2-bde5-401f-8187-b86971462fce",
+    "description": "launching a new online store or revamping an existing one"
+  },
+  {
+    "id": "51888f38-a98d-404d-a664-7bc4f703411b",
+    "description": "scaling the online business and managing the business growth"
+  },
+  {
+    "id": "f893b8ad-e577-4e50-86df-b409745879df",
+    "description": "managing orders, invoicing, reporting, and product updates"
+  },
+  {
+    "id": "77e6cb41-79ce-4207-83e9-22fdc3a382c3",
+    "description": "analyzing business performance and calculating taxes"
+  },
+  {
+    "id": "7434f883-8e04-4f4c-9318-e2a1f39c625b",
+    "description": "improving customer experience and increasing sales"
+  },
+  {
+    "id": "ed5fad02-cd47-46a9-b624-65b545c86444",
+    "description": "managing product delivery and improving delivery times"
+  },
+  {
+    "id": "04f92bae-15bd-474a-95f1-4d45a85bc0d3",
+    "description": "improving checkout process and reducing cart abandonment"
+  },
+  {
+    "id": "9e38f960-8713-47e3-84fa-5547718bb01c",
+    "description": "attracting and retaining mobile-first customers"
+  },
+  {
+    "id": "04fa9c5e-46d1-492b-b47c-721abc42bfb7",
+    "description": "setting up an online store"
+  },
+  {
+    "id": "c794f232-5d5c-4345-9c0a-2efc9d4a4a6c",
+    "description": "scaling the business"
+  },
+  {
+    "id": "a8a520c5-5d49-47c4-aae2-9e33e0cfa646",
+    "description": "managing orders and inventory"
+  },
+  {
+    "id": "c72633be-9ad4-40d1-b0a9-6109d2e83113",
+    "description": "analyzing business performance"
+  },
+  {
+    "id": "10c6e0b1-4183-4b1f-adc6-134faa08cfd3",
+    "description": "optimizing website performance"
+  },
+  {
+    "id": "fe115502-b566-4aa4-be9f-01fa9bd69877",
+    "description": "managing shipping logistics"
+  },
+  {
+    "id": "2a6af6a0-0927-4518-88ee-15b5ab021d68",
+    "description": "improving checkout experience"
+  },
+  {
+    "id": "0eea5b7a-a034-4dd5-a6bb-a03a10c9e566",
+    "description": "expanding customer reach"
+  },
+  {
+    "id": "0d5c0312-9a5c-4d69-8e1d-ede061add9ff",
+    "description": "strategy planning and execution"
+  },
+  {
+    "id": "1c97c7c9-ec2e-4ff4-a6d3-20c06b0fc757",
+    "description": "performance evaluation and management"
+  },
+  {
+    "id": "6f836f91-748f-49b9-9d51-c25e22374783",
+    "description": "task assignment and tracking"
+  },
+  {
+    "id": "2bda6119-592d-4cf1-bdf1-f91305d43d4a",
+    "description": "employee engagement and satisfaction management"
+  },
+  {
+    "id": "666ecdc1-adb6-4397-99eb-68b0263e74c3",
+    "description": "software integration and management"
+  },
+  {
+    "id": "d944783f-b3e1-4c70-aec6-eece1ed70a97",
+    "description": "learning and development"
+  },
+  {
+    "id": "3b4fc0f7-60b5-43d1-bab5-d4a24cbdb755",
+    "description": "okr implementation and management"
+  },
+  {
+    "id": "9fdcd7c5-7cda-4813-aaef-c4259194c692",
+    "description": "goal setting and tracking"
+  },
+  {
+    "id": "964e4eca-69df-4f6d-aed3-a9713697241a",
+    "description": "strategy execution and goal alignment"
+  },
+  {
+    "id": "0493d35c-d7c2-407a-8a42-2e618cffc91e",
+    "description": "performance tracking and management"
+  },
+  {
+    "id": "663ec4f6-981f-439a-80f7-6920ff9e12cb",
+    "description": "task organization and alignment"
+  },
+  {
+    "id": "16f6c733-c6e7-4a21-9bef-2e7414f975e9",
+    "description": "employee engagement and satisfaction improvement"
+  },
+  {
+    "id": "e03637d2-cc65-44c2-925e-b012217859f7",
+    "description": "integration management"
+  },
+  {
+    "id": "00cf2f8a-0b5b-42b3-92d5-9c1ff13e217c",
+    "description": "okr learning and understanding"
+  },
+  {
+    "id": "ab730ccd-fdb7-4715-9880-d0f8c34bdfb3",
+    "description": "okr implementation and support"
+  },
+  {
+    "id": "6edcb357-84e6-4317-acc6-b662f1f64cf9",
+    "description": "ai-driven goal management and strategic execution"
+  },
+  {
+    "id": "9e86c21d-ee34-409a-88db-5ae0e326a086",
+    "description": "strategy formulation and execution"
+  },
+  {
+    "id": "fa096327-c733-4955-998c-cdddc6d334eb",
+    "description": "employee engagement and satisfaction monitoring"
+  },
+  {
+    "id": "c3a0cf89-8c2f-451a-a35b-21e28c58580a",
+    "description": "system integration and management"
+  },
+  {
+    "id": "adcc39df-3735-4df3-85e0-c05597463455",
+    "description": "strategic planning and goal setting"
+  },
+  {
+    "id": "883f5ce2-0840-41a4-89b3-b8f399966383",
+    "description": "employee engagement and satisfaction"
+  },
+  {
+    "id": "d576eb6c-75dd-4192-b5e0-0d800eb97fbb",
+    "description": "software integration and functionality enhancement"
+  },
+  {
+    "id": "84ed38a1-b415-4a35-8251-a4872a767360",
+    "description": "learning and understanding okrs"
+  },
+  {
+    "id": "62f3104b-4002-4769-840f-1fa166c2c32d",
+    "description": "strategic execution and goal management"
+  },
+  {
+    "id": "59d2bf41-d857-453a-a6e8-09f1b4f3afb4",
+    "description": "team performance management"
+  },
+  {
+    "id": "8a424c6e-7445-4c5e-9a01-d0f0febfda90",
+    "description": "task organization and alignment with company goals"
+  },
+  {
+    "id": "31794c7a-d224-48ce-897e-10e1c79cfd54",
+    "description": "managing software integrations"
+  },
+  {
+    "id": "eb2d7faf-12af-4cd3-9933-bf0b79b4deb1",
+    "description": "learning and development management"
+  },
+  {
+    "id": "5692d21b-cba0-4f54-9ed2-2e4d67b8b275",
+    "description": "goal management and strategic execution"
+  },
+  {
+    "id": "5cd4fcda-202d-4e15-a0b6-fda46c1060c0",
+    "description": "setting and executing company-wide strategic goals"
+  },
+  {
+    "id": "abd0a5b2-70fd-4b65-bbf9-c4bb2a8477b2",
+    "description": "monitoring and managing team performance"
+  },
+  {
+    "id": "3e1ae2c2-78d6-4d37-ae85-6e33dfe78894",
+    "description": "organizing tasks and aligning them with company goals"
+  },
+  {
+    "id": "174d9a4d-43ef-43fe-9186-c1a24e729f49",
+    "description": "creating a better workplace by boosting employee engagement and satisfaction"
+  },
+  {
+    "id": "4144a057-ee81-430b-9c51-1fdc13d20168",
+    "description": "ensuring seamless integration with popular apps for enhanced functionality"
+  },
+  {
+    "id": "32a11614-4cb0-41c8-b7e9-34b5d9650aa8",
+    "description": "implementing and managing okrs"
+  },
+  {
+    "id": "038fa159-f449-4889-a6bf-a7ec2c43cae1",
+    "description": "streamlining goal management and driving strategic execution"
+  },
+  {
+    "id": "fddea863-b5ce-4713-8664-650182c4fec2",
+    "description": "managing customer retention"
+  },
+  {
+    "id": "7b185dc9-a3d3-4112-be53-440231717a18",
+    "description": "managing discounts and product trials"
+  },
+  {
+    "id": "f62e47d9-d3c2-4bad-9f43-a36006970c22",
+    "description": "managing user experience"
+  },
+  {
+    "id": "f1579a7e-b99f-4fc4-9441-a87ee655e1c4",
+    "description": "managing plan entitlements"
+  },
+  {
+    "id": "cbadbf54-96c0-4bc8-8600-32d1897a2752",
+    "description": "checkout process management"
+  },
+  {
+    "id": "549cb8c5-3171-45a9-8b80-3d60ad4ee174",
+    "description": "manage subscriptions and invoicing"
+  },
+  {
+    "id": "ea885422-96b1-4a5e-b575-d6c724b0c75b",
+    "description": "define and implement pricing strategies"
+  },
+  {
+    "id": "b2b9412a-27b6-4623-98d6-6d62fb038f15",
+    "description": "create and manage promotional offers and trials"
+  },
+  {
+    "id": "d186a516-b16f-4b4f-83e2-5b6f396d6164",
+    "description": "ensure security and regulatory compliance"
+  },
+  {
+    "id": "19b8034e-8cc1-4461-ac98-08dd3c677984",
+    "description": "user experience and transaction management"
+  },
+  {
+    "id": "70cb115c-1430-41cf-a436-304ab6575882",
+    "description": "subscription and billing management"
+  },
+  {
+    "id": "e2544ff4-8130-49be-ae73-e8df59b1a81f",
+    "description": "setting and adjusting product pricing"
+  },
+  {
+    "id": "9e4dac0f-ed23-4141-a583-a1290ea78f6d",
+    "description": "customer retention and churn reduction"
+  },
+  {
+    "id": "27cda6af-5f86-485f-81b9-756b8de27dc9",
+    "description": "improving customer checkout experience"
+  },
+  {
+    "id": "0b1e8a5e-f3b6-4348-8103-ca37dbda6300",
+    "description": "ensuring transaction security and regulatory compliance"
+  },
+  {
+    "id": "1157678d-019d-4613-b5d4-2f28a950b880",
+    "description": "managing product feature entitlements"
+  },
+  {
+    "id": "e8959e69-d125-4bc9-8700-808d67cf0780",
+    "description": "Audit of company's financial statements"
+  },
+  {
+    "id": "de1a9ce6-0927-4f93-aa92-8863494bb79f",
+    "description": "Creating sales strategies based on product features"
+  },
+  {
+    "id": "8264c9cf-df50-42ce-811a-0e66dc6f17ce",
+    "description": "Providing support to customers based on product features"
+  },
+  {
+    "id": "565268ce-9a8c-4835-b391-16cfb33d2956",
+    "description": "Managing client relationships"
+  },
+  {
+    "id": "44cdf08c-7038-4933-8a16-aa3556178c11",
+    "description": "Answering customer queries"
+  },
+  {
+    "id": "34db8e80-b40c-4279-aa72-f67f204c62e5",
+    "description": "Promotion and advertising of products"
+  },
+  {
+    "id": "5f6e96cc-7710-4e3b-b9ec-8f146e06de1f",
+    "description": "Improving product based on customer feedback"
+  },
+  {
+    "id": "68594329-e67e-4d8b-9fa5-5be8d4f4e4b9",
+    "description": "Converting leads into customers"
+  },
+  {
+    "id": "00cfa703-2230-41a4-936c-eb04558ccea0",
+    "description": "Financial oversight and strategic planning"
+  },
+  {
+    "id": "37317d72-013c-4a98-94a8-c77e006b5482",
+    "description": "Developing marketing campaigns based on product features"
+  },
+  {
+    "id": "27a4c1c2-b7eb-40dd-83d9-991cc10dbc33",
+    "description": "Revenue forecasting and budgeting"
+  },
+  {
+    "id": "be79c1bd-ebdf-4086-98a3-ae45bead6fd7",
+    "description": "Product development and strategy"
+  },
+  {
+    "id": "321150e9-6bc5-4e0c-b4b7-3ad7133429b9",
+    "description": "Achieving sales targets"
+  },
+  {
+    "id": "f29da656-015d-484c-863b-8b9d888a7702",
+    "description": "Acquiring new customers"
+  },
+  {
+    "id": "16fb0b11-3984-480f-bb82-511705255230",
+    "description": "Closing deals and increasing sales"
+  },
+  {
+    "id": "b4d6e7f7-0ee1-43ec-8f64-9952a1f1f794",
+    "description": "Maintaining company profitability"
+  },
+  {
+    "id": "0609ad60-4094-422b-9ef5-402897fead9d",
+    "description": "Product development and improvement"
+  },
+  {
+    "id": "18f32c60-bb34-4916-8c68-f3a126ef716d",
+    "description": "Sales forecasting and planning"
+  },
+  {
+    "id": "93c778fe-0962-451b-a3de-0673149683a8",
+    "description": "Handling customer complaints"
+  },
+  {
+    "id": "e3bcebf0-7ca3-4c2f-b551-1548b17e7696",
+    "description": "Resolving customer complaints"
+  },
+  {
+    "id": "083657b2-d962-4133-bcaf-a8cce4f6f04b",
+    "description": "Increasing website conversion rate"
+  },
+  {
+    "id": "1c37c7af-e427-496e-bcc8-430742b66f41",
+    "description": "Creating marketing campaigns"
+  },
+  {
+    "id": "eb1a6d72-9f47-4ac2-b217-026d591bb73f",
+    "description": "managing subscriptions, invoicing, cancellations, pauses, upgrades, downgrades, etc."
+  },
+  {
+    "id": "e2d927e4-ccd5-4afe-8542-dba3fface756",
+    "description": "pricing model management"
+  },
+  {
+    "id": "6c02a488-43b2-46d9-8187-3b81cd9b9dfe",
+    "description": "discount and trial management"
+  },
+  {
+    "id": "896d6176-9f11-4655-85b1-d7a3a034db15",
+    "description": "checkout flow management"
+  },
+  {
+    "id": "81e50b13-8ec6-49d2-80ce-9fcad6be7a4a",
+    "description": "subscription management, recurring invoicing, and handling of cancellations, pauses, upgrades, downgrades"
+  },
+  {
+    "id": "7d9c1ffa-9490-42b7-98be-4d91060c519b",
+    "description": "pricing strategy development and management"
+  },
+  {
+    "id": "842793af-e07b-41b5-a83a-5a41c158c196",
+    "description": "checkout process optimization and user experience enhancement"
+  },
+  {
+    "id": "9afc809b-058b-40d6-86d7-d8f13d0718a1",
+    "description": "feature access management and price sensitivity testing"
+  },
+  {
+    "id": "9d096683-f252-4f42-bbcb-90cbc8b5e42b",
+    "description": "customer retention and growth"
+  },
+  {
+    "id": "2acaf2b6-1657-4638-8469-6465f943be64",
+    "description": "sales strategy and customer success"
+  },
+  {
+    "id": "f4342d92-fe15-40a9-8664-e29de1caaf30",
+    "description": "user experience and checkout process management"
+  },
+  {
+    "id": "a8d9e8d8-8205-4551-89f7-768d8b88465f",
+    "description": "product management and pricing strategy"
+  },
+  {
+    "id": "7abb1375-70bc-4c3f-8f8e-59798f96e892",
+    "description": "Company growth and profitability"
+  },
+  {
+    "id": "fd58b87d-66f4-4881-83f9-04462e3e3ea1",
+    "description": "Sales planning and forecasting"
+  },
+  {
+    "id": "a2b4c2a5-dccd-45cc-bdd5-efa3642b09cc",
+    "description": "Sales Strategy and Execution"
+  },
+  {
+    "id": "5634425b-ff24-4a14-a47f-aea918f7e948",
+    "description": "Product development and strategy planning"
+  },
+  {
+    "id": "90be43df-0d09-4171-911f-2cdd61d5b400",
+    "description": "Customer acquisition"
+  },
+  {
+    "id": "7bf4c787-6292-4a8c-9bab-5a26266b0e4f",
+    "description": "Attracting and retaining customers"
+  },
+  {
+    "id": "42667845-943c-4470-b8d0-cbd0419c5bee",
+    "description": "Strategic planning and decision making"
+  },
+  {
+    "id": "c97018a7-6fa3-43dd-b24a-934e0dafde7d",
+    "description": "Campaign planning and execution"
+  },
+  {
+    "id": "beecdd18-93ad-4ab3-bc73-3d9e81b0669f",
+    "description": "Software Development and Maintenance"
+  },
+  {
+    "id": "6475760a-31c7-40e7-85e7-29ec37dc752a",
+    "description": "Forecasting sales revenue"
+  },
+  {
+    "id": "508c5793-2a1c-49e7-b7f4-e635a193f13c",
+    "description": "Overall company strategy and growth"
+  },
+  {
+    "id": "6ec81e54-a16d-4031-9a26-29bfa70c55ca",
+    "description": "Marketing strategy and planning"
+  },
+  {
+    "id": "e6c838e6-5f40-478a-b98f-d5193378ca07",
+    "description": "Ensuring financial sustainability of the company"
+  },
+  {
+    "id": "6b8fca71-f93c-4362-adaf-18c985b94be3",
+    "description": "Creating marketing campaigns to promote products"
+  },
+  {
+    "id": "5dbfbbd9-e1cb-47e2-8eb2-45dd4d41d382",
+    "description": "Company Strategy and Risk Management"
+  },
+  {
+    "id": "59b7d3d2-ac8c-4c30-9505-c5286d3e8d85",
+    "description": "Managing IT Infrastructure"
+  },
+  {
+    "id": "8d1313a9-32df-46d5-95d5-c888e15d2b3a",
+    "description": "Product development based on customer feedback"
+  },
+  {
+    "id": "f5bfdfbc-4cbf-492a-8427-0f056e5e4227",
+    "description": "Developing products that meet market demands"
+  },
+  {
+    "id": "fa760643-6fe2-4d7e-883e-41fa3b885b63",
+    "description": "Planning and executing marketing campaigns"
+  },
+  {
+    "id": "77efbe4b-e22c-4069-9ab6-2bedd54dac55",
+    "description": "Product development"
+  },
+  {
+    "id": "8868b274-416c-4731-b490-80364b275343",
+    "description": "Auditing financial statements"
+  },
+  {
+    "id": "6546b3ab-fa36-46f4-8b8b-44314ee1511e",
+    "description": "Setting sales targets and monitoring team performance"
+  },
+  {
+    "id": "346b9d27-061f-4fc6-af42-c4f5dba6ba62",
+    "description": "Managing sales targets and team performance"
+  },
+  {
+    "id": "e94bfa7b-6bdd-4345-96b0-bfc9968aba72",
+    "description": "Customer satisfaction and retention"
+  },
+  {
+    "id": "99be53f2-3442-4ff2-944a-a2c47acafcfb",
+    "description": "IT Infrastructure and Security Management"
+  },
+  {
+    "id": "fa857f08-3f4a-4765-a336-3065a9d98206",
+    "description": "Financial Planning and Risk Management"
+  },
+  {
+    "id": "f497706b-fbff-4122-b636-2a41bc51cd19",
+    "description": "Overall business strategy and growth"
+  },
+  {
+    "id": "e0087cf0-423e-470c-b288-0c59ad2c43de",
+    "description": "Sales forecasting and target setting"
+  },
+  {
+    "id": "f97853cf-b462-40af-b7a0-b30886a15977",
+    "description": "Overall business performance and growth"
+  },
+  {
+    "id": "ffac341e-8bc8-4ec4-b852-5eb3c821c39b",
+    "description": "Overseeing financial operations"
+  },
+  {
+    "id": "314ae667-ae6a-4be2-9cc8-def4e95dbe05",
+    "description": "Company Strategy and Leadership"
+  },
+  {
+    "id": "144503f9-26b6-4b59-944f-514ea3b2467c",
+    "description": "Managing customer complaints and queries"
+  },
+  {
+    "id": "5f851e3d-5ac0-4fdc-bc01-c9890d4dc8d3",
+    "description": "Selling products to customers"
+  },
+  {
+    "id": "607ecdfa-c5cd-4e5b-a9cc-beb7e18db184",
+    "description": "Brand positioning and promotion"
+  },
+  {
+    "id": "73e03925-7444-47e3-9d86-2f0353b5314b",
+    "description": "Overseeing IT Infrastructure"
+  },
+  {
+    "id": "6a4bb597-6d54-45ca-b525-da0e289faf9d",
+    "description": "Lead Generation and Conversion"
+  },
+  {
+    "id": "15e06065-766d-4445-aebf-1d24e4ea8f40",
+    "description": "Maintaining the company's financial health"
+  },
+  {
+    "id": "bc7f1209-a220-4ad1-95db-1ca6885c0bb1",
+    "description": "Handling customer inquiries about products"
+  },
+  {
+    "id": "4c68c1a0-172e-4707-86f4-be0959a6d618",
+    "description": "Driving sales growth"
+  },
+  {
+    "id": "1d719675-8908-4ca0-a034-05263ebd7762",
+    "description": "Addressing customer complaints and feedback"
+  },
+  {
+    "id": "0528c091-e791-416e-b50e-2513d15de5e3",
+    "description": "Company Strategy Planning"
+  },
+  {
+    "id": "fb46f497-3b50-4df5-af95-5c9591eeb5f7",
+    "description": "Strategic Decision Making"
+  },
+  {
+    "id": "75fb5be5-11d7-43c6-885b-a0aab94efafe",
+    "description": "Marketing Budget Planning"
+  },
+  {
+    "id": "15ed6681-abc4-4b3a-8a36-e1454c68868d",
+    "description": "Selling the company's products or services"
+  },
+  {
+    "id": "40d23672-6309-4212-8707-b14c3d123e8c",
+    "description": "Technology Strategy and Implementation"
+  },
+  {
+    "id": "4988a843-b22d-43d3-aea7-5b3e17ac0e4d",
+    "description": "Creating marketing campaigns to support sales"
+  },
+  {
+    "id": "1dc0f063-2aec-4e99-b067-fbd6bee1157a",
+    "description": "Financial Forecasting"
+  },
+  {
+    "id": "9bd85763-a657-4497-9cbf-d32921ba4958",
+    "description": "Corporate Governance"
+  },
+  {
+    "id": "b33861b3-0284-4c4c-b9fd-d53f4eb8652e",
+    "description": "Promoting company's reputation"
+  },
+  {
+    "id": "05e7950f-a1e5-4d3b-b992-7115e20b37c0",
+    "description": "Investment decision making"
+  },
+  {
+    "id": "b9fff69e-0e7e-4f38-9c1d-7d1bf7a95516",
+    "description": "Financial planning and budgeting"
+  },
+  {
+    "id": "0fb84b8b-d257-4bf4-bc4e-2018edf68907",
+    "description": "Marketing Strategy and Execution"
+  },
+  {
+    "id": "36d33af6-52df-40d1-a53f-eb4e77943c2b",
+    "description": "Making strategic business decisions"
+  },
+  {
+    "id": "b0a6d23c-4af0-43db-a578-e25a8ded6e89",
+    "description": "Inventory Management"
+  },
+  {
+    "id": "eda9da17-86df-49e4-86dc-60ea23561b36",
+    "description": "Company strategy and growth decision making"
+  },
+  {
+    "id": "1ac0b4ea-0f31-4912-916c-08c4d18822c2",
+    "description": "Employee Onboarding and Training"
+  },
+  {
+    "id": "a8ad88f3-7f7b-4ead-822e-9b793ae5b0e9",
+    "description": "Retaining customers and ensuring customer satisfaction"
+  },
+  {
+    "id": "406bd6f6-de1a-4d53-9972-7aaeb10e1734",
+    "description": "Customer Retention"
+  },
+  {
+    "id": "3c1366b7-8396-48bb-ad31-f47775a1a1f9",
+    "description": "Workforce Planning"
+  },
+  {
+    "id": "130cb9eb-60e8-43ca-8ee2-22598ad655f0",
+    "description": "Product planning and strategy development"
+  },
+  {
+    "id": "00db4231-1d10-4bcb-a591-7c0d29acfc66",
+    "description": "Product Development Planning"
+  },
+  {
+    "id": "bc9d280f-45a8-4a1e-b615-5ebc9cc3de7f",
+    "description": "Generating qualified leads"
+  },
+  {
+    "id": "279d680e-269c-4e5b-9275-b5b59973b0e4",
+    "description": "Planning marketing campaigns"
+  },
+  {
+    "id": "33c1c696-4930-4843-abd0-58c8c03f23fa",
+    "description": "Project Execution"
+  },
+  {
+    "id": "f6d86dd7-139f-41e2-bf45-b2f04b0e4918",
+    "description": "Lead Generation"
+  },
+  {
+    "id": "20b68922-d0ef-4737-9dae-35b09831d050",
+    "description": "Brand management and marketing strategy"
+  },
+  {
+    "id": "ac539429-c916-44dc-8068-baf4483043a0",
+    "description": "Company Revenue Growth"
+  },
+  {
+    "id": "f7b6705e-2c8a-4a87-9a93-406a19118cb2",
+    "description": "Managing sales team and achieving sales targets"
+  },
+  {
+    "id": "7de24f95-131c-4090-a1f1-4b593f088e74",
+    "description": "Financial Planning and Analysis"
+  },
+  {
+    "id": "f7414299-c066-403f-963f-eb12156f91cc",
+    "description": "Lead generation and brand promotion"
+  },
+  {
+    "id": "0322a1d9-ee51-48f4-8ffc-bd761b9d039f",
+    "description": "Making strategic decisions for the company's future"
+  },
+  {
+    "id": "93fb1fe7-bb02-4f0a-a105-515ea02bf831",
+    "description": "Selling the product to potential customers"
+  },
+  {
+    "id": "66fc35d1-91e9-4de6-9574-0f614fc520ea",
+    "description": "Operational planning and strategy"
+  },
+  {
+    "id": "72d2feb5-512b-4a86-9b36-d2cf14ce56ca",
+    "description": "Product development and management"
+  },
+  {
+    "id": "020a2adb-f331-4328-863e-f5efd6a3e80c",
+    "description": "Company Strategy and Growth"
+  },
+  {
+    "id": "2290c432-b3d8-4350-99d0-0f8a5288c55c",
+    "description": "Leading the company and making strategic decisions"
+  },
+  {
+    "id": "d12ac4d8-ee20-4c5c-85c1-dbd4c83029f9",
+    "description": "Planning and overseeing product development"
+  },
+  {
+    "id": "eb534256-9bd4-46df-b0e4-f426b8054d76",
+    "description": "Sales planning and strategy"
+  },
+  {
+    "id": "2f2dfd4d-66ce-4f05-b269-2f87e8788080",
+    "description": "Product development planning"
+  },
+  {
+    "id": "99f82f6c-d1cd-40a0-bc99-be09a6ec0743",
+    "description": "Setting company strategy"
+  },
+  {
+    "id": "7cd7f355-1324-465e-99fe-5a142c5bbea3",
+    "description": "Converting leads into sales"
+  },
+  {
+    "id": "46a261a2-5312-4073-ad85-b6a6127c3e6d",
+    "description": "Planning and executing marketing strategies"
+  },
+  {
+    "id": "772b8b83-bf4e-43e7-a851-d629f62eab42",
+    "description": "Managing customer service team"
+  },
+  {
+    "id": "59dc78e5-a048-4bfd-9ae9-7137eac6b888",
+    "description": "Creating and implementing marketing strategies"
+  },
+  {
+    "id": "4adbf1f3-b297-48c6-9176-9626540eb945",
+    "description": "Operations Management"
+  },
+  {
+    "id": "620d4483-79e2-4a96-8b62-1597b9375c50",
+    "description": "Increasing sales"
+  },
+  {
+    "id": "657886d1-e162-4077-adc2-a240f967733e",
+    "description": "Maintaining and updating the company's IT infrastructure"
+  },
+  {
+    "id": "03eea656-ca6a-4784-b7c1-2129efb75478",
+    "description": "Company's overall performance and growth"
+  },
+  {
+    "id": "d8de8635-ea5c-468c-939b-ada9952cc861",
+    "description": "Setting company direction and strategy"
+  },
+  {
+    "id": "286037c1-5484-4294-81c8-14dad762677b",
+    "description": "Product development based on market demand"
+  },
+  {
+    "id": "0bc9395a-9145-44c6-98d5-19dd146e46e6",
+    "description": "Customer retention and satisfaction"
+  },
+  {
+    "id": "747ed7f0-58f7-4daf-8e5b-ff56d11f3500",
+    "description": "Financial planning and risk management"
+  },
+  {
+    "id": "f1ad0eb2-c449-496d-baa4-1df2aae1c52f",
+    "description": "Budgeting and forecasting"
+  },
+  {
+    "id": "ef4d32fb-32a8-42d6-b0e2-72f3dca065d4",
+    "description": "Budget Planning"
+  },
+  {
+    "id": "8c82ef0b-fe2f-4961-a7ef-b727de0914ea",
+    "description": "Talent acquisition and management"
+  },
+  {
+    "id": "a5598fe8-465e-475e-b7e8-bd4cff90a8a5",
+    "description": "Managing and guiding sales team"
+  },
+  {
+    "id": "0eaa3c15-356f-4bd8-a1ef-aa8605a5fb96",
+    "description": "Handling customer complaints and queries"
+  },
+  {
+    "id": "17a9ac94-2aec-49b2-919c-ce89bc38f418",
+    "description": "Marketing Strategy and Planning"
+  },
+  {
+    "id": "ca63f651-9c9d-4f28-85da-1158988cc921",
+    "description": "Making strategic decisions"
+  },
+  {
+    "id": "d6e8c4ed-70e9-4617-ba01-be6f6a532b2f",
+    "description": "Product Design and Improvement"
+  },
+  {
+    "id": "097e88d0-8a58-403b-a367-4361ba51efdb",
+    "description": "Managing customer complaints and feedback"
+  },
+  {
+    "id": "b97176d8-ba14-4d95-9d55-a3510659fb76",
+    "description": "Handling customer inquiries"
+  },
+  {
+    "id": "febc11a0-7203-4867-9b08-c7f9a046b731",
+    "description": "Ensuring the security of the company's IT systems"
+  },
+  {
+    "id": "7438d492-7f6b-455c-a140-8b0f48067869",
+    "description": "Financial forecasting and budgeting"
+  },
+  {
+    "id": "8e685bcc-e554-4ee0-a1ee-de538bd74ac2",
+    "description": "Managing company's finances"
+  },
+  {
+    "id": "2c4d40ae-9380-486e-97d8-aef15063212c",
+    "description": "Company Strategic Planning"
+  },
+  {
+    "id": "d8364106-b1b0-4225-9cca-5f1d6dde4795",
+    "description": "Company direction setting and strategy"
+  },
+  {
+    "id": "a8311269-3021-43bc-afdc-b5faf2488b44",
+    "description": "Setting and executing company strategy"
+  },
+  {
+    "id": "b03801fc-ddce-4e4a-ae2d-3ab4f17a6232",
+    "description": "Product development and roadmap planning"
+  },
+  {
+    "id": "180b9092-1f73-472e-91e6-471703279406",
+    "description": "Budget allocation and financial planning"
+  },
+  {
+    "id": "fadf4dc3-4737-4491-b613-0c1c2fbe5bec",
+    "description": "Marketing strategy development"
+  },
+  {
+    "id": "aa46ac0f-306a-4ba9-b21b-71264a1e50cf",
+    "description": "Sales strategy planning"
+  },
+  {
+    "id": "8f35a170-6098-4c51-8e04-75d57310b700",
+    "description": "Sales Planning and Execution"
+  },
+  {
+    "id": "c8e485e8-f77b-46e2-b264-718a50261342",
+    "description": "Ensuring efficient business operations"
+  },
+  {
+    "id": "c22c4795-74fc-485e-b64c-b59f4d07d903",
+    "description": "Marketing campaign planning and execution"
+  },
+  {
+    "id": "c1cd3110-64aa-49e9-8877-e792e70243d6",
+    "description": "Company direction and strategy"
+  },
+  {
+    "id": "715f1737-24a0-4acf-89bc-47abd336c2d3",
+    "description": "Analysing campaign performance"
+  },
+  {
+    "id": "45957a06-7d9e-40d8-b11a-650d93a74b0e",
+    "description": "Recruitment and Employee Management"
+  },
+  {
+    "id": "669a5d1f-b184-4cbd-9bce-29b88ab44076",
+    "description": "Business Strategy and Vision"
+  },
+  {
+    "id": "f025ac33-13db-4892-b01f-a3086375b8b2",
+    "description": "Designing and implementing new product features"
+  },
+  {
+    "id": "29315518-9ca5-473b-bda4-086034f3ffd9",
+    "description": "Investment Decision Making"
+  },
+  {
+    "id": "4959505e-8090-4c6a-b6c4-ec16b5ad8a42",
+    "description": "Setting strategic direction"
+  },
+  {
+    "id": "b0e13cf8-1e61-48b3-875b-560a5c005299",
+    "description": "Strategic decision making"
+  },
+  {
+    "id": "a15562bb-ec17-40a2-ae02-700adfe879b1",
+    "description": "Financial planning and analysis"
+  },
+  {
+    "id": "a604746d-e73a-4bfc-9f41-f99ab4794617",
+    "description": "Marketing Campaign Planning"
+  },
+  {
+    "id": "a1323e68-e41d-46db-86d2-172fc94f3824",
+    "description": "Resolving customer issues and queries"
+  },
+  {
+    "id": "9d0d08b3-4efe-4c12-9d6d-bbed9914f081",
+    "description": "Promoting the product to the market"
+  },
+  {
+    "id": "0810bae6-482f-46ff-a4cc-8c2d730deb0e",
+    "description": "Budgeting and financial planning"
+  },
+  {
+    "id": "a6e4bfa2-0637-48ec-83d4-fd83cd70f89f",
+    "description": "Lead generation and conversion"
+  },
+  {
+    "id": "ae36949d-1c12-42b3-9b84-483e4a6f5136",
+    "description": "Making strategic decisions for the company"
   }
 ]

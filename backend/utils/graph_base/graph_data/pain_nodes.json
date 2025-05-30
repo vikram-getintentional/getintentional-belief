@@ -382,5 +382,1733 @@
   {
     "id": "f5b6dca5-9d99-43fe-9586-274c8141c2f8",
     "text": "difficulty in managing feature entitlements"
+  },
+  {
+    "id": "370412c0-cd86-4940-9c7d-185db41dfbf8",
+    "text": "managing multiple complex subscriptions scenarios including automated billing, recurring invoicing, cancellations, subscription pauses, upgrades, downgrades, etc."
+  },
+  {
+    "id": "cb02c26b-10da-45d3-9065-30879c3639d3",
+    "text": "scaling multiple and customizable pricing structures based on usage, license-based, tiered, stair-step, one-time and recurring pricing."
+  },
+  {
+    "id": "6e5132f8-546d-4b64-8919-5ff645cd938a",
+    "text": "predicting churn, deflecting cancellation attempts, reducing involuntary churn by automatic dunning and smart revenue recovery, and managing multiple payment methods."
+  },
+  {
+    "id": "5546adb7-0e8e-4a48-a222-d108ace312e4",
+    "text": "recognizing revenue accurately, on-time and in compliance with global standards including asc606 to maintain gaap compliance and audit readiness."
+  },
+  {
+    "id": "91d9be48-50d1-485f-9007-b99612d18c73",
+    "text": "creating and offering discounts and managing free, time-limited and capability-limited trials."
+  },
+  {
+    "id": "1656ee8f-5f78-4386-9911-344e6774868e",
+    "text": "enabling end users to manage their subscriptions and customizing checkout flows."
+  },
+  {
+    "id": "561d60e1-0e2f-4108-9ef2-4ed22d9c1049",
+    "text": "ensuring secure transactions and compliance with relevant regulations."
+  },
+  {
+    "id": "df8e01e3-6cb6-4207-be33-40cd495107f7",
+    "text": "managing which features map to what plans to test price sensitivity, bundling options and new feature introductions."
+  },
+  {
+    "id": "87cf4069-c9ce-419b-928f-87c0f426d5a9",
+    "text": "difficulty managing multiple complex subscriptions scenarios"
+  },
+  {
+    "id": "ddadc57b-5b33-4c14-b98c-00ed38bf0b33",
+    "text": "inability to effectively test and scale multiple pricing structures"
+  },
+  {
+    "id": "20c14e78-feb9-4ea8-8af1-456ced064cf5",
+    "text": "struggling to predict churn and reduce involuntary churn"
+  },
+  {
+    "id": "63431987-8299-43f8-acaf-1580d4eef230",
+    "text": "difficulty recognizing revenue accurately and in compliance with global standards"
+  },
+  {
+    "id": "8e86c4e9-53b4-4cee-914e-27de378c8100",
+    "text": "challenges in creating and offering discounts and trials to users"
+  },
+  {
+    "id": "ebb01722-41f5-4593-8978-279caa085df5",
+    "text": "lack of flexibility and customization in checkout flows"
+  },
+  {
+    "id": "4750b0fb-3367-4831-bb75-d419aba65e65",
+    "text": "difficulty mapping features to plans for price sensitivity testing and new feature introductions"
+  },
+  {
+    "id": "f98e6e40-c19d-4ead-b804-1eb7302934c1",
+    "text": "managing multiple complex subscriptions scenarios"
+  },
+  {
+    "id": "756c97a5-71f5-47fc-b422-5b6cb3763611",
+    "text": "scaling multiple and customizable pricing structures"
+  },
+  {
+    "id": "87319fab-5fe4-4688-b01c-95159eaeb56a",
+    "text": "predicting churn and increasing customer lifetime value"
+  },
+  {
+    "id": "b2f01e5f-5485-45d6-8383-897f0223ac2a",
+    "text": "recognizing revenue accurately and maintaining gaap compliance"
+  },
+  {
+    "id": "1f8138ee-5053-4369-b688-443897b73b05",
+    "text": "creating and offering discounts and trials"
+  },
+  {
+    "id": "cb9851e2-a571-405c-bb2d-e39cdceea2c3",
+    "text": "managing end user interfaces and checkout flows"
+  },
+  {
+    "id": "1a11034b-c823-4eb2-8b2f-6fb8f5d7ed96",
+    "text": "managing product features and pricing"
+  },
+  {
+    "id": "4652bea5-b832-4cb8-a40a-79c7771b638d",
+    "text": "scaling and testing multiple pricing structures"
+  },
+  {
+    "id": "699ad830-07a7-4983-b4be-4718d2edd9f3",
+    "text": "predicting churn and reducing involuntary churn"
+  },
+  {
+    "id": "3ebb7575-6675-463c-95cf-9820867e0fb5",
+    "text": "recognizing revenue accurately and in compliance with global standards"
+  },
+  {
+    "id": "52e47f83-8488-499e-b85c-36eae2c6ec31",
+    "text": "creating and offering discounts and trials to users"
+  },
+  {
+    "id": "43e1114a-c67f-4dae-886d-8234a7c4370e",
+    "text": "providing end users with control over their subscriptions and a customizable checkout experience"
+  },
+  {
+    "id": "69766668-1a68-44fc-a811-2b44591ba334",
+    "text": "managing feature access based on subscription plans"
+  },
+  {
+    "id": "8bf2dd70-d61d-44b6-a979-34e1b0a4fd03",
+    "text": "offering and managing discounts and trials"
+  },
+  {
+    "id": "20968df5-d166-4df4-a67a-623a46b27281",
+    "text": "providing user-friendly and flexible checkout options"
+  },
+  {
+    "id": "3c021ddd-d81e-46e4-b9bd-fa9215b6c9db",
+    "text": "ensuring secure transactions and compliance with regulations"
+  },
+  {
+    "id": "03fd7b28-cef3-48a5-a042-26e5afc6badd",
+    "text": "recognizing revenue accurately in compliance with global standards"
+  },
+  {
+    "id": "3f552ac2-58a9-42d8-915d-840063f12ace",
+    "text": "managing product feature entitlements"
+  },
+  {
+    "id": "49fdc362-7ad2-43c1-8d6d-9341cc6c8067",
+    "text": "creating and offering discounts and managing trials"
+  },
+  {
+    "id": "5c7600df-d3a9-4e05-a8b0-c9d51d6e94a2",
+    "text": "providing end users with a flexible and customizable checkout process"
+  },
+  {
+    "id": "6a418391-2e54-41b5-a2d9-22df0322cc23",
+    "text": "managing product feature accessibility across different plans"
+  },
+  {
+    "id": "7b670655-eeb5-4896-bd45-f00a2d848c38",
+    "text": "management of complex subscription scenarios"
+  },
+  {
+    "id": "8ea8dd4c-bd3a-412f-9a23-e8f6f37f5a95",
+    "text": "inflexibility of pricing structures"
+  },
+  {
+    "id": "2221619f-3a49-4b94-bd02-3d8b407ce261",
+    "text": "predicting and reducing customer churn"
+  },
+  {
+    "id": "6e92ad3a-9f92-4b4a-8d78-1c14074bde6f",
+    "text": "accurate and compliant revenue recognition"
+  },
+  {
+    "id": "a9b7a94c-1af1-46b1-9507-e6f8c585031d",
+    "text": "creating and managing discounts and trials"
+  },
+  {
+    "id": "603aad06-1dc7-419f-9e43-20c8b8f5f216",
+    "text": "improving customer experience at checkout"
+  },
+  {
+    "id": "c57f1539-ffe0-4426-b640-3980670915f2",
+    "text": "ensuring secure transactions and regulatory compliance"
+  },
+  {
+    "id": "4f182e23-fb12-47e4-ad62-51cfa2304333",
+    "text": "managing feature access across different plans"
+  },
+  {
+    "id": "79ceee0c-5557-4908-8e39-0cc0060b9328",
+    "text": "managing complex subscriptions scenarios"
+  },
+  {
+    "id": "7cde9bc4-f524-4e24-8d2b-f4d66421bc98",
+    "text": "predicting churn and reducing cancellation attempts"
+  },
+  {
+    "id": "560dcfba-6bc4-43bf-8b9b-725d22686cb5",
+    "text": "recognizing revenue accurately and maintaining compliance"
+  },
+  {
+    "id": "de0def64-dee8-4649-946f-d74c3eb9a033",
+    "text": "providing end users with control over their subscriptions"
+  },
+  {
+    "id": "488fd663-052f-42d2-8a05-1609a00a3ba5",
+    "text": "managing feature access based on plans"
+  },
+  {
+    "id": "389b51df-0fff-495b-8c28-6a101da62580",
+    "text": "managing complex subscription scenarios"
+  },
+  {
+    "id": "4944719d-ff66-4b15-8874-b8d99d58f62b",
+    "text": "implementing and scaling multiple pricing structures"
+  },
+  {
+    "id": "19571753-bfb8-489e-9e74-4ded9e5d264e",
+    "text": "offering discounts and managing trials"
+  },
+  {
+    "id": "78b7dbaf-098e-475e-aca4-223503e6960a",
+    "text": "providing self-service options and customizable checkout flows"
+  },
+  {
+    "id": "045c64d0-7241-476f-b818-1723b83c12a5",
+    "text": "managing feature entitlements and testing price sensitivity"
+  },
+  {
+    "id": "69065609-c963-46e5-80b2-081dd4b39baf",
+    "text": "struggles with customer retention and churn prediction"
+  },
+  {
+    "id": "8d4a4c0d-b04d-4e0d-a1a3-35f2880ac57f",
+    "text": "difficulty in recognizing revenue accurately and maintaining gaap compliance"
+  },
+  {
+    "id": "e4b05d0b-d667-4a38-8a8c-5be4843d671c",
+    "text": "challenges in creating and offering discounts and trials"
+  },
+  {
+    "id": "72203694-fcc9-4cbe-b0ed-c1ce1c0729c6",
+    "text": "difficulty in providing end users with self-service options and customizable checkout flows"
+  },
+  {
+    "id": "b1b52b73-55c8-445e-80de-9f63113bc279",
+    "text": "difficulty in managing feature access based on plans"
+  },
+  {
+    "id": "7aa2461b-4994-44f5-82a9-856a820c0ea0",
+    "text": "inability to experiment with different pricing models"
+  },
+  {
+    "id": "cb9068d4-e5ea-445a-92ba-1822e0c1a41d",
+    "text": "difficulty in predicting customer churn and managing involuntary churn"
+  },
+  {
+    "id": "855ec473-6ac1-4b90-bfe6-dcb3dda8b131",
+    "text": "challenge in maintaining gaap compliance and audit readiness"
+  },
+  {
+    "id": "15ceaca6-c14e-4c46-acb6-49229679f8e6",
+    "text": "difficulty in creating and offering discounts and trials"
+  },
+  {
+    "id": "12196306-7ccc-4c23-882d-cd280d702f61",
+    "text": "difficulty in providing self-service options and customizable checkout flows"
+  },
+  {
+    "id": "1c83b9a2-e860-40c7-ade5-0a2f38fd815f",
+    "text": "difficulty in managing feature entitlements for different plans"
+  },
+  {
+    "id": "84b626a1-1227-49a5-8923-adaa5f19f1e0",
+    "text": "high churn rate and low customer retention"
+  },
+  {
+    "id": "692232fc-9834-44ae-8f22-523d532d4882",
+    "text": "inability to allow end users to manage their subscriptions and customize checkout flows"
+  },
+  {
+    "id": "d4c312f5-49eb-4e4c-9618-035693ce1f86",
+    "text": "concerns over transaction security and compliance"
+  },
+  {
+    "id": "816abbe1-9ca3-495e-81a3-83b5e20c4402",
+    "text": "complexity in managing multiple subscription scenarios"
+  },
+  {
+    "id": "478f2b46-b30f-4ba4-89a3-74351a4469aa",
+    "text": "challenges in predicting churn and managing customer retention"
+  },
+  {
+    "id": "fe678785-2013-4396-b041-175e4f90596d",
+    "text": "complexity in creating and offering discounts and managing trials"
+  },
+  {
+    "id": "27404a1f-a15a-4c51-ae15-1110f547544e",
+    "text": "need for customization and user control in checkout flows"
+  },
+  {
+    "id": "e367f7a7-7ea3-455c-9d4d-7cbaed689583",
+    "text": "need for easy management of feature entitlements"
+  },
+  {
+    "id": "cb878509-2847-4765-912c-8b08209a24a5",
+    "text": "managing feature entitlements"
+  },
+  {
+    "id": "ed5c1541-bca9-4772-91fa-c08a326c25ab",
+    "text": "complexity in managing multiple subscriptions, billing, recurring invoicing, cancellations, pauses, upgrades, downgrades"
+  },
+  {
+    "id": "aea8f6dc-11a4-4f4c-98b0-297a12613016",
+    "text": "high churn rate, inability to deflect cancellation attempts, involuntary churn due to payment issues"
+  },
+  {
+    "id": "d17b871a-668e-4b99-b6d4-e8dfac0553f4",
+    "text": "inability to offer discounts and trials effectively"
+  },
+  {
+    "id": "bf45fe2c-772e-4105-9b12-d5bba42d9cf9",
+    "text": "lack of flexibility and customization in checkout flows, inability for end users to manage their subscriptions"
+  },
+  {
+    "id": "bbf6c093-2daf-43d3-a7bb-b8f73fce8395",
+    "text": "concerns about transaction security and regulatory compliance"
+  },
+  {
+    "id": "bde1bd44-2c90-4405-a438-51f81c6396b8",
+    "text": "difficulties in managing multiple complex subscriptions"
+  },
+  {
+    "id": "fd977e53-cfd7-4993-9e5b-6d8cc4ec27b2",
+    "text": "inability to implement and scale diverse pricing structures"
+  },
+  {
+    "id": "3dc519b6-8bef-4e58-9a18-36f7e245a152",
+    "text": "high churn rates and ineffective customer retention strategies"
+  },
+  {
+    "id": "ca585e36-1df1-4561-ac05-427f376cd371",
+    "text": "inaccurate revenue recognition and non-compliance with global standards"
+  },
+  {
+    "id": "735ca2e4-4684-49c3-bb99-fc545f648d7e",
+    "text": "inability to offer diverse discount options and manage product trials effectively"
+  },
+  {
+    "id": "56462a86-2aef-459a-b7a1-a5c898fb4b54",
+    "text": "limited customer autonomy in subscription management and rigid checkout processes"
+  },
+  {
+    "id": "0125aee7-75a2-4da7-9b95-d7b54b96b60d",
+    "text": "security vulnerabilities and non-compliance with regulations"
+  },
+  {
+    "id": "79015300-b151-4c74-aa5a-47b866ee698a",
+    "text": "inability to manage feature entitlements effectively"
+  },
+  {
+    "id": "5b1151be-3ee9-49bf-86e3-3184afc055e3",
+    "text": "implementing flexible pricing structures"
+  },
+  {
+    "id": "e72c460c-fd3b-408d-babb-411b13012df8",
+    "text": "predicting churn and retaining customers"
+  },
+  {
+    "id": "40511399-2dcd-4c44-852b-d0336c010c7e",
+    "text": "enabling customer self-service and customizing checkout flows"
+  },
+  {
+    "id": "1d4c00be-6385-4a25-84d7-81b5922d6e88",
+    "text": "challenges in predicting churn and retaining customers"
+  },
+  {
+    "id": "62eb27a5-f40a-485d-977b-e3052a36913b",
+    "text": "difficulty in recognizing revenue accurately and maintaining compliance"
+  },
+  {
+    "id": "22d63279-a43f-46f5-a383-a43611a54618",
+    "text": "challenges in creating and offering discounts and managing trials"
+  },
+  {
+    "id": "704008af-ac9e-4856-8962-bd048f370a76",
+    "text": "inability to offer end users flexibility and customization in checkout process"
+  },
+  {
+    "id": "bf36e3c3-d000-467e-9a50-1176cfc904c6",
+    "text": "ensuring secure transactions and maintaining compliance"
+  },
+  {
+    "id": "8b6baebf-85c4-4871-a0e6-97e11e0eae29",
+    "text": "difficulty in managing feature entitlements across different plans"
+  },
+  {
+    "id": "5a299f2e-761f-4157-9231-c24916143163",
+    "text": "testing and scaling multiple pricing structures"
+  },
+  {
+    "id": "ad47ee0e-1d31-438d-8173-6e86b1111428",
+    "text": "managing checkout flows and capturing customer intent"
+  },
+  {
+    "id": "b1457a3b-0b46-4e62-be5c-39076ffb9a5f",
+    "text": "managing feature access and bundling options"
+  },
+  {
+    "id": "7e4dc272-95a5-45f5-8174-d3b0250e0fff",
+    "text": "difficulty in predicting churn and managing customer retention"
+  },
+  {
+    "id": "bcbff546-4091-4cca-bc6d-5c836ff31a08",
+    "text": "difficulty in creating and offering discounts and managing trials"
+  },
+  {
+    "id": "dc98332a-9da1-4326-b8e0-ef87640be6b9",
+    "text": "inability to provide self-service options and customize checkout flows"
+  },
+  {
+    "id": "d29cfe4d-7b69-4e0a-8b6d-1983061b8f00",
+    "text": "complexity and time consumption in managing multiple subscription scenarios"
+  },
+  {
+    "id": "b07b8aa8-bd58-4659-945c-ce0a7d402919",
+    "text": "difficulty predicting churn and recovering lost revenue"
+  },
+  {
+    "id": "7f6ac64f-65a1-410d-9f17-15a01bd782ed",
+    "text": "difficulty recognizing revenue accurately and maintaining gaap compliance"
+  },
+  {
+    "id": "454a67eb-58cf-4fa0-b3a7-fc71b07d5ca8",
+    "text": "lack of user control over subscriptions and inflexible checkout flows"
+  },
+  {
+    "id": "b8389844-038a-469e-ada6-b4a03ac6719d",
+    "text": "non-compliance with regulations and security threats"
+  },
+  {
+    "id": "bdec19cc-b5fa-490d-bb34-65bc8be86104",
+    "text": "difficulty predicting churn and retaining customers"
+  },
+  {
+    "id": "1d96e101-adad-4a16-b728-fc81a459d217",
+    "text": "difficulty offering discounts and managing trial periods"
+  },
+  {
+    "id": "aeb0ca2c-7ef1-4675-8010-a20f1b9fc022",
+    "text": "inability to provide self-service options and customizable checkout flows"
+  },
+  {
+    "id": "f8a82306-fbff-4930-85e8-a085b567f246",
+    "text": "difficulty ensuring secure transactions and compliance"
+  },
+  {
+    "id": "29bdcc17-2c92-46cb-91c7-8cf872885cc1",
+    "text": "difficulty managing feature entitlements across different plans"
+  },
+  {
+    "id": "d8912f3d-2349-452c-9cee-a71c081dcb12",
+    "text": "inability to test and scale pricing structures"
+  },
+  {
+    "id": "4d687bb1-3f1f-401d-9ee7-c640de5ff319",
+    "text": "difficulty predicting churn and managing customer retention"
+  },
+  {
+    "id": "7f59cab9-a969-4462-85eb-79b92c7a7ca3",
+    "text": "difficulty managing discounts and trials"
+  },
+  {
+    "id": "85015f2f-d4f3-4a87-b0c5-65a5b6778886",
+    "text": "difficulty managing user interfaces and checkout flows"
+  },
+  {
+    "id": "b0e9f6b4-c6da-4000-bd41-8cec36e42e55",
+    "text": "difficulty managing product features and pricing"
+  },
+  {
+    "id": "ec6e808e-987d-428d-b72a-46c6feb11e6f",
+    "text": "inability to test and scale flexible pricing structures"
+  },
+  {
+    "id": "4625da4a-5fbd-4ba2-90bc-e3fd9fceb7a4",
+    "text": "challenges in accurate and compliant revenue recognition"
+  },
+  {
+    "id": "4b8ee557-1e13-47c9-a730-17cd3b177ff7",
+    "text": "difficulty in managing discounts and trials"
+  },
+  {
+    "id": "74a2b859-c05c-4efe-a60b-bcf8324cf3a5",
+    "text": "inefficient and rigid checkout process"
+  },
+  {
+    "id": "30b7ded8-f39d-4aab-a61c-5b0e08c83b1d",
+    "text": "difficulty in managing feature entitlements per plan"
+  },
+  {
+    "id": "fafff55b-9d05-404b-a011-b051be32ef36",
+    "text": "difficulty creating and offering discounts and trials"
+  },
+  {
+    "id": "115133cb-12fd-4a39-b706-907e13461302",
+    "text": "difficulty allowing end users to manage their subscriptions and checkout"
+  },
+  {
+    "id": "1002b680-935d-470d-b63e-15676e9707cd",
+    "text": "difficulty ensuring secure transactions and compliance with relevant regulations"
+  },
+  {
+    "id": "00f305e6-62f2-46fe-9265-b0de6bc21ef2",
+    "text": "difficulty managing which features map to what plans"
+  },
+  {
+    "id": "382ac554-40d3-437a-9f41-8801e3a81149",
+    "text": "managing complex subscription scenarios is time-consuming and error-prone"
+  },
+  {
+    "id": "e04092bc-04b7-42b9-8228-0b01b59d0612",
+    "text": "standard pricing models are not flexible enough to support business growth"
+  },
+  {
+    "id": "72659f4d-ba2d-44be-92da-76a12a9bdedb",
+    "text": "ensuring accurate and compliant revenue recognition"
+  },
+  {
+    "id": "174d3485-4dc9-45cd-b4e1-1e8a4a42f8e0",
+    "text": "creating and managing discounts and trials is complex and time-consuming"
+  },
+  {
+    "id": "10380b04-19aa-44b3-b1d9-bf4c851b4e06",
+    "text": "providing a seamless and customizable checkout experience is challenging"
+  },
+  {
+    "id": "4f57d66d-71f0-4d18-a01c-df0c6d364f11",
+    "text": "managing feature access across different subscription plans is complex"
+  },
+  {
+    "id": "af65c804-b7e9-4a59-9c5b-1712e4039265",
+    "text": "complexity in maintaining gaap compliance and audit readiness"
+  },
+  {
+    "id": "2c7c6782-5095-42cb-b043-1d57b609483e",
+    "text": "difficulties in managing discounts and trials"
+  },
+  {
+    "id": "044d93ce-083b-4499-a805-be9c5274309a",
+    "text": "inflexibility in checkout process"
+  },
+  {
+    "id": "ee93a741-b2e2-43e8-8774-e5955b846acc",
+    "text": "challenges in managing feature entitlements"
+  },
+  {
+    "id": "f163c3cb-13be-4d78-9b1c-321aa67ddd50",
+    "text": "high customer churn rate and difficulty in revenue recovery"
+  },
+  {
+    "id": "42cde07e-9b45-46dd-8e3a-885909af7b3e",
+    "text": "difficulty in offering discounts and managing product trials"
+  },
+  {
+    "id": "48058042-0314-481f-9c35-7264cc4fc456",
+    "text": "inability to provide a user-friendly and customizable checkout experience"
+  },
+  {
+    "id": "e841698d-cc94-4703-86b1-ca11dc5e1392",
+    "text": "difficulty in providing self-service options and customizing checkout flows"
+  },
+  {
+    "id": "a8e941d2-c1bb-4923-8ab8-07461aa69f11",
+    "text": "keeping track of case updates and conducting comprehensive legal research can be time-consuming and complicated."
+  },
+  {
+    "id": "543b956c-00f6-47cf-9472-bd09347f9c10",
+    "text": "sharing information and managing tasks across a team can be inefficient and unorganized."
+  },
+  {
+    "id": "c877056f-5473-4b46-8fe2-6f020722c4ac",
+    "text": "tracking progress and making informed decisions can be difficult without customized reports."
+  },
+  {
+    "id": "7c3b6685-29e7-4df1-a8e0-5629fa2b6672",
+    "text": "navigating complex software and staying updated with tasks, appointments, and hearings can be challenging."
+  },
+  {
+    "id": "76c49daa-a297-4152-a085-9576c8d75c28",
+    "text": "managing critical tasks on the go can be difficult without a mobile application."
+  },
+  {
+    "id": "36009f00-5b4d-4fcf-bc54-85716e209e1e",
+    "text": "staying updated with the latest cases can be challenging due to the lack of a comprehensive case directory."
+  },
+  {
+    "id": "17a9e380-f3c7-45ef-97e8-cd2cb69a4843",
+    "text": "handling sensitive legal information can pose security risks if not adequately protected."
+  },
+  {
+    "id": "91c7c77e-fd1d-49ca-9364-b76a097b86b3",
+    "text": "managing a law firm remotely can be challenging due to the lack of efficient remote access tools."
+  },
+  {
+    "id": "84e8a9f9-3aac-476d-a8df-bc747a08d4e7",
+    "text": "difficulty in staying updated with case progress and conducting comprehensive research"
+  },
+  {
+    "id": "b474705b-1d61-4264-927b-3f41f22b57af",
+    "text": "inefficient collaboration and information sharing among team members"
+  },
+  {
+    "id": "7ce830a9-3da9-4118-bbaf-33c92920a8b9",
+    "text": "difficulty in tracking case progress and making informed decisions"
+  },
+  {
+    "id": "d880390d-9037-45f8-8c66-53e27fd10578",
+    "text": "difficulty in navigating the software and accessing key features"
+  },
+  {
+    "id": "320e07b3-1f62-452a-9776-9f0cfcd71503",
+    "text": "inability to manage tasks and cases on the go"
+  },
+  {
+    "id": "968d7bf5-fe7a-40a7-9c9b-ae7c30a56264",
+    "text": "difficulty in staying ahead in the legal game due to lack of access to comprehensive case directory"
+  },
+  {
+    "id": "d05cd9f6-8cef-45cc-8c4f-f4b4576de386",
+    "text": "concerns over data security and privacy"
+  },
+  {
+    "id": "d992d70c-f6b2-422b-9fb3-ce7d1f2f6bac",
+    "text": "difficulty in managing law firm, handling cases, judgments, and communicating with clients remotely"
+  },
+  {
+    "id": "e4874cc5-2f76-4405-aa52-bcd58fb4b812",
+    "text": "difficulty keeping track of case updates and performing comprehensive legal research"
+  },
+  {
+    "id": "244b298d-0e19-43dc-81fd-b03a9533309c",
+    "text": "inefficiency and lack of coordination in team-based legal work"
+  },
+  {
+    "id": "ea1ccc4b-ec05-41b3-846e-8ff13d71a783",
+    "text": "difficulty in tracking progress and making informed decisions"
+  },
+  {
+    "id": "96e3581c-88cb-4452-9257-528a8864326f",
+    "text": "complexity and inefficiency in navigating the platform and accessing important information"
+  },
+  {
+    "id": "dde51e1c-9445-48aa-9f88-cd08ab233a31",
+    "text": "inability to manage tasks and access information on the go"
+  },
+  {
+    "id": "a8d57744-da5f-44a9-89bd-e6fdd1a8171f",
+    "text": "difficulty staying updated with legal cases"
+  },
+  {
+    "id": "a6760b04-e613-4327-9621-4cddcb2f3cb5",
+    "text": "inability to manage law firm operations and communicate with clients remotely"
+  },
+  {
+    "id": "3ba8ca6c-384a-4911-a1e8-1244b5ead0ba",
+    "text": "slow website and app launch, difficulty in bulk upload/import of products and inventory"
+  },
+  {
+    "id": "280765f4-783f-462d-ad71-333ffd0c6b46",
+    "text": "limited scalability, downtime, lack of third-party integrations"
+  },
+  {
+    "id": "b1c93261-7acf-423d-bf46-72d7f96306b2",
+    "text": "difficulty in order tracking, invoicing, report generation, and bulk editing"
+  },
+  {
+    "id": "03246288-8d87-4452-b805-719b38b5f2a5",
+    "text": "lack of business insights, difficulty in tax calculations"
+  },
+  {
+    "id": "490ae03c-d30b-4a20-ad43-bc8d36f773bd",
+    "text": "slow loading times, poor user experience"
+  },
+  {
+    "id": "41c3fbfa-e936-4130-a8a2-166fd42a51cd",
+    "text": "difficulty in managing shipments from multiple warehouses"
+  },
+  {
+    "id": "a6d7f99a-002e-4664-9def-0f2d7f366df6",
+    "text": "high abandonment rates, poor checkout experience"
+  },
+  {
+    "id": "d37df654-3aed-4816-8c23-ce325851b387",
+    "text": "lack of mobile presence, difficulty in attracting loyal customers"
+  },
+  {
+    "id": "d7e7f5a2-6e6d-4ed4-a8c1-a06b9d5d4081",
+    "text": "slow website and app launch, time-consuming product upload, and complex payment gateway integration"
+  },
+  {
+    "id": "91f965a9-b7ba-461d-80e3-0794c9c5e3be",
+    "text": "unreliable uptime, limited plugin options, lack of marketing tools, and high transaction fees"
+  },
+  {
+    "id": "16b29db3-be1e-467f-aee9-4523ec12c844",
+    "text": "inefficient order tracking, billing, report generation, and product management"
+  },
+  {
+    "id": "ccbf7688-0576-4837-9f6a-2cfee09074b7",
+    "text": "lack of business insights and manual tax calculation"
+  },
+  {
+    "id": "e30448b7-d147-4f66-bb28-9093d093f5f4",
+    "text": "slow loading times leading to customer dissatisfaction and loss of sales"
+  },
+  {
+    "id": "cc72793a-c642-46e1-a3c7-0dde597d780a",
+    "text": "inability to ship products from multiple warehouses, leading to slower delivery times"
+  },
+  {
+    "id": "8004a660-fdab-4d5e-8f67-330892bc58e7",
+    "text": "complex checkout process leading to high cart abandonment rates"
+  },
+  {
+    "id": "fcc8a0fc-92dc-49f5-b2ab-a6e85d39f49d",
+    "text": "lack of mobile presence, leading to missed opportunities with mobile-first customers"
+  },
+  {
+    "id": "d3b397a9-5ae8-4e18-813b-585c4cd5ae32",
+    "text": "slow and complex setup of online stores"
+  },
+  {
+    "id": "fa689a48-c855-4e9e-a6cb-9a6c765e223a",
+    "text": "limited growth due to system limitations"
+  },
+  {
+    "id": "204a5796-ed59-4d44-9f3a-429da39ae4d5",
+    "text": "inefficient order and inventory management"
+  },
+  {
+    "id": "8a097052-2b18-479f-8f9d-4c4074fc203c",
+    "text": "lack of insight into business performance"
+  },
+  {
+    "id": "5837b33c-a8e6-464e-b348-50e12902c587",
+    "text": "slow website speed leading to customer drop-offs"
+  },
+  {
+    "id": "3689f1d0-96d7-48fb-8aa2-f1c5d087def7",
+    "text": "inefficient shipping from multiple warehouses"
+  },
+  {
+    "id": "e5f0d0d9-23e6-4025-9b19-54daade5d0fc",
+    "text": "high cart abandonment rate due to complex checkout process"
+  },
+  {
+    "id": "5db299e1-c093-498a-845b-232d8f19be08",
+    "text": "limited customer reach due to absence of mobile presence"
+  },
+  {
+    "id": "0eeef83f-6511-4fa9-99cc-9942ac8b5436",
+    "text": "lack of alignment in company goals and strategy execution"
+  },
+  {
+    "id": "f9adb8d5-83f9-4df3-9f83-f9c1a4e4b5ab",
+    "text": "inefficient tracking and management of team performance"
+  },
+  {
+    "id": "cbd62a4e-a766-45f6-a4f9-dc843c8a5760",
+    "text": "inefficient task organization and alignment with company goals"
+  },
+  {
+    "id": "7f3877a8-3c45-45bc-bbd2-770dac13850e",
+    "text": "low employee engagement and satisfaction"
+  },
+  {
+    "id": "e05e85b2-9a23-4fe1-8e1f-bfa896c6eb8d",
+    "text": "lack of seamless integration with other used apps"
+  },
+  {
+    "id": "2dc1303c-fe47-42e3-9bd4-91de783e3b5b",
+    "text": "lack of understanding and knowledge about okrs"
+  },
+  {
+    "id": "3a908e6d-05df-404a-a764-4d9037ffe3f2",
+    "text": "difficulties in implementing and managing okrs"
+  },
+  {
+    "id": "830710ed-b861-46a5-863b-1c7c58923abd",
+    "text": "inefficient goal management and strategic execution"
+  },
+  {
+    "id": "04b6daf6-77a2-4732-a7cd-c0faf6c35222",
+    "text": "difficulty aligning business goals and executing strategy"
+  },
+  {
+    "id": "1754f207-c145-4b81-9702-53c4bdb7b696",
+    "text": "challenges in building a high-performance team"
+  },
+  {
+    "id": "21c75b3f-b814-4a0e-ba2f-862692d1890d",
+    "text": "difficulty in organizing tasks and aligning them with company goals"
+  },
+  {
+    "id": "c0976cc4-927d-4a6b-b5fd-b52bfb2708b5",
+    "text": "lack of integration with popular apps"
+  },
+  {
+    "id": "586e8ef7-05b0-4f91-8054-ca10bc7872c5",
+    "text": "lack of comprehensive understanding of okrs"
+  },
+  {
+    "id": "8d06f1fd-6dc6-4429-b807-a43a9f7a381e",
+    "text": "lack of support for okr implementation"
+  },
+  {
+    "id": "2e668e29-211e-4673-b5ee-e35061d14a50",
+    "text": "inefficiency in goal management and strategic execution"
+  },
+  {
+    "id": "5fed06c0-631c-42a0-aace-a50002c4ca6a",
+    "text": "lack of alignment and clarity in executing business strategy"
+  },
+  {
+    "id": "685c3317-0407-43f5-aa06-21c6e4c04990",
+    "text": "difficulty in tracking and managing team performance"
+  },
+  {
+    "id": "f70bad1b-2be6-4e45-a44e-008a5f9bd951",
+    "text": "inability to integrate okr software with other essential business tools"
+  },
+  {
+    "id": "fe967198-577b-40ed-bc00-6fdf00be42b9",
+    "text": "difficulty in implementing and managing okrs"
+  },
+  {
+    "id": "1c9f6684-a98e-420a-abba-df946b76bb84",
+    "text": "difficulty in aligning business goals and executing strategy"
+  },
+  {
+    "id": "6c0b701c-97cd-4fea-ac5d-4e1b1437932f",
+    "text": "challenges in tracking, monitoring, and managing team performance"
+  },
+  {
+    "id": "e8949d45-d190-41a6-be73-c4c377db558a",
+    "text": "difficulty in aligning tasks with company goals and enhancing productivity"
+  },
+  {
+    "id": "7cc9d7b8-593d-469b-8581-1688aeada076",
+    "text": "struggles in creating a satisfactory workplace and boosting employee engagement"
+  },
+  {
+    "id": "48b54539-c0b6-4be3-b7d7-1a4634bc619a",
+    "text": "need for enhanced functionality through integration with other apps"
+  },
+  {
+    "id": "2fc9ad06-344b-4658-b03f-63a02fd6b54a",
+    "text": "need for comprehensive understanding and learning of okrs"
+  },
+  {
+    "id": "c91bd706-7612-4064-a46f-50dede1f34ed",
+    "text": "need for support in implementing and managing okrs"
+  },
+  {
+    "id": "7e3deee4-b9de-47f3-947e-9e02f803df44",
+    "text": "need for precision in strategic execution and goal management"
+  },
+  {
+    "id": "9277aed0-acf9-45ed-9793-bcac720a9e07",
+    "text": "difficulty in aligning goals and executing strategy"
+  },
+  {
+    "id": "6f1622c2-e812-4287-bbfd-e9a48f8410da",
+    "text": "issues with organizing tasks and aligning them with company goals"
+  },
+  {
+    "id": "15e48746-dd4c-4c24-a887-1df96591c3de",
+    "text": "difficulty in creating a better workplace and boosting employee engagement"
+  },
+  {
+    "id": "6b1e1a83-a4ec-4d5c-a2ff-334c7060b14b",
+    "text": "need for seamless integration with popular apps for enhanced functionality"
+  },
+  {
+    "id": "2aaef1fd-8d8a-43df-91ce-404d648fce3a",
+    "text": "need for comprehensive learning and understanding of okrs"
+  },
+  {
+    "id": "7337f5b4-fc0d-4085-abb8-0ff02885dbc3",
+    "text": "need for extensive support for implementing and managing okrs"
+  },
+  {
+    "id": "9604ec31-e262-4236-a7c9-aa7fd1b6b909",
+    "text": "need for streamlined goal management and strategic execution"
+  },
+  {
+    "id": "81f8f581-80b0-452b-b7d7-a915f977dcda",
+    "text": "lack of alignment in organizational goals and strategy execution"
+  },
+  {
+    "id": "86fd1353-8ba7-485d-b8ce-e4fb5fba13e8",
+    "text": "inefficient tracking and managing of team performance"
+  },
+  {
+    "id": "75690fff-9049-4890-91df-42db0b487d5e",
+    "text": "inefficient organization and alignment of tasks with company goals"
+  },
+  {
+    "id": "c16d1b28-5695-4dbe-b89a-d4b4398034d0",
+    "text": "need for enhanced functionality through integration with popular apps"
+  },
+  {
+    "id": "a7b93754-36a4-465f-a1a0-7e2134c8dab4",
+    "text": "need for precision in goal management and strategic execution"
+  },
+  {
+    "id": "b3e03a85-baa2-455d-93e2-c4fff1d5b6be",
+    "text": "difficult to manage multiple complex subscriptions scenarios"
+  },
+  {
+    "id": "1c940784-df27-4d01-91da-a443764875f8",
+    "text": "difficulty in predicting churn and reducing involuntary churn"
+  },
+  {
+    "id": "9a60e780-be38-43e1-895c-47bc24a741e1",
+    "text": "challenge in recognizing revenue accurately and in compliance with global standards"
+  },
+  {
+    "id": "6be4aa66-3078-4591-a0c0-ffb2515f933c",
+    "text": "inability to allow users to manage their subscriptions and checkouts"
+  },
+  {
+    "id": "3527cf92-27fb-41e3-8343-d19cf2407070",
+    "text": "difficulty managing customer checkout process"
+  },
+  {
+    "id": "2b6d3ab4-e2a6-4643-9d38-4ad4d904811e",
+    "text": "difficulty managing and testing feature entitlements"
+  },
+  {
+    "id": "cd5d86ba-8fb8-4947-a5a5-441d164788f3",
+    "text": "difficulty in implementing and scaling customizable pricing structures"
+  },
+  {
+    "id": "b50708e2-a148-4a5f-be32-589119bd9289",
+    "text": "predicting churn and offering options to retain customers"
+  },
+  {
+    "id": "ffaac1a5-1eb3-4d12-910b-1e274fe1fd31",
+    "text": "managing user transactions and customizing checkout flows"
+  },
+  {
+    "id": "42c66896-91b5-4a03-87e1-083625f8c297",
+    "text": "managing feature entitlements based on plans"
+  },
+  {
+    "id": "d0b31701-d922-4160-a9f6-9e47b6d774d0",
+    "text": "difficulties in managing complex subscription scenarios"
+  },
+  {
+    "id": "1b542916-5ee7-4f2d-bf73-1863887d3620",
+    "text": "inaccurate and non-compliant revenue recognition"
+  },
+  {
+    "id": "039489b8-6649-4b4e-a5a3-d12dc793ff10",
+    "text": "poor customer experience in managing subscriptions"
+  },
+  {
+    "id": "71f0a2fe-f379-4b9a-afae-52b20f186764",
+    "text": "security breaches and non-compliance with regulations"
+  },
+  {
+    "id": "95c677b6-b28b-494c-aea8-241c8d38a770",
+    "text": "difficulties in managing feature access based on plans"
+  },
+  {
+    "id": "17f923b6-db63-4da5-95c3-4818b877ccd3",
+    "text": "managing complex subscription scenarios manually"
+  },
+  {
+    "id": "73e10fd2-bb64-4f07-b968-f43b8fbf8b17",
+    "text": "high customer churn rates"
+  },
+  {
+    "id": "df8f99ec-25c2-4949-a607-dd9aea568280",
+    "text": "inaccurate or non-compliant revenue recognition"
+  },
+  {
+    "id": "bfa46340-4eeb-4181-80f8-741f60894328",
+    "text": "difficulty in managing discounts and trial offers"
+  },
+  {
+    "id": "e2784606-aa79-4acc-b422-8e898330904c",
+    "text": "inefficient and inflexible checkout process"
+  },
+  {
+    "id": "0b4bdd0b-b139-4034-8ba3-1eb72c4696e1",
+    "text": "Increased pressure to acquire new customers to compensate for customer churn"
+  },
+  {
+    "id": "18b120e4-cc65-4fd3-a67d-63836c49a3c8",
+    "text": "Inability to accurately represent product features to potential clients, leading to loss of sales opportunities"
+  },
+  {
+    "id": "6f1bbbd2-0db7-4b6f-8368-0a32d9e3c54b",
+    "text": "Decrease in sales due to poor checkout experience leading to customer drop-offs"
+  },
+  {
+    "id": "be7f2627-9567-42c9-908f-0f777decc569",
+    "text": "Increase in customer complaints due to lack of promotional offers"
+  },
+  {
+    "id": "2209ca93-2637-4db1-aa8e-89c8ee2a6993",
+    "text": "Ineffective marketing campaigns due to lack of promotional offers to advertise"
+  },
+  {
+    "id": "305b56a8-d866-4772-b79c-095c432da233",
+    "text": "Lack of customer feedback due to customer churn, leading to less effective product improvements"
+  },
+  {
+    "id": "bd181021-a0fb-4721-99e7-c8669191f090",
+    "text": "Sales targets are not met due to customer churn"
+  },
+  {
+    "id": "1aa9e668-4f27-40a9-b18c-9b4768500206",
+    "text": "Increased customer complaints and churn due to poor subscription management"
+  },
+  {
+    "id": "449c5f6e-acfe-4fc4-9cae-d3cbc59ca09f",
+    "text": "Inaccurate sales forecast due to incorrect revenue recognition, leading to poor planning and potential loss of sales opportunities"
+  },
+  {
+    "id": "ca3c1ec5-ac02-44d1-835e-1f6e30ffada0",
+    "text": "Inability to verify financial statements, leading to potential legal issues and loss of credibility"
+  },
+  {
+    "id": "0e185653-8520-416d-9a2c-56c61bda0b99",
+    "text": "Inability to meet sales targets due to overpriced products"
+  },
+  {
+    "id": "5ecb236d-babe-46b7-aac4-8010fcd66b8c",
+    "text": "Difficulty in product positioning and strategy due to high prices"
+  },
+  {
+    "id": "8c852d02-65fe-4bd5-9816-875e82eb9fd2",
+    "text": "Inability to provide accurate support to customers due to lack of understanding of product features, leading to customer dissatisfaction"
+  },
+  {
+    "id": "d34ecff0-efbe-4ead-9a25-882e89745c9a",
+    "text": "Difficulty in promoting products due to high prices"
+  },
+  {
+    "id": "3ca3c47f-64e6-4e40-8c4e-3c57793d148e",
+    "text": "Increase in customer complaints due to high product prices"
+  },
+  {
+    "id": "ad958b6e-71e9-4c58-9e3e-296310579d47",
+    "text": "Decrease in conversion rate due to poor checkout experience"
+  },
+  {
+    "id": "e4ce69b2-4d02-4cd9-aa28-f113cfe2cd9e",
+    "text": "Inability to create effective marketing campaigns due to lack of understanding of product features, leading to ineffective marketing efforts"
+  },
+  {
+    "id": "37ed9dda-663b-4043-9dd5-057b4815526b",
+    "text": "Inaccurate revenue forecasts due to incorrect subscription data"
+  },
+  {
+    "id": "60d4ab57-1d35-4c43-84dc-936fec0a3baf",
+    "text": "Increase in number of complaints due to poor checkout experience"
+  },
+  {
+    "id": "babe66ca-e33e-48b2-a658-536f6360759f",
+    "text": "Inaccurate financial reporting leading to poor strategic decisions and potential legal issues"
+  },
+  {
+    "id": "c44dba58-4ce9-421a-a776-1fa5c8a68c32",
+    "text": "Unable to make informed product decisions due to lack of accurate subscription data"
+  },
+  {
+    "id": "4432b202-d7bd-4f76-bb70-5bf0487839b3",
+    "text": "Company profitability decreases due to customer churn"
+  },
+  {
+    "id": "a9327630-664c-48bf-afe0-dcfc6513e632",
+    "text": "Decrease in sales due to lack of attractive and competitive promotional offers"
+  },
+  {
+    "id": "8b976131-7a0b-4726-86d1-1f5a0e0400c2",
+    "text": "difficulty in managing end user interfaces and checkout flows"
+  },
+  {
+    "id": "11cc43c1-5e0e-478a-91d8-c31713a8f389",
+    "text": "challenges in ensuring secure transactions and compliance with relevant regulations"
+  },
+  {
+    "id": "194d4ac5-4224-4666-9990-524acc60f086",
+    "text": "difficulty in managing product features mapping to plans"
+  },
+  {
+    "id": "ad83607b-bf4c-4a43-8c85-21240c8b0852",
+    "text": "high churn rate and difficulty in customer retention"
+  },
+  {
+    "id": "052f1d83-fccd-4b42-857e-de95e77235de",
+    "text": "inability to effectively manage discounts and trials"
+  },
+  {
+    "id": "669625b1-abe2-44d2-8841-f9f430c9d28e",
+    "text": "inefficient checkout process and limited user control"
+  },
+  {
+    "id": "48b1c25c-0fcc-4d29-8c00-e6acbd676cda",
+    "text": "difficulty in managing feature access based on subscription plans"
+  },
+  {
+    "id": "25565bb4-560a-4fa8-b526-eb01b7cb50cb",
+    "text": "inability to allow end users to manage their subscriptions and checkout flows"
+  },
+  {
+    "id": "9489068a-8eb1-4765-816b-59a46de6ae0d",
+    "text": "difficulty in managing feature entitlements and testing price sensitivity"
+  },
+  {
+    "id": "14ce76d6-5bf7-4b3c-8cc0-e3e5a3ac7f44",
+    "text": "Potential security breaches due to non-compliance"
+  },
+  {
+    "id": "62921121-2015-4ec7-8793-f5e6dff6c6bc",
+    "text": "Decrease in overall company revenue"
+  },
+  {
+    "id": "a1bde03e-dde6-4f12-9e38-8a8a8159b279",
+    "text": "Lack of customer feedback leading to less effective product development"
+  },
+  {
+    "id": "a0fa925e-ac12-4f3b-a062-4f28ce179aea",
+    "text": "Inaccurate sales forecasts and unrealistic sales targets"
+  },
+  {
+    "id": "f1f90e2c-0dc6-4c05-9621-60ea2764aa15",
+    "text": "Incorrect business strategy due to incorrect pricing, leading to business stagnation or decline"
+  },
+  {
+    "id": "0210dabe-b516-4e77-9e42-ff9ba72a5a65",
+    "text": "Potential fines and financial loss due to non-compliance"
+  },
+  {
+    "id": "db8c96ab-0022-41da-9d12-b19660a134fc",
+    "text": "Increased customer complaints and churn rate"
+  },
+  {
+    "id": "12e13b16-6cc1-429c-9df4-0e539af7de7f",
+    "text": "Potential loss of sales due to non-compliance"
+  },
+  {
+    "id": "603f806e-dfaf-4820-9ea9-d63452e8e872",
+    "text": "Increased risk of security breaches, data loss, and non-compliance with regulatory standards"
+  },
+  {
+    "id": "f90b67ce-9c86-414d-a9c6-13fba2f4e073",
+    "text": "Inaccurate sales forecasting leading to missed targets"
+  },
+  {
+    "id": "2c412d4e-6bbf-4e2b-be5a-ad8dd05c3c4d",
+    "text": "Ineffective marketing campaigns due to incorrect pricing, leading to low customer acquisition"
+  },
+  {
+    "id": "5d5925bf-3dc5-4d1a-a142-1f6a48b02837",
+    "text": "Potential financial losses, damaged reputation, and legal consequences due to security breaches"
+  },
+  {
+    "id": "8fd298c3-ede8-489b-b7f9-d1e3e71d8340",
+    "text": "Inefficient marketing campaigns due to lack of customer insights"
+  },
+  {
+    "id": "9c77e8d2-a8ca-4436-990b-44aa667245a9",
+    "text": "Difficulty in selling products due to uncompetitive pricing"
+  },
+  {
+    "id": "794ea15b-3280-4ac8-ba2b-fef8f8b3a838",
+    "text": "Inaccurate data leading to potential audit failure and regulatory penalties"
+  },
+  {
+    "id": "23c86d8a-1e85-4f27-86ec-ac35d5d0fcb8",
+    "text": "Increased workload due to necessary security patches and vulnerability fixes"
+  },
+  {
+    "id": "33584168-3d62-4729-afc2-1e007f084bcb",
+    "text": "Product features not aligning with customer needs"
+  },
+  {
+    "id": "359c85e2-7e96-4a8d-add6-118c508e9558",
+    "text": "Decrease in sales due to loss of customers"
+  },
+  {
+    "id": "dda81ca1-28f1-47ae-a349-97f5b095abb7",
+    "text": "Increased pressure to acquire new customers to replace lost ones"
+  },
+  {
+    "id": "6e45cee7-e674-4f19-b662-d9b3ad7f7cd5",
+    "text": "Inefficient marketing strategies and wasted resources"
+  },
+  {
+    "id": "8eb368c1-2cbc-4717-9b67-d5588b7e3f48",
+    "text": "Increase in customer complaints due to poor user experience and checkout process"
+  },
+  {
+    "id": "ed567986-20f3-4ed6-9758-1a0585d9930e",
+    "text": "Stagnant growth and loss of market share"
+  },
+  {
+    "id": "42d248b4-619f-4a39-966b-6be47c577af2",
+    "text": "Inaccurate financial reports leading to potential financial loss or regulatory penalties"
+  },
+  {
+    "id": "e5031b5c-f72e-4c9a-abe4-8c5f1c64a035",
+    "text": "Decrease in overall business performance due to poor user experience and checkout process"
+  },
+  {
+    "id": "23ef630e-8144-4a96-a1f1-10bf81d44552",
+    "text": "Decrease in customer retention due to poor user experience and checkout process"
+  },
+  {
+    "id": "39e349a7-c157-4dbe-906b-4efb0e863e2d",
+    "text": "Inability to meet sales targets due to poor user experience and checkout process"
+  },
+  {
+    "id": "d20c7e8c-3416-4a32-b2a5-34e5faf5d200",
+    "text": "Products not meeting revenue targets due to incorrect pricing"
+  },
+  {
+    "id": "d8414021-d44c-4236-8605-44528c52d545",
+    "text": "Inaccurate financial data leading to poor strategic decisions and potential loss of business"
+  },
+  {
+    "id": "4acf9573-b735-4b04-a9e5-52d855eb8f51",
+    "text": "Inaccurate product development strategy due to incorrect pricing, leading to product failures"
+  },
+  {
+    "id": "09b2db2f-8ad0-4843-b530-e4821ed75d3e",
+    "text": "Financial instability due to low profit margins from incorrect pricing"
+  },
+  {
+    "id": "2f2b202f-d0d9-4c44-a048-bb8e356aa71e",
+    "text": "Potential legal issues and penalties, loss of reputation, and financial loss due to non-compliance"
+  },
+  {
+    "id": "5b818aa9-dd1e-40e2-b103-a44ee3719925",
+    "text": "Ineffective marketing campaigns due to unattractive pricing"
+  },
+  {
+    "id": "87e072ca-e8df-44ae-9c8f-787b4a7c3a6f",
+    "text": "Inaccurate sales forecasts leading to poor planning and potential loss of sales"
+  },
+  {
+    "id": "057a9d5f-3455-42ef-891c-d442480066a9",
+    "text": "Inaccurate sales targets due to incorrect pricing, leading to missed revenue targets"
+  },
+  {
+    "id": "e7387cd8-5c92-4a8d-9d90-e86d3b833f32",
+    "text": "There may be an increase in customer complaints and negative feedback if the Sales Manager fails to retain customers."
+  },
+  {
+    "id": "cf8e16a7-f691-4c90-b74d-4c1ec38b30d0",
+    "text": "Inability to plan and allocate marketing budget effectively due to lack of financial insight"
+  },
+  {
+    "id": "d28ae22b-f5fe-4c99-922a-71f09148d53d",
+    "text": "Increased customer churn due to dissatisfaction with product/service"
+  },
+  {
+    "id": "55ae6284-0117-4180-aea9-256b57e8fbea",
+    "text": "Unable to accurately plan for the future"
+  },
+  {
+    "id": "33975701-e9b3-42c3-8a97-dfbf9688ce25",
+    "text": "Unable to develop effective marketing strategies due to lack of product alignment with market demand"
+  },
+  {
+    "id": "ff55e912-508d-47a7-b6fa-787444615f3b",
+    "text": "Lack of sufficient leads to convert into sales, leading to lower sales performance"
+  },
+  {
+    "id": "0d373b53-bb39-465d-ae9e-ac9f79137831",
+    "text": "Poor investment decisions due to lack of accurate financial risk assessment"
+  },
+  {
+    "id": "514873d2-a98f-49dd-b17e-e4002d03b1aa",
+    "text": "Inaccurate financial forecasting and budgeting"
+  },
+  {
+    "id": "05f8cfa4-b582-4996-a481-0420ccf13658",
+    "text": "Unable to plan for operational needs accurately"
+  },
+  {
+    "id": "50f6d216-c089-47e7-88c6-8e95f22bd90d",
+    "text": "Decrease in company revenue due to lack of new sales"
+  },
+  {
+    "id": "30297f18-106a-4891-8f63-577b0269ab5c",
+    "text": "Unable to plan marketing campaigns effectively"
+  },
+  {
+    "id": "1be1077c-3dd0-4881-b5a4-5a0f7cb94fce",
+    "text": "Inadequate or outdated infrastructure that leads to system failures or security breaches"
+  },
+  {
+    "id": "1fb9ce67-fdd1-4262-bfe5-78a1a0413206",
+    "text": "Inability to make informed strategic decisions due to lack of financial performance data"
+  },
+  {
+    "id": "60abe4a1-ce77-413e-97a3-10fc761d3069",
+    "text": "Ineffective marketing campaigns due to lack of sales feedback"
+  },
+  {
+    "id": "d7136f09-a9c7-4ab0-a32b-0d52e3a5daba",
+    "text": "Inability to forecast revenue accurately, leading to poor strategic decisions"
+  },
+  {
+    "id": "1401b6f4-27cd-4057-8cd9-53648c9a6155",
+    "text": "Ineffective marketing strategies due to lack of new customers"
+  },
+  {
+    "id": "b2fc588e-b97c-4fb7-9377-15e319a5d12b",
+    "text": "Inability to make informed decisions about product development leading to irrelevant or ineffective features"
+  },
+  {
+    "id": "fd204249-3d82-49ab-ae4b-c0a3052c85d9",
+    "text": "Inability to fund new product development due to lack of sales revenue"
+  },
+  {
+    "id": "3b605616-5e9a-48c6-8d78-e96a1982a923",
+    "text": "Misallocation of budget due to inaccurate sales forecast"
+  },
+  {
+    "id": "f8acf4ca-bbea-4f2f-9e7f-50ea155c3fc3",
+    "text": "Inability to forecast sales accurately due to lack of financial insight"
+  },
+  {
+    "id": "36100350-69be-4d34-9871-116c51bd0399",
+    "text": "Delays and inefficiencies in project execution due to lack of IT support"
+  },
+  {
+    "id": "667e7c70-ffa5-4b4d-9419-87cd421b3d40",
+    "text": "Inability to align marketing efforts with sales targets leading to wasted resources"
+  },
+  {
+    "id": "964c3b76-d6a2-4bdc-96d1-4af5a4d52261",
+    "text": "The marketing team's efforts may be wasted if the Sales Manager fails to retain the customers they attract."
+  },
+  {
+    "id": "219de4c3-3598-4dea-8d2a-e1e66dc63931",
+    "text": "Ineffective marketing strategy and damage to brand reputation."
+  },
+  {
+    "id": "3ea4802f-a397-4787-83cd-07504d1b0ee9",
+    "text": "Decreased sales performance due to fewer customers"
+  },
+  {
+    "id": "405c48dd-3dcb-4831-9f28-5bc920151f4b",
+    "text": "Inaccurate financial forecasts leading to poor budgeting and financial decisions"
+  },
+  {
+    "id": "945cdc86-7508-4771-9112-ee64195d2f43",
+    "text": "Inaccurate financial forecasting leading to poor strategic decisions"
+  },
+  {
+    "id": "0b0fbc06-76bd-47ba-863c-b5df8e4a64e4",
+    "text": "Difficulty in onboarding and training new employees due to lack of IT resources"
+  },
+  {
+    "id": "5ded8e3d-49a9-414b-baf3-12f2d20f5b79",
+    "text": "Inaccurate sales forecasts can lead to poor strategic decisions, affecting the overall growth and success of the company."
+  },
+  {
+    "id": "ce325761-fbc7-4219-8f1c-3c789a885179",
+    "text": "Inability to accurately allocate resources"
+  },
+  {
+    "id": "ab390e0b-5979-4f33-9d14-a88420cb35ea",
+    "text": "Misalignment of marketing strategy with company goals"
+  },
+  {
+    "id": "c0059984-a642-4a26-a60c-081a5c6235f8",
+    "text": "Inability to plan workforce needs accurately due to lack of financial insight"
+  },
+  {
+    "id": "da243efb-2022-4e46-ad80-31cdd5d11f6d",
+    "text": "Difficulty in budgeting and financial planning due to unpredictable sales performance"
+  },
+  {
+    "id": "3e535ce3-8d81-42a6-b75b-5f660f5b62f8",
+    "text": "Poor strategic decisions due to lack of accurate financial risk assessment"
+  },
+  {
+    "id": "0de08d38-ae70-4858-99b0-9dc8259ecf38",
+    "text": "Inaccurate financial forecasts and budgets due to unreliable sales data"
+  },
+  {
+    "id": "aa33e9bd-21e5-4c1c-9fa9-2bfdeaec8bdf",
+    "text": "Difficulty in managing customer expectations and ensuring satisfaction due to lack of communication from sales"
+  },
+  {
+    "id": "e33d6834-0f72-4c32-8f74-d867ce5828e2",
+    "text": "Potential financial loss due to poor investment decisions based on incorrect financial statements"
+  },
+  {
+    "id": "b5bd6b8b-6620-4cb9-b43f-b481c338cf4f",
+    "text": "Developing products that don't meet market demand"
+  },
+  {
+    "id": "013c7ea8-1ded-4307-b3dc-8899fff85539",
+    "text": "Inability to make strategic decisions due to lack of sales data"
+  },
+  {
+    "id": "c4919f84-8478-4f68-896c-dd52a2b4bf40",
+    "text": "Increased stress and workload due to unresolved customer complaints"
+  },
+  {
+    "id": "17b71c9f-d2be-4b1a-bbbc-d9788aa71505",
+    "text": "Inability to make informed decisions due to lack of IT infrastructure and data analysis"
+  },
+  {
+    "id": "986bf2d8-a9bd-4848-8e9e-08ea8987267e",
+    "text": "Inaccurate financial forecasts due to unpredictable sales performance"
+  },
+  {
+    "id": "be745e2f-5258-4146-8fb7-1898040ac0b9",
+    "text": "Inability to track sales performance and forecast due to poor IT systems"
+  },
+  {
+    "id": "a074d419-89ac-4d90-99d7-06b36ab76b43",
+    "text": "Ineffective marketing campaigns due to lack of alignment with sales strategy"
+  },
+  {
+    "id": "c7748203-e852-4e2d-9e22-924abfadb560",
+    "text": "Unable to steer company in the right direction due to products not meeting market demands"
+  },
+  {
+    "id": "7d68ecf7-4a69-42f1-bdb2-7483cf49ea4c",
+    "text": "Increased number of customer inquiries due to lack of information in marketing campaigns"
+  },
+  {
+    "id": "866a085d-41b0-4df2-9e16-14a0df7d509a",
+    "text": "Increased volume of complaints due to product issues not addressed"
+  },
+  {
+    "id": "b03c5d38-c446-48ea-9cd6-d41f7695c037",
+    "text": "Inability to allocate sufficient budget for marketing activities"
+  },
+  {
+    "id": "501b3a9e-80dd-4aeb-a8bb-78ebdf7c4308",
+    "text": "Security breaches leading to data loss or theft"
+  },
+  {
+    "id": "a5a84038-95de-4111-a546-4f4160f0f254",
+    "text": "Unable to meet sales targets due to lack of clear sales strategy"
+  },
+  {
+    "id": "ef6c9f79-f656-4358-b0dc-be7f3c0d39d1",
+    "text": "Unable to plan and strategize product development effectively due to lack of market demand understanding"
+  },
+  {
+    "id": "44589301-9400-4a37-8e5a-dab3b3bfe016",
+    "text": "Non-compliance with regulatory requirements and potential reputational damage"
+  },
+  {
+    "id": "a24c517e-f8eb-4fa9-be92-43f7895b1041",
+    "text": "Without accurate financial data, it's difficult to allocate marketing budget effectively"
+  },
+  {
+    "id": "23fb3251-50e1-452a-9f35-bbc6732e9c74",
+    "text": "Difficulty in managing customer expectations due to inconsistent sales practices"
+  },
+  {
+    "id": "2c252c40-c64f-462a-9e63-d4688ca0353a",
+    "text": "Difficulties in recruitment and employee management due to lack of IT support"
+  },
+  {
+    "id": "7eacf6ef-39e0-4312-88cc-3253130ec25d",
+    "text": "Poor financial reporting leading to misguided investment decisions"
+  },
+  {
+    "id": "06bbb31b-cdf0-4f80-88e3-8ed6cb7bdf3f",
+    "text": "Inability to make informed decisions about the company's future due to lack of financial insight"
+  },
+  {
+    "id": "c848354b-b679-4b10-96db-cda68992142b",
+    "text": "Inability to improve product due to lack of customer feedback from sales"
+  },
+  {
+    "id": "6e40d71a-8324-4dec-8ba3-49e403508efd",
+    "text": "Unable to plan and manage financial resources effectively. Increased financial risks."
+  },
+  {
+    "id": "60162c9a-1d2f-40f5-ae77-a7d3951cee07",
+    "text": "Difficulty in promoting positive brand image due to negative customer feedback"
+  },
+  {
+    "id": "9d69184f-8415-454c-a1ea-f634829a4f77",
+    "text": "Difficulty in prioritizing product features due to lack of understanding of customer needs"
+  },
+  {
+    "id": "9597e9fa-1307-438c-ac6d-604ca10690ba",
+    "text": "Decreased revenue and growth due to poor sales performance"
+  },
+  {
+    "id": "6c0ddd52-ec08-4cbc-a929-12d258de2d5f",
+    "text": "Inaccurate financial forecasting and budgeting due to incorrect financial statements"
+  },
+  {
+    "id": "35fbc5e1-255b-4c70-9c70-03af8d6b9045",
+    "text": "Inability to align marketing strategies with sales targets"
+  },
+  {
+    "id": "bf7bdba8-15ce-4539-9061-22ecc4e30596",
+    "text": "Inability to implement new technologies due to lack of IT support"
+  },
+  {
+    "id": "16563b72-c855-43fe-9e7b-c0a94cda9de9",
+    "text": "Inability to attract and retain top talent. Low employee morale."
+  },
+  {
+    "id": "451540ac-440b-4d1e-970c-0cedbcddccc7",
+    "text": "Inaccurate financial forecasting due to unpredictable sales performance"
+  },
+  {
+    "id": "feaeaf4a-e7ac-4a2f-b585-3b28171982b5",
+    "text": "Inability to accurately gauge market demand due to ineffective marketing campaigns"
+  },
+  {
+    "id": "cab69870-6701-4792-bf7d-fb9e82e7c6e0",
+    "text": "Wasted resources on leads that are not converted to sales"
+  },
+  {
+    "id": "76f46d72-1ad8-44a0-9b09-9238e2ce7ade",
+    "text": "Inaccurate sales forecasts due to lack of accurate financial data"
+  },
+  {
+    "id": "3c22ff8b-4726-42f8-9e6f-bb331b3d08f1",
+    "text": "Inefficient operational processes and increased operational risks"
+  },
+  {
+    "id": "227e9da4-82d4-410d-9ec1-7dbe0e710dca",
+    "text": "Inability to make informed decisions due to lack of financial stability"
+  },
+  {
+    "id": "31518243-f305-4171-a591-af7d48553652",
+    "text": "The company may fail to meet its revenue targets, impacting the overall business strategy."
+  },
+  {
+    "id": "f9802515-8df4-4468-bb3e-0620bb632167",
+    "text": "Difficulty in selling a product that does not meet customer needs or expectations"
+  },
+  {
+    "id": "fe6ceb86-ce1a-4a66-9d64-fdbb953e850a",
+    "text": "Lack of accurate financial data can lead to poor decision making and potential financial losses"
+  },
+  {
+    "id": "2bbdb39d-cf96-4de3-923c-eb59316534c1",
+    "text": "Inadequate IT infrastructure leading to inefficiencies and potential losses"
+  },
+  {
+    "id": "95bc4df8-478c-468d-9eb2-34fac2829d1f",
+    "text": "Inability to execute marketing campaigns effectively due to IT issues"
+  },
+  {
+    "id": "214fca43-6c9e-48e5-b5f9-5ea7bffde5d7",
+    "text": "Inaccurate revenue forecast due to lower customer acquisition"
+  },
+  {
+    "id": "45f86589-13e3-455f-aca9-a16c34de567a",
+    "text": "Inaccurate sales forecasts can lead to ineffective marketing campaigns, wasting resources and potentially missing out on customer acquisition opportunities."
+  },
+  {
+    "id": "54d81d55-8c15-4d63-9abd-42180c55359b",
+    "text": "Inability to meet sales targets due to lack of effective sales tools or software"
+  },
+  {
+    "id": "7e12aea2-f65b-49e9-8600-4b11e01ffeda",
+    "text": "Inefficient marketing campaigns due to lack of sales target information"
+  },
+  {
+    "id": "81f1d840-1aeb-4420-ae01-9a8ad49524ca",
+    "text": "Inability to gather sufficient customer feedback for product improvement"
+  },
+  {
+    "id": "21adecd7-2c8f-4c2f-ad3e-304a3ad73d83",
+    "text": "Unable to accurately plan and strategize for the future due to lack of sales forecast"
+  },
+  {
+    "id": "7663ef68-652d-4469-8872-c602ea80a71d",
+    "text": "Inability to make informed decisions due to lack of sales performance data"
+  },
+  {
+    "id": "9ba907a2-95a7-4379-8de4-bcc1237831f9",
+    "text": "Inadequate financial insights leading to ineffective sales strategies"
+  },
+  {
+    "id": "523e5914-e03d-4b21-9225-f1306c0ab6cd",
+    "text": "Inaccurate financial forecasting due to inconsistent sales"
+  },
+  {
+    "id": "04c1ade5-279a-4a8c-8dc9-b93284eb6760",
+    "text": "Increase in customer complaints and dissatisfaction"
+  },
+  {
+    "id": "62b67c1b-1602-44fe-8d75-f66f17c34478",
+    "text": "Insufficient budget allocation leading to constrained product development"
+  },
+  {
+    "id": "01834894-f2c4-4924-bc43-cbbff59df63e",
+    "text": "Decrease in company's revenue and reputation"
+  },
+  {
+    "id": "065a57d0-747b-47b2-9b63-5b399dbd0f90",
+    "text": "Difficulty in tracking campaign performance or customer behavior due to lack of necessary software features"
+  },
+  {
+    "id": "5ecbb030-f2e4-4ff7-a85d-c5ebf5488da5",
+    "text": "Inaccurate or insufficient information leading to poor strategic decisions"
+  },
+  {
+    "id": "a9044986-0cb1-40d7-bb13-738da1281a05",
+    "text": "Decreased sales due to customer dissatisfaction"
+  },
+  {
+    "id": "46c07ac9-04ac-4d33-8d6c-08b561886039",
+    "text": "Increase in product returns or negative feedback"
+  },
+  {
+    "id": "e14604ad-c550-493e-81b8-5bec4d52e939",
+    "text": "Inability to accurately measure and improve campaign effectiveness due to lack of executed campaigns"
+  },
+  {
+    "id": "2c355916-de65-4530-bd6d-22bdf04c8bf7",
+    "text": "Increased customer complaints due to lack of awareness about the product/service due to ineffective marketing campaigns"
+  },
+  {
+    "id": "1eabf840-ab6a-44ae-9fcd-feb77ee58088",
+    "text": "Lack of quality leads to follow up on"
+  },
+  {
+    "id": "6aba62d6-c371-46de-a723-970b0efd2fb0",
+    "text": "Inability to make informed decisions due to inaccurate financial data"
+  },
+  {
+    "id": "82037203-9b27-4694-ad73-1d100c4647c0",
+    "text": "Inability to plan and allocate resources effectively due to lack of sales forecast"
+  },
+  {
+    "id": "030b9745-0253-443b-96a4-9197397522fc",
+    "text": "Increase in customer complaints due to software glitches or lack of customer-friendly features"
+  },
+  {
+    "id": "a60b2cc8-519e-4962-be81-de6d498b3e6d",
+    "text": "Inability to target marketing campaigns effectively due to lack of sales data"
+  },
+  {
+    "id": "3c895e8e-86ab-437b-8976-a3570c899e9b",
+    "text": "Operational inefficiencies and increased operational costs."
+  },
+  {
+    "id": "121de7ca-c313-4cec-a789-b003f9e3a5c3",
+    "text": "Difficulty in managing company's finances due to insufficient sales revenue"
+  },
+  {
+    "id": "c3f8f3b5-bf53-4e05-ac6f-08c72cb6ca65",
+    "text": "Ineffective targeting and messaging due to lack of insights on customer needs and preferences"
+  },
+  {
+    "id": "2737dfdc-9854-449a-a33d-004c94f59f85",
+    "text": "Inability to forecast revenue and budget appropriately due to lack of sales data"
+  },
+  {
+    "id": "e12fdb3f-3fa0-4cf5-a256-d7cf3e91992b",
+    "text": "Inability to accurately forecast and plan for future growth"
+  },
+  {
+    "id": "fd62504c-afaa-438b-979b-be0fd57d6ab0",
+    "text": "Inability to prioritize product features based on potential sales impact"
+  },
+  {
+    "id": "c5c9bd6d-d30f-4d05-8e9e-6f9daad4552f",
+    "text": "Inaccurate financial operations can cause discrepancies in financial reports and potential financial risks"
+  },
+  {
+    "id": "7388791d-bcf4-47e4-ba30-e20865fe86c1",
+    "text": "Wasting resources on ineffective marketing campaigns"
+  },
+  {
+    "id": "272b48e5-0d7f-493f-8279-95ebb8832765",
+    "text": "Inability to access necessary sales tools or customer data due to IT issues"
+  },
+  {
+    "id": "1798dbc9-67bb-47eb-be27-41f0763c6b65",
+    "text": "Inaccurate financial projections due to inconsistent sales"
+  },
+  {
+    "id": "422922ae-220f-400a-8c2a-f2ba9558f966",
+    "text": "Decrease in company revenue and overall growth"
+  },
+  {
+    "id": "6d6185fe-bd92-43a0-9c94-b80c40ebed36",
+    "text": "Decrease in customer retention affecting marketing strategies"
+  },
+  {
+    "id": "721aeaec-53a3-4ee1-8456-a63aebe56f6e",
+    "text": "Inaccurate sales forecasts can lead to overstocking or understocking of products, resulting in lost sales or wasted resources."
+  },
+  {
+    "id": "c8fe3c3b-2818-4660-b67a-13d33d3326d7",
+    "text": "Inability to plan effective marketing campaigns due to lack of sales data"
+  },
+  {
+    "id": "2e572b52-edc8-4e4b-84ad-bab021df659c",
+    "text": "Difficulty in promoting a product that does not meet customer needs or expectations"
+  },
+  {
+    "id": "1070d29f-0fc7-4884-9084-6942d6d0137e",
+    "text": "Lack of feedback and data from sales that can be used to improve the product"
+  },
+  {
+    "id": "f5a1d4a6-304d-4b14-ae16-913b05f33ec3",
+    "text": "Inability to allocate marketing budget efficiently due to lack of sales performance data"
+  },
+  {
+    "id": "55a330ba-a6e4-4ab3-98ba-7dfde2835c89",
+    "text": "Loss of revenue or reputation due to IT failures or security breaches"
+  },
+  {
+    "id": "1ab3006e-928f-45f2-af34-d85abbdccb3b",
+    "text": "Unable to accurately forecast revenue and set appropriate strategies"
+  },
+  {
+    "id": "bf7853f5-fbd1-48ae-9a83-bdd76b44b48d",
+    "text": "Unable to set realistic sales targets"
   }
 ]

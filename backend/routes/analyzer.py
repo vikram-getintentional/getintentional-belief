@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from backend.database import get_db
 from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
+from backend.utils.graph_base.graph import Graph
+from backend.utils.inference.hop_plus_agent import infer_upstream_with_rules
 
 
 router = APIRouter()
@@ -84,3 +86,38 @@ async def analyze_deep(payload: dict, request: Request):
     except Exception as e:
         print("❌ Deep inference error:", e)
         raise HTTPException(status_code=500, detail="Could not run deep analysis")
+
+# 🪄 Hop+ recursive dependency analysis
+@router.post("/analyze/hop_plus")
+async def analyze_hop_plus(payload: dict, request: Request):
+    """
+    Expects payload with:
+    - results: list of {persona, job, pain, capability, relevance}
+    """
+    print("Analyze Hop+ payload:", payload)
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        db = SessionLocal()
+        hop_0_graph = payload.get("results", [])
+        hop_plus_graph = Graph()
+        hop_plus_results = infer_upstream_with_rules(
+            base_nodes=hop_0_graph,
+            graph=hop_plus_graph,
+            max_depth=3
+        )
+
+        print("results in analyze_hop_plus:", hop_plus_results)
+        return {"hop_plus_results": hop_plus_results}
+
+    except Exception as e:
+        print("❌ Hop+ analysis error:", e)
+        raise HTTPException(status_code=500, detail="Could not run Hop+ analysis")

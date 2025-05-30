@@ -97,12 +97,13 @@ def canonicalize_pain(pains: list[str]) -> dict:
     return canonical_map
 
 def canonicalize_persona(personas: list[dict]) -> dict:
-    print("Starting persona canonicalization")
+    print("Starting persona canonicalization with input: ", personas)
 
     # Step 0: Dedupes
     seen = set()
     deduplicated_personas = []
     for persona in personas:
+        print("Processing persona:", persona, "of type", type(persona))
         persona_tuple = tuple(sorted(persona.items()))  # Convert dict to a sorted tuple of key-value pairs
         if persona_tuple not in seen:
             seen.add(persona_tuple)

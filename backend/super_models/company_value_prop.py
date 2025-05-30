@@ -10,3 +10,4 @@ class CompanyValueProp(Base):
     url = Column(String)
     summary = Column(String)
     capabilities = Column(String)  # stored as JSON string
+    capability_pains = Column(String)  # NEW: stores JSON blob of capability-pain-confidence

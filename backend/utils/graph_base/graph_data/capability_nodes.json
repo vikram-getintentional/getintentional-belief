@@ -83,5 +83,120 @@
     "id": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
     "name": "Entitlements Managment",
     "description": ""
+  },
+  {
+    "id": "813c50bc-19bf-463a-a87c-938567a6636d",
+    "name": "AI-Powered Case Alerts & Research",
+    "description": ""
+  },
+  {
+    "id": "33b51dc4-2c27-476d-a8fe-b5581092c4a7",
+    "name": "Collaborative Workspace",
+    "description": ""
+  },
+  {
+    "id": "9f620162-3571-474b-8d99-a30e2bc5945c",
+    "name": "Personalized Reporting",
+    "description": ""
+  },
+  {
+    "id": "c9ad8fd5-b29a-477d-a134-d7a507564639",
+    "name": "User-Friendly Interface",
+    "description": ""
+  },
+  {
+    "id": "c07eb29a-7daa-4726-8e09-28e25ae5a3e3",
+    "name": "Mobile App",
+    "description": ""
+  },
+  {
+    "id": "29cad808-f5c9-4ca5-bbb3-7fd69c202386",
+    "name": "Case Directory",
+    "description": ""
+  },
+  {
+    "id": "250b537b-4852-4b05-b94d-1256e24681fa",
+    "name": "High Security",
+    "description": ""
+  },
+  {
+    "id": "48d55daa-df2b-4383-a861-80d10b065f26",
+    "name": "Remote Access",
+    "description": ""
+  },
+  {
+    "id": "57b26865-ebc7-4c66-bc85-9e8d7c2d2b9d",
+    "name": "Fast Launch",
+    "description": ""
+  },
+  {
+    "id": "17674b12-318b-48a2-b70c-fa97d36cbb4d",
+    "name": "Scalability",
+    "description": ""
+  },
+  {
+    "id": "cdcb47fb-1c54-49f0-a78f-b7df34cbd9c1",
+    "name": "Management",
+    "description": ""
+  },
+  {
+    "id": "3ffc9c5d-e496-497b-aec1-2f1e986fc512",
+    "name": "Analytics",
+    "description": ""
+  },
+  {
+    "id": "4f9b9ada-a8fd-444e-8954-39d5bffc3dbb",
+    "name": "Site Speed",
+    "description": ""
+  },
+  {
+    "id": "5e696d5f-fe81-4be6-b4ca-6e8ce5217bfe",
+    "name": "Multi-Warehouse Shipping",
+    "description": ""
+  },
+  {
+    "id": "1b773377-8d13-44f3-aeb0-1759c9c091b5",
+    "name": "Optimized Checkouts",
+    "description": ""
+  },
+  {
+    "id": "61f512c4-b682-4f50-a21c-8d499bd41777",
+    "name": "OKR Management",
+    "description": ""
+  },
+  {
+    "id": "a4233a5f-80f3-4343-8463-6047888f1b21",
+    "name": "Performance Management",
+    "description": ""
+  },
+  {
+    "id": "fcd67d61-2cf1-40db-86b1-c0a55a755740",
+    "name": "Task Management",
+    "description": ""
+  },
+  {
+    "id": "95345847-e577-445a-a310-0b99bac7ba45",
+    "name": "Employee Engagement",
+    "description": ""
+  },
+  {
+    "id": "11b80945-2e33-43d5-81f3-4c3ff7dd817e",
+    "name": "Integrations",
+    "description": ""
+  },
+  {
+    "id": "5a1606a1-8e7d-4066-bdc8-d0d488483c7a",
+    "name": "Resources",
+    "description": ""
+  },
+  {
+    "id": "e9c9ceec-630c-4030-81a6-a4c6273a53cc",
+    "name": "Support",
+    "description": ""
+  },
+  {
+    "id": "82d0fbd0-14c4-4dc8-ad5e-10e828cdf163",
+    "name": "AI-Enabled",
+    "description": ""
   }
 ]

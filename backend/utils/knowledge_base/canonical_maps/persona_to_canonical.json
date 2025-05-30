@@ -16,7 +16,7 @@
   },
   "{'title': 'operations manager', 'department': 'operations', 'seniority': 'senior'}": {
     "title": "manager",
-    "department": "strategy",
+    "department": "operations",
     "seniority": "senior"
   },
   "{'title': 'business intelligence specialist', 'department': 'business intelligence', 'seniority': 'mid-level'}": {
@@ -31,12 +31,12 @@
   },
   "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data scientist', 'department': 'data science', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data analyst', 'department': 'data analytics', 'seniority': 'mid-level'}": {
@@ -46,13 +46,13 @@
   },
   "{'title': 'data engineer', 'department': 'data engineering', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'application developer', 'department': 'it', 'seniority': 'mid-level'}": {
-    "title": "application developer",
-    "department": "it",
-    "seniority": "mid-level"
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
   },
   "{'title': 'data scientist', 'department': 'data science', 'seniority': 'senior'}": {
     "title": "data scientist",
@@ -61,13 +61,13 @@
   },
   "{'title': 'data visualization specialist', 'department': 'data science', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data analyst', 'department': 'data science', 'seniority': 'mid-level'}": {
-    "title": "data scientist",
-    "department": "data science",
-    "seniority": "senior"
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
   },
   "{'title': 'data manager', 'department': 'data science', 'seniority': 'senior'}": {
     "title": "data manager",
@@ -85,63 +85,63 @@
     "seniority": "senior"
   },
   "{'title': 'product manager', 'department': 'product', 'seniority': 'senior'}": {
-    "title": "product manager",
-    "department": "product",
+    "title": "manager",
+    "department": "operations",
     "seniority": "senior"
   },
   "{'title': 'business analyst', 'department': 'business intelligence', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data analyst', 'department': 'data analysis', 'seniority': 'mid-senior level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data scientist', 'department': 'data science', 'seniority': 'mid-senior level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'product manager', 'department': 'product management', 'seniority': 'mid-senior level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'data analyst', 'department': 'data science', 'seniority': 'mid-senior level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'mid-senior level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'software engineer', 'department': 'engineering', 'seniority': 'mid-senior level'}": {
-    "title": "application developer",
-    "department": "it",
-    "seniority": "mid-level"
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
   },
   "{'title': 'business analyst', 'department': 'business intelligence', 'seniority': 'mid-senior level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data engineer', 'department': 'data engineering', 'seniority': 'mid-senior level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'manager', 'department': 'strategy', 'seniority': 'senior'}": {
-    "title": "manager",
-    "department": "strategy",
+    "title": "ceo",
+    "department": "executive",
     "seniority": "senior"
   },
   "{'title': 'manager', 'department': 'operations', 'seniority': 'senior'}": {
     "title": "manager",
-    "department": "strategy",
+    "department": "operations",
     "seniority": "senior"
   },
   "{'title': 'data administrator', 'department': 'it', 'seniority': 'mid-level'}": {
@@ -151,22 +151,22 @@
   },
   "{'title': 'data analyst', 'department': 'business intelligence', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'product manager', 'department': 'product development', 'seniority': 'senior'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'business intelligence manager', 'department': 'business intelligence', 'seniority': 'senior'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'data architect', 'department': 'data architecture', 'seniority': 'senior'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'ai specialist', 'department': 'ai and machine learning', 'seniority': 'senior'}": {
@@ -176,23 +176,23 @@
   },
   "{'title': 'data analyst', 'department': 'analytics', 'seniority': 'mid-level'}": {
     "title": "data analyst",
-    "department": "analytics",
+    "department": "data",
     "seniority": "mid-level"
   },
   "{'title': 'subscription manager', 'department': 'finance', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'product manager', 'department': 'product', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'accountant', 'department': 'finance', 'seniority': 'mid-level'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'security officer', 'department': 'security', 'seniority': 'senior-level'}": {
     "title": "it manager",
@@ -200,24 +200,24 @@
     "seniority": "senior"
   },
   "{'title': 'sales manager', 'department': 'sales', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'ux designer', 'department': 'design', 'seniority': 'mid-level'}": {
     "title": "ux designer",
     "department": "design",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'mid-level'}": {
-    "title": "accountant",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'data security officer', 'department': 'it', 'seniority': 'senior'}": {
     "title": "it manager",
@@ -225,34 +225,34 @@
     "seniority": "senior"
   },
   "{'title': 'promotions manager', 'department': 'marketing', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
-  },
-  "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
-  },
-  "{'title': 'compliance officer', 'department': 'finance', 'seniority': 'senior'}": {
-    "title": "it manager",
-    "department": "it",
+    "title": "manager",
+    "department": "operations",
     "seniority": "senior"
   },
-  "{'title': 'pricing strategist', 'department': 'marketing', 'seniority': 'senior'}": {
+  "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'compliance officer', 'department': 'finance', 'seniority': 'senior'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
+  },
+  "{'title': 'pricing strategist', 'department': 'marketing', 'seniority': 'senior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
   },
   "{'title': 'financial controller', 'department': 'finance', 'seniority': 'senior-level'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'senior-level'}": {
-    "title": "it manager",
-    "department": "it",
-    "seniority": "senior"
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
   },
   "{'title': 'security officer', 'department': 'it', 'seniority': 'senior-level'}": {
     "title": "it manager",
@@ -262,57 +262,57 @@
   "{'title': 'finance manager', 'department': 'finance', 'seniority': 'senior-level'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'e-commerce manager', 'department': 'sales', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
-  },
-  "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'senior'}": {
-    "title": "it manager",
-    "department": "it",
+    "title": "manager",
+    "department": "operations",
     "seniority": "senior"
   },
-  "{'title': 'subscription manager', 'department': 'customer service', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
-  },
-  "{'title': 'pricing analyst', 'department': 'sales', 'seniority': 'mid-level'}": {
+  "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'senior'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
+  },
+  "{'title': 'subscription manager', 'department': 'customer service', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'pricing analyst', 'department': 'sales', 'seniority': 'mid-level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
   },
   "{'title': 'customer success manager', 'department': 'customer service', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'customer retention specialist', 'department': 'marketing', 'seniority': 'mid-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'ui/ux designer', 'department': 'design', 'seniority': 'mid-level'}": {
     "title": "ux designer",
     "department": "design",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'sales representative', 'department': 'sales', 'seniority': 'entry-level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'financial compliance officer', 'department': 'finance', 'seniority': 'senior-level'}": {
-    "title": "it manager",
-    "department": "it",
-    "seniority": "senior"
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
   },
   "{'title': 'chief financial officer', 'department': 'finance', 'seniority': 'executive'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'chief security officer', 'department': 'security', 'seniority': 'executive'}": {
     "title": "it manager",
@@ -322,32 +322,32 @@
   "{'title': 'billing manager', 'department': 'finance', 'seniority': 'mid-level'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'ux designer', 'department': 'design', 'seniority': 'junior-level'}": {
     "title": "ux designer",
     "department": "design",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'junior-level'}": {
-    "title": "accountant",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'finance manager', 'department': 'finance', 'seniority': 'unknown'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'senior level'}": {
-    "title": "it manager",
-    "department": "it",
-    "seniority": "senior"
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
   },
   "{'title': 'billing manager', 'department': 'finance', 'seniority': 'mid-senior level'}": {
     "title": "accountant",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'security officer', 'department': 'it', 'seniority': 'senior level'}": {
     "title": "it manager",
@@ -355,23 +355,1320 @@
     "seniority": "senior"
   },
   "{'title': 'pricing analyst', 'department': 'marketing', 'seniority': 'mid-level'}": {
-    "title": "accountant",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "mid-level"
+    "seniority": "mid"
   },
   "{'title': 'product manager', 'department': 'product', 'seniority': 'mid-senior level'}": {
-    "title": "sales manager",
-    "department": "sales",
-    "seniority": "mid-level"
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
   },
   "{'title': 'sales manager', 'department': 'sales', 'seniority': 'mid-senior level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'security officer', 'department': 'security', 'seniority': 'senior'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'accountant', 'department': 'finance', 'seniority': 'mid-senior level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'ux designer', 'department': 'design', 'seniority': 'mid-senior level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'mid-senior level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'pricing manager', 'department': 'sales', 'seniority': 'mid-senior level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'financial controller', 'department': 'finance', 'seniority': 'senior level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'ux designer', 'department': 'product', 'seniority': 'mid level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing strategist', 'department': 'sales', 'seniority': 'mid-senior level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing strategist', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'subscription manager', 'department': 'operations', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'compliance officer', 'department': 'finance', 'seniority': 'senior-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'chief security officer', 'department': 'security', 'seniority': 'senior-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'ui/ux designer', 'department': 'product', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'unknown'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'sales manager', 'department': 'sales', 'seniority': 'senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'ux designer', 'department': 'product', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'data analyst', 'department': 'customer success', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'financial controller', 'department': 'finance', 'seniority': 'senior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing manager', 'department': 'sales', 'seniority': 'mid-level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'financial analyst', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'audit manager', 'department': 'finance', 'seniority': 'senior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'user experience designer', 'department': 'product', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'security analyst', 'department': 'it', 'seniority': 'mid-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'entry level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'e-commerce manager', 'department': 'marketing', 'seniority': 'mid level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'security officer', 'department': 'security', 'seniority': 'senior level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'mid-senior level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'product manager', 'department': 'product', 'seniority': 'mid level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'accountant', 'department': 'finance', 'seniority': 'mid level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'sales representative', 'department': 'sales', 'seniority': 'entry level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'security officer', 'department': 'it', 'seniority': 'senior'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'e-commerce manager', 'department': 'marketing', 'seniority': 'senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'subscription manager', 'department': 'operations', 'seniority': 'mid to senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'sales manager', 'department': 'sales', 'seniority': 'mid to senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'product manager', 'department': 'product', 'seniority': 'mid to senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'mid to senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'ux designer', 'department': 'design', 'seniority': 'mid to senior'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'accountant', 'department': 'finance', 'seniority': 'mid to senior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'mid to senior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing strategist', 'department': 'sales', 'seniority': 'senior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'accountant', 'department': 'finance', 'seniority': 'senior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'revenue manager', 'department': 'finance', 'seniority': 'senior-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing strategist', 'department': 'sales', 'seniority': 'senior-level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'frontend developer', 'department': 'engineering', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'security manager', 'department': 'security', 'seniority': 'senior-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'audit manager', 'department': 'finance', 'seniority': 'senior-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'finance manager', 'department': 'finance', 'seniority': 'senior level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing strategist', 'department': 'marketing', 'seniority': 'senior level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'accountant', 'department': 'finance', 'seniority': 'mid'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'mid'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'security manager', 'department': 'it', 'seniority': 'senior'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'ux designer', 'department': 'design', 'seniority': 'mid'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'product manager', 'department': 'product', 'seniority': 'mid'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "Sales Manager|Sales|Senior": "Sales Manager|Sales|Senior",
+  "Sales Representative|Sales|Mid-level": "Sales Representative|Sales|Mid-level",
+  "{'title': 'revenue analyst', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'qa analyst', 'department': 'quality assurance', 'seniority': 'mid-level'}": {
+    "title": "qa analyst",
+    "department": "quality assurance",
+    "seniority": "mid-level"
+  },
+  "{'title': 'data analyst', 'department': 'data', 'seniority': 'mid-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'department': 'Executive', 'seniority': 'Senior', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Marketing', 'seniority': 'Mid-level', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Success', 'seniority': 'Mid-level', 'title': 'Customer Success Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-level', 'title': 'Sales Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Sales', 'seniority': 'Senior', 'title': 'Sales Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Senior', 'title': 'Customer Service Manager'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Executive', 'seniority': 'Top', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Marketing', 'seniority': 'Senior', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Mid', 'title': 'Customer Service Manager'}": {
+    "title": "Marketing Manager",
+    "department": "Marketing",
+    "seniority": "Mid"
+  },
+  "{'department': 'Marketing', 'seniority': 'Mid', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'title': 'pricing strategy manager', 'department': 'finance', 'seniority': 'senior level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'security compliance officer', 'department': 'security', 'seniority': 'senior level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'sales manager', 'department': 'sales', 'seniority': 'senior level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'ui/ux designer', 'department': 'product', 'seniority': 'mid level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'department': 'Sales', 'seniority': 'Junior', 'title': 'Sales Representative'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Mid-level', 'title': 'Customer Service Representative'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Finance', 'seniority': 'Senior', 'title': 'Finance Manager'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Mid-level', 'title': 'Customer Service Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Executive', 'seniority': 'Executive', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Executive', 'seniority': 'Top-level', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'title': 'ux/ui designer', 'department': 'design', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'revenue accountant', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'legal assistant', 'department': 'legal', 'seniority': 'entry level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'legal analyst', 'department': 'legal', 'seniority': 'mid level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'it manager', 'department': 'it', 'seniority': 'mid-senior level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'paralegal', 'department': 'legal', 'seniority': 'entry-mid level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'legal researcher', 'department': 'legal', 'seniority': 'mid level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'lawyer', 'department': 'legal', 'seniority': 'mid-senior level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'attorney', 'department': 'legal', 'seniority': 'mid-senior level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'paralegal', 'department': 'legal', 'seniority': 'entry level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'it specialist', 'department': 'information technology', 'seniority': 'mid-senior level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'legal secretary', 'department': 'legal', 'seniority': 'mid level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'title': 'managing partner', 'department': 'legal', 'seniority': 'senior level'}": {
+    "title": "paralegal",
+    "department": "legal",
+    "seniority": "entry level"
+  },
+  "{'department': 'N/A', 'seniority': 'N/A', 'title': 'Client'}": {
+    "title": "Client",
+    "department": "N/A",
+    "seniority": "N/A"
+  },
+  "{'department': 'Legal', 'seniority': 'Executive level', 'title': 'Senior Partner'}": {
+    "title": "Senior Partner",
+    "department": "Legal",
+    "seniority": "Executive level"
+  },
+  "{'department': 'Legal', 'seniority': 'Entry level', 'title': 'Paralegal'}": {
+    "title": "Paralegal",
+    "department": "Legal",
+    "seniority": "Entry level"
+  },
+  "{'title': 'marketing manager', 'department': 'sales and marketing', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'logistics manager', 'department': 'operations', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'mobile app developer', 'department': 'technology', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'cto', 'department': 'technology', 'seniority': 'senior'}": {
+    "title": "cto",
+    "department": "technology",
+    "seniority": "senior"
+  },
+  "{'title': 'accountant', 'department': 'finance', 'seniority': 'junior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'e-commerce manager', 'department': 'sales and marketing', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'business analyst', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'web developer', 'department': 'technology', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'operations manager', 'department': 'operations', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'business development manager', 'department': 'sales', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'business analyst', 'department': 'strategy', 'seniority': 'entry-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'e-commerce manager', 'department': 'marketing', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'finance manager', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'supply chain manager', 'department': 'supply chain', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'cto', 'department': 'technology', 'seniority': 'senior-level'}": {
+    "title": "cto",
+    "department": "technology",
+    "seniority": "senior"
+  },
+  "{'title': 'warehouse manager', 'department': 'operations', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'chief financial officer', 'department': 'finance', 'seniority': 'senior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'ceo', 'department': 'management', 'seniority': 'senior'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'business analyst', 'department': 'strategy', 'seniority': 'mid-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'supply chain manager', 'department': 'operations', 'seniority': 'senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'digital marketing specialist', 'department': 'marketing', 'seniority': 'entry-level'}": {
+    "title": "digital marketing specialist",
+    "department": "marketing",
+    "seniority": "entry-level"
+  },
+  "{'department': 'Operations', 'seniority': 'Mid-level', 'title': 'Inventory Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Entry-level', 'title': 'Customer Service Representative'}": {
+    "title": "Customer Service Representative",
+    "department": "Customer Service",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'Marketing', 'seniority': 'Senior', 'title': 'Marketing Director'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'chief strategy officer', 'department': 'strategy', 'seniority': 'executive'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'it manager', 'department': 'information technology', 'seniority': 'mid-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'team lead', 'department': 'various', 'seniority': 'mid-level'}": {
+    "title": "team lead",
+    "department": "various",
+    "seniority": "mid-level"
+  },
+  "{'title': 'project manager', 'department': 'project management', 'seniority': 'mid-level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'strategy manager', 'department': 'strategy', 'seniority': 'mid-level'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'hr manager', 'department': 'human resources', 'seniority': 'mid-level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'learning and development manager', 'department': 'human resources', 'seniority': 'mid-level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'employee', 'department': 'various', 'seniority': 'entry-level to executive'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'it manager', 'department': 'information technology', 'seniority': 'senior'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'team leader', 'department': 'various', 'seniority': 'mid-level'}": {
+    "title": "team lead",
+    "department": "various",
+    "seniority": "mid-level"
+  },
+  "{'title': 'project manager', 'department': 'various', 'seniority': 'mid-level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'strategy manager', 'department': 'strategy', 'seniority': 'senior'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'hr manager', 'department': 'human resources', 'seniority': 'senior'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'ceo', 'department': 'executive', 'seniority': 'c-level'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'ceo', 'department': 'executive', 'seniority': 'senior'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'learning and development specialist', 'department': 'human resources', 'seniority': 'junior'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'department': 'Various', 'seniority': 'Mid-Senior', 'title': 'Department Manager'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'department': 'Various', 'seniority': 'Junior-Mid', 'title': 'Employee'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'title': 'strategy manager', 'department': 'strategy', 'seniority': 'mid-senior level'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'it manager', 'department': 'information technology', 'seniority': 'mid level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'hr manager', 'department': 'human resources', 'seniority': 'mid-senior level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'project manager', 'department': 'project management', 'seniority': 'mid level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'learning and development manager', 'department': 'human resources', 'seniority': 'mid level'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "senior"
+  },
+  "{'title': 'it manager', 'department': 'information technology', 'seniority': 'mid-senior level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'team leader', 'department': 'various (depends on the team)', 'seniority': 'mid-level'}": {
+    "title": "team lead",
+    "department": "various",
+    "seniority": "mid-level"
+  },
+  "{'department': 'Sales', 'seniority': 'Senior', 'title': 'Sales Director'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Mid-Senior Level', 'title': 'Marketing Manager'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-Senior Level', 'title': 'Sales Manager'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'department': 'Product', 'seniority': 'Mid-Senior Level', 'title': 'Product Manager'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'department': 'Finance', 'seniority': 'Senior', 'title': 'Finance Director'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-Senior', 'title': 'Sales Director'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Mid-Senior', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'title': 'data analyst', 'department': 'data', 'seniority': 'junior-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'security manager', 'department': 'it', 'seniority': 'mid-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'customer success representative', 'department': 'customer success', 'seniority': 'entry-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'accounting manager', 'department': 'finance', 'seniority': 'mid-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'front-end developer', 'department': 'engineering', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'department': 'Executive', 'seniority': 'Top level', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top level"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-level', 'title': 'Sales Representative'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Product', 'seniority': 'Senior', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'title': 'data analyst', 'department': 'data', 'seniority': 'entry-level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'entry-level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'retention specialist', 'department': 'customer success', 'seniority': 'mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'data analyst', 'department': 'data', 'seniority': 'mid level'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "mid-level"
+  },
+  "{'title': 'ux designer', 'department': 'design', 'seniority': 'mid level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'mid level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'pricing analyst', 'department': 'marketing', 'seniority': 'mid level'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'user experience designer', 'department': 'design', 'seniority': 'mid-level'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "mid"
+  },
+  "{'title': 'chief information security officer', 'department': 'information security', 'seniority': 'senior-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "senior"
+  },
+  "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'mid-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'title': 'chief financial officer', 'department': 'executive team', 'seniority': 'senior-level'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "mid"
+  },
+  "{'department': 'Marketing', 'seniority': 'Senior-Level', 'title': 'Marketing Manager'}": {
+    "title": "Sales Representative",
+    "department": "Sales",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Entry-Level', 'title': 'Customer Support Representative'}": {
+    "title": "Sales Representative",
+    "department": "Sales",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-Level', 'title': 'Sales Representative'}": {
+    "title": "Sales Representative",
+    "department": "Sales",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Entry', 'title': 'Customer Service Representative'}": {
+    "title": "Customer Service Representative",
+    "department": "Customer Service",
+    "seniority": "Entry"
+  },
+  "{'department': 'Marketing', 'seniority': 'Mid-Level', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Mid-level', 'title': 'Customer Support Representative'}": {
+    "title": "Customer Support Representative",
+    "department": "Customer Service",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'Finance', 'seniority': 'Senior level', 'title': 'Finance Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Entry level', 'title': 'Customer Service Representative'}": {
+    "title": "Customer Service Representative",
+    "department": "Customer Service",
+    "seniority": "Entry level"
+  },
+  "{'department': 'Marketing', 'seniority': 'Senior-level', 'title': 'Marketing Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Customer Support', 'seniority': 'Mid-level', 'title': 'Customer Support Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-level', 'title': 'Sales Team Lead'}": {
+    "title": "Sales Team Lead",
+    "department": "Sales",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Mid-level', 'title': 'Customer Support Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Entry-level', 'title': 'Customer Support Representative'}": {
+    "title": "Sales Representative",
+    "department": "Sales",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-level', 'title': 'Account Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Product', 'seniority': 'Mid-level', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Finance', 'seniority': 'Senior', 'title': 'Chief Financial Officer'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Customer Support', 'seniority': 'Entry-level', 'title': 'Customer Support Representative'}": {
+    "title": "Customer Service Representative",
+    "department": "Customer Service",
+    "seniority": "Mid-level"
+  },
+  "{'department': 'External', 'seniority': 'Mid-level', 'title': 'Auditor'}": {
+    "title": "Auditor",
+    "department": "External",
+    "seniority": "Mid-level"
+  },
+  "{'title': 'Sales Manager', 'department': 'Sales', 'seniority': 'Senior'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'Customer Service Representative', 'department': 'Customer Service', 'seniority': 'Mid-level'}": {
+    "title": "manager",
+    "department": "operations",
+    "seniority": "senior"
+  },
+  "{'title': 'CEO', 'department': 'Executive', 'seniority': 'Senior'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "senior"
+  },
+  "{'title': 'Auditor', 'department': 'External', 'seniority': 'Mid-level'}": {
+    "title": "Auditor",
+    "department": "External",
+    "seniority": "Mid-level"
+  },
+  "{'title': 'security officer', 'department': 'it', 'seniority': 'mid-level'}": {
+    "title": "security officer",
+    "department": "it",
+    "seniority": "mid-level"
+  },
+  "{'title': 'revenue manager', 'department': 'finance', 'seniority': 'mid-level'}": {
     "title": "sales manager",
     "department": "sales",
     "seniority": "mid-level"
   },
-  "{'title': 'security officer', 'department': 'security', 'seniority': 'senior'}": {
-    "title": "compliance officer",
-    "department": "legal",
-    "seniority": "senior"
+  "{'department': 'Information Technology', 'seniority': 'Senior', 'title': 'IT Manager'}": {
+    "title": "IT Manager",
+    "department": "IT",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid-Level', 'title': 'Sales Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'IT', 'seniority': 'Mid-Level', 'title': 'IT Manager'}": {
+    "title": "IT Manager",
+    "department": "IT",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Product Management', 'seniority': 'Mid-level', 'title': 'Product Manager'}": {
+    "title": "Sales Manager",
+    "department": "Sales",
+    "seniority": "Senior"
+  },
+  "{'department': 'Finance', 'seniority': 'Senior', 'title': 'CFO'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Executive Management', 'seniority': 'Senior', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Finance', 'seniority': 'Mid-level', 'title': 'Finance Manager'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Engineering', 'seniority': 'Mid', 'title': 'Software Developer'}": {
+    "title": "Software Developer",
+    "department": "Engineering",
+    "seniority": "Mid"
+  },
+  "{'department': 'Finance', 'seniority': 'Mid-level', 'title': 'Auditor'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Senior', 'title': 'Head of Marketing'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Operations', 'seniority': 'Top level', 'title': 'Chief Operations Officer'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Finance', 'seniority': 'Senior', 'title': 'Financial Controller'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Senior Level', 'title': 'Head of Marketing'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Finance', 'seniority': 'Mid-Senior level', 'title': 'Finance Manager'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Top Level', 'title': 'CMO'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Executive Management', 'seniority': 'Top-Level', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Sales', 'seniority': 'Mid', 'title': 'Sales Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Product Management', 'seniority': 'Senior', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Human Resources', 'seniority': 'Top Level', 'title': 'CHRO'}": {
+    "title": "CHRO",
+    "department": "Human Resources",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Human Resources', 'seniority': 'Mid-Level', 'title': 'HR Manager'}": {
+    "title": "CHRO",
+    "department": "Human Resources",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Finance', 'seniority': 'Top Level', 'title': 'CFO'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Product', 'seniority': 'Mid', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Governance', 'seniority': 'Top level', 'title': 'Board of Directors'}": {
+    "title": "Board of Directors",
+    "department": "Governance",
+    "seniority": "Top level"
+  },
+  "{'department': 'Product Development', 'seniority': 'Mid', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Support', 'seniority': 'Senior', 'title': 'Customer Support Manager'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Junior', 'title': 'Customer Service Representative'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'IT', 'seniority': 'Mid-level', 'title': 'IT Infrastructure Engineer'}": {
+    "title": "Security Manager",
+    "department": "IT",
+    "seniority": "Senior"
+  },
+  "{'department': 'External', 'seniority': 'N/A', 'title': 'Investors'}": {
+    "title": "Investors",
+    "department": "External",
+    "seniority": "N/A"
+  },
+  "{'department': 'Executive', 'seniority': 'Senior Level', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Finance', 'seniority': 'Executive', 'title': 'Chief Financial Officer'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Information Technology', 'seniority': 'Executive', 'title': 'IT Director'}": {
+    "title": "Security Manager",
+    "department": "IT",
+    "seniority": "Senior"
+  },
+  "{'department': 'Executive', 'seniority': 'High-Level', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Marketing', 'seniority': 'Middle', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Product', 'seniority': 'Mid-Senior level', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Product Team', 'seniority': 'Mid-Senior', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Success', 'seniority': 'Mid', 'title': 'Customer Success Manager'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Middle', 'title': 'Customer Service Manager'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Product Development', 'seniority': 'Mid-Senior', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Product Development', 'seniority': 'Mid-level', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Executive Team', 'seniority': 'Senior', 'title': 'CEO'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Product Development', 'seniority': 'Senior', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'IT', 'seniority': 'Senior', 'title': 'Security Manager'}": {
+    "title": "Security Manager",
+    "department": "IT",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Executive', 'title': 'Chief Marketing Officer'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Marketing', 'seniority': 'Middle Management', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Success', 'seniority': 'Middle Management', 'title': 'Customer Success Manager'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Product', 'seniority': 'Mid-Senior', 'title': 'Product Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Technology', 'seniority': 'Top-Level', 'title': 'CTO'}": {
+    "title": "CTO",
+    "department": "Technology",
+    "seniority": "Top-Level"
+  },
+  "{'department': 'Finance', 'seniority': 'Top level', 'title': 'CFO'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Sales', 'seniority': 'Senior Level', 'title': 'Head of Sales'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Finance', 'seniority': 'Executive', 'title': 'Finance Director'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Finance', 'seniority': 'Top level', 'title': 'Chief Financial Officer'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Marketing', 'seniority': 'Top level', 'title': 'Chief Marketing Officer'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Operations', 'seniority': 'Top Level', 'title': 'COO'}": {
+    "title": "CTO",
+    "department": "Technology",
+    "seniority": "Top-Level"
+  },
+  "{'department': 'Marketing', 'seniority': 'Mid-Senior level', 'title': 'Marketing Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Customer Service', 'seniority': 'Mid level', 'title': 'Customer Support Representative'}": {
+    "title": "Customer Success Manager",
+    "department": "Customer Success",
+    "seniority": "Mid"
+  },
+  "{'department': 'Sales', 'seniority': 'Senior', 'title': 'Head of Sales'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Human Resources', 'seniority': 'Senior Level', 'title': 'Head of HR'}": {
+    "title": "CHRO",
+    "department": "Human Resources",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Operations', 'seniority': 'Senior', 'title': 'Head of Operations'}": {
+    "title": "CEO",
+    "department": "Executive",
+    "seniority": "Top"
+  },
+  "{'department': 'Finance', 'seniority': 'Mid-Senior level', 'title': 'Financial Controller'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Operations', 'seniority': 'Mid-Level', 'title': 'Project Manager'}": {
+    "title": "Project Manager",
+    "department": "Operations",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Investment Team', 'seniority': 'Senior', 'title': 'Investor'}": {
+    "title": "Investors",
+    "department": "External",
+    "seniority": "N/A"
+  },
+  "{'department': 'Sales', 'seniority': 'Middle', 'title': 'Sales Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Sales Team', 'seniority': 'Senior', 'title': 'Sales Director'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
+  },
+  "{'department': 'Operations', 'seniority': 'Mid-Level', 'title': 'Supply Chain Manager'}": {
+    "title": "Project Manager",
+    "department": "Operations",
+    "seniority": "Mid-Level"
+  },
+  "{'department': 'Finance', 'seniority': 'Middle Management', 'title': 'Finance Manager'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Finance', 'seniority': 'Mid-Senior', 'title': 'Finance Manager'}": {
+    "title": "CFO",
+    "department": "Finance",
+    "seniority": "Senior"
+  },
+  "{'department': 'Sales', 'seniority': 'Middle Management', 'title': 'Sales Manager'}": {
+    "title": "CMO",
+    "department": "Marketing",
+    "seniority": "Top Level"
   }
 }

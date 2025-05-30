@@ -72,14 +72,59 @@ const PersonaBuilder = ({ url, summary, capabilities, userEmail, onSave }: Props
     setSelected((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const final = personaSuggestions.filter((p) => {
       const key = `${p.persona.title}__${p.persona.department}__${p.persona.seniority}`;
       return selected[key];
     });
 
-    if (final.length > 0) {
+    if (final.length === 0) return;
+
+    // Prepare payload for /analyze/hop_plus
+    // Flatten jobs and pains for each persona
+    const results = final.flatMap((p) =>
+      p.jobs.flatMap((jobObj) =>
+        jobObj.pains.map((pain) => ({
+          persona: p.persona,
+          job: jobObj.description,
+          pain,
+          capability: p.capabilities[0] || "", // or adjust as needed
+          relevance: p.relevance,
+        }))
+      )
+    );
+
+    const token = localStorage.getItem("token");
+    setLoading(true);
+    setFetchError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/analyze/hop_plus", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          results,
+          url,
+        }),
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      // You can now use data.hop_results to display Hop+ results to the user
+      // For example, you might want to call a prop like onHopResults(data.hop_results)
+      console.log("Hop+ results:", data.hop_results);
+
+      // Optionally, call onSave if you want to keep the old behavior
       onSave(final);
+
+    } catch (err) {
+      setLoading(false);
+      setFetchError("Could not analyze dependencies.");
+      console.error("Hop+ fetch error:", err);
     }
   };
 

@@ -9,3 +9,4 @@ class CompanyAnalysis(Base):
     url = Column(String, primary_key=True, index=True)
     summary = Column(String)
     capabilities = Column(String)  # stored as JSON
+    capability_pains = Column(String)  # NEW: stores JSON blob of capability-pain-confidence

@@ -382,5 +382,929 @@
     "title": "security officer",
     "seniority": "senior",
     "department": "security"
+  },
+  {
+    "id": "5cae50e0-6139-45f3-9110-fb37502e3bef",
+    "title": "pricing manager",
+    "seniority": "mid-senior level",
+    "department": "sales"
+  },
+  {
+    "id": "a1dc6b35-a143-43e9-9d71-7c8b1597ee55",
+    "title": "customer success manager",
+    "seniority": "mid-senior level",
+    "department": "customer success"
+  },
+  {
+    "id": "8ed3cad1-9022-468b-b1ec-6a85464be99c",
+    "title": "accountant",
+    "seniority": "mid-senior level",
+    "department": "finance"
+  },
+  {
+    "id": "b6d6e1b0-efdb-4fff-8bb1-832d10f2301b",
+    "title": "ux designer",
+    "seniority": "mid-senior level",
+    "department": "design"
+  },
+  {
+    "id": "aa75dc15-d4b9-4922-a8d2-08bc74706182",
+    "title": "pricing strategist",
+    "seniority": "mid-senior level",
+    "department": "sales"
+  },
+  {
+    "id": "d9dd4f2c-a4bd-46c2-9151-7fd6fbc28983",
+    "title": "financial controller",
+    "seniority": "senior level",
+    "department": "finance"
+  },
+  {
+    "id": "9e66cc65-c11b-4a26-9991-d67fdae2a3db",
+    "title": "ux designer",
+    "seniority": "mid level",
+    "department": "product"
+  },
+  {
+    "id": "a5e9ff85-2e00-4aab-9ca8-5387f6f082fe",
+    "title": "subscription manager",
+    "seniority": "mid-level",
+    "department": "operations"
+  },
+  {
+    "id": "d19a7461-edac-45b1-9695-8c031402ef06",
+    "title": "pricing strategist",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "223c401c-0823-4459-b8d8-72b75ac033d7",
+    "title": "subscription manager",
+    "seniority": "unknown",
+    "department": "sales"
+  },
+  {
+    "id": "c13affd1-f6e3-41c0-a582-6aa48bb88c22",
+    "title": "compliance officer",
+    "seniority": "senior-level",
+    "department": "finance"
+  },
+  {
+    "id": "8496ea39-811c-43f6-941d-5e08738de7b5",
+    "title": "ui/ux designer",
+    "seniority": "mid-level",
+    "department": "product"
+  },
+  {
+    "id": "c1910799-f78d-45b1-9713-9201be59eb1a",
+    "title": "chief security officer",
+    "seniority": "senior-level",
+    "department": "security"
+  },
+  {
+    "id": "e9b141f2-d528-4076-a88b-ee4565a8f791",
+    "title": "data analyst",
+    "seniority": "mid-level",
+    "department": "customer success"
+  },
+  {
+    "id": "03ee3ccd-06f7-4f28-9081-66cf4870d516",
+    "title": "customer success manager",
+    "seniority": "senior",
+    "department": "customer success"
+  },
+  {
+    "id": "665b101e-9da6-475d-9263-46c2cc8166f5",
+    "title": "financial controller",
+    "seniority": "senior",
+    "department": "finance"
+  },
+  {
+    "id": "6cfb9671-bf54-48b3-9bfb-9ce8a74e5ded",
+    "title": "sales manager",
+    "seniority": "senior",
+    "department": "sales"
+  },
+  {
+    "id": "65a2316a-6d7d-4b17-bbc4-fd22b83e1531",
+    "title": "ux designer",
+    "seniority": "mid-level",
+    "department": "product"
+  },
+  {
+    "id": "cdc314f5-dc52-4585-bc4c-83aa400ec379",
+    "title": "product manager",
+    "seniority": "senior",
+    "department": "product"
+  },
+  {
+    "id": "407bac16-253c-43a2-aac1-cb4b831fc524",
+    "title": "pricing manager",
+    "seniority": "mid-level",
+    "department": "sales"
+  },
+  {
+    "id": "0cb75862-7253-4eeb-b198-d132daf44817",
+    "title": "financial analyst",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "d4872ec0-d851-48c9-b15b-a42e82ca9c85",
+    "title": "audit manager",
+    "seniority": "senior",
+    "department": "finance"
+  },
+  {
+    "id": "374c4a98-dc0b-4b3d-925b-7c24799da78b",
+    "title": "user experience designer",
+    "seniority": "mid-level",
+    "department": "product"
+  },
+  {
+    "id": "1b355c66-7b9c-4010-a9c7-4d0153dee614",
+    "title": "security analyst",
+    "seniority": "mid-level",
+    "department": "it"
+  },
+  {
+    "id": "002851de-85d2-4ce2-9906-64e2335ace69",
+    "title": "subscription manager",
+    "seniority": "mid-senior level",
+    "department": "sales"
+  },
+  {
+    "id": "a6c2763f-b9c0-40ab-b546-160ebdfa7792",
+    "title": "pricing analyst",
+    "seniority": "entry level",
+    "department": "finance"
+  },
+  {
+    "id": "9d6556d2-318c-4143-9665-41546cc03633",
+    "title": "accountant",
+    "seniority": "mid level",
+    "department": "finance"
+  },
+  {
+    "id": "5944f567-ad25-4c3c-88d6-a7f464f4d05f",
+    "title": "sales representative",
+    "seniority": "entry level",
+    "department": "sales"
+  },
+  {
+    "id": "51c2023b-dd56-4004-aa7d-91a22200606d",
+    "title": "product manager",
+    "seniority": "mid level",
+    "department": "product"
+  },
+  {
+    "id": "d278acac-5d26-4809-87bb-b6d1f9c51b8d",
+    "title": "e-commerce manager",
+    "seniority": "mid level",
+    "department": "marketing"
+  },
+  {
+    "id": "24805adb-b8ba-4496-b7a8-8169c3e5e29b",
+    "title": "security officer",
+    "seniority": "senior level",
+    "department": "security"
+  },
+  {
+    "id": "4da0737f-f24d-45fa-bf73-a007a24e6246",
+    "title": "security officer",
+    "seniority": "senior",
+    "department": "it"
+  },
+  {
+    "id": "60497409-a457-45be-a6bc-ec56f80b3841",
+    "title": "e-commerce manager",
+    "seniority": "senior",
+    "department": "marketing"
+  },
+  {
+    "id": "a1a2fd86-360d-4dd3-9ffd-3f95b5b0be17",
+    "title": "subscription manager",
+    "seniority": "mid to senior",
+    "department": "operations"
+  },
+  {
+    "id": "e7a8995f-ab6a-49ea-b930-19cef797b596",
+    "title": "pricing analyst",
+    "seniority": "mid to senior",
+    "department": "finance"
+  },
+  {
+    "id": "a5657de0-236d-4e05-a605-b85dd1150a50",
+    "title": "customer success manager",
+    "seniority": "mid to senior",
+    "department": "customer success"
+  },
+  {
+    "id": "9aeead9a-822e-4753-8320-33c8ced6e4f3",
+    "title": "accountant",
+    "seniority": "mid to senior",
+    "department": "finance"
+  },
+  {
+    "id": "3216c693-9cf1-43ec-9011-5fbe373ba948",
+    "title": "sales manager",
+    "seniority": "mid to senior",
+    "department": "sales"
+  },
+  {
+    "id": "a0392dc5-fe75-40a1-b6f5-bcdcbb70021d",
+    "title": "product manager",
+    "seniority": "mid to senior",
+    "department": "product"
+  },
+  {
+    "id": "5984beeb-79bf-421b-bac2-1b9e926b7dae",
+    "title": "ux designer",
+    "seniority": "mid to senior",
+    "department": "design"
+  },
+  {
+    "id": "13b5d357-fa32-4ef6-81f1-cf63e369694f",
+    "title": "pricing strategist",
+    "seniority": "senior",
+    "department": "sales"
+  },
+  {
+    "id": "102855a2-0e12-4aec-9de8-fd09e72dfd55",
+    "title": "accountant",
+    "seniority": "senior",
+    "department": "finance"
+  },
+  {
+    "id": "a263b23f-e209-4551-b68f-b6e9f1f45980",
+    "title": "revenue manager",
+    "seniority": "senior-level",
+    "department": "finance"
+  },
+  {
+    "id": "248e2744-a1a5-4e1c-bb1b-b64f7205ff6b",
+    "title": "pricing strategist",
+    "seniority": "senior-level",
+    "department": "sales"
+  },
+  {
+    "id": "4f6e8477-cc72-44d4-85cc-a12caf20d04f",
+    "title": "data analyst",
+    "seniority": "mid-level",
+    "department": "data science"
+  },
+  {
+    "id": "1557f510-8be4-4e1d-936b-5074c3a663d2",
+    "title": "audit manager",
+    "seniority": "senior-level",
+    "department": "finance"
+  },
+  {
+    "id": "397b324f-30d5-4030-a447-b10046aaadb2",
+    "title": "frontend developer",
+    "seniority": "mid-level",
+    "department": "engineering"
+  },
+  {
+    "id": "a8074266-bf22-4533-a0df-029af5b82436",
+    "title": "security manager",
+    "seniority": "senior-level",
+    "department": "security"
+  },
+  {
+    "id": "f37daa33-506a-4865-815a-ed34d3538889",
+    "title": "pricing strategist",
+    "seniority": "senior level",
+    "department": "marketing"
+  },
+  {
+    "id": "70f1eaf6-097e-44cb-8bd7-1309fc6938d1",
+    "title": "finance manager",
+    "seniority": "senior level",
+    "department": "finance"
+  },
+  {
+    "id": "29e3244e-00e7-401c-8b74-1fe8765994e6",
+    "title": "subscription manager",
+    "seniority": "senior",
+    "department": "sales"
+  },
+  {
+    "id": "537d53a7-08f6-440e-877c-f408246f1488",
+    "title": "pricing analyst",
+    "seniority": "mid",
+    "department": "finance"
+  },
+  {
+    "id": "ea383bf5-530c-4a5e-a6be-06839eb86073",
+    "title": "accountant",
+    "seniority": "mid",
+    "department": "finance"
+  },
+  {
+    "id": "2da95319-e668-48c6-bb2b-ea536b079441",
+    "title": "product manager",
+    "seniority": "mid",
+    "department": "product"
+  },
+  {
+    "id": "914ba781-b734-4470-954c-67534d6a44ab",
+    "title": "ux designer",
+    "seniority": "mid",
+    "department": "design"
+  },
+  {
+    "id": "2baba513-84f8-456e-9bdd-4e2c3625e741",
+    "title": "security manager",
+    "seniority": "senior",
+    "department": "it"
+  },
+  {
+    "id": "8c5b781e-1060-4217-b955-8fc012468ef2",
+    "title": "revenue analyst",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "bb23a25a-2fc8-4555-b45c-0c8a8c12df68",
+    "title": "qa analyst",
+    "seniority": "mid-level",
+    "department": "quality assurance"
+  },
+  {
+    "id": "7717e9ad-d0bf-47ee-9755-a550810f4b62",
+    "title": "data analyst",
+    "seniority": "mid-level",
+    "department": "data"
+  },
+  {
+    "id": "fcd4c61c-88d8-4425-b2bc-293f16fdf00c",
+    "title": "pricing strategy manager",
+    "seniority": "senior level",
+    "department": "finance"
+  },
+  {
+    "id": "f0d52cc1-9606-4e8c-aa90-f6cd70a47ed6",
+    "title": "sales manager",
+    "seniority": "senior level",
+    "department": "sales"
+  },
+  {
+    "id": "fe07ce7d-e465-419d-811e-bba2393a2d15",
+    "title": "ui/ux designer",
+    "seniority": "mid level",
+    "department": "product"
+  },
+  {
+    "id": "b204258b-6a70-4446-8ba5-cebf2be2f399",
+    "title": "security compliance officer",
+    "seniority": "senior level",
+    "department": "security"
+  },
+  {
+    "id": "4b45c6bb-b0cb-485f-a972-fc13b66119d6",
+    "title": "revenue accountant",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "c6c9e62a-c39f-48c7-a20a-fe30ceb5c2c2",
+    "title": "ux/ui designer",
+    "seniority": "mid-level",
+    "department": "design"
+  },
+  {
+    "id": "11a15b19-dfbc-4f8a-b719-472145d216cf",
+    "title": "lawyer",
+    "seniority": "mid-senior level",
+    "department": "legal"
+  },
+  {
+    "id": "0b146f69-dda6-4534-9bd0-d675b7e1ecdc",
+    "title": "legal assistant",
+    "seniority": "entry level",
+    "department": "legal"
+  },
+  {
+    "id": "996b8ab1-16b7-47f0-abb2-d7a0cfc756ce",
+    "title": "paralegal",
+    "seniority": "entry-mid level",
+    "department": "legal"
+  },
+  {
+    "id": "001158c9-8919-4c7b-a57b-6fc1f49eecf8",
+    "title": "legal analyst",
+    "seniority": "mid level",
+    "department": "legal"
+  },
+  {
+    "id": "5bf1f160-e17a-4663-83a6-547b972a347b",
+    "title": "legal researcher",
+    "seniority": "mid level",
+    "department": "legal"
+  },
+  {
+    "id": "989272f1-9271-468b-b29c-c849a298310f",
+    "title": "it manager",
+    "seniority": "mid-senior level",
+    "department": "it"
+  },
+  {
+    "id": "cc9adb41-1306-4971-8f53-331367d5eff5",
+    "title": "attorney",
+    "seniority": "mid-senior level",
+    "department": "legal"
+  },
+  {
+    "id": "eaa56898-89e5-477d-bbac-6f2fc51f6def",
+    "title": "paralegal",
+    "seniority": "entry level",
+    "department": "legal"
+  },
+  {
+    "id": "bedcd704-6cce-4c6b-9949-dba9853473ca",
+    "title": "it specialist",
+    "seniority": "mid-senior level",
+    "department": "information technology"
+  },
+  {
+    "id": "94480ab4-ff46-4e9a-aa9a-8cd2c29b8b03",
+    "title": "legal secretary",
+    "seniority": "mid level",
+    "department": "legal"
+  },
+  {
+    "id": "798e50db-d7e4-4807-a12f-801a2c571ccb",
+    "title": "managing partner",
+    "seniority": "senior level",
+    "department": "legal"
+  },
+  {
+    "id": "16ba3141-65b4-49b2-b86c-abc2ad0ee804",
+    "title": "e-commerce manager",
+    "seniority": "mid-level",
+    "department": "sales and marketing"
+  },
+  {
+    "id": "7562005c-3c3f-45e3-85e1-ff4d1ee41297",
+    "title": "cto",
+    "seniority": "senior",
+    "department": "technology"
+  },
+  {
+    "id": "eec7f5c1-364a-41c3-a7f5-51aa7ef11ffd",
+    "title": "operations manager",
+    "seniority": "mid-level",
+    "department": "operations"
+  },
+  {
+    "id": "fc910309-3734-418d-91b6-ba1df6fa8797",
+    "title": "business analyst",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "ef9da9d1-72c9-4ee5-9eb6-73c3e80f94ca",
+    "title": "accountant",
+    "seniority": "junior",
+    "department": "finance"
+  },
+  {
+    "id": "ef9370d0-4b7e-4128-b103-54a6278ab5a9",
+    "title": "web developer",
+    "seniority": "mid-level",
+    "department": "technology"
+  },
+  {
+    "id": "f42de251-040f-411c-87af-8a7a915325a7",
+    "title": "logistics manager",
+    "seniority": "mid-level",
+    "department": "operations"
+  },
+  {
+    "id": "3112c356-11fb-4f7f-b3ac-04bd31c7c66b",
+    "title": "mobile app developer",
+    "seniority": "mid-level",
+    "department": "technology"
+  },
+  {
+    "id": "db15a344-2fd4-494d-89de-01e8c698e271",
+    "title": "marketing manager",
+    "seniority": "mid-level",
+    "department": "sales and marketing"
+  },
+  {
+    "id": "65302d45-0f95-4c7f-aede-926cd2a2114e",
+    "title": "e-commerce manager",
+    "seniority": "mid-level",
+    "department": "marketing"
+  },
+  {
+    "id": "f4e7c7ed-367d-4689-9545-3121f0befcac",
+    "title": "business development manager",
+    "seniority": "mid-level",
+    "department": "sales"
+  },
+  {
+    "id": "9a306b2d-bca8-4322-bbaf-4e10e70419b5",
+    "title": "cto",
+    "seniority": "senior-level",
+    "department": "technology"
+  },
+  {
+    "id": "fe40d11c-547b-44a4-8ea7-2309c1a4011a",
+    "title": "finance manager",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "b6333701-0f72-43c7-947e-cdf5f3fb6182",
+    "title": "business analyst",
+    "seniority": "entry-level",
+    "department": "strategy"
+  },
+  {
+    "id": "36f7de4d-8cbc-4684-8b97-d59620ac0319",
+    "title": "supply chain manager",
+    "seniority": "mid-level",
+    "department": "supply chain"
+  },
+  {
+    "id": "ca39e029-af9a-40eb-9774-1fa96cbf8d7d",
+    "title": "digital marketing specialist",
+    "seniority": "entry-level",
+    "department": "marketing"
+  },
+  {
+    "id": "078675c6-d123-4f94-a433-3c2ea61eeae4",
+    "title": "ceo",
+    "seniority": "senior",
+    "department": "management"
+  },
+  {
+    "id": "dad88a6c-3ad0-472f-9f45-d4caf6f56399",
+    "title": "warehouse manager",
+    "seniority": "mid-level",
+    "department": "operations"
+  },
+  {
+    "id": "a4c930c7-5567-40be-938c-0eae388968d0",
+    "title": "business analyst",
+    "seniority": "mid-level",
+    "department": "strategy"
+  },
+  {
+    "id": "b5a942fb-f630-41ed-9561-634eb6f579db",
+    "title": "chief financial officer",
+    "seniority": "senior",
+    "department": "finance"
+  },
+  {
+    "id": "9e6fd501-d82a-4e0e-92dd-d5d2289ae364",
+    "title": "supply chain manager",
+    "seniority": "senior",
+    "department": "operations"
+  },
+  {
+    "id": "ed1524f9-b05e-4e8f-8d30-d630c20563ac",
+    "title": "chief strategy officer",
+    "seniority": "executive",
+    "department": "strategy"
+  },
+  {
+    "id": "8e43f974-4863-41b6-96b8-7383c8dd2686",
+    "title": "strategy manager",
+    "seniority": "mid-level",
+    "department": "strategy"
+  },
+  {
+    "id": "963320ed-275c-44dc-86b6-ad90ff1a7abf",
+    "title": "hr manager",
+    "seniority": "mid-level",
+    "department": "human resources"
+  },
+  {
+    "id": "f85952f6-0675-4371-b27c-0757b758bfca",
+    "title": "team lead",
+    "seniority": "mid-level",
+    "department": "various"
+  },
+  {
+    "id": "8fbe20a6-a515-4ec0-9bdc-5c20b090e263",
+    "title": "project manager",
+    "seniority": "mid-level",
+    "department": "project management"
+  },
+  {
+    "id": "543b511a-76f4-4ab8-b377-ae621762135c",
+    "title": "it manager",
+    "seniority": "mid-level",
+    "department": "information technology"
+  },
+  {
+    "id": "f3a38348-5777-4510-a4d5-9b0052f9adab",
+    "title": "learning and development manager",
+    "seniority": "mid-level",
+    "department": "human resources"
+  },
+  {
+    "id": "720f65f1-8ab4-4e4e-8bcc-b55b22457bc7",
+    "title": "employee",
+    "seniority": "entry-level to executive",
+    "department": "various"
+  },
+  {
+    "id": "e67520ee-d739-49e7-85e3-5b85d3106389",
+    "title": "strategy manager",
+    "seniority": "senior",
+    "department": "strategy"
+  },
+  {
+    "id": "638ce0ed-25a4-45d0-b164-17712dcb7c04",
+    "title": "ceo",
+    "seniority": "c-level",
+    "department": "executive"
+  },
+  {
+    "id": "4c4dde92-cc9a-4ff6-9305-25b84d45a9cf",
+    "title": "hr manager",
+    "seniority": "senior",
+    "department": "human resources"
+  },
+  {
+    "id": "e0c96e3d-f01b-43f0-82e7-ce801fc72341",
+    "title": "team leader",
+    "seniority": "mid-level",
+    "department": "various"
+  },
+  {
+    "id": "eb8bae71-555f-42a2-a5fe-47c1041920b0",
+    "title": "project manager",
+    "seniority": "mid-level",
+    "department": "various"
+  },
+  {
+    "id": "38a9088a-d1f9-4e03-83ad-a4dccdc0afae",
+    "title": "it manager",
+    "seniority": "senior",
+    "department": "information technology"
+  },
+  {
+    "id": "a02d3c45-fa20-4b29-ae75-1209af9d5b2d",
+    "title": "ceo",
+    "seniority": "senior",
+    "department": "executive"
+  },
+  {
+    "id": "612dc9c2-c8c5-4173-aab6-25bb918e3479",
+    "title": "learning and development specialist",
+    "seniority": "junior",
+    "department": "human resources"
+  },
+  {
+    "id": "7c064321-244a-4bf5-b3d3-dffa78a0261e",
+    "title": "strategy manager",
+    "seniority": "mid-senior level",
+    "department": "strategy"
+  },
+  {
+    "id": "1d2703cc-f437-4c2c-991a-11bdcbb0ad1b",
+    "title": "hr manager",
+    "seniority": "mid-senior level",
+    "department": "human resources"
+  },
+  {
+    "id": "d9a880e5-d8cf-449b-9590-763741390f79",
+    "title": "project manager",
+    "seniority": "mid level",
+    "department": "project management"
+  },
+  {
+    "id": "cc8792e1-07f7-4bc9-99ad-4b2fb01ce44c",
+    "title": "it manager",
+    "seniority": "mid level",
+    "department": "information technology"
+  },
+  {
+    "id": "1fcec8ef-04dc-4046-8f11-4e3cb9ec219b",
+    "title": "learning and development manager",
+    "seniority": "mid level",
+    "department": "human resources"
+  },
+  {
+    "id": "9d052643-8aac-4411-bf72-844c16ddf741",
+    "title": "team leader",
+    "seniority": "mid-level",
+    "department": "various (depends on the team)"
+  },
+  {
+    "id": "daf0df1d-b649-4e7f-9b38-3e6bb8b82631",
+    "title": "it manager",
+    "seniority": "mid-senior level",
+    "department": "information technology"
+  },
+  {
+    "id": "575c23c2-57b3-460f-903e-d16bee93c6b8",
+    "title": "data analyst",
+    "seniority": "junior-level",
+    "department": "data"
+  },
+  {
+    "id": "4e46040d-ff94-489c-816a-4771629f632a",
+    "title": "customer success representative",
+    "seniority": "entry-level",
+    "department": "customer success"
+  },
+  {
+    "id": "1950caaf-4cef-4b47-b05e-3cc50b1baeaf",
+    "title": "security manager",
+    "seniority": "mid-level",
+    "department": "it"
+  },
+  {
+    "id": "4a69d9d9-7aee-44c4-a129-0db29afb6299",
+    "title": "accounting manager",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "0aec2be2-5637-438c-8842-f7e5bf2a4354",
+    "title": "front-end developer",
+    "seniority": "mid-level",
+    "department": "engineering"
+  },
+  {
+    "id": "29f96eba-231d-4b6c-a076-a0a197c5fb24",
+    "title": "pricing analyst",
+    "seniority": "entry-level",
+    "department": "finance"
+  },
+  {
+    "id": "41fafde9-cb04-4efd-84b1-86d8ce1423ad",
+    "title": "retention specialist",
+    "seniority": "mid-level",
+    "department": "customer success"
+  },
+  {
+    "id": "2cb5470e-5cff-4f36-8604-938d98668e7f",
+    "title": "data analyst",
+    "seniority": "entry-level",
+    "department": "data"
+  },
+  {
+    "id": "a345077b-03da-4458-8b37-a0a49b3a304e",
+    "title": "pricing analyst",
+    "seniority": "mid level",
+    "department": "marketing"
+  },
+  {
+    "id": "f595ff07-8302-4b7f-9b18-7f647ae7044e",
+    "title": "customer success manager",
+    "seniority": "mid level",
+    "department": "customer success"
+  },
+  {
+    "id": "b3a65a98-7fe6-475a-b4c7-343046bad3d4",
+    "title": "data analyst",
+    "seniority": "mid level",
+    "department": "data"
+  },
+  {
+    "id": "39debeb4-69c9-4b07-82d3-e683515441e3",
+    "title": "ux designer",
+    "seniority": "mid level",
+    "department": "design"
+  },
+  {
+    "id": "b11b5413-d686-434a-8f27-36d3d66ce189",
+    "title": "chief financial officer",
+    "seniority": "senior-level",
+    "department": "executive team"
+  },
+  {
+    "id": "62160937-26ce-4b05-8477-722223caaaf0",
+    "title": "user experience designer",
+    "seniority": "mid-level",
+    "department": "design"
+  },
+  {
+    "id": "06ccf129-64df-4b02-b5e3-f4e93bc7758b",
+    "title": "chief information security officer",
+    "seniority": "senior-level",
+    "department": "information security"
+  },
+  {
+    "id": "57199807-1b62-4d87-93df-b8eba96e3c72",
+    "title": "compliance officer",
+    "seniority": "mid-level",
+    "department": "legal"
+  },
+  {
+    "id": "634877ab-5fe7-4a62-8942-7f38f32c03d5",
+    "title": "Sales Manager",
+    "seniority": "Senior",
+    "department": "Sales"
+  },
+  {
+    "id": "09852e4c-67ca-44b0-bd6b-617e64ef8135",
+    "title": "Customer Service Representative",
+    "seniority": "Mid-level",
+    "department": "Customer Service"
+  },
+  {
+    "id": "8e89d6e5-a4ad-4071-83da-4ab358c6bbbb",
+    "title": "CEO",
+    "seniority": "Senior",
+    "department": "Executive"
+  },
+  {
+    "id": "4bf24e6e-736f-4dd9-9a6b-82b43f20bcb8",
+    "title": "Auditor",
+    "seniority": "Mid-level",
+    "department": "External"
+  },
+  {
+    "id": "d5e69c91-1d42-45a0-9411-4c1d55d7b154",
+    "title": "revenue manager",
+    "seniority": "mid-level",
+    "department": "finance"
+  },
+  {
+    "id": "441eefee-6860-4585-9190-568c2574f4aa",
+    "title": "security officer",
+    "seniority": "mid-level",
+    "department": "it"
+  },
+  {
+    "id": "0308f4a8-3786-4040-b0e1-96dd0bc00753",
+    "title": "CFO",
+    "seniority": "Senior",
+    "department": "Finance"
+  },
+  {
+    "id": "d95ec767-31ba-4102-9165-89b25dd4e420",
+    "title": "CEO",
+    "seniority": "Top",
+    "department": "Executive"
+  },
+  {
+    "id": "5d8ec4f6-ce01-4eeb-a126-24940073c130",
+    "title": "IT Manager",
+    "seniority": "Mid-Level",
+    "department": "IT"
+  },
+  {
+    "id": "a1028834-b04e-4efd-aaad-29134c10930c",
+    "title": "Software Developer",
+    "seniority": "Mid",
+    "department": "Engineering"
+  },
+  {
+    "id": "bebb9408-d85e-41e1-8d46-3a3f4eb2f0f6",
+    "title": "CMO",
+    "seniority": "Top Level",
+    "department": "Marketing"
+  },
+  {
+    "id": "1e7ed267-8417-445e-bfba-9583aa7a3d3e",
+    "title": "CHRO",
+    "seniority": "Top Level",
+    "department": "Human Resources"
+  },
+  {
+    "id": "64e72e8a-1ce7-440e-9592-549ba1955f2d",
+    "title": "Project Manager",
+    "seniority": "Mid-Level",
+    "department": "Operations"
+  },
+  {
+    "id": "6ef13ee1-1b8b-427e-8f6d-91ee5976cad8",
+    "title": "Customer Success Manager",
+    "seniority": "Mid",
+    "department": "Customer Success"
+  },
+  {
+    "id": "b70f8d95-56c7-4d78-a550-c0a16acae9d3",
+    "title": "Investors",
+    "seniority": "N/A",
+    "department": "External"
+  },
+  {
+    "id": "63cd01d3-e0e3-4c91-a2f9-90f4d32ddc60",
+    "title": "Board of Directors",
+    "seniority": "Top level",
+    "department": "Governance"
+  },
+  {
+    "id": "0e410bad-f629-4f03-a293-082ab888c4f9",
+    "title": "Security Manager",
+    "seniority": "Senior",
+    "department": "IT"
+  },
+  {
+    "id": "b37c2265-6ca4-4ac6-bfa4-82ba7b61d279",
+    "title": "CTO",
+    "seniority": "Top-Level",
+    "department": "Technology"
   }
 ]
