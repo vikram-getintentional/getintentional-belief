@@ -96,8 +96,41 @@ def canonicalize_pain(pains: list[str]) -> dict:
 
     return canonical_map
 
+def canonicalize_pain_trigger(pain_triggers: list[str]) -> dict:
+    print("Starting pain trigger canonicalization")
+    # Step 0: Dedupes
+    pain_triggers = list(set(pain_triggers))
+    
+    if not pain_triggers:
+        print("⚠️ No pain triggers provided for canonicalization.")
+        return {}
+
+    # Step 1: Generate embeddings
+    print(f"🔍 Generating embeddings for {len(pain_triggers)} pain triggers.")
+    pain_trigger_embeddings = generate_and_save_embeddings(pain_triggers, "pain_trigger")
+    
+    # Handle case with only one embedding
+    if len(pain_trigger_embeddings) == 1:
+        print("⚠️ Only one pain trigger provided. Skipping clustering.")
+        canonical_map = {pain_triggers[0]: pain_triggers[0]}
+        # Optionally save to a canonical map file if you want
+        return canonical_map
+
+    # Step 2: Cluster pain triggers
+    clustered_triggers = cluster_items(pain_trigger_embeddings)
+    print(f"🔍 Clustered pain triggers into {len(clustered_triggers)} clusters.")
+
+    # Step 3: Assign canonical labels
+    canonical_map = assign_canonical_labels(clustered_triggers)
+
+    # Step 4: Optionally save the canonical map
+    save_canonical_map(canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
+    print(f"✅ Pain trigger canonical map saved to {CANONICAL_MAP_PATH / 'pain_trigger_to_canonical.json'}")
+
+    return canonical_map
+
 def canonicalize_persona(personas: list[dict]) -> dict:
-    print("Starting persona canonicalization with input: ", personas)
+    print("Starting persona canonicalization with input")
 
     # Step 0: Dedupes
     seen = set()

@@ -2110,5 +2110,2969 @@
   {
     "id": "bf7853f5-fbd1-48ae-9a83-bdd76b44b48d",
     "text": "Unable to set realistic sales targets"
+  },
+  {
+    "id": "6218efe5-f035-447e-86bf-7486b7df7439",
+    "text": "complex management of multiple subscriptions"
+  },
+  {
+    "id": "2832b61f-a8a4-475d-8cb3-717bdd811e76",
+    "text": "difficulty in testing and scaling pricing structures"
+  },
+  {
+    "id": "fd0462f3-1496-4556-94a6-b0d60f362f94",
+    "text": "difficulty in offering and managing discounts and trials"
+  },
+  {
+    "id": "fcb9bb0c-e830-42ea-acaf-2ca7c4b1447d",
+    "text": "security risks and non-compliance issues"
+  },
+  {
+    "id": "1b8b69cb-af37-458c-ba62-4b61ba0b1470",
+    "text": "churn prediction and management"
+  },
+  {
+    "id": "9caae06d-468d-4a71-9182-467b4243cb7f",
+    "text": "accurate and timely revenue recognition"
+  },
+  {
+    "id": "a04535f1-e668-4254-9e28-b9485847b360",
+    "text": "providing a seamless and customizable checkout experience"
+  },
+  {
+    "id": "0d825d3d-4329-4547-9324-0a7df38e8821",
+    "text": "managing and testing product feature entitlements"
+  },
+  {
+    "id": "3689143c-0a26-4451-8915-7371b1870e04",
+    "text": "poor customer experience during checkout"
+  },
+  {
+    "id": "3914d51c-1005-45f6-b906-18bae6890c87",
+    "text": "difficulty managing product features and testing price sensitivity"
+  },
+  {
+    "id": "4719058e-4291-432d-b887-95832bbb2ace",
+    "text": "difficulty in predicting churn and managing cancellation attempts"
+  },
+  {
+    "id": "cb8f60ed-2b36-4387-8546-ae783ee9852c",
+    "text": "inability to allow end users to manage their subscriptions and payment methods"
+  },
+  {
+    "id": "db41c1f5-45b0-48db-bcf7-5347fbc9a901",
+    "text": "difficulty in ensuring secure transactions and compliance with relevant regulations"
+  },
+  {
+    "id": "07a213af-09ac-4af5-916e-b70e63895c08",
+    "text": "complexity of managing multiple subscriptions scenarios"
+  },
+  {
+    "id": "f64337f3-b32e-4893-8c3c-be37d49a21d5",
+    "text": "challenges in offering discounts and managing trials"
+  },
+  {
+    "id": "cc3454e9-b912-43e0-903e-0170b413b0c7",
+    "text": "lack of flexibility and control in checkout process"
+  },
+  {
+    "id": "dff62aa7-55d5-4a67-a32e-6a2047334967",
+    "text": "challenges in maintaining gaap compliance and audit readiness"
+  },
+  {
+    "id": "051584be-c8e0-4bcd-ab3a-031749b5a039",
+    "text": "difficulty in creating customizable checkout flows and allowing end users to manage their own subscriptions"
+  },
+  {
+    "id": "be8e5da8-2669-48c9-ae08-b8cba20f23e8",
+    "text": "inability to customize and scale pricing structures"
+  },
+  {
+    "id": "e4c24dbf-e703-45e3-a6e4-02b962f3e92d",
+    "text": "difficulty maintaining gaap compliance and audit readiness"
+  },
+  {
+    "id": "5fdfa782-a8d5-48bd-9713-643d6467c672",
+    "text": "difficulty offering and managing discounts and trials"
+  },
+  {
+    "id": "88116ce3-9f7e-408b-93ab-9da370519dcc",
+    "text": "difficulty in managing feature entitlements based on plans"
+  },
+  {
+    "id": "4ca0862b-c126-4afa-8d92-197eb9e2f1c8",
+    "text": "managing feature entitlements for different plans"
+  },
+  {
+    "id": "ddfded44-4a72-4920-bedb-7be7da9c088b",
+    "text": "difficulty in predicting churn and managing involuntary churn"
+  },
+  {
+    "id": "ba140a0d-7719-4dbd-80fa-7fcd38155b9d",
+    "text": "inability to offer self-service and customizable checkouts"
+  },
+  {
+    "id": "d61799dd-1a07-41f1-b26b-11f18bf438c0",
+    "text": "Unable to close deals due to lack of proper subscription management"
+  },
+  {
+    "id": "edadf37e-fb98-4dd3-a9a3-7d356609f946",
+    "text": "Increased customer complaints due to improper subscription management"
+  },
+  {
+    "id": "b5151ad0-6f5b-4293-b5dd-7042860570ee",
+    "text": "Ineffective marketing campaigns due to incorrect pricing"
+  },
+  {
+    "id": "dee2975e-1228-467b-adef-e2734d9d4feb",
+    "text": "Increased risk of non-compliance with financial regulations leading to potential fines and penalties"
+  },
+  {
+    "id": "a70f9564-1477-4693-89cd-bdaa05e007b2",
+    "text": "Inability to properly position product in market due to incorrect pricing"
+  },
+  {
+    "id": "37ea2a4d-b6e5-4054-a1b6-839da996b32c",
+    "text": "Inaccurate revenue forecasts due to unpredictable subscription renewals"
+  },
+  {
+    "id": "99df6cc1-cd77-491e-9a37-e8abb6cd7b8b",
+    "text": "Decreased profitability due to incorrect pricing strategy"
+  },
+  {
+    "id": "3d078c33-aa9e-47f5-9422-5c86e34ca046",
+    "text": "Inaccurate financial forecasts resulting in poor strategic decisions"
+  },
+  {
+    "id": "4941b7f9-b573-4716-8291-0146d2d65b3f",
+    "text": "Unable to meet sales targets due to overpriced products"
+  },
+  {
+    "id": "edaf6693-81b6-49bf-92a4-d424f0363fab",
+    "text": "Inaccurate sales forecasts leading to insufficient inventory or overproduction"
+  },
+  {
+    "id": "69d99fb8-c041-43a1-8e25-798eede3e78e",
+    "text": "Inaccurate financial data could lead to poor strategic decisions, potentially harming the company's profitability and reputation."
+  },
+  {
+    "id": "4e908a69-c1e8-4fea-b58f-ce842c11a922",
+    "text": "Unable to plan and execute strategic initiatives due to lack of funding"
+  },
+  {
+    "id": "1e9fa87e-665f-4b8a-9e4b-67e8a410af27",
+    "text": "Poor product lifecycle management can result in overstock or stockouts, leading to potential lost sales and increased holding costs."
+  },
+  {
+    "id": "229f5bef-57b0-4e38-920b-4cec129a434b",
+    "text": "Decreased customer satisfaction leading to loss in business"
+  },
+  {
+    "id": "5ef292f0-761f-4691-b80e-780eb9a1340d",
+    "text": "Inability to execute marketing strategies effectively leading to poor results"
+  },
+  {
+    "id": "ecf0605e-8415-48d0-990f-d127bfd992e5",
+    "text": "Overstocking or understocking due to inaccurate sales forecasts"
+  },
+  {
+    "id": "9d65e5f3-572b-45a8-aa6b-b97528a2efaa",
+    "text": "Inability to align operations with business strategy"
+  },
+  {
+    "id": "37eda619-5f9b-41e3-af45-7bb67de72177",
+    "text": "Damage to brand reputation due to negative customer feedback"
+  },
+  {
+    "id": "6152f061-cc2e-474f-97f6-2ee8c6b95283",
+    "text": "Unable to execute marketing campaigns due to lack of budget"
+  },
+  {
+    "id": "6658eea5-1337-4498-9346-6b6c3411d637",
+    "text": "Without proper product lifecycle management, marketing efforts may not align with the product's stage, leading to ineffective marketing campaigns."
+  },
+  {
+    "id": "7eaad2bd-9233-47a1-8979-36bb0883d91b",
+    "text": "Misaligned product development due to lack of sales feedback"
+  },
+  {
+    "id": "8f894be7-833f-4426-a415-6674bd59f29c",
+    "text": "Increased volume of customer queries and complaints"
+  },
+  {
+    "id": "bd61e2ce-f483-4653-b98b-f26ff93c4d23",
+    "text": "Inadequate budget allocation leading to ineffective marketing campaigns"
+  },
+  {
+    "id": "dbf94aff-9843-460a-8b37-dd78733f6aed",
+    "text": "Inability to align marketing strategy with overall business strategy"
+  },
+  {
+    "id": "ed77b66c-93f5-4e97-8131-8bf063b33f3f",
+    "text": "Inability to make informed strategic decisions due to lack of marketing insights"
+  },
+  {
+    "id": "e76a9c0a-583e-4516-ab97-5cfb919a048e",
+    "text": "Inability to make accurate strategic decisions due to lack of reliable revenue forecasts"
+  },
+  {
+    "id": "b7f8e1e3-3024-4db6-a175-f1c1e00d40d5",
+    "text": "Inability to plan and allocate budget accurately due to inaccurate revenue forecasts"
+  },
+  {
+    "id": "52bce598-0136-4546-a933-3bd186354c41",
+    "text": "Lack of customer feedback for product improvement"
+  },
+  {
+    "id": "0f863883-6e6c-49e0-950d-17fb8be49465",
+    "text": "Inability to plan marketing strategies and campaigns effectively due to lack of accurate revenue forecasts"
+  },
+  {
+    "id": "c44eb918-bdd2-4445-a0cf-5c14b4db8b7d",
+    "text": "Inefficient cost management leading to operational losses"
+  },
+  {
+    "id": "b316220d-b595-4eb9-a72e-d101736512ea",
+    "text": "Unable to recruit new employees due to lack of budget"
+  },
+  {
+    "id": "d5fbed61-6f4a-460c-a0b5-67105205c4df",
+    "text": "Difficulty in achieving sales targets due to ineffective marketing strategies"
+  },
+  {
+    "id": "b1c2c202-60c2-4647-96ef-16dbfb26efa5",
+    "text": "Inaccurate financial forecasts due to lack of sales data"
+  },
+  {
+    "id": "4ce4f50d-32a2-43ac-9a94-789d6f640687",
+    "text": "Wasted resources on ineffective campaigns due to lack of sales feedback"
+  },
+  {
+    "id": "d2de4051-6552-4377-b96d-a6ba3a66222b",
+    "text": "Lack of proper product lifecycle management can lead to misalignment in product development, causing delays and inefficiencies."
+  },
+  {
+    "id": "046300aa-d086-4ab2-b932-657877637e0f",
+    "text": "Inability to accurately forecast financial performance and manage risks"
+  },
+  {
+    "id": "151867a2-b673-4d6f-b802-24cb58b514c7",
+    "text": "Inaccurate or incomplete audit reports make it difficult to assess the company's financial health and compliance, potentially leading to regulatory issues."
+  },
+  {
+    "id": "8dcaf6fc-0e6d-4afc-8991-8e1de34b0569",
+    "text": "Poor internal audit can lead to non-compliance with financial regulations, resulting in fines and legal issues."
+  },
+  {
+    "id": "494df362-d13b-4a22-a7d0-8a1cb37988ce",
+    "text": "Unable to achieve sales targets due to lack of new customers"
+  },
+  {
+    "id": "7be929a2-1a23-46f6-9988-b65d2f8800f4",
+    "text": "Inaccurate financial data leading to misinformed strategic decisions"
+  },
+  {
+    "id": "b0f3a293-8ad3-4662-89fc-74fb02fc76b1",
+    "text": "Unable to make informed decisions about the company's direction due to lack of sales performance data"
+  },
+  {
+    "id": "9cda7f07-1241-4669-92f3-9ec6f87111ce",
+    "text": "Inaccurate business strategy and planning due to unreliable sales forecasts"
+  },
+  {
+    "id": "388526dc-f683-437e-936c-211e7906d8cd",
+    "text": "Inability to align technology strategy with business strategy"
+  },
+  {
+    "id": "126afc1a-c36e-406e-8ceb-c5bd3b63477c",
+    "text": "Ineffective marketing campaigns due to poor understanding of sales trends"
+  },
+  {
+    "id": "8d85ee14-0575-4cfb-bb1e-9e726013606c",
+    "text": "Difficulty in accurate financial forecasting and budgeting due to lack of sales data and insights."
+  },
+  {
+    "id": "a39e6efc-0aae-4c8d-b278-9f474f881e5d",
+    "text": "Compliance failures can lead to employee dissatisfaction and turnover, affecting employee engagement and retention"
+  },
+  {
+    "id": "7bc14cf9-749d-4fcb-9cbe-6189c912cd8c",
+    "text": "Decreased revenue and profitability, inability to hit growth targets"
+  },
+  {
+    "id": "53a017ac-74a1-4cec-9a62-cb871aa43c9e",
+    "text": "Inaccurate financial forecasts leading to poor financial decisions"
+  },
+  {
+    "id": "15a4c32f-f42a-49ef-8869-102bce66c945",
+    "text": "Difficulty in setting a positive direction for the company due to poor brand reputation"
+  },
+  {
+    "id": "eeaf0822-a010-47ef-9857-a469e281558c",
+    "text": "Increased customer complaints due to lack of product knowledge or misinformation"
+  },
+  {
+    "id": "0f0d57f4-b26d-4b4b-9e37-9c1f9a807e89",
+    "text": "Inability to accurately forecast revenue due to poor marketing campaign planning"
+  },
+  {
+    "id": "b039875c-bd02-4bbc-8f00-2c45909e8764",
+    "text": "Difficulty in marketing a product without a clear development plan, leading to ineffective marketing strategies"
+  },
+  {
+    "id": "400097c3-4001-444d-a906-2ceac59e32c6",
+    "text": "Ineffective marketing campaigns due to lack of proper sales insights"
+  },
+  {
+    "id": "073df6b0-c88d-45f8-94c0-959777f05876",
+    "text": "Inability to make informed decisions on company direction due to lack of sales performance data"
+  },
+  {
+    "id": "453015a5-0ce2-4a43-8802-1cb0cf19e915",
+    "text": "Unable to make informed financial decisions due to lack of accurate financial planning and risk assessments"
+  },
+  {
+    "id": "967855fb-c11e-451b-b397-c8d18e627c5c",
+    "text": "Inefficient marketing campaigns due to lack of clear company goals"
+  },
+  {
+    "id": "53c56fce-f926-4f8c-845d-1b4a933f2c2d",
+    "text": "Difficulty in converting leads due to poor quality leads from ineffective marketing campaigns"
+  },
+  {
+    "id": "407b6aa0-0371-4e4f-a2eb-221e56d0e7dd",
+    "text": "Decreased profitability and slower company growth"
+  },
+  {
+    "id": "7cf439ac-be29-49d8-9f44-00ab33a64184",
+    "text": "Inaccurate budget allocation due to lack of sales forecasts"
+  },
+  {
+    "id": "a464a8f6-88f6-4d2e-a88c-ba7bd2fa0429",
+    "text": "Lower company revenue and slowed growth due to ineffective marketing strategies"
+  },
+  {
+    "id": "ca4c406c-eff5-44ee-9b59-3fabadbe5675",
+    "text": "Inefficiency in planning and budgeting for marketing campaigns due to inaccurate financial analysis"
+  },
+  {
+    "id": "b43e8082-9e7a-415d-bfb9-69a6d663ebc1",
+    "text": "Inability to create effective marketing strategies due to lack of sales feedback"
+  },
+  {
+    "id": "03c97fbe-8dd7-46c8-8fc6-76d24dbb2b35",
+    "text": "Inaccurate financial forecasting, potential financial loss"
+  },
+  {
+    "id": "5e34fbfe-22d5-4afd-a52f-1faa288ac8a9",
+    "text": "Difficulty in setting accurate sales targets and strategies due to inaccurate financial analysis"
+  },
+  {
+    "id": "d584628d-4dba-44fb-ac8e-2a9ccf9acbf3",
+    "text": "Lack of sufficient leads to work on"
+  },
+  {
+    "id": "3994af8a-17c8-4a8b-90b9-fddd04d55401",
+    "text": "Difficulty in budget planning due to unpredictable sales performance"
+  },
+  {
+    "id": "212e8d90-9cce-4322-af16-e6a2aa5f89a6",
+    "text": "Inability to plan effective marketing campaigns due to lack of sales data and insights."
+  },
+  {
+    "id": "dfd4b75e-0863-40fa-9f6b-59be21d4bbe5",
+    "text": "Wasted budget on ineffective marketing campaigns due to lack of sales strategy alignment"
+  },
+  {
+    "id": "0b8d22b7-5a78-49ff-a447-422ef30fe14c",
+    "text": "Inaccurate financial forecasting leading to potential financial risks"
+  },
+  {
+    "id": "e4815ea5-6465-452a-8c27-a4a2318fa056",
+    "text": "Inefficient operations leading to potential losses and customer dissatisfaction"
+  },
+  {
+    "id": "0ed85337-9132-4eaf-83af-78b5c3d8fdf1",
+    "text": "Decreased product relevance, difficulty in prioritizing product features"
+  },
+  {
+    "id": "5647e9be-c73b-43dd-b9d8-30d18ce1ba86",
+    "text": "Confusion and inefficiency in daily tasks due to lack of understanding or alignment with company's strategic direction"
+  },
+  {
+    "id": "a8e3f70e-a1d7-4f32-be2f-80a7fdcb81bb",
+    "text": "Inability to prioritize product features or improvements due to lack of customer feedback"
+  },
+  {
+    "id": "1c9b2408-dc61-4d1f-b729-3a3b6a0a5c63",
+    "text": "Inaccurate inventory levels leading to overstock or shortages"
+  },
+  {
+    "id": "812256b2-a821-4f3d-979c-1fec8e8e7f7b",
+    "text": "Company's strategic direction is unclear or misaligned, leading to confusion and inefficiency across all departments"
+  },
+  {
+    "id": "53675ef7-0e17-4f84-9fe0-893d43b9dee7",
+    "text": "Stunted company growth and potential negative impacts on company reputation due to inability to fill positions quickly"
+  },
+  {
+    "id": "2f18eb63-6d45-43d1-b260-dd76cfa9b805",
+    "text": "Compliance issues can lead to loss of customer trust, affecting sales performance"
+  },
+  {
+    "id": "d8c18078-d502-49c0-812b-e69408d5d49e",
+    "text": "Inadequate leads to follow up on, leading to low sales and commission"
+  },
+  {
+    "id": "866d04d9-ecf6-4549-bc4e-d9c88cdfcc69",
+    "text": "Inability to accurately forecast revenue, difficulty in financial planning"
+  },
+  {
+    "id": "26c2c96a-c2c6-4148-9ae8-a5a4aec22458",
+    "text": "Increased workload on current employees due to unfilled positions, potentially leading to burnout and decreased productivity"
+  },
+  {
+    "id": "ecc20d8c-41cb-4ab8-8497-ccc75bcf676e",
+    "text": "Poor technology decisions leading to inefficient systems"
+  },
+  {
+    "id": "13eeb755-fbf6-4c39-8791-32d38a80b27e",
+    "text": "Increased number of customer complaints about the product"
+  },
+  {
+    "id": "89194bfc-9f1a-494a-b516-3d8ccca360b6",
+    "text": "Lack of clear vision and direction for product development, leading to confusion and inefficiency"
+  },
+  {
+    "id": "b8fb4b04-2d24-4c82-b2dd-c3b543dee526",
+    "text": "Legal issues and fines due to non-compliance, damaging company reputation and financial stability"
+  },
+  {
+    "id": "0d80ef37-36fa-467f-a980-ff1c3cfeb6ad",
+    "text": "Difficulty in closing sales due to lack of interest from leads"
+  },
+  {
+    "id": "adff72f6-f722-40b3-8273-be7213cb5dbc",
+    "text": "Decrease in quality leads, leading to lower sales conversion rates and reduced revenue"
+  },
+  {
+    "id": "e4e8000d-b089-4f55-9de1-853fbe8a62df",
+    "text": "Inaccurate inventory data leading to over or under procurement"
+  },
+  {
+    "id": "e2e22eea-7c6a-4bc8-bff7-e1ed3e240d95",
+    "text": "Difficulty in developing effective marketing strategies due to lack of market insights"
+  },
+  {
+    "id": "56b982be-72c3-47d8-b93d-cf849a0a2bd1",
+    "text": "Decrease in operational efficiency due to lack of alignment with company strategy"
+  },
+  {
+    "id": "eba60285-2494-4966-a610-9f04da3ff035",
+    "text": "Inability to meet sales targets due to stock shortages"
+  },
+  {
+    "id": "5b34d96b-a894-41d2-bea3-f74ab38387a6",
+    "text": "Inability to accurately forecast financials due to uncertain product development plans, leading to potential financial risks"
+  },
+  {
+    "id": "a85e84d4-9ad3-4fec-8c87-9aa3e2b8e84e",
+    "text": "Inaccurate financial forecasts due to unreliable inventory data"
+  },
+  {
+    "id": "36a2c431-e53a-4fa7-8567-2df994165607",
+    "text": "Inefficiencies in warehouse space utilization due to inaccurate inventory data"
+  },
+  {
+    "id": "1bc15f94-15ec-4830-aec5-c2543864845b",
+    "text": "Poorly defined strategies leading to ineffective campaigns"
+  },
+  {
+    "id": "69925fab-dd53-4dbc-a431-d6d992dfea9d",
+    "text": "Inability to streamline operations in accordance with the business strategy"
+  },
+  {
+    "id": "413d48ee-bf70-47a9-adb9-adaa836a24f9",
+    "text": "Difficulty in meeting sales targets due to lack of quality leads from marketing campaigns"
+  },
+  {
+    "id": "11a0fbba-fd95-46fb-80cb-968a88e9b953",
+    "text": "Inefficient operations leading to wasted resources"
+  },
+  {
+    "id": "b1dbe0b0-e4d4-4001-9039-5d3ad34a2126",
+    "text": "Inability to improve product due to lack of accurate customer feedback"
+  },
+  {
+    "id": "4c6eee83-2c5b-4a8a-a692-a50ab38407ab",
+    "text": "Incorrect financial forecasts can lead to inadequate budget allocation for product development, potentially affecting product quality or launch timelines."
+  },
+  {
+    "id": "5326064b-1bf4-4024-b0cf-2775b08a1114",
+    "text": "Inability to plan product development and manage product lifecycle effectively"
+  },
+  {
+    "id": "2a10eda5-59c3-462c-8619-a51bea40187f",
+    "text": "Difficulty in talent acquisition and retention due to unclear company vision"
+  },
+  {
+    "id": "7e489e88-9ff0-47b3-ac1b-606e567c5665",
+    "text": "Difficulty in accurate financial forecasting and budgeting due to unpredictable sales figures"
+  },
+  {
+    "id": "2901939f-c8e0-4c0d-991b-cf8b252fc9c3",
+    "text": "Decreased revenue and profitability, potential loss of market share"
+  },
+  {
+    "id": "b920bb9a-64ce-42c1-9186-51081c9cface",
+    "text": "Inability to effectively execute the marketing strategy, leading to loss of potential leads, reduced brand visibility, and diminished market share"
+  },
+  {
+    "id": "42ad141b-16bb-478d-9c12-7d7e8d91b95b",
+    "text": "Failure in compliance can lead to legal issues, penalties and damage to company's reputation, making it difficult to execute the company strategy"
+  },
+  {
+    "id": "958c2162-873b-4987-a20c-3f7b0406e7c8",
+    "text": "Inefficient lead generation leading to less potential deals"
+  },
+  {
+    "id": "0a001774-756a-4e89-8477-2318cad20b3e",
+    "text": "Unexpected fines and penalties affecting financial planning and budgeting"
+  },
+  {
+    "id": "b38e55af-7e17-4d7f-badc-6cb080593aa9",
+    "text": "Challenges in product development and planning due to lack of market insights"
+  },
+  {
+    "id": "25e97300-b759-435a-b8b1-2dd7b183efcb",
+    "text": "Misalignment with customer needs due to lack of customer feedback"
+  },
+  {
+    "id": "8a64f77d-80ab-4c73-9bdd-d1291885ed14",
+    "text": "Struggle to manage a product that is not competitive or innovative"
+  },
+  {
+    "id": "b00cd1e3-6d3b-4be8-b78f-336553bcc7ab",
+    "text": "Inaccurate financial forecasts leading to poor strategic decisions"
+  },
+  {
+    "id": "f9346746-76ef-4c44-abbc-7623bd43fba5",
+    "text": "Inaccurate revenue projections due to lack of potential deals"
+  },
+  {
+    "id": "c27844dd-299e-4367-b3f1-2b4450dfc43f",
+    "text": "Inaccurate sales forecasting due to poor financial planning"
+  },
+  {
+    "id": "6195d28a-cdc7-42be-9b41-c251f3d98e4c",
+    "text": "Delays in production due to lack of necessary inventory"
+  },
+  {
+    "id": "0b4651a5-0fc3-4e53-956a-487c67f4a851",
+    "text": "Non-compliance can result in financial penalties and increased scrutiny from regulators, affecting financial planning and analysis"
+  },
+  {
+    "id": "9e81bfe8-c0a7-46ca-a59d-a584cef9cc51",
+    "text": "Reduced effectiveness of marketing campaigns due to poor customer feedback"
+  },
+  {
+    "id": "165b0e06-4bf5-4716-9cd7-0d203d83036c",
+    "text": "Decreased lead conversion, potential loss of customer base"
+  },
+  {
+    "id": "e98dae58-28c9-4d05-ba83-840a5d912949",
+    "text": "Unable to effectively plan and execute departmental strategies due to lack of clarity or misalignment with company's strategic direction"
+  },
+  {
+    "id": "8ef7a457-9a5d-470e-82cc-e113c15f91d8",
+    "text": "Ineffective marketing strategies leading to low customer acquisition and retention"
+  },
+  {
+    "id": "299d3213-b983-4dd8-a2fc-cc7c7656d1c1",
+    "text": "Inability to align marketing strategies with overall business goals"
+  },
+  {
+    "id": "5da09ea6-84e3-42c5-a599-c83e25f405a8",
+    "text": "Inability to accurately forecast and procure necessary goods due to inaccurate financial analysis"
+  },
+  {
+    "id": "629440cb-3aa9-44f5-97cc-ffc05f7089fa",
+    "text": "Unable to fill open positions in a timely manner, leading to understaffed departments and increased workload on current employees"
+  },
+  {
+    "id": "7c5c1637-ef82-4797-b3f8-f17b8d27b3f9",
+    "text": "Decreased company revenue due to ineffective sales and marketing strategies"
+  },
+  {
+    "id": "612b1708-336c-41e6-a468-31a0c9848b2f",
+    "text": "Inaccurate financial forecasts can lead to poor strategic decisions, potentially impacting company profitability and growth."
+  },
+  {
+    "id": "71eba998-72c4-4b93-85af-1449dbc4eb31",
+    "text": "Difficulty in promoting a brand with poor reputation"
+  },
+  {
+    "id": "ccf97a66-bb53-4af9-bc98-9d7d10cf93a0",
+    "text": "Challenges in selling a product without a clear development roadmap, leading to potential loss of sales"
+  },
+  {
+    "id": "cef73453-59d7-42f6-bfae-9931ee5b80b0",
+    "text": "Wasted marketing budget, decreased ROI, inability to justify marketing spend"
+  },
+  {
+    "id": "0621e520-6942-4ee6-b58b-d72b4e5403f3",
+    "text": "Inability to plan effective campaigns due to lack of budget information"
+  },
+  {
+    "id": "c01e2c09-cddc-4f85-9f0f-69092d35ee37",
+    "text": "Inaccurate financial forecasting and budgeting due to lack of strategic direction"
+  },
+  {
+    "id": "f33690ed-0c5f-4ffe-9a6f-51b540cddeda",
+    "text": "Without accurate financial forecasts, marketing budgets may be ill-informed, leading to inefficient use of resources or missed opportunities."
+  },
+  {
+    "id": "89c0757e-4633-4945-bc07-0e91c5f70cdd",
+    "text": "Increase in customer complaints due to poor product understanding"
+  },
+  {
+    "id": "8be9a2b1-2eb9-4bf0-be01-03c84566acc6",
+    "text": "Difficulty in selling products due to lack of product improvements"
+  },
+  {
+    "id": "79f9acb9-091d-4002-95b7-1beef75c1c5c",
+    "text": "Inability to meet sales targets due to lack of resources"
+  },
+  {
+    "id": "83f367f3-c0b9-4c98-8268-5d3af98f90b1",
+    "text": "Inefficient allocation of marketing resources leading to poor campaign performance"
+  },
+  {
+    "id": "d4290537-0820-446e-a3fd-e1628abdd429",
+    "text": "Difficulty in understanding market needs and creating appropriate marketing strategies"
+  },
+  {
+    "id": "6c023f4f-a548-4b09-98d8-3a7fb3202e2e",
+    "text": "Damage to brand image due to non-compliance scandals, affecting customer trust and loyalty"
+  },
+  {
+    "id": "8edd2897-cf10-4228-abf0-275cca392283",
+    "text": "Inability to align technical strategies with business goals"
+  },
+  {
+    "id": "c4c72e1f-0549-496f-8bbe-ec3c76b29631",
+    "text": "Unable to make strategic decisions due to lack of proper financial planning and risk assessments"
+  },
+  {
+    "id": "64a2147d-6301-409d-95c1-1606b1d52d63",
+    "text": "Inaccurate financial forecasting and potential overspending"
+  },
+  {
+    "id": "78ff7633-593d-4bcd-83b6-cc9b9570f42a",
+    "text": "Loss of potential customers due to poor customer service experience"
+  },
+  {
+    "id": "c733265f-b182-422f-8d2b-ecca5d34d13c",
+    "text": "Struggling to provide accurate analysis due to poorly planned marketing campaigns"
+  },
+  {
+    "id": "3c52e186-4ec8-4ecb-bf18-d406ebf6bb38",
+    "text": "Inability to accurately forecast sales and plan for future growth"
+  },
+  {
+    "id": "9f92a9d5-599d-4570-98b4-93ed0e3a6e46",
+    "text": "Inability to effectively market the products due to lack of innovation and appeal"
+  },
+  {
+    "id": "a5df0f2f-fbc4-42cd-b23b-c73bba160b87",
+    "text": "Inability to plan and allocate budget efficiently"
+  },
+  {
+    "id": "0f19d6c3-f85d-4c8a-97f6-7dc111ca713e",
+    "text": "Inability to make informed decisions about the company's strategic direction due to lack of accurate financial analysis"
+  },
+  {
+    "id": "48d08b76-c7c7-406d-9bbb-4e05c8aa0168",
+    "text": "Increased workload due to non-compliance issues, potential legal disputes"
+  },
+  {
+    "id": "7402ae74-a925-4d50-8aba-12719d42d634",
+    "text": "Increased volume and complexity of customer queries due to lack of clarity or misinformation"
+  },
+  {
+    "id": "bf1b331c-45e7-413a-ad5e-b7513322d333",
+    "text": "Misaligned marketing efforts leading to poor brand image"
+  },
+  {
+    "id": "aa1f5469-fd7d-4d65-8829-cf5c2ff84dfd",
+    "text": "Increase in customer complaints due to lack of product improvements"
+  },
+  {
+    "id": "edee4d9d-a115-4f1a-89d6-9398069ee447",
+    "text": "Difficulty in selling products that are not innovative or competitive"
+  },
+  {
+    "id": "702c409e-33b2-4682-9b6d-07779404a4f3",
+    "text": "Inability to set accurate company strategy and direction due to lack of market insights"
+  },
+  {
+    "id": "bd3f07ce-90b5-4885-b15a-dacf288acacd",
+    "text": "Inability to set accurate sales targets and company goals due to lack of sales data"
+  },
+  {
+    "id": "ff920a13-83d9-417a-b87d-671d2c235407",
+    "text": "Inability to meet sales targets due to poor sales management"
+  },
+  {
+    "id": "cd6ca2df-3e9e-4be6-957f-b37e193fde5d",
+    "text": "Inability to plan and execute effective marketing strategies due to lack of sales feedback"
+  },
+  {
+    "id": "5501b742-49f0-4e71-ad38-41b1393a99d3",
+    "text": "Lack of market insights and customer feedback for product improvement"
+  },
+  {
+    "id": "79ad5aea-1083-4895-98ef-6e41d6fa193d",
+    "text": "Inability to accurately plan and strategize for the company's direction due to lack of sales data and insights."
+  },
+  {
+    "id": "c426b692-e7af-45f8-b27e-ba36d2a96a03",
+    "text": "Incorrect financial reports leading to possible legal and compliance issues"
+  },
+  {
+    "id": "c9e3c85f-8b4a-49d7-9bba-5a9a928d59a0",
+    "text": "Increase in customer complaints due to poor brand reputation"
+  },
+  {
+    "id": "5fae2848-6269-4ca3-a182-d7c6fd67a6fb",
+    "text": "difficulty in generating business-ready insights"
+  },
+  {
+    "id": "4604c8ff-e643-43a6-998d-679a063fe669",
+    "text": "lack of real-time collaborative business dashboards"
+  },
+  {
+    "id": "95d24c0e-2bae-4f38-8e52-a38ff20ca4b8",
+    "text": "difficulty in obtaining deep insights with business context"
+  },
+  {
+    "id": "1d607c4a-3377-4104-a62c-7e5e1cab9180",
+    "text": "difficulty in visualizing insights across data sources"
+  },
+  {
+    "id": "936cc539-1080-48b6-b321-47d672911879",
+    "text": "difficulty in summarizing, interpreting, and diagnosing business data"
+  },
+  {
+    "id": "4123f4b4-3b1c-4fd0-a870-927f529d472a",
+    "text": "disconnected insights and lack of real-time collaboration"
+  },
+  {
+    "id": "5182b6ab-4afa-408b-ab2b-80f4aee49eb1",
+    "text": "lack of collaborative space for data teams"
+  },
+  {
+    "id": "ba674745-c4c7-4b66-bf74-b1576d6be8cc",
+    "text": "difficulty in embedding analytics into custom apps"
+  },
+  {
+    "id": "6412b685-0297-422c-a315-bb0fc253d480",
+    "text": "difficulty in visualizing insights from multiple data sources"
+  },
+  {
+    "id": "cc1bd322-d2b5-4f66-91ea-735db4efd87c",
+    "text": "difficulty in summarizing, interpreting, and discovering patterns from data"
+  },
+  {
+    "id": "b6c91fef-2b10-4b6b-aabe-18cd8bd33478",
+    "text": "difficulty in managing, prepping, joining, and shaping data"
+  },
+  {
+    "id": "9444778c-3244-465f-89ff-55427e9c0a52",
+    "text": "difficulty in obtaining ready-to-use business insights"
+  },
+  {
+    "id": "a44b73db-21bb-4f15-99df-5943e349f14c",
+    "text": "need for a unified platform for data analysis"
+  },
+  {
+    "id": "5cc75966-29f6-4ff2-a473-37375e493bae",
+    "text": "need for autonomous ai agents for self-service insights"
+  },
+  {
+    "id": "8e7b34a6-9d56-4637-864f-fae00da0fc60",
+    "text": "need for interactive visualizations across data sources"
+  },
+  {
+    "id": "6f61760e-73f1-4df6-bba2-33c9985c93b2",
+    "text": "difficulty in interpreting and diagnosing data"
+  },
+  {
+    "id": "b4598534-ddda-4693-a57e-070f2c437945",
+    "text": "need for flexible data management"
+  },
+  {
+    "id": "6bda433e-bf86-4fdb-8d10-4818ae607032",
+    "text": "If the data analysis is incorrect, it can lead to ineffective marketing campaigns, which can waste resources and lead to missed opportunities."
+  },
+  {
+    "id": "f1f7fe8b-fd16-410a-b100-f4fe7ecf3f94",
+    "text": "Poor sales performance due to lack of data-driven insights into customer behavior"
+  },
+  {
+    "id": "a72475de-b175-4853-9a16-cb26e22924a5",
+    "text": "Inaccurate or misleading data can lead to poor decision making, which can negatively affect the business strategy and operations."
+  },
+  {
+    "id": "1718b39a-fa10-4ee9-9a9c-a36dca6008c3",
+    "text": "Delayed projects, increased costs, decreased customer satisfaction"
+  },
+  {
+    "id": "8c567011-3b1f-4c21-a37c-4a68cf7fec77",
+    "text": "Unable to complete tasks, decreased productivity"
+  },
+  {
+    "id": "a9dd11b9-8722-4425-82fb-6e8e354486de",
+    "text": "Poor strategic decisions due to lack of accurate data and insights, leading to potential business losses"
+  },
+  {
+    "id": "bd96afcf-6e6c-4250-9cc8-f2e13d4e65d5",
+    "text": "Product development misaligned with market needs, leading to low customer satisfaction and sales"
+  },
+  {
+    "id": "12f0477b-29ed-424b-aa60-90f360f6bf48",
+    "text": "Increased system downtime, decreased productivity, potential security risks"
+  },
+  {
+    "id": "6967b440-a5e1-48c7-8f2f-692d576f612d",
+    "text": "Ineffective marketing strategies due to lack of AI-driven insights"
+  },
+  {
+    "id": "18672917-5b66-4ed9-809c-7a6e545d770a",
+    "text": "Inability to accurately forecast sales and set targets due to lack of data"
+  },
+  {
+    "id": "6650f4f3-cb94-4113-99ed-604296f1c3a4",
+    "text": "Inaccurate financial planning and budgeting due to lack of data"
+  },
+  {
+    "id": "38c222d3-cf56-40e1-ad44-a8f31e8a79bc",
+    "text": "Inability to make informed decisions due to lack of accurate data"
+  },
+  {
+    "id": "b3f15ff7-e5f5-4a41-bc5d-76cf6a773b98",
+    "text": "Ineffective marketing strategies leading to poor lead generation and brand awareness"
+  },
+  {
+    "id": "c419947d-fb08-44a7-9653-d5ff91607a1a",
+    "text": "Inaccurate data analysis can lead to incorrect budgeting and financial planning, which can have serious financial implications for the company."
+  },
+  {
+    "id": "0e2a4624-fcf9-48d7-ab76-54cd5fa016cf",
+    "text": "Ineffective data analysis can lead to poor marketing campaign performance"
+  },
+  {
+    "id": "6286322c-db28-40a9-8ef5-5e22aa26a812",
+    "text": "Unable to provide accurate and timely business insights due to lack of AI solutions"
+  },
+  {
+    "id": "1c1674aa-1279-485b-aebe-7aea6ab26602",
+    "text": "Incorrect data analysis can lead to unrealistic sales targets and inaccurate sales forecasts, which can affect the performance of the sales team."
+  },
+  {
+    "id": "01ee95f9-0a74-44b4-a6f5-0e5aec8aa459",
+    "text": "Poor business decisions due to lack of AI-driven insights"
+  },
+  {
+    "id": "19b9ca70-e0ba-41bd-9c50-4ba7a990f0e3",
+    "text": "Poor data analysis can result in misguided product development strategies"
+  },
+  {
+    "id": "3642e4c4-0109-4dc0-b7eb-49a52f8636b0",
+    "text": "Inaccurate or incomplete data analysis can lead to incorrect business decisions"
+  },
+  {
+    "id": "93076b73-10b6-4180-8b15-2e6879c51bbd",
+    "text": "Inability to measure the effectiveness of marketing strategies due to lack of data"
+  },
+  {
+    "id": "1101c880-7492-4f42-85cb-33df8665b671",
+    "text": "Unable to accurately forecast sales due to lack of data, leading to stock issues"
+  },
+  {
+    "id": "6dabbad3-4f88-4dc2-899b-60196c15b2c8",
+    "text": "Inability to develop or maintain applications due to system downtime or malfunctions"
+  },
+  {
+    "id": "56ab06d6-fa0c-45d0-9e7d-14aac8051117",
+    "text": "Inability to understand customer needs and preferences due to lack of data insights"
+  },
+  {
+    "id": "649265a0-9827-445f-bc15-c33b55531b80",
+    "text": "Inability to create products that meet market needs due to lack of data insights"
+  },
+  {
+    "id": "58aebb38-5d1b-4bd0-8661-2805511bcf99",
+    "text": "Difficulty in performing tasks due to software bugs or system downtime"
+  },
+  {
+    "id": "4cbb65a0-e966-4ee7-9c82-35400dc769a9",
+    "text": "Decreased revenue and profitability"
+  },
+  {
+    "id": "bcd700f0-d309-42b9-8ae5-39bf816c78db",
+    "text": "Setting unrealistic sales targets, leading to demotivated sales team"
+  },
+  {
+    "id": "61a3cc21-3dc4-4615-b2c8-f2f350ac41fc",
+    "text": "Difficulty in prioritizing product features due to lack of market response from failed marketing strategies"
+  },
+  {
+    "id": "fc90262d-16d8-4364-b308-7e527bf6f3e2",
+    "text": "Inability to target the right customers due to lack of data analysis"
+  },
+  {
+    "id": "d6af5c86-23ba-4d13-9649-d275ad53dc6d",
+    "text": "Delays and inefficiencies in project timelines"
+  },
+  {
+    "id": "1fba1378-b51f-41cb-8afc-7108c0df1c77",
+    "text": "Inability to make informed strategic decisions due to lack of accurate and timely IT related information"
+  },
+  {
+    "id": "b9ff1ca8-ee67-4ddb-9b83-75f003073dd7",
+    "text": "Inability to make informed strategic decisions due to lack of insights"
+  },
+  {
+    "id": "8ee7c23e-88f4-49af-b391-6595603d32e7",
+    "text": "Unable to plan effective marketing strategies due to lack of data insights, leading to wasted resources"
+  },
+  {
+    "id": "0648126d-a844-4b44-a129-30df42e76820",
+    "text": "Unable to plan and execute effective marketing strategies due to inaccurate sales forecasts"
+  },
+  {
+    "id": "30043312-1454-4669-a774-e2cbae9db1fd",
+    "text": "Unable to set accurate company strategy and goals due to inaccurate sales forecasts"
+  },
+  {
+    "id": "6b021b07-43a0-4131-b95b-055776ea6bb7",
+    "text": "Inability to identify potential leads due to lack of data insights"
+  },
+  {
+    "id": "492fd6fb-6b8a-4061-a93f-11607d981e76",
+    "text": "Inaccurate budget and financial planning due to lack of IT strategic input"
+  },
+  {
+    "id": "b7d68c71-8bd4-4d1c-9602-a9267f41a4cd",
+    "text": "Increased customer complaints due to misunderstanding of product/services from poor marketing"
+  },
+  {
+    "id": "bc6dcde0-3a30-4743-88d4-6ca3905339a0",
+    "text": "Decrease in company revenue and profitability"
+  },
+  {
+    "id": "3d7e57dc-5403-43de-82cb-0955a5b02e93",
+    "text": "Inaccurate inventory levels leading to overstock or stock-outs, impacting customer satisfaction and operational efficiency"
+  },
+  {
+    "id": "e51893ff-82f6-4c63-a9e1-9bfbae3fb90e",
+    "text": "Inability to measure campaign success accurately due to poor planning and execution"
+  },
+  {
+    "id": "fc56a978-e39e-4188-a1ea-af63bd5e0179",
+    "text": "Lack of clear direction or delayed project timelines leading to increased pressure and overtime"
+  },
+  {
+    "id": "5af9b58e-871e-4c4a-8c56-494a7226eb63",
+    "text": "Inability to make informed decisions due to lack of insights from failed marketing strategies"
+  },
+  {
+    "id": "da889bf4-aba7-4c35-80b8-4b5c9d79b1c9",
+    "text": "Unable to make informed decisions due to lack of data, leading to potential business losses"
+  },
+  {
+    "id": "38baa0c3-6ce9-4489-b4ab-c0f285e929a9",
+    "text": "Inability to target the right audience due to lack of data insights"
+  },
+  {
+    "id": "ced62621-b22c-437a-860f-c24c52af0d46",
+    "text": "Ineffective marketing campaigns due to lack of data-driven insights"
+  },
+  {
+    "id": "6c6c89a3-4caa-4132-8ea6-8171446a388a",
+    "text": "Inability to plan effective sales strategy due to lack of IT support"
+  },
+  {
+    "id": "18d337f4-e7c8-4952-ae28-df56e23b4128",
+    "text": "Inability to meet sales targets due to lack of IT support for sales technology and tools"
+  },
+  {
+    "id": "77b87015-2533-4fb9-ae4d-708593ad23b7",
+    "text": "Inaccurate or delayed financial data can lead to poor strategic decisions."
+  },
+  {
+    "id": "4816d6c2-4335-4d25-b0a1-6c07ea7fcec4",
+    "text": "Inaccurate financial forecasting due to unpredictable marketing campaign outcomes"
+  },
+  {
+    "id": "50b3c465-f3c0-4727-8a1c-531d69137c9b",
+    "text": "Unable to sell products due to lack of features or poor design"
+  },
+  {
+    "id": "2f5b9d35-f469-49a1-8c52-d6d3d0aaf8b2",
+    "text": "Inability to target the right audience, leading to ineffective marketing campaigns"
+  },
+  {
+    "id": "5489d6c7-f076-47b0-8d17-ebd8bcbb52e5",
+    "text": "Inability to access or analyze data due to system issues, leading to delays or inaccuracies in reports"
+  },
+  {
+    "id": "7d9efff7-bfee-45a0-88f1-ef88f2c055a6",
+    "text": "Increased customer complaints due to poor product design or lack of needed features"
+  },
+  {
+    "id": "701fd57a-b17a-44c2-a189-8ba63a516010",
+    "text": "Inability to meet sales targets due to lack of quality leads"
+  },
+  {
+    "id": "90e4006a-2a6a-4c88-a920-702f2b7e84a1",
+    "text": "Increased customer complaints due to lack of new customers, leading to increased workload and stress"
+  },
+  {
+    "id": "74b7004f-7762-4cad-9026-28458446f14a",
+    "text": "Increased workload and stress due to system failures, leading to potential project delays"
+  },
+  {
+    "id": "7e7ade6b-aa8d-4f18-92d1-84e342d33e6e",
+    "text": "Decreased company performance due to ineffective marketing and sales strategies"
+  },
+  {
+    "id": "a8fac223-f3a6-49e7-9dc5-c6906fbe646e",
+    "text": "Decrease in the number of quality leads, leading to lower sales conversion"
+  },
+  {
+    "id": "9f7850c6-5f75-4326-a836-59549f54adff",
+    "text": "Inadequate budgeting can lead to insufficient funds for marketing campaigns."
+  },
+  {
+    "id": "e487974a-b28f-465b-b4b8-ac4c04760a0b",
+    "text": "Increase in the number of customer complaints due to misleading marketing campaigns"
+  },
+  {
+    "id": "56193417-ad0f-45c3-b022-00632deee579",
+    "text": "Making uninformed decisions that could negatively impact the company's strategy and growth"
+  },
+  {
+    "id": "c1d9a875-b0ab-4506-ad45-4270b0b198c9",
+    "text": "Decreased revenue and profitability due to lack of sales, leading to financial instability"
+  },
+  {
+    "id": "d3b84c5f-43ca-4a0f-b7ad-96151c5a150b",
+    "text": "Incorrect budgeting can lead to unrealistic sales targets."
+  },
+  {
+    "id": "a3a21e95-f8c9-4645-8917-a69676202191",
+    "text": "Inability to make informed decisions about product development, leading to potentially unsuccessful products"
+  },
+  {
+    "id": "7a2732f0-e57f-4d1d-b87f-b1b119b50c41",
+    "text": "Inability to make informed decisions due to lack of actionable insights"
+  },
+  {
+    "id": "3ff7d78c-b5b5-4ff1-8049-55a232086aad",
+    "text": "Inaccurate budget allocation due to incorrect sales forecast, leading to potential financial risks"
+  },
+  {
+    "id": "8b9c9c08-8c8c-4657-9455-15b0acdd6d54",
+    "text": "Increased workload and stress due to application malfunctioning"
+  },
+  {
+    "id": "0e55b0dd-acce-4462-aa2a-6749d7e978b0",
+    "text": "Inability to effectively manage sales process due to IT system failures or inefficiencies"
+  },
+  {
+    "id": "ec20906e-fe6f-4692-9000-ea4a9e66f738",
+    "text": "Inability to reach sales targets due to poor lead quality"
+  },
+  {
+    "id": "64688d99-ee31-4d67-b632-09d5735939ff",
+    "text": "Wasted resources on ineffective marketing campaigns, leading to decreased budget and potential job insecurity"
+  },
+  {
+    "id": "9e7bb74b-89b1-46bc-a04c-e3c183283c2d",
+    "text": "Difficulty in attracting and retaining talent due to lack of IT support and infrastructure"
+  },
+  {
+    "id": "3ce47074-390c-4a6a-a84d-25c23e7208f9",
+    "text": "Delayed or incomplete projects leading to financial loss and reputation damage"
+  },
+  {
+    "id": "8053c3dc-e538-466c-8e91-4fe39ff0290e",
+    "text": "Poor financial planning can lead to inefficiencies in operations."
+  },
+  {
+    "id": "ecf694c2-6bef-419b-a7df-0f8b338c758d",
+    "text": "Without data-driven product insights, sales forecasts could be inaccurate, leading to unmet targets and potential revenue loss"
+  },
+  {
+    "id": "6a7ffefa-bb88-434b-9704-3ce20d96e367",
+    "text": "Lack of data-driven insights could lead to poor strategic decisions, impacting the company's growth and success"
+  },
+  {
+    "id": "95cccd09-c77d-4361-9582-ae31f3698e6d",
+    "text": "Inaccurate sales targets leading to over or under-performance, impacting team morale and sales revenue"
+  },
+  {
+    "id": "7d65dca4-731e-40b0-951b-5b6765944b1a",
+    "text": "Unable to plan effective product development due to lack of data insights, leading to wasted resources and time"
+  },
+  {
+    "id": "56a778d8-1bfa-40ca-9a26-85f219b96be2",
+    "text": "Inability to effectively manage HR processes due to IT system failures or inefficiencies"
+  },
+  {
+    "id": "fff69528-dba2-439b-b9e7-59ed6db8a93e",
+    "text": "Inaccurate analysis due to malfunctioning applications"
+  },
+  {
+    "id": "5a13995a-76e2-43de-86b9-9ce3ab698a22",
+    "text": "Increased support tickets due to improperly implemented software or systems"
+  },
+  {
+    "id": "abc8f649-2a01-448e-93be-d35c44f441ef",
+    "text": "Inadequate leads to pursue, leading to lower sales and revenue"
+  },
+  {
+    "id": "6ad2b0bb-79d2-4e16-acdd-db1f348f8c03",
+    "text": "Inability to make informed strategic decisions due to lack of IT alignment"
+  },
+  {
+    "id": "a024fddd-54f4-4383-8487-e8a966243a84",
+    "text": "Inefficiency in marketing strategies due to lack of data-driven insights"
+  },
+  {
+    "id": "95150f29-e5ac-4186-ac69-6ba8135baa08",
+    "text": "Unable to effectively manage the sales team and drive sales performance due to inaccurate sales forecasts and targets"
+  },
+  {
+    "id": "cdf00ba4-9e0e-4ac4-baed-11f685c12454",
+    "text": "Difficulty in analyzing data due to ineffective marketing strategies"
+  },
+  {
+    "id": "93f6d060-7ebd-440f-9149-81c54d00a569",
+    "text": "Difficulty in financial planning due to lack of IT budgeting and cost management"
+  },
+  {
+    "id": "99514add-88c0-48b0-bc90-03383e7f57d0",
+    "text": "Developing products that do not meet market needs, leading to wasted resources"
+  },
+  {
+    "id": "1a60940c-a7bb-4f52-a117-12a72af85c72",
+    "text": "Inability to make informed decisions about the company's direction due to lack of strategic insights from IT"
+  },
+  {
+    "id": "6e7a704d-61d5-4485-9008-177e757c4940",
+    "text": "Lack of potential leads to convert into sales"
+  },
+  {
+    "id": "e320bb7d-fb03-44e1-bf20-ffc7a368e328",
+    "text": "Inability to accurately forecast IT expenses and assess financial risks"
+  },
+  {
+    "id": "f211efa3-fb16-4082-9952-8d9d46a9362d",
+    "text": "Inability to meet sales targets due to lack of leads, resulting in decreased morale and potential job insecurity"
+  },
+  {
+    "id": "c312b6f6-0e91-4636-85fe-fa32e32be74d",
+    "text": "Difficulty in promoting products that are not customer-centric or do not meet market trends"
+  },
+  {
+    "id": "497d288b-67d4-41c3-b96d-86b61f8c3778",
+    "text": "difficulty in creating and managing discounts and trials"
+  },
+  {
+    "id": "c834fbdd-8b24-4d4f-8c3e-8b018366ec4e",
+    "text": "inability to customize checkout flows and provide self-service options"
+  },
+  {
+    "id": "0072852a-f4f7-44f1-bc25-fd49977c8eb5",
+    "text": "difficulty in allowing end users to manage their subscriptions and in capturing intent"
+  },
+  {
+    "id": "3519cb62-1517-4b10-bd6d-cce7181a4eb0",
+    "text": "concerns over secure transactions and compliance with relevant regulations"
+  },
+  {
+    "id": "2cdb0ee6-ecdb-4c74-9eb4-b8c6daf2b948",
+    "text": "difficulty in offering self-service options and customizable checkout flows to end users"
+  },
+  {
+    "id": "9d8df340-aec9-4a08-a45c-bf9b3ea0b367",
+    "text": "Unable to effectively sell the product due to lack of understanding of its features and pricing"
+  },
+  {
+    "id": "596bdaf0-f907-4636-95c2-2d8215f8a9c5",
+    "text": "Developing products that do not meet customer needs due to lack of understanding of customer behavior"
+  },
+  {
+    "id": "5fa71671-6735-4025-9819-dd963d08ecb4",
+    "text": "Inability to provide an accurate audit opinion, potential legal implications"
+  },
+  {
+    "id": "5dce8839-231f-4427-ba82-3b0938a9e587",
+    "text": "Inability to effectively market the product due to lack of understanding of its features and pricing"
+  },
+  {
+    "id": "eb9abb05-6490-4bcd-bcf1-d68792d86b7a",
+    "text": "Unable to offer competitive discounts or trials to potential clients, leading to lost sales opportunities."
+  },
+  {
+    "id": "5a6c8993-c928-45f6-ac43-c168a0db6ad9",
+    "text": "Inaccurate strategic decisions due to incorrect pricing models"
+  },
+  {
+    "id": "1aa002e8-4c6b-493e-8e93-11a6565e700f",
+    "text": "Difficulty in product development and pricing due to inaccurate pricing models"
+  },
+  {
+    "id": "385f6803-58c6-4ef8-bca9-309ff1d37967",
+    "text": "Increased customer complaints and inquiries about discounts and trials, leading to higher workload and customer dissatisfaction."
+  },
+  {
+    "id": "38669885-0744-426f-a838-420a73cb283d",
+    "text": "Inability to create successful marketing campaigns due to lack of customer churn data"
+  },
+  {
+    "id": "ca80586f-c90d-402e-93d9-0df542135430",
+    "text": "Unable to effectively target potential customers due to lack of understanding of customer behavior patterns"
+  },
+  {
+    "id": "effabc43-c13e-4ccf-94c2-24662dcca7ff",
+    "text": "Unable to advertise attractive discounts or trials, leading to decreased interest and engagement from potential customers."
+  },
+  {
+    "id": "1f3fd2a4-ac81-433d-8f32-4dd088ca14ab",
+    "text": "Inaccurate financial reporting and potential non-compliance with revenue recognition standards"
+  },
+  {
+    "id": "9bc746ef-58e9-499a-98d9-e608aaf63b3e",
+    "text": "Unpredictable revenue due to inconsistent discount and trial policies, leading to difficulty in financial planning and potential losses."
+  },
+  {
+    "id": "fcc02c61-b17c-4594-a2e4-e709bbfa7093",
+    "text": "Inability to effectively resolve customer issues due to lack of understanding of product features and pricing"
+  },
+  {
+    "id": "f47a1f8d-5220-4d7b-91f9-72729c4a59a4",
+    "text": "Inability to set accurate sales targets due to incorrect pricing models"
+  },
+  {
+    "id": "d3a58795-e59e-40cc-89fd-1c4018884264",
+    "text": "Ineffective marketing campaigns due to inaccurate customer segmentation"
+  },
+  {
+    "id": "00562c1a-f3c6-4874-85ec-ad382bd988e8",
+    "text": "Decreased customer satisfaction due to subscription errors"
+  },
+  {
+    "id": "631d3ad4-5ae9-4c83-ae69-5f050ac2a769",
+    "text": "Inaccurate revenue forecasting due to inconsistent subscription data"
+  },
+  {
+    "id": "99efbc2a-9d99-4669-a244-66e25b3d7423",
+    "text": "Inaccurate data for analysis and model creation, leading to poor financial decision-making"
+  },
+  {
+    "id": "b1dc7a9a-2a69-41de-82c9-733e5fee3693",
+    "text": "difficulty in generating business-ready insights for a wide audience"
+  },
+  {
+    "id": "145b6836-165d-4171-8372-d6de568b222e",
+    "text": "difficulty in embedding ai analytics into custom apps"
+  },
+  {
+    "id": "aac0e018-17b1-449a-81fb-d712d2700a15",
+    "text": "lack of self-service options for generating deep insights"
+  },
+  {
+    "id": "e62d970a-aa2f-45ca-8649-140ea5617e5f",
+    "text": "inability to create interactive, drillable visualizations"
+  },
+  {
+    "id": "cbc68e0f-c562-420a-ba5f-f2a8d00c39a5",
+    "text": "difficulty in summarizing and interpreting data"
+  },
+  {
+    "id": "ad74c6e6-5af8-4199-97f4-1aa5727109ea",
+    "text": "difficulty in managing data in real-time or cached format"
+  },
+  {
+    "id": "c5d68723-9089-42d0-b02d-af25aa78c548",
+    "text": "inability to collaborate and take action from insights"
+  },
+  {
+    "id": "94a40070-3351-493e-bcb1-2ed9024711e3",
+    "text": "difficulty in collaborative data analysis"
+  },
+  {
+    "id": "6bd6a58b-cad2-4bea-ace5-5caec07df57c",
+    "text": "difficulty in integrating analytics into custom apps"
+  },
+  {
+    "id": "45f91b53-3b60-4429-9b1b-2daacbf0864f",
+    "text": "difficulty in obtaining deep business insights"
+  },
+  {
+    "id": "8e09e6da-500a-48b6-bf0e-e220341fa99a",
+    "text": "difficulty in managing data"
+  },
+  {
+    "id": "3ff9bbbb-07ee-4280-9e4e-594cd0b1e1e6",
+    "text": "lack of real-time collaboration on business dashboards"
+  },
+  {
+    "id": "a204c516-11ae-45d8-b57f-32795e7aa114",
+    "text": "lack of integrated platform for data team collaboration"
+  },
+  {
+    "id": "88b2f0ab-7c2c-418b-b6c0-c607529a11cb",
+    "text": "inability to embed ai analytics into custom apps"
+  },
+  {
+    "id": "b2c3a617-a8e0-494a-acbb-f1d927e269ab",
+    "text": "difficulty in interpreting data and diagnosing underlying problems"
+  },
+  {
+    "id": "9bf498ac-4f2b-427b-ab33-5c481ed39136",
+    "text": "difficulty in managing data in real-time or cached"
+  },
+  {
+    "id": "a5aed495-f739-4605-84d1-af77ebe21caf",
+    "text": "Ineffective marketing strategies due to lack of data-driven insights"
+  },
+  {
+    "id": "b9413ccf-9f4c-48dd-88ad-f928909c04e1",
+    "text": "Inaccurate or incomplete data can lead to ineffective marketing strategies"
+  },
+  {
+    "id": "6de0faab-b3f5-42b7-af9b-8e35f8b07be9",
+    "text": "Poor strategic decisions due to lack of reliable data"
+  },
+  {
+    "id": "159b4caf-5551-48c1-b48f-4453c0bbecfd",
+    "text": "Inaccurate sales forecasts due to poor data analysis"
+  },
+  {
+    "id": "c2125263-5aa3-47a1-8161-503cda187d78",
+    "text": "Incorrect or incomplete data can lead to wrong business decisions"
+  },
+  {
+    "id": "b1df9fd3-a13f-482a-9867-03ba8cc84491",
+    "text": "Misalignment of product roadmap with market needs due to poor data analysis"
+  },
+  {
+    "id": "5b413712-b9cc-45a4-9187-996576e0ffb4",
+    "text": "Poor data analysis can lead to misjudgment of campaign performance"
+  },
+  {
+    "id": "b74bc4d3-a6ca-4ad4-b6ee-27e6e1978318",
+    "text": "Inability to make data-driven decisions, resulting in ineffective marketing strategies"
+  },
+  {
+    "id": "edda56f3-a19b-44cc-b54a-40a9988a76e9",
+    "text": "Inaccurate reports and insights leading to poor decision making"
+  },
+  {
+    "id": "d00be60f-41cc-4aeb-9074-db9e48b5e819",
+    "text": "Bad analytics implementation can affect user experience, leading to negative user feedback and reduced user engagement"
+  },
+  {
+    "id": "ef91021b-2be0-4785-bd5a-78d0e9bba238",
+    "text": "Inaccurate financial projections, leading to poor financial decisions"
+  },
+  {
+    "id": "98727ee6-5089-4f0a-9865-6784780c29e9",
+    "text": "Inaccurate or insufficient data can lead to incorrect models and predictions"
+  },
+  {
+    "id": "3de72312-d7ed-4194-8439-fb9cc1c59c56",
+    "text": "Inability to accurately target potential customers, leading to inefficient use of marketing resources"
+  },
+  {
+    "id": "96005073-cc78-4148-b6e1-616ec04d667c",
+    "text": "Ineffective marketing strategies due to inaccurate data interpretation"
+  },
+  {
+    "id": "7b6b9b97-8857-4496-80a0-eeb1d0cc59c9",
+    "text": "Inaccurate forecasts due to unreliable data can lead to poor planning and missed targets"
+  },
+  {
+    "id": "e5190be6-091a-4e65-8e5c-4b6f4ce98697",
+    "text": "Wasted resources on ineffective marketing campaigns due to poor data analysis"
+  },
+  {
+    "id": "85969f7c-e10a-4847-9aff-26eacf4cd89d",
+    "text": "Inaccurate forecasts and unrealistic targets leading to underperformance"
+  },
+  {
+    "id": "581191c5-f2b9-421b-93b1-ff63bdbf2ff2",
+    "text": "Misleading insights due to incorrect data"
+  },
+  {
+    "id": "d7cf14bc-ade8-417e-8949-f1ab211d7ec6",
+    "text": "Inability to formulate and execute effective marketing strategies due to lack of accurate data and insights"
+  },
+  {
+    "id": "6f7eb92c-3393-45d9-90d0-74be4aa39468",
+    "text": "Inability to make informed decisions leading to potential business risks"
+  },
+  {
+    "id": "3021cede-61c8-4d55-a745-b7042a778c2b",
+    "text": "Inability to plan effective sales strategies due to lack of accurate data analysis"
+  },
+  {
+    "id": "e9b93f7d-ccf9-4a10-841c-86eb86d48436",
+    "text": "Inability to create effective marketing strategies due to lack of accurate data analysis"
+  },
+  {
+    "id": "a3b08479-4ea7-43b6-977e-27cdedc3a400",
+    "text": "Incorrect data analysis can lead to misinterpretation of product performance"
+  },
+  {
+    "id": "3413e117-f545-4358-afb7-daef9073e2ed",
+    "text": "Data breaches due to poor data management"
+  },
+  {
+    "id": "93c0aeb4-59ed-4b5f-91cc-c85c5f205bce",
+    "text": "Incorrect product development decisions due to incorrect data diagnosis"
+  },
+  {
+    "id": "b9b2164f-7b02-4ad8-b463-94e0b09bbed2",
+    "text": "Poor strategic decisions due to inaccurate data interpretation, leading to potential business failure"
+  },
+  {
+    "id": "02f7c38b-17e6-49f9-8775-68a69c703b8a",
+    "text": "Ineffective product development due to lack of accurate data on customer needs and preferences"
+  },
+  {
+    "id": "3de9b65e-bb91-42e5-b4e3-99fc507e790e",
+    "text": "Inability to improve product due to lack of accurate data analysis"
+  },
+  {
+    "id": "d65dfcd4-2429-46f6-a401-057cf4632104",
+    "text": "Inability to plan and execute projects effectively due to lack of accurate data and insights"
+  },
+  {
+    "id": "64de30da-4caa-41dc-9441-b12c6f0bf2eb",
+    "text": "Inability to accurately predict market trends leading to ineffective marketing strategies"
+  },
+  {
+    "id": "de8dfe88-e209-4c27-b7c8-6a75f522c49b",
+    "text": "Inefficient lead generation due to inaccurate data analysis"
+  },
+  {
+    "id": "9ca654a4-ea5c-4956-80bd-8b115c2752b1",
+    "text": "Inaccuracy in models due to poor quality data"
+  },
+  {
+    "id": "9b19692e-b5d0-4acb-9959-0ec5c6c916da",
+    "text": "Inefficient project planning and execution due to lack of accurate data insights"
+  },
+  {
+    "id": "7b334738-0883-40b7-b2e7-8ac71ea5408f",
+    "text": "Development of irrelevant features leading to poor customer satisfaction"
+  },
+  {
+    "id": "56afd604-131f-4c5d-aac3-dd11e1d15422",
+    "text": "Poor product development decisions due to inaccurate data analysis"
+  },
+  {
+    "id": "895086b0-d87f-42d7-9fad-5f6c37da9b2e",
+    "text": "Inability to make informed product decisions due to lack of accurate data analysis"
+  },
+  {
+    "id": "2fcca35e-3070-4940-ae46-f1ab9b8790ae",
+    "text": "Inaccurate sales forecasts and unrealistic sales targets due to poor data analysis"
+  },
+  {
+    "id": "fe0c4910-c704-48bf-b02e-1a5d742ddcb1",
+    "text": "Inability to formulate effective strategies due to lack of clear data visualization"
+  },
+  {
+    "id": "c97d9742-7e34-44e1-b47d-c7695200918b",
+    "text": "Poor strategic decisions due to lack of accurate data analysis"
+  },
+  {
+    "id": "39f1e866-61a2-418f-af18-a595a9355741",
+    "text": "Inaccurate sales forecasts, leading to unrealistic targets and potential loss of revenue"
+  },
+  {
+    "id": "2e7ea719-e158-491f-8a6b-8233e2d1d31b",
+    "text": "Lack of insights into customer behavior, leading to misaligned product development"
+  },
+  {
+    "id": "62e29309-c1ed-435f-8d9b-81d565173f38",
+    "text": "Inability to plan and develop products effectively due to lack of accurate data and insights"
+  },
+  {
+    "id": "a97e0b07-98ea-4cc3-9073-d3b706d7a3f5",
+    "text": "Inability to track project progress accurately, leading to project delays or failures"
+  },
+  {
+    "id": "548deb9b-1ce9-4387-ba2c-e7f263489599",
+    "text": "Inability to understand data trends and patterns, leading to incorrect or suboptimal business decisions"
+  },
+  {
+    "id": "4643bbd4-daf3-4078-9a47-e7b5f617063d",
+    "text": "Inability to formulate and execute effective sales strategies due to lack of accurate data and insights"
+  },
+  {
+    "id": "d6d7a7ad-82e3-4ba0-ad4a-2bfe68ce9aa2",
+    "text": "Inaccurate data analysis and reporting due to poor data quality or missing data"
+  },
+  {
+    "id": "7fa7949c-3ea3-4b4a-813c-295651a51caf",
+    "text": "Poor strategic decisions due to lack of accurate data, leading to potential financial loss and missed opportunities"
+  },
+  {
+    "id": "2d148342-1b01-4930-ae24-2377ac1da12e",
+    "text": "Inability to make informed decisions due to lack of accurate data analysis"
+  },
+  {
+    "id": "e7882705-2787-44f2-8b0b-bb2fa0369879",
+    "text": "Inaccurate or incomplete analytics can lead to faulty app features, causing user dissatisfaction and increased bug reports"
+  },
+  {
+    "id": "3b1d9587-883a-45cc-a357-0ce992941bb3",
+    "text": "Poorly implemented analytics can lead to misguided product strategy, causing potential loss in revenue and market share"
+  },
+  {
+    "id": "475c9e21-6caf-4b91-8dbc-46447a050400",
+    "text": "difficulty in understanding complex business data"
+  },
+  {
+    "id": "adc63af5-2abe-4662-b91c-b8f8cfa644fb",
+    "text": "lack of real-time insights and collaboration"
+  },
+  {
+    "id": "cb450592-801c-459a-8e1b-b7027ae02311",
+    "text": "inability to embed analytics into custom apps"
+  },
+  {
+    "id": "b2d07c2d-aee3-4b9e-ac61-96c2c1ba4e94",
+    "text": "difficulty in visualizing insights from different data sources"
+  },
+  {
+    "id": "186ad0ba-c20c-417b-a346-0654d96f2811",
+    "text": "time-consuming manual data interpretation and pattern discovery"
+  },
+  {
+    "id": "27f85979-6e34-49a6-9021-2bcc94da0f89",
+    "text": "lack of real-time collaborative dashboards"
+  },
+  {
+    "id": "b4bdcd19-dffb-4bc4-adbc-bc3b7006c46a",
+    "text": "inefficient data team collaboration due to lack of integrated tools"
+  },
+  {
+    "id": "ef328871-8ce6-4e6b-b949-6426b6ed909f",
+    "text": "difficulty in summarizing, interpreting and diagnosing data"
+  },
+  {
+    "id": "42d5edc2-3540-4297-acfd-87809e465e19",
+    "text": "difficulty in prepping, joining, modeling, and shaping data"
+  },
+  {
+    "id": "c5a49178-2bc4-47e2-ae65-14daca431e0a",
+    "text": "difficulty in obtaining actionable insights from complex business data"
+  },
+  {
+    "id": "bf1c41a0-7fff-4a37-bf2f-220a85da8be0",
+    "text": "lack of real-time collaboration and actionable insights in business processes"
+  },
+  {
+    "id": "1c1af9e5-9958-48b8-8000-92c7a6418a43",
+    "text": "inefficient collaboration within data teams"
+  },
+  {
+    "id": "05e5f230-075b-41e5-bdc8-26c3b8329030",
+    "text": "inability to integrate analytics into custom applications"
+  },
+  {
+    "id": "9f0948e0-a8bf-45f7-864b-bc7e2cab0ae7",
+    "text": "lack of interactive visualizations of business data"
+  },
+  {
+    "id": "5447425e-9f3e-47d7-ae27-971a3d0c7d10",
+    "text": "difficulty in interpreting data and discovering patterns"
+  },
+  {
+    "id": "54ac11e5-b288-4ec9-96db-4b0eb5071edd",
+    "text": "inability to manage and shape data in desired ways"
+  },
+  {
+    "id": "a4ff3b93-5fd3-4bce-96ef-e09297c575e1",
+    "text": "Inaccurate financial projections and budget allocations"
+  },
+  {
+    "id": "ce04ea85-1f3c-4fd9-a9b7-76cfa95752cc",
+    "text": "Unable to target the right audience for marketing campaigns, leading to ineffective marketing strategies and wasted resources"
+  },
+  {
+    "id": "0cb77e89-3697-405a-b0bf-020e46a9f019",
+    "text": "Poor business decisions due to inaccurate data analysis"
+  },
+  {
+    "id": "cda46e23-b72e-481d-ba86-bb1ff4fd8dc2",
+    "text": "Inability to understand customer needs and preferences leading to less competitive products"
+  },
+  {
+    "id": "2571c271-ca39-4064-a018-a67b6424ed61",
+    "text": "Inaccurate business insights leading to poor strategic decisions"
+  },
+  {
+    "id": "c2ac6736-98a2-4271-9e90-24516fe36c6a",
+    "text": "Poor product decisions due to inaccurate data insights"
+  },
+  {
+    "id": "ee7ff5b5-008f-44a2-ab1b-7dfa0dc28951",
+    "text": "Making uninformed decisions that could negatively affect the company's performance"
+  },
+  {
+    "id": "fc71bff2-4c0e-4b08-b8c6-6ce8005e4434",
+    "text": "Inaccurate sales forecasts leading to poor planning and resource allocation"
+  },
+  {
+    "id": "6d46fceb-625c-4d8c-a100-86656054df00",
+    "text": "Inaccurate budget allocation due to lack of business performance insights"
+  },
+  {
+    "id": "a8b3593c-7ef0-4789-aaf0-b90b0e346f5f",
+    "text": "Inability to perform tasks efficiently due to lack of proper application functionality"
+  },
+  {
+    "id": "623755b7-0eaf-4862-be2e-f28b524bfcf0",
+    "text": "Inaccurate sales forecasts leading to poor decision making"
+  },
+  {
+    "id": "03b04f8e-b535-4594-b5c6-2e8b827289ff",
+    "text": "Inaccurate sales targets and strategies due to poor data insights"
+  },
+  {
+    "id": "fa1e7d0b-e4d4-4ea1-9cee-5bbefd14ac53",
+    "text": "Poorly targeted marketing campaigns leading to low ROI"
+  },
+  {
+    "id": "30d5c80b-6462-4126-8bf7-8075bf1419a1",
+    "text": "Ineffective marketing campaigns due to inaccurate data"
+  },
+  {
+    "id": "ab9e2466-ee3f-4608-8258-fa4b1baffe58",
+    "text": "Inefficient project planning due to lack of accurate data"
+  },
+  {
+    "id": "29ab0a98-442e-4c63-bac6-09894ef53141",
+    "text": "Inability to plan and execute projects effectively due to lack of proper application integration"
+  },
+  {
+    "id": "c2ade2dc-35d8-4f11-b059-97c231232d0b",
+    "text": "Inability to make informed strategic decisions due to lack of accurate data interpretation"
+  },
+  {
+    "id": "1c225e11-4b0e-4457-af28-4ac57f0d1119",
+    "text": "Unable to accurately forecast sales, leading to inaccurate sales targets and misallocation of resources"
+  },
+  {
+    "id": "33d408a4-3c02-4a3e-95f0-b06f335a9cdc",
+    "text": "Ineffective marketing strategies due to lack of performance trends"
+  },
+  {
+    "id": "07c9841f-cae8-4f3f-96c8-da4001b59762",
+    "text": "Inability to identify market trends accurately leading to ineffective marketing strategies"
+  },
+  {
+    "id": "8763e1d2-74da-46c6-afbe-031d67a7273a",
+    "text": "Inaccurate sales forecasts leading to poor resource allocation and missed sales targets"
+  },
+  {
+    "id": "14d96d61-fd55-42b3-bc22-f9682cefc654",
+    "text": "Inaccurate predictive models due to faulty data"
+  },
+  {
+    "id": "0347368e-b118-4fa8-82cf-2310119efb6d",
+    "text": "Unable to effectively plan and execute marketing campaigns due to lack of accurate data insights"
+  },
+  {
+    "id": "637577ee-7f47-4b44-8330-f9b7adc2386a",
+    "text": "Inaccurate sales forecasts and ineffective sales strategies due to lack of reliable data analysis"
+  },
+  {
+    "id": "cd75f3fd-8f08-4340-a676-2a973bc4ff12",
+    "text": "Misinterpretation of customer feedback leading to irrelevant product features"
+  },
+  {
+    "id": "bf310d2a-3b72-4d56-af17-75b657355724",
+    "text": "Unable to develop effective product strategies or improvements due to lack of data insights"
+  },
+  {
+    "id": "1c1ad021-f5dc-40e6-9621-d6ff7108ea67",
+    "text": "Unable to measure the effectiveness of marketing campaigns and adjust strategies"
+  },
+  {
+    "id": "aedd6a82-552f-4c50-8538-e54f10c6b048",
+    "text": "Inefficient marketing strategies due to inaccurate data insights"
+  },
+  {
+    "id": "6302b28c-df8a-4858-b47f-50aed9d359bd",
+    "text": "Difficulty in managing IT infrastructure due to poorly developed applications"
+  },
+  {
+    "id": "a27b56fc-0957-4f2c-82f9-c8370df7e8f1",
+    "text": "Poor strategic decisions due to inaccurate data"
+  },
+  {
+    "id": "3b54498d-d0ba-482f-a75b-47b531677494",
+    "text": "Inaccurate insights leading to incorrect business decisions"
+  },
+  {
+    "id": "e65c56e9-d0a2-4169-a24f-f90d8ee3bc25",
+    "text": "Unable to accurately forecast sales and plan accordingly"
+  },
+  {
+    "id": "d8f76acf-416b-40b2-b7b2-242db510728d",
+    "text": "Unable to make informed strategic decisions due to lack of accurate business intelligence, leading to potential loss of business opportunities"
+  },
+  {
+    "id": "f85be347-179d-45bc-8619-024e8dea4779",
+    "text": "Inability to develop and manage a product that meets market needs"
+  },
+  {
+    "id": "692c8b11-bc91-4fe0-ae87-6b6926cc50c1",
+    "text": "Inaccurate revenue forecasts due to unpredictable sales"
+  },
+  {
+    "id": "3bb89838-c3cf-47c1-bf97-f6b10fa2d1da",
+    "text": "Inability to create targeted marketing campaigns, leading to inefficient use of marketing budget"
+  },
+  {
+    "id": "e85d9fee-b30c-47f0-b22f-317d508bd76e",
+    "text": "Inability to effectively target potential customers due to lack of data and insights"
+  },
+  {
+    "id": "93e72183-5de6-4191-85ed-ee0514364205",
+    "text": "Unable to meet sales targets due to unrealistic or misinformed goals"
+  },
+  {
+    "id": "7de4b9d5-a319-454a-b6a9-32fc58da277f",
+    "text": "Inaccurate sales forecasting due to lack of reliable financial data"
+  },
+  {
+    "id": "41d96955-5a99-4e3d-af40-fe8cf974fc09",
+    "text": "Inability to accurately forecast company finances due to poor budget planning"
+  },
+  {
+    "id": "7449b30a-e07d-46a2-ace9-8f6c411de825",
+    "text": "Unable to prioritize features due to lack of market insights"
+  },
+  {
+    "id": "026435c6-0634-4d02-866c-f1d265c7b38f",
+    "text": "Difficulty in developing marketing strategies due to lack of product understanding"
+  },
+  {
+    "id": "98003a83-0176-4ee2-bbab-abd73f84e743",
+    "text": "Inability to make informed decisions about the company's direction due to lack of budgetary insights"
+  },
+  {
+    "id": "bdfb0145-908f-4956-9768-0d8688e73d30",
+    "text": "Inability to generate enough leads for the sales team"
+  },
+  {
+    "id": "520e46a8-a34f-4288-b4e4-d4fafc4effea",
+    "text": "Inability to plan effective marketing campaigns due to lack of budget allocation"
+  },
+  {
+    "id": "285888e3-bb74-4d68-965a-ae66896f2bfe",
+    "text": "Decreased company revenue due to poor sales"
+  },
+  {
+    "id": "6bf71954-97d9-4140-a167-19bbfa8efd20",
+    "text": "Ineffective lead generation due to lack of sales feedback"
+  },
+  {
+    "id": "93ed3bae-06ca-4475-a6bb-fe9565009de5",
+    "text": "Decrease in sales due to lack of strategic direction"
+  },
+  {
+    "id": "47118c32-31ae-4362-bb08-ccc725df2fd3",
+    "text": "Ineffective business decisions due to lack of accurate data insights"
+  },
+  {
+    "id": "5e021752-d7ea-40c9-a593-cd00d750b292",
+    "text": "Inability to measure the effectiveness of marketing campaigns in generating quality leads"
+  },
+  {
+    "id": "58ce31bb-e4d0-4cfd-82fb-61bb666414e8",
+    "text": "Inefficient use of resources due to poor strategic decisions"
+  },
+  {
+    "id": "c5f792d5-2b60-4e46-84d7-47a2e99bb04a",
+    "text": "Poor company performance due to lack of data-driven decision making"
+  },
+  {
+    "id": "41be2a18-c226-49a2-ac86-410df8eadfc9",
+    "text": "Inability to effectively manage sales team due to lack of accurate sales forecast"
+  },
+  {
+    "id": "3878c0f9-b3b1-45c1-9591-7f11932d841c",
+    "text": "Inaccurate or delayed financial data can lead to poor decision making in terms of future marketing campaigns"
+  },
+  {
+    "id": "e43949f5-f50e-43b5-9d78-c3b1eed0695f",
+    "text": "Lack of quality leads resulting in less sales closed"
+  },
+  {
+    "id": "12b0c755-49a0-47d7-b68e-91bb8cbcc432",
+    "text": "Inability to achieve revenue targets due to poor sales performance"
+  },
+  {
+    "id": "a7ed1266-9a70-4f5a-97bf-907f856a9a45",
+    "text": "Ineffectiveness of marketing campaigns due to lack of strategic alignment"
+  },
+  {
+    "id": "07c300a9-aaec-409f-9328-16fb10590481",
+    "text": "Unable to plan effective campaigns due to lack of proper budget allocation"
+  },
+  {
+    "id": "beefe610-a482-4942-b86c-9c9727c9e649",
+    "text": "Inability to measure the effectiveness of marketing campaigns due to lack of data"
+  },
+  {
+    "id": "5bd90b34-68e0-432e-91b9-ac635dc4ca6e",
+    "text": "Inability to meet sales targets and underperformance of sales team"
+  },
+  {
+    "id": "d9946340-2bc9-4bf5-bd44-017fad76ba47",
+    "text": "Inability to plan and execute marketing campaigns effectively due to inaccurate budget data"
+  },
+  {
+    "id": "a7f71ca4-5426-4806-9499-40a3c92a6961",
+    "text": "Inability to accurately plan and strategize for sales due to unreliable sales forecast"
+  },
+  {
+    "id": "f997cbf9-0fbe-4a9c-9bc7-467a8c03ae76",
+    "text": "Inability to make informed strategic decisions due to unreliable sales forecast"
+  },
+  {
+    "id": "c20d657b-b3c3-4b65-ac14-600744751fa8",
+    "text": "Lack of quality leads to close deals"
+  },
+  {
+    "id": "ed579334-97f3-4e0d-bdb7-8bad1baf7c7e",
+    "text": "Misallocation of funds due to poor marketing strategy"
+  },
+  {
+    "id": "c415f348-6830-48be-947e-0359bb7efadf",
+    "text": "Inability to make informed strategic decisions due to lack of technological advancements"
+  },
+  {
+    "id": "65ac88c3-3962-4025-b7c7-112d6138954f",
+    "text": "Unable to perform software testing due to lack of updated software versions"
+  },
+  {
+    "id": "785762e4-36a9-4aae-a70f-28610d8cdcca",
+    "text": "Inability to plan and execute effective marketing strategies due to lack of strategic decisions"
+  },
+  {
+    "id": "bfe518fa-dc03-4c19-9b1f-4358ade95f17",
+    "text": "Failure to meet sales targets due to insufficient leads"
+  },
+  {
+    "id": "ec001fb2-d5a6-4840-b371-fd9e77b0c8dc",
+    "text": "Inability to make informed decisions about the company's direction due to lack of sales performance data"
+  },
+  {
+    "id": "ce520a94-5a86-4a10-80a5-5f1e5de9164d",
+    "text": "Inability to plan for growth due to lack of sales data and forecasts"
+  },
+  {
+    "id": "ec7c6723-8a25-46ba-843e-17f3546e459d",
+    "text": "Ineffective marketing campaigns due to poor strategies"
+  },
+  {
+    "id": "7bc3ea1f-0ba5-4455-94d6-a8622341c4e5",
+    "text": "Ineffective marketing strategies due to poor sales alignment"
+  },
+  {
+    "id": "37fac04a-4d37-43d2-b6a5-d06b1a15c018",
+    "text": "Inability to accurately forecast revenue and make strategic decisions"
+  },
+  {
+    "id": "219d8304-34cf-46aa-be99-a333af26029d",
+    "text": "Wasting resources on ineffective campaigns"
+  },
+  {
+    "id": "5d94234c-ef43-4d81-bd59-677e79c9d2aa",
+    "text": "Inability to make informed decisions about the company's direction due to lack of data from IT"
+  },
+  {
+    "id": "fdeff162-a6b8-4b28-bba4-09c2bd8b470e",
+    "text": "Inability to efficiently develop or enhance products due to lack of proper IT management"
+  },
+  {
+    "id": "0857fe7b-12aa-4491-85dd-b5bcfa7e1e14",
+    "text": "Wastage of marketing budget due to poor targeting resulting from inaccurate sales data"
+  },
+  {
+    "id": "f4d3c144-79ec-4258-8545-4aecd8e72ebf",
+    "text": "Inability to align marketing efforts with sales goals due to lack of sales data"
+  },
+  {
+    "id": "c03c8330-4325-4d4b-8434-df933ab32b52",
+    "text": "Inability to effectively manage inventory due to inaccurate sales forecasts"
+  },
+  {
+    "id": "e148c55c-eec8-4ed7-80ac-641181f60145",
+    "text": "Development of products that do not meet market trends and needs"
+  },
+  {
+    "id": "dec1346d-6d10-426f-bcd6-66026759305d",
+    "text": "Inefficient operations due to inadequate budget allocation"
+  },
+  {
+    "id": "dbfb9030-ee44-4523-9972-1bb5edec1b68",
+    "text": "Inability to accurately forecast revenue and set growth targets"
+  },
+  {
+    "id": "158fe5c2-7210-4d52-94ef-6e0c032a0011",
+    "text": "Inability to properly manage projects due to lack of IT support and resources"
+  },
+  {
+    "id": "69bcc766-ef36-4b65-8ff5-4cc65d4a5d64",
+    "text": "Inability to effectively plan and execute marketing strategies due to lack of sales data"
+  },
+  {
+    "id": "290babda-a585-426e-b11f-5ea1ab242b9e",
+    "text": "Increase in customer complaints due to lack of understanding of the product/service"
+  },
+  {
+    "id": "84ffb511-58d2-440d-b403-e9b604cb4ad3",
+    "text": "Inability to prioritize product features due to lack of market feedback"
+  },
+  {
+    "id": "a3617cd3-8412-4fc5-b013-e017d3bddce5",
+    "text": "Inefficiency and wastage in operations due to poor decision making"
+  },
+  {
+    "id": "dc2d1977-618e-4507-9388-d4dfca5cada5",
+    "text": "Inability to plan effective marketing campaigns due to inaccurate sales predictions"
+  },
+  {
+    "id": "ca443c46-c5c3-4c08-b0cc-bfdce199578d",
+    "text": "Overstock or stockout situations due to poor sales forecast"
+  },
+  {
+    "id": "a39da5e8-2870-421f-a279-55205aa4cdde",
+    "text": "Inability to set strategic direction due to lack of product success"
+  },
+  {
+    "id": "12a34067-f470-49fd-afa6-8f6e17cf2738",
+    "text": "Inefficient use of marketing budget due to poor strategies"
+  },
+  {
+    "id": "85732c45-7f5f-492c-a3b3-0fec4951cf97",
+    "text": "Developing products that don't meet market needs due to lack of sales feedback"
+  },
+  {
+    "id": "2a928385-6be3-4eaa-978c-98f56532d9d0",
+    "text": "Inability to create effective campaigns due to lack of sales strategy alignment"
+  },
+  {
+    "id": "2dcbfe4a-4ed2-4fee-a90c-bc70d7df72dc",
+    "text": "Unable to develop and improve products based on accurate data insights"
+  },
+  {
+    "id": "f0ec9549-4a03-43fe-8e8b-f0a960392c7d",
+    "text": "Inability to accurately forecast revenue and growth due to poor sales performance"
+  },
+  {
+    "id": "26ebc320-12c3-4c97-82ae-cd9e866049cd",
+    "text": "Unable to sell effectively due to lack of targeted marketing"
+  },
+  {
+    "id": "7c434253-62ee-41eb-85de-1f13c659e32c",
+    "text": "Lack of quality leads leading to fewer closed deals"
+  },
+  {
+    "id": "2cfd2c33-b99c-4b43-bcad-3d04fd94cdc2",
+    "text": "Inability to meet sales targets due to poor quality leads"
+  },
+  {
+    "id": "d85419bd-29ef-4589-8c39-e67c4c4990df",
+    "text": "Developing products that don't resonate with the target market"
+  },
+  {
+    "id": "9d81c3f6-c33c-4024-af24-97c37772aec2",
+    "text": "Inability to develop software due to lack of proper IT infrastructure"
+  },
+  {
+    "id": "e2fc7a8c-6927-426c-b74b-3161a8daa9cb",
+    "text": "Ineffective marketing campaigns and wasted marketing budget"
+  },
+  {
+    "id": "08f4c79c-5482-4567-9d56-0ca328f23853",
+    "text": "Decreased return on investment and potential loss of investment"
+  },
+  {
+    "id": "48966bc8-c708-4fa3-8d19-8edec2a5523f",
+    "text": "Lack of customer feedback to inform product development"
+  },
+  {
+    "id": "5cc9b1ec-cb3b-46b2-8125-f1459770259b",
+    "text": "Inability to accurately forecast revenue and plan budget"
+  },
+  {
+    "id": "4f54cdbc-8885-412b-99d6-479d4a7018b5",
+    "text": "Ineffective product development due to lack of customer feedback from sales"
+  },
+  {
+    "id": "b310bb88-bbc8-4971-8381-dedf84ce8ce1",
+    "text": "Ineffective decision making due to lack of market insights"
+  },
+  {
+    "id": "94ddeef0-702b-465d-bf79-9c3240502418",
+    "text": "Inability to perform tasks due to software issues"
+  },
+  {
+    "id": "762c44be-2f7a-48f2-94ce-ab9ae90604e2",
+    "text": "Ineffective marketing campaigns due to lack of understanding of market trends"
+  },
+  {
+    "id": "4c153859-9cd6-4eda-9c39-30a0d651e0eb",
+    "text": "Inaccurate financial forecasts due to poor sales strategy"
+  },
+  {
+    "id": "e939ab12-028b-457e-a6f1-bec1fbe036c3",
+    "text": "Difficulty in budget allocation and financial planning due to unreliable sales forecast"
+  },
+  {
+    "id": "27db5728-b6fb-46b4-bb8e-bae12f60e119",
+    "text": "Inaccurate financial projections and inability to allocate resources effectively"
+  },
+  {
+    "id": "c1f5b04b-dd18-4900-8bf8-32001b7f11cd",
+    "text": "Difficulty in budgeting and forecasting due to unpredictable sales performance"
+  },
+  {
+    "id": "37883d4d-bee4-487b-9945-2db46ce24696",
+    "text": "Inability to make informed decisions due to inaccurate or incomplete financial data"
+  },
+  {
+    "id": "1803aed5-930e-4779-8b99-e5308cc598a3",
+    "text": "Inability to make informed strategic decisions due to lack of accurate financial data"
+  },
+  {
+    "id": "88013017-69e8-467b-8d27-b749cca64aba",
+    "text": "Inability to make informed decisions about company direction and strategy due to lack of sales performance data"
+  },
+  {
+    "id": "7eeafbb4-3725-4d51-b1f6-56727a776eb4",
+    "text": "Inability to leverage technology to drive sales due to lack of IT product development and enhancement"
+  },
+  {
+    "id": "982570d8-1953-4350-b133-6a7753bf94a8",
+    "text": "Inaccurate financial forecasting due to unpredictable sales"
+  },
+  {
+    "id": "aff57425-f14e-4e25-b04d-90e74cc3f497",
+    "text": "Inaccurate or insufficient market data to inform product development decisions"
+  },
+  {
+    "id": "f622d400-5a0a-44a6-b236-ae2f0dbae5a6",
+    "text": "Inability to develop and implement effective sales strategies due to lack of strategic decisions"
+  },
+  {
+    "id": "4c0cdd09-aac4-411e-a350-0964811534b3",
+    "text": "Difficulty in product planning and development due to lack of sales insights"
+  },
+  {
+    "id": "3c025e76-40d4-4ce5-a381-90d852a665b5",
+    "text": "Inability to adjust marketing strategies effectively due to lack of sales data"
+  },
+  {
+    "id": "ab064706-44c3-4253-83c8-7af4750e130d",
+    "text": "Inaccurate business strategy due to lack of sales performance data"
+  },
+  {
+    "id": "21382010-01d0-4878-bcda-5f6d8c7636bd",
+    "text": "Lack of accurate financial data can lead to unrealistic sales targets and poor resource allocation"
+  },
+  {
+    "id": "59c6be2a-ca12-4a7d-965b-ea1e63453158",
+    "text": "Unable to accurately target potential customers"
+  },
+  {
+    "id": "31ad5a96-d7fc-4c23-9326-ad6425ad30fb",
+    "text": "Inaccurate or ineffective company strategy due to lack of market trend analysis"
+  },
+  {
+    "id": "5731782b-18b1-4262-b3c3-795057a40577",
+    "text": "Inaccurate financial planning due to unreliable sales forecast"
+  },
+  {
+    "id": "348f5fed-d17d-4268-99d5-7e1da2738097",
+    "text": "Inability to plan effective campaigns due to lack of sales strategy"
+  },
+  {
+    "id": "2bc13f19-6d83-4ce6-9e76-31c8611ea802",
+    "text": "Inability to accurately define the company's strategic direction due to lack of proper decisions"
+  },
+  {
+    "id": "47c0926b-d9d2-4194-a707-6ada28a7e8da",
+    "text": "Unable to close sales due to poor lead quality"
+  },
+  {
+    "id": "cc311c5b-f14a-4cf9-85fa-8a574721d111",
+    "text": "Inability to align product features with market demand, leading to decreased user satisfaction"
+  },
+  {
+    "id": "737c9d01-8a56-44ac-a48d-e619bf79a46c",
+    "text": "Inaccurate financial reporting can lead to poor strategic decision making and risk management"
+  },
+  {
+    "id": "75bc6d25-ecc7-4ef5-b4df-4e56bf68c539",
+    "text": "Development of products that do not meet market needs"
+  },
+  {
+    "id": "0c892992-3382-4dd7-ad8a-2215585a1b26",
+    "text": "Inability to prioritize product features due to lack of sales feedback"
+  },
+  {
+    "id": "b437c89d-0153-4950-82aa-4e54f8a7ca5a",
+    "text": "Inability to make data-driven decisions, leading to potential loss of business opportunities"
+  },
+  {
+    "id": "b1438b43-3498-445b-895f-2d4c06ba67fa",
+    "text": "Inaccurate sales forecasting leading to poor strategic decisions"
+  },
+  {
+    "id": "b3c3f2df-395c-4bca-b2e5-43837ff4e724",
+    "text": "Inability to accurately plan budgets due to inaccurate sales forecasts"
+  },
+  {
+    "id": "c14bc519-7939-4f69-9d97-d348dd69ad03",
+    "text": "Wasted marketing budget due to misalignment with sales strategy"
+  },
+  {
+    "id": "3566c16c-f464-4fad-9611-8adfd0daff13",
+    "text": "Inability to measure the success of marketing campaigns due to lack of sales"
+  },
+  {
+    "id": "cda5ba0f-a9be-4be7-b805-a5ecc529d1a2",
+    "text": "Inaccurate financial reports due to incorrect budgeting and planning data"
+  },
+  {
+    "id": "5e6b8a4a-1aad-4f43-9fac-fd2f68b83998",
+    "text": "Unable to plan and execute marketing campaigns effectively due to lack of data insights"
+  },
+  {
+    "id": "511be6be-2da5-4969-925b-169570bf7611",
+    "text": "Project delays due to lack of IT resources"
+  },
+  {
+    "id": "39bfc743-f9bf-4ea9-bbe4-3268c3e99e0e",
+    "text": "Inability to set accurate strategic direction due to lack of financial insights"
+  },
+  {
+    "id": "4c2bf75e-09c5-4114-b2c9-0220aff4d886",
+    "text": "Inability to set the right direction for the company due to lack of sales growth"
+  },
+  {
+    "id": "1e396f3c-b4ff-4db3-85aa-367bea25f753",
+    "text": "Difficulty in generating leads and building brand awareness due to lack of company growth"
+  },
+  {
+    "id": "4fe71065-aca2-49a4-a6e6-d087f635cac8",
+    "text": "Wasted marketing efforts and budget due to poor sales conversions"
+  },
+  {
+    "id": "111efb9b-3162-4123-a9ca-750b18e8eac6",
+    "text": "Inaccurate budgeting and financial planning due to unreliable sales forecasts"
+  },
+  {
+    "id": "aae39b6b-35f2-4fc9-b0f2-e92290016d47",
+    "text": "Inadequate budget for marketing campaigns leading to reduced lead generation"
+  },
+  {
+    "id": "84a4f5ff-2863-409e-95dd-e67c48adbbf1",
+    "text": "Inability to develop effective sales strategies due to lack of financial insights"
+  },
+  {
+    "id": "3ac57c54-1076-4d3e-a6ba-3a721f93cd7c",
+    "text": "Inability to meet sales targets due to lack of strategic direction"
+  },
+  {
+    "id": "6f01e14c-2046-4631-9a92-8c82dd418e4e",
+    "text": "Decreased lead generation due to insufficient marketing activities, leading to difficulty in meeting sales targets"
+  },
+  {
+    "id": "24770e33-28d3-4f32-ac01-ab4c3f1c223e",
+    "text": "Inability to align marketing strategy with company's growth goals"
+  },
+  {
+    "id": "8831ded1-4fd9-461b-a952-35237af63309",
+    "text": "Difficulty in understanding market trends due to lack of market research, hindering product development"
+  },
+  {
+    "id": "7a7183b6-2919-48db-a7f6-8f1dea885036",
+    "text": "Inaccurate financial forecasting due to lack of sales data"
+  },
+  {
+    "id": "5cfdbbc0-516b-427d-9fcb-d3be49183247",
+    "text": "Inability to plan effective marketing campaigns due to inconsistent budget allocation"
+  },
+  {
+    "id": "9f1c7a46-e318-444f-a068-ec96d92a6c59",
+    "text": "Incorrect budget allocation leading to financial inefficiencies"
+  },
+  {
+    "id": "49210a4c-2c8f-47f8-8d07-65207479ccbd",
+    "text": "Ineffective marketing campaigns due to lack of conversion data"
+  },
+  {
+    "id": "43f6b436-1258-48db-a6e9-9748b794735f",
+    "text": "Insufficient budget for product development leading to slower product releases"
+  },
+  {
+    "id": "b2990363-58c1-441d-9d4e-b61549b49f3d",
+    "text": "Inaccurate sales forecasting due to lack of understanding of market trends"
+  },
+  {
+    "id": "4283fdbd-83f2-47d5-a8d6-9b95527bc234",
+    "text": "Inaccurate market information leading to ineffective product development"
+  },
+  {
+    "id": "8d03b1f6-0e1f-49c1-9845-346d3c832a1b",
+    "text": "Inability to effectively plan and develop new products or enhancements due to lack of sales insights and market demands"
+  },
+  {
+    "id": "cb994ae9-64d2-4a49-afe2-2002c12f55d3",
+    "text": "Inefficient financial planning due to lack of understanding of market trends"
+  },
+  {
+    "id": "e3c1b114-24f8-4549-98af-bb5b1c45b2b0",
+    "text": "Inability to develop products that align with company's growth strategy"
+  },
+  {
+    "id": "cf744275-719b-496b-aaae-86c4ec7ac0f1",
+    "text": "Ineffective lead generation strategies due to lack of sales feedback"
+  },
+  {
+    "id": "a845c0f5-15aa-403b-9aac-8fe9f62e0d63",
+    "text": "Ineffective marketing strategies due to lack of sales insights and customer feedback"
+  },
+  {
+    "id": "ef09f42c-b441-44ae-8401-3e6d3ae38564",
+    "text": "Inability to make informed strategic decisions due to lack of sales performance data"
+  },
+  {
+    "id": "9325a978-dc23-4398-8641-92ff65cce810",
+    "text": "Inability to provide accurate information to customers due to lack of sales and marketing information"
+  },
+  {
+    "id": "eefe1c03-c71d-42b1-9556-7ee0eddc3674",
+    "text": "Inaccurate revenue forecasting leading to poor strategic decisions"
+  },
+  {
+    "id": "faa5774a-99ae-48f6-b704-ef38f166bcaf",
+    "text": "Inability to achieve company sales targets, impacting overall business growth"
+  },
+  {
+    "id": "ac117259-9fb5-4df8-a3b8-dbc85c1f5be0",
+    "text": "Inaccurate revenue forecasting due to unpredictable sales"
+  },
+  {
+    "id": "d9ac7778-9a14-4bbc-a5a5-b96f3d695a29",
+    "text": "Lack of quality leads, resulting in lower sales"
+  },
+  {
+    "id": "ce3bb9fe-923b-4e95-b01d-5c61061d1f7b",
+    "text": "Inability to set accurate and effective strategic direction due to lack of growth"
+  },
+  {
+    "id": "6e6826eb-127c-441e-a0b7-bd2f4aa4a42c",
+    "text": "Inability to develop new products or improve existing ones due to lack of funding"
+  },
+  {
+    "id": "644329ad-c574-4f01-a5b5-e00bbe9fb90f",
+    "text": "Unable to prioritize product features based on customer needs due to poor sales feedback"
+  },
+  {
+    "id": "6d797eea-f65f-418e-8dbb-9854bc27429a",
+    "text": "Lack of sales insights to inform marketing strategy"
+  },
+  {
+    "id": "834e670a-b831-4694-b48b-79f2425e9a54",
+    "text": "Inability to plan and execute product development due to lack of market trend data"
+  },
+  {
+    "id": "cb45541a-409d-41e6-aea9-9de4121fbe1c",
+    "text": "Incorrect strategic direction due to lack of sales data"
+  },
+  {
+    "id": "c527cc90-7de9-4d69-b183-eac9843b7497",
+    "text": "Lower sales performance leading to lower overall company profitability"
+  },
+  {
+    "id": "41604f4f-6a65-4729-a81c-7a61018e4edd",
+    "text": "Inability to accurately forecast financials and manage company's risk"
+  },
+  {
+    "id": "e42a820a-6a7b-438a-ab72-b198e3ed0087",
+    "text": "Misaligned product development due to lack of customer feedback from sales"
+  },
+  {
+    "id": "3ddc9b33-603d-4c9e-b82e-2ca8a34ae47e",
+    "text": "Inability to develop products that align with market needs, leading to decreased product relevance and sales"
+  },
+  {
+    "id": "d3e6bb54-b3b0-44d9-a92e-106bff3acc52",
+    "text": "Overstock or shortage of products due to inaccurate sales forecast"
+  },
+  {
+    "id": "b33c0f98-6278-4cc4-a2d6-a87abe378b8f",
+    "text": "Decreased sales and profitability due to products not meeting market needs"
+  },
+  {
+    "id": "d430429c-b28c-4cbb-bce8-49d990844ebe",
+    "text": "Inability to plan effective marketing campaigns due to lack of budget insights"
+  },
+  {
+    "id": "adfd8c2a-0cda-4cf8-8982-d040acae457c",
+    "text": "Lack of sales performance to inform business strategy"
+  },
+  {
+    "id": "49ebc5da-ece5-4a27-8e29-06d68ea84a6e",
+    "text": "Difficulty in marketing products that do not meet market needs, leading to ineffective marketing campaigns and wasted resources"
+  },
+  {
+    "id": "3f29992f-88a9-48bd-ac8e-a5d8fb70f8de",
+    "text": "Inability to develop effective marketing strategies due to lack of understanding of market trends"
+  },
+  {
+    "id": "0507911b-c078-40fd-b86a-749381442388",
+    "text": "Inefficient resource allocation leading to poor campaign performance"
+  },
+  {
+    "id": "80ec8c43-4c9b-45d1-a645-50db98d72cfb",
+    "text": "Inability to meet sales targets due to lack of company growth"
+  },
+  {
+    "id": "8dc7ba2e-59eb-448b-a7b5-190df3e61903",
+    "text": "Difficulty in financial forecasting and budgeting due to unpredictable growth"
+  },
+  {
+    "id": "a06651e1-4dae-44e1-969a-18710412be9f",
+    "text": "Decreased revenue and market share due to ineffective sales"
+  },
+  {
+    "id": "1ec85923-6331-4bd2-a777-bf7d06ec08de",
+    "text": "Inaccurate budget planning leading to financial inefficiency"
+  },
+  {
+    "id": "3f8c22c4-5050-48ff-b278-75c79991b157",
+    "text": "Ineffective marketing campaigns due to lack of sales insights"
+  },
+  {
+    "id": "bf58d437-97ee-4dae-b0eb-0b4a08967d30",
+    "text": "Lack of sales insights to inform product development"
+  },
+  {
+    "id": "45b3e295-a3d1-4667-9ba4-a87fc921a87f",
+    "text": "Unable to execute marketing strategies due to lack of funds, leading to decreased lead generation and brand awareness"
+  },
+  {
+    "id": "a0948aaa-d5ec-4c8e-8ef0-d19a6e13ffea",
+    "text": "Difficulty in planning budget due to unpredictability of sales"
+  },
+  {
+    "id": "9994c425-593a-47ff-8ef8-9cf35c665bb0",
+    "text": "Wasted resources on ineffective marketing strategies due to lack of feedback from sales"
+  },
+  {
+    "id": "7b5120e4-15cf-41f2-ad1d-e38111a9dc8b",
+    "text": "Inability to accurately forecast revenue and growth, leading to poor strategic decisions"
+  },
+  {
+    "id": "d366080a-c72a-4ccc-bdb3-2a25494f6cd5",
+    "text": "Inability to make informed decisions due to lack of financial visibility and inaccurate budgeting"
+  },
+  {
+    "id": "5fee3c86-baad-41b2-a690-0741bd58394d",
+    "text": "Inaccurate sales forecasts due to inconsistent budget allocation"
+  },
+  {
+    "id": "ba3d018a-e699-4a4c-8b62-84634dfd0ad3",
+    "text": "manual qualification of leads is time-consuming and prone to error"
+  },
+  {
+    "id": "5fb56f10-9678-4073-a6ce-d28ef88bcb9e",
+    "text": "manual qualification of leads is time consuming and prone to errors."
+  },
+  {
+    "id": "acde8511-71f1-40a8-a661-18c7e4d6f797",
+    "text": "manual and time-consuming qualification of prospects"
+  },
+  {
+    "id": "f3b66ef3-1753-4e5d-80b4-730e527c6551",
+    "text": "lack of real-time insight into meeting lifecycle"
+  },
+  {
+    "id": "0e07d599-2c9a-4164-b553-b0862882e99d",
+    "text": "low meeting attendance due to missed reminders"
+  },
+  {
+    "id": "7f11f1e2-bb6f-4249-8ed9-db60d9cfd033",
+    "text": "inflexible lead routing that doesn't cater to specific business needs"
+  },
+  {
+    "id": "3b7ee654-311b-4462-a7d8-01910c71d975",
+    "text": "manual lead qualification process"
+  },
+  {
+    "id": "c1e2eb18-3a20-4740-b758-01ca366edb8c",
+    "text": "inefficient manual meeting scheduling"
+  },
+  {
+    "id": "87832934-93d0-4259-b72f-73869cb33418",
+    "text": "inefficient management of event leads"
+  },
+  {
+    "id": "5893ec8f-755b-4d16-a160-0c1db4d08c18",
+    "text": "inefficient manual qualification of leads"
+  },
+  {
+    "id": "5326bbb3-e708-4c3d-a708-e85fe8dddf48",
+    "text": "time-consuming manual meeting booking"
+  },
+  {
+    "id": "e3a73779-d661-4d57-9e5f-a2509b5a0931",
+    "text": "inflexible prospect assignment"
+  },
+  {
+    "id": "08290617-d498-456a-8f82-af161f756501",
+    "text": "inefficient conversion of event leads"
+  },
+  {
+    "id": "dc5044d0-1eaf-4ece-a3bf-fc2b4bf865d4",
+    "text": "missed meetings due to lack of reminders"
+  },
+  {
+    "id": "a2156c81-8189-4f29-830a-b3a5da76ada4",
+    "text": "manual lead qualification is time-consuming and error-prone"
+  },
+  {
+    "id": "3db62793-2a65-495d-b5f2-5b64c118238c",
+    "text": "manual reminders are inefficient and can lead to missed meetings"
+  },
+  {
+    "id": "d331e579-182c-4bfd-977a-421b0efd8920",
+    "text": "inefficient prospect assignment can lead to missed sales opportunities"
+  },
+  {
+    "id": "e5f694fa-3e1c-4f47-9458-e368ef1ecdcf",
+    "text": "manual event scheduling is time-consuming and can lead to errors"
+  },
+  {
+    "id": "a71cafcc-aff4-4e76-a6fa-85fdd3caac7d",
+    "text": "lack of integration with crm can lead to inefficiencies and errors"
+  },
+  {
+    "id": "40a79416-5535-4a94-b4a3-f1613137935a",
+    "text": "inflexible routing logic can lead to inefficiencies and missed sales opportunities"
+  },
+  {
+    "id": "14ed9628-37a2-43c4-a02d-66a98a0cf965",
+    "text": "scheduling conflicts and manual back-and-forth communication"
+  },
+  {
+    "id": "e3c1797d-2f0e-49b8-838a-72a11183a7f0",
+    "text": "inefficient distribution of leads among sales team"
+  },
+  {
+    "id": "9f6dcb98-9d5c-4eb8-a6f9-d1a3f5eff93b",
+    "text": "difficulty in managing and tracking event leads"
+  },
+  {
+    "id": "a50b771e-4074-42bd-8eea-f433e94f05b0",
+    "text": "no-shows due to lack of reminders"
+  },
+  {
+    "id": "1d3703d4-bb2e-4bcd-b02a-7ed2aec938b1",
+    "text": "lack of transparency in the meeting lifecycle"
+  },
+  {
+    "id": "ef8c47fb-712b-4db6-8370-5b7fb6ca42ed",
+    "text": "inefficient lead assignment due to rigid routing rules"
+  },
+  {
+    "id": "cb3aed54-ff09-4d80-a7a6-3a8997da4809",
+    "text": "Inaccurate sales forecasts due to insufficient number of scheduled meetings with prospects, leading to poor planning and resource allocation"
+  },
+  {
+    "id": "1fe759c2-c8ac-481a-92cd-d7e5c6f79ba6",
+    "text": "Inefficiency in marketing efforts due to lack of feedback on lead quality"
+  },
+  {
+    "id": "351a17af-94fb-40c2-9ffd-c40ff6252cc3",
+    "text": "Difficulty in meeting sales targets due to lack of qualified leads"
+  },
+  {
+    "id": "27974c82-56c6-4897-bd67-dc9a6d50a71f",
+    "text": "Inability to accurately set and meet sales targets due to lack of qualified leads"
+  },
+  {
+    "id": "ec7d7e54-18bf-4cbb-bc21-9ad16f83a097",
+    "text": "Lower deal closure rate due to lack of sufficient prospects to pitch to"
+  },
+  {
+    "id": "fe4f4219-67f9-419c-afea-aa8830e7ac3f",
+    "text": "Inability to create effective marketing strategies due to lack of insights from sales meetings"
+  },
+  {
+    "id": "723964b8-d497-4dd2-adb9-f15fc694a27f",
+    "text": "Decrease in overall sales performance and failure to meet sales targets"
+  },
+  {
+    "id": "29db39b4-fe59-4cd0-8476-1a9a338501e6",
+    "text": "Receiving irrelevant leads, wasting time and reducing efficiency"
+  },
+  {
+    "id": "c7ea174e-1ae4-49cb-8fdb-314d21999017",
+    "text": "Lack of information about the client's needs and preferences, leading to ineffective sales pitches"
+  },
+  {
+    "id": "56d85863-0a9f-4f55-961c-5bfdc20e00ba",
+    "text": "Lack of clarity on meeting schedules and objectives, leading to inefficient sales calls"
+  },
+  {
+    "id": "3b1b2d3e-d705-41de-83b2-14fbc184ca6b",
+    "text": "Poor lead conversion rates, questioning effectiveness of marketing strategies"
+  },
+  {
+    "id": "6e585b75-3bd4-47e3-85f0-fb0e595dc40e",
+    "text": "Inability to meet company revenue goals due to insufficient sales meetings"
+  },
+  {
+    "id": "fd7da399-d4c1-4efe-81e2-5f79bd217535",
+    "text": "Inability to address customer issues effectively due to lack of information from sales meetings"
+  },
+  {
+    "id": "f7b2dbbb-fc2d-49e1-ae19-1f591e5f89c4",
+    "text": "Inability to accurately plan and forecast marketing activities due to lack of event leads"
+  },
+  {
+    "id": "73b3b21d-c6dc-4543-8f41-1dae6bd8fd40",
+    "text": "Inability to monitor sales team performance and progress due to lack of organized meeting data"
+  },
+  {
+    "id": "2c47c744-d77e-47f9-8b72-6fcf935ec836",
+    "text": "Wasted marketing efforts and budget due to lack of follow-up meetings with prospects"
+  },
+  {
+    "id": "ddb0a67d-c4da-4abc-aae8-15c793cc8ad8",
+    "text": "Waste time on unqualified leads, reducing the time spent on potential customers which can lead to loss of sales"
+  },
+  {
+    "id": "7a89ba37-848c-491c-9c15-30480d472a4c",
+    "text": "Inability to meet sales targets due to lack of sufficient meetings with prospects"
+  },
+  {
+    "id": "e641ed62-f670-4ea6-994d-bb9ca3d3d003",
+    "text": "Misalignment between sales and marketing strategies due to lack of clear communication"
+  },
+  {
+    "id": "b47ecdf8-3da9-47f7-8a25-43a6bcb18c4a",
+    "text": "Inability to provide timely and accurate information to customers due to lack of meeting insights"
+  },
+  {
+    "id": "2fbf8a05-ca33-4da9-884d-d54305262007",
+    "text": "Wasted marketing efforts and resources due to lack of follow-ups with the generated leads"
+  },
+  {
+    "id": "d54d159d-d2fb-487a-9d4e-cbb0cc716ac7",
+    "text": "Difficulty in managing sales pipeline due to lack of event leads"
+  },
+  {
+    "id": "b7a94ae7-e1b7-4762-880a-8e63b043ec95",
+    "text": "Inefficient lead allocation leading to decreased sales performance"
+  },
+  {
+    "id": "6c6065b5-ba2b-404d-807c-ae42132bacc2",
+    "text": "Ineffective marketing campaigns due to lack of feedback on lead quality"
+  },
+  {
+    "id": "9c0c9c7a-a781-43c0-a804-d3b655340465",
+    "text": "Inability to accurately plan and forecast company growth due to lack of event leads"
+  },
+  {
+    "id": "6275bfa6-daae-4cb9-8adf-4c153a039c89",
+    "text": "Decreased sales revenue due to lack of leads and closed deals"
+  },
+  {
+    "id": "90c20d79-9759-4896-b2f6-063b7a57288b",
+    "text": "Increased volume of customer complaints and queries, leading to overload and stress"
+  },
+  {
+    "id": "bf0c3eda-4cf1-4f55-8fb4-63adfadd89ad",
+    "text": "Inability to set accurate company direction due to poor sales performance"
+  },
+  {
+    "id": "6a4f8569-5853-4611-a11a-6f17532b80bc",
+    "text": "Unable to make informed decisions regarding company direction due to lack of sales performance insights"
+  },
+  {
+    "id": "a0741c75-ad36-4022-8c31-5bd3388f87bc",
+    "text": "Wasted efforts and resources on leads that don't convert"
+  },
+  {
+    "id": "7be9fc69-b768-4879-86fa-c72ed0df65bf",
+    "text": "Lack of clear targets can lead to confusion and lower productivity"
+  },
+  {
+    "id": "337742cd-966b-4ea1-ad1e-3ae8e195edd9",
+    "text": "Unable to develop products that meet market needs due to lack of sales feedback"
+  },
+  {
+    "id": "395b0671-045f-4d93-8e5e-910c879a711c",
+    "text": "Wasted marketing budget due to ineffective sales conversions"
+  },
+  {
+    "id": "0e203e25-9e82-4714-96ce-eabfe2ddfe36",
+    "text": "Strained customer relationships and potential loss of accounts"
+  },
+  {
+    "id": "ca2cb784-c9d3-46c3-aceb-448dd90a6138",
+    "text": "Not having enough potential customers to engage with"
+  },
+  {
+    "id": "50ce73e5-59d1-4551-bc7a-cf284a7ed9cd",
+    "text": "Difficulty in maintaining and growing accounts due to unsatisfied customers, leading to potential loss of sales"
+  },
+  {
+    "id": "7fa84c3c-9cca-4742-81f4-744e85afa925",
+    "text": "Wasted marketing budget on ineffective campaigns due to lack of sales target feedback"
+  },
+  {
+    "id": "5f5dd1ce-90b5-4c91-960c-2ca0338189f5",
+    "text": "Inability to measure campaign effectiveness due to lack of lead conversion"
+  },
+  {
+    "id": "1fc4b7f9-2823-42e8-90b5-d71d7a446644",
+    "text": "Difficulty in planning effective marketing strategies due to lack of data on customer response"
+  },
+  {
+    "id": "9c537c86-fbc8-4cec-9026-752736a8adbb",
+    "text": "Inability to align product development with market needs due to lack of sales insights"
+  },
+  {
+    "id": "2a1366f3-ad2b-498b-a4c3-47bb5510915f",
+    "text": "Challenges in budget allocation due to unpredictable sales performance"
+  },
+  {
+    "id": "2340f8d9-7568-43af-8b09-aaad8dc2f7ac",
+    "text": "Inability to align marketing strategy with company goals"
+  },
+  {
+    "id": "7edeafc6-64c5-4cd7-b8cd-0ba504cdc838",
+    "text": "Lack of qualified leads to follow up with, leading to decreased sales"
+  },
+  {
+    "id": "1b3fed0c-5c04-4bc1-adf9-8ea9d06501bd",
+    "text": "Inability to accurately forecast revenue and set company direction"
+  },
+  {
+    "id": "1503fd70-9d5e-4f59-976c-8db1d161e874",
+    "text": "Inability to align technology roadmap with company goals"
+  },
+  {
+    "id": "811522c5-ec26-4407-9a3d-78ada9a73f2d",
+    "text": "Inaccurate budget forecasts and potential financial instability due to unpredictable sales performance"
+  },
+  {
+    "id": "adadce9e-bf5d-4b15-bfec-457a7c79260a",
+    "text": "Failure to convert leads into customers can result in fewer opportunities to build customer relationships and achieve customer satisfaction."
+  },
+  {
+    "id": "c1c071f1-87d4-4efe-9c91-501b19b4accf",
+    "text": "Inaccurate budget planning due to uncertain sales revenue"
+  },
+  {
+    "id": "ce008c9a-71b2-4c5f-a638-6fea2f6183bb",
+    "text": "Increased customer complaints and churn due to poor sales experience"
+  },
+  {
+    "id": "a9ec210c-3f4a-442d-8832-cc02f6bff64a",
+    "text": "Inability to accurately measure campaign success and improve future strategies"
+  },
+  {
+    "id": "b0dd092f-a553-41f9-a9e7-f0f780a7bbb2",
+    "text": "Inability to measure the success of marketing strategies due to lack of generated leads"
+  },
+  {
+    "id": "e8b338f2-6267-4e7f-ba7f-5aac59b8dee5",
+    "text": "Overstock or shortage of products due to inaccurate sales forecasting"
+  },
+  {
+    "id": "7ffdc655-0acc-46da-ae8f-b27489f0375f",
+    "text": "Decreased effectiveness of marketing campaigns due to negative customer feedback"
+  },
+  {
+    "id": "1a51588d-7b4b-4d61-8d99-b699ce388b1c",
+    "text": "Inaccurate revenue forecasts due to lack of closed deals"
+  },
+  {
+    "id": "bf7e84f1-3625-4c14-9c6d-c825652dd13f",
+    "text": "Decreased company reputation and potential loss of revenue"
+  },
+  {
+    "id": "10e74ccc-22eb-4fbe-a2d4-daa59f378d53",
+    "text": "Failure to convert leads into customers can result in inaccurate financial forecasts, leading to potential budgeting issues."
+  },
+  {
+    "id": "e7a38cc4-190c-4cbd-a1ee-6a8c8695773a",
+    "text": "Inefficiency in operations due to lack of clear company direction"
+  },
+  {
+    "id": "eab80b28-00bb-4e72-b218-2135863f552d",
+    "text": "Ineffective marketing campaigns due to lack of sales data"
+  },
+  {
+    "id": "59bf572b-0a21-47cf-9619-3510f60af9c4",
+    "text": "Difficulty in tracking and analyzing campaign performance due to poorly structured campaigns"
+  },
+  {
+    "id": "e4b315e8-49a9-43b2-aed6-8ecc8c85be0a",
+    "text": "Stagnant or declining revenue growth"
+  },
+  {
+    "id": "81f3cb41-3320-4c8a-b2a0-1284dda83ac7",
+    "text": "Inefficient marketing campaigns due to lack of coordination with sales team"
+  },
+  {
+    "id": "72f70833-02ec-4673-b173-e2a70de8b5e5",
+    "text": "Poor sales performance can result in wasted marketing efforts"
+  },
+  {
+    "id": "2a758c08-0d4e-4d81-b140-d32f259891d5",
+    "text": "Failure to convert leads into customers can result in lower revenues, which may impact the company's strategic direction and decision-making."
+  },
+  {
+    "id": "65640b38-6ae4-42df-a176-c3b1249ff010",
+    "text": "Lack of quality leads to convert, leading to low sales numbers"
+  },
+  {
+    "id": "352c645c-f60c-461e-b80c-28d2aa34e25e",
+    "text": "Inaccurate sales forecasting can lead to overproduction or underproduction, resulting in wasted resources or missed opportunities."
+  },
+  {
+    "id": "ec500826-36c3-4460-9c73-48fb760d5d2d",
+    "text": "Wasted resources on leads that do not convert"
+  },
+  {
+    "id": "7d0266fd-98c3-4ede-9bfa-71d97a94b6ef",
+    "text": "Unable to measure effectiveness of campaigns and adjust strategy"
+  },
+  {
+    "id": "8fd1e0ce-4915-4c78-a86c-b2df9b456859",
+    "text": "Increased customer complaints due to poor sales process"
+  },
+  {
+    "id": "6eaeb668-fc56-47f9-be47-93f1ac5986a2",
+    "text": "Inaccurate or lack of customer feedback, leading to misguided product development"
+  },
+  {
+    "id": "6c6f05e5-1abc-4f50-82cc-380588d7342f",
+    "text": "Inaccurate sales forecasts can lead to inaccurate financial projections, affecting budgeting, cash flow management, and financial reporting."
+  },
+  {
+    "id": "106a9449-6dc1-4e16-b230-10c3f1cf81d9",
+    "text": "Failure to convert leads into customers can result in wasted marketing resources and efforts, as well as a need to reassess marketing strategies."
+  },
+  {
+    "id": "44b73f01-b1f1-43b1-b317-073e2acce706",
+    "text": "Insufficient or excessive production due to inaccurate sales forecasts, leading to waste of resources or shortage of products."
+  },
+  {
+    "id": "6139bdb2-2041-4c37-afbb-46461ec77935",
+    "text": "Decreased growth and profitability due to lack of new sales"
+  },
+  {
+    "id": "12c7931d-636a-4d10-836d-5b020b59b268",
+    "text": "Inefficiency and confusion due to lack of clear sales pipeline"
+  },
+  {
+    "id": "d7e98e4f-8f0a-4efd-9926-153206b2ddfa",
+    "text": "Inability to plan product development and roadmap"
+  },
+  {
+    "id": "21cca9c4-f532-43ab-9b74-952da09f1df7",
+    "text": "Difficulty in aligning marketing strategies with sales performance"
+  },
+  {
+    "id": "c0512d21-50ed-4d8a-ae17-d47a719356ad",
+    "text": "Increased customer complaints due to misleading or inaccurate marketing campaigns"
+  },
+  {
+    "id": "2fa6f96c-6ee4-40a0-b9b4-766a20a43bf3",
+    "text": "Unable to accurately forecast revenue and make strategic decisions"
+  },
+  {
+    "id": "9581876b-b02f-4ac8-87c2-850be97579c9",
+    "text": "Inability to improve products due to lack of sales feedback"
+  },
+  {
+    "id": "5522b6d0-f31b-4917-bead-2aa26f748c17",
+    "text": "Not being able to target the right audience due to lack of leads"
+  },
+  {
+    "id": "5c4c6dc3-314c-4acb-9390-785f9a15060e",
+    "text": "Unable to make informed business decisions due to lack of sales revenue"
+  },
+  {
+    "id": "da1d692e-fc89-4129-84d0-01fd2d3ad90f",
+    "text": "Difficulty in predicting cash flow and making budgetary decisions"
+  },
+  {
+    "id": "b64755f5-ea09-4968-9449-143f6efca306",
+    "text": "Difficulty in meeting sales targets due to lack of leads"
+  },
+  {
+    "id": "2e8afc82-77de-4df3-bc17-39fc419655dc",
+    "text": "Inability to plan effective product development due to unclear sales performance"
+  },
+  {
+    "id": "b584cd7f-f113-41ec-8c3a-265665404939",
+    "text": "Inaccurate sales forecasting can lead to misallocation of budget, impacting financial health of the company."
+  },
+  {
+    "id": "ba77d10e-9b46-434c-9d3e-ca04d830fe22",
+    "text": "Inaccurate budget forecasts due to unpredictable sales revenue"
+  },
+  {
+    "id": "03b0dcc1-eb60-4ed6-a50b-223560094bc5",
+    "text": "Wasted resources on generating leads that are not converted"
+  },
+  {
+    "id": "0078d5a8-72f9-4186-a3f2-30b24f31a862",
+    "text": "Inability to prioritize features and improvements due to lack of sales feedback"
+  },
+  {
+    "id": "6f91de45-25c4-4da5-8e66-7abb888a27f4",
+    "text": "Wasted marketing efforts due to poor sales team performance"
+  },
+  {
+    "id": "8d2e9912-ebbc-4606-bc81-00e98c21d639",
+    "text": "Not having enough leads to work with, leading to lower sales and commissions"
+  },
+  {
+    "id": "b38db0f0-4c5e-40f3-8ab7-986d7a951cc2",
+    "text": "Increase in customer complaints due to misleading or unclear marketing campaigns"
+  },
+  {
+    "id": "4bdafff8-016d-4a1d-a432-472ba36c16a9",
+    "text": "Wasted resources on leads that are not converted into sales"
+  },
+  {
+    "id": "272496e9-de92-4377-9c2d-d2298d5b5e1b",
+    "text": "Inaccurate budget planning due to unpredictable revenue"
+  },
+  {
+    "id": "bd01f829-b184-424b-9a5c-993ea15ec245",
+    "text": "Unable to meet sales targets due to poor team performance"
+  },
+  {
+    "id": "9d086703-4e98-4cc1-8cf2-7aab2f609d66",
+    "text": "Lack of leads to contact and potentially convert to customers"
+  },
+  {
+    "id": "087cd817-0288-431b-9202-9d2854812838",
+    "text": "Inability to forecast revenue accurately due to poor sales performance"
+  },
+  {
+    "id": "a61d4ffd-ceb2-461e-a2d1-33a3d1a8e858",
+    "text": "Difficulty in selling due to lack of effective campaign strategies"
+  },
+  {
+    "id": "998d9726-a61d-4cf9-865e-4e94f8a69843",
+    "text": "Decreased revenue and profitability due to poor sales performance"
+  },
+  {
+    "id": "45c69875-72d1-488f-9d0d-ddea8ed0c953",
+    "text": "Increased customer complaints due to poor sales practices"
+  },
+  {
+    "id": "f2036bea-5fd0-454a-b5a0-c3eba5a295b6",
+    "text": "Inaccurate sales forecasts can lead to inefficient allocation of marketing resources, resulting in missed opportunities or wasted efforts."
+  },
+  {
+    "id": "16937bab-7fa5-445d-98c3-eeb88a571c03",
+    "text": "Decreased company revenue and growth due to ineffective marketing campaigns"
+  },
+  {
+    "id": "0f6522ea-a486-4494-8b0e-c22c58d92432",
+    "text": "Increase in customer complaints and escalations"
+  },
+  {
+    "id": "15d71c9c-c2e9-4648-95b0-f14c3efc1edc",
+    "text": "Lower revenue and slower company growth due to decreased sales"
+  },
+  {
+    "id": "4b31899a-9dce-43d0-aa04-0cff8e0f129b",
+    "text": "Inability to accurately forecast financial performance and plan budgets"
+  },
+  {
+    "id": "6dc709c5-3806-48af-86d3-6dd7068e7efa",
+    "text": "Increased workload due to potential customers' confusion or lack of information"
+  },
+  {
+    "id": "af14f946-637f-4c06-bb13-621ac06c5e2c",
+    "text": "Unable to meet the company's growth targets due to insufficient sales"
+  },
+  {
+    "id": "e7352407-80e7-4bb7-b644-4ca399a3f888",
+    "text": "Without accurate sales forecasting, marketing campaigns may not be targeted correctly, leading to wasted resources."
+  },
+  {
+    "id": "ea222c29-661a-4927-9360-0c9793e05728",
+    "text": "Inability to adjust product roadmap based on sales feedback"
+  },
+  {
+    "id": "1b9fa4ca-b007-4d3f-9a25-2c47b78fa86c",
+    "text": "Strained client relationships due to lack of new sales"
+  },
+  {
+    "id": "b7bf7392-eca8-4c2c-a01f-983c452cc8e6",
+    "text": "Inefficiency in marketing campaigns due to lack of sales direction"
+  },
+  {
+    "id": "a5df3ee2-20c5-46f5-8a22-718d19748e6e",
+    "text": "Inaccurate sales forecasting can lead to poor decision-making and strategic planning."
+  },
+  {
+    "id": "5ee94482-f00f-4bec-a54f-68efa9084182",
+    "text": "Decreased revenue and profitability due to lack of potential customers"
+  },
+  {
+    "id": "0c74f6a0-b2fd-4a08-a6a5-a1b1ce9dce71",
+    "text": "Inaccurate sales forecasting can lead to poor strategic decisions, which can negatively impact the company's growth and profitability."
+  },
+  {
+    "id": "41642443-806b-4819-a24d-efdfa5d283d2",
+    "text": "Decreased customer satisfaction due to lack of new products or services"
+  },
+  {
+    "id": "13b2e068-c46e-4417-81c1-ae1f2a9c987b",
+    "text": "Difficulty in maintaining customer relationships due to lack of new customers"
   }
 ]

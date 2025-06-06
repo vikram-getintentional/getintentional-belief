@@ -1994,5 +1994,1889 @@
   {
     "id": "ae36949d-1c12-42b3-9b84-483e4a6f5136",
     "description": "Making strategic decisions for the company"
+  },
+  {
+    "id": "737be2fc-507b-49f1-903d-36b38d69b95c",
+    "description": "ensuring accurate and compliant financial reporting"
+  },
+  {
+    "id": "eaf7e395-6636-441d-aca2-33b19895be0a",
+    "description": "designing and implementing checkout process"
+  },
+  {
+    "id": "52b1d762-ce36-4086-9bcd-cfe9d83ce577",
+    "description": "ensuring secure transactions and compliance"
+  },
+  {
+    "id": "8ba7d4bf-5474-4007-9189-5d40f7395b99",
+    "description": "managing subscriptions, billing, invoicing, and cancellations"
+  },
+  {
+    "id": "0be69d07-1bcd-45b4-98c2-80e6afb5f5bb",
+    "description": "analyzing churn and implementing retention strategies"
+  },
+  {
+    "id": "06b8591f-6356-4574-8cb0-6606e355e701",
+    "description": "setting up discounts and managing trial offers"
+  },
+  {
+    "id": "d1540b53-ca3a-4e0a-86a5-4570c8b07d3f",
+    "description": "designing and managing checkout flows"
+  },
+  {
+    "id": "c288459c-1129-4564-8a90-a14383b90daf",
+    "description": "manage and oversee subscription services"
+  },
+  {
+    "id": "e778c221-20a2-4d1c-bdc2-a9437f8432c3",
+    "description": "ensure accurate financial reporting and compliance"
+  },
+  {
+    "id": "91398221-089d-4a66-b882-cd79dc2de58a",
+    "description": "design and implement promotional strategies"
+  },
+  {
+    "id": "12e85ac4-1e3b-46eb-965e-25858196ab44",
+    "description": "improve customer experience and streamline checkout process"
+  },
+  {
+    "id": "24aad7ee-8ca4-42a2-966c-f29bec655d2b",
+    "description": "manage product features and pricing"
+  },
+  {
+    "id": "3b292492-e743-4986-bea7-3393287c5537",
+    "description": "managing customer subscriptions and billing"
+  },
+  {
+    "id": "db3b597a-c159-479c-bd77-1bf227f2184c",
+    "description": "analyzing customer behavior and managing retention efforts"
+  },
+  {
+    "id": "6ec9f9c9-dc16-4f64-b403-213bccc72c94",
+    "description": "managing pricing and promotional strategies"
+  },
+  {
+    "id": "4ca56ac9-dd6f-4ed8-b11a-169fea564c61",
+    "description": "managing user experience and checkout flows"
+  },
+  {
+    "id": "dfafe7b9-b198-49b9-9291-a7c5011f07fd",
+    "description": "feature entitlements management and pricing strategy"
+  },
+  {
+    "id": "70b4b9fc-c489-4704-a0e8-3ea5f8960928",
+    "description": "pricing strategy and execution"
+  },
+  {
+    "id": "69588906-0a87-4d26-91d9-dd5c6defef7d",
+    "description": "ensuring accurate and on-time revenue recognition"
+  },
+  {
+    "id": "befd6326-9ed4-4b29-83ad-b3ce7c6b1c25",
+    "description": "customer retention and churn prediction"
+  },
+  {
+    "id": "01de8ff2-5d4a-4387-a7e3-0a6911397ce8",
+    "description": "user experience design and implementation"
+  },
+  {
+    "id": "99a9ce83-fe14-46c1-a9b8-1c77025d6a8a",
+    "description": "product management and feature entitlement"
+  },
+  {
+    "id": "7e7a26bb-55fa-4258-9f85-e413187361da",
+    "description": "pricing strategy formulation"
+  },
+  {
+    "id": "ac998442-3ab0-43fd-ae91-c6813051aa7e",
+    "description": "sales promotion and trial management"
+  },
+  {
+    "id": "92cb115c-db96-4c11-a903-03a3efdcefda",
+    "description": "customer experience management"
+  },
+  {
+    "id": "d4dfc376-f424-487c-8e3d-4631ecd77a48",
+    "description": "Revenue Forecasting"
+  },
+  {
+    "id": "35d5ab18-2e67-4cea-8826-b94323af3f22",
+    "description": "Develop and implement marketing strategies"
+  },
+  {
+    "id": "660e47f3-7780-45fe-bd7b-d61f15cda3ab",
+    "description": "Lead sales team and manage sales targets"
+  },
+  {
+    "id": "7fe62f34-3395-4641-957e-dd7bab1969ef",
+    "description": "Manage product lifecycle"
+  },
+  {
+    "id": "9038a870-1ddc-4052-a1df-66f3b00d47d7",
+    "description": "Resolving Customer Complaints"
+  },
+  {
+    "id": "225dc54e-9310-4c62-b425-598ae2f3dc54",
+    "description": "Closing Deals with New Customers"
+  },
+  {
+    "id": "7476120c-d99d-4028-a057-654e61ab9dda",
+    "description": "Internal Audit"
+  },
+  {
+    "id": "7feceee2-c563-40d3-8cee-8f2ea2205a4a",
+    "description": "Planning product development"
+  },
+  {
+    "id": "2968c862-46e1-49e2-a681-0bcf1d01d359",
+    "description": "Recruiting New Employees"
+  },
+  {
+    "id": "93fc9253-d162-45e0-87b5-d6d4c5d9d324",
+    "description": "Creating financial forecasts"
+  },
+  {
+    "id": "e1a652d8-c7fb-4fe2-b834-21899b393459",
+    "description": "Technology strategy and implementation"
+  },
+  {
+    "id": "b26a4912-7207-4114-a479-394651a5c447",
+    "description": "Managing Sales Team"
+  },
+  {
+    "id": "7df97ab6-8213-4466-bcc3-ba5f56e22cf6",
+    "description": "Company Direction and Strategy"
+  },
+  {
+    "id": "385510ba-dce0-4ebd-906a-7d1e61264441",
+    "description": "Execute marketing strategies"
+  },
+  {
+    "id": "67585c42-debe-4db5-978a-8a958f57540a",
+    "description": "Brand Reputation Management"
+  },
+  {
+    "id": "0b468e8b-25ea-4342-b379-29712f348653",
+    "description": "Setting company strategy and direction"
+  },
+  {
+    "id": "b7f5dc8a-6cec-459d-8a79-993b85d54737",
+    "description": "Lead the sales team to achieve targets"
+  },
+  {
+    "id": "6ed8d2d1-9517-42b5-a447-c8a00d8aacca",
+    "description": "Operational cost management"
+  },
+  {
+    "id": "bb5b5f41-0e01-4b72-ad56-9ea328cbc407",
+    "description": "Make strategic decisions"
+  },
+  {
+    "id": "ee959997-65a8-4383-9bf8-c29d5e7101f9",
+    "description": "Company decision making"
+  },
+  {
+    "id": "bedddd56-de4c-4fb1-b67f-e50d4e9e8eba",
+    "description": "Planning Marketing Campaigns"
+  },
+  {
+    "id": "948ac0e4-ec5b-45b5-8e72-bae5d0cc0294",
+    "description": "Business Strategy and Planning"
+  },
+  {
+    "id": "fb0bd657-32f8-424f-afcd-8cc7db7be39e",
+    "description": "Inventory management and supply planning"
+  },
+  {
+    "id": "827e57fa-8d70-4907-977b-c8892e896732",
+    "description": "Market analysis and strategy development"
+  },
+  {
+    "id": "fe438ac2-7695-4981-ae76-cfd8b5ef3558",
+    "description": "Product marketing and promotion"
+  },
+  {
+    "id": "5b87c011-60dc-45a4-a049-9ee94893a195",
+    "description": "Handling Customer Queries"
+  },
+  {
+    "id": "a5bb0256-d82c-4bc0-9a52-426581bf9efc",
+    "description": "Product Improvement"
+  },
+  {
+    "id": "7ce0c57f-d412-4f6c-b44a-2a3a65809793",
+    "description": "Ensuring Regulatory Compliance"
+  },
+  {
+    "id": "d40ca8c8-7e76-406c-a77e-f414ad5d4cb1",
+    "description": "Operational planning and execution"
+  },
+  {
+    "id": "f11580a2-c570-496b-b60c-b47db224cef4",
+    "description": "Setting Strategic Direction"
+  },
+  {
+    "id": "9d7a0d07-39cb-408a-81b3-4243fdbeae3e",
+    "description": "Company Oversight"
+  },
+  {
+    "id": "a0018688-e3cf-47e9-bd9d-6c2ca3b9b1f3",
+    "description": "Product development and innovation"
+  },
+  {
+    "id": "57ed149d-c9a6-4fa3-9323-07e8e3e68a28",
+    "description": "Campaign budget planning"
+  },
+  {
+    "id": "377c057b-25f8-4a12-b9d0-767fe9a62530",
+    "description": "Marketing Strategy Planning"
+  },
+  {
+    "id": "e7832e05-93f1-47e0-a805-e756964a4a68",
+    "description": "Financial Reporting"
+  },
+  {
+    "id": "baac2897-8a53-460b-be07-06015fa50910",
+    "description": "Sales Target Achievement"
+  },
+  {
+    "id": "0c271206-5868-4830-b999-5bcac2fe56ca",
+    "description": "Manage company budget and financial planning"
+  },
+  {
+    "id": "4e70703f-52b5-4cf4-906d-86e83786d636",
+    "description": "Company Strategy"
+  },
+  {
+    "id": "e582762d-11e4-41c8-a09a-d1b578e2e6a7",
+    "description": "Talent Management and Development"
+  },
+  {
+    "id": "d929936e-340c-4b17-b0ab-81c6d9295188",
+    "description": "Identifying new product features based on market needs"
+  },
+  {
+    "id": "f55a26ef-9245-47f5-b471-75d5da51ae8d",
+    "description": "Company strategy and direction setting"
+  },
+  {
+    "id": "3df3deb7-e362-4dc1-a0b1-2f4281b03f07",
+    "description": "Generate leads and demand for products/services"
+  },
+  {
+    "id": "86109c31-7367-41e7-b0e6-8f7a92a61c1c",
+    "description": "Handling customer complaints and feedback"
+  },
+  {
+    "id": "6c937b15-d79d-4e58-b2c3-6e0f8429a88c",
+    "description": "Budgeting and planning for marketing campaigns"
+  },
+  {
+    "id": "2592692c-1832-40e1-ad67-68fc143ad128",
+    "description": "Company Strategy Execution"
+  },
+  {
+    "id": "bab37d75-a4ec-4b85-bcae-90773e196298",
+    "description": "Driving Company's Vision and Strategy"
+  },
+  {
+    "id": "9f4d1818-e13a-43e8-9d85-63ccfb88e0fc",
+    "description": "Customer complaint resolution"
+  },
+  {
+    "id": "a193f847-b325-4255-8a93-4eeb4c0aa55f",
+    "description": "Overseeing all technical aspects of the company"
+  },
+  {
+    "id": "2b05e837-bf04-4d0c-8b9c-46b0a65d1113",
+    "description": "Budget Management and Financial Forecasting"
+  },
+  {
+    "id": "d4087fa1-4645-4902-ae03-02df2f37fe14",
+    "description": "Selling products/services"
+  },
+  {
+    "id": "64450683-fb7a-4af0-a121-dfdc8b1eee72",
+    "description": "Lead Generation and Customer Acquisition"
+  },
+  {
+    "id": "33ee10ed-e650-4fe1-9e92-129f3d2cf8b2",
+    "description": "Company strategy and direction"
+  },
+  {
+    "id": "64041613-3704-482c-bffa-7e67244ea94b",
+    "description": "Closing deals with potential customers"
+  },
+  {
+    "id": "976a0df9-5a1f-45c3-8ab6-8c437e83b9ff",
+    "description": "Brand Promotion"
+  },
+  {
+    "id": "6381cf22-6f74-4ae7-a6a0-c3b09e8f5092",
+    "description": "Overseeing the supply chain and inventory levels"
+  },
+  {
+    "id": "c03d0565-d5e5-4e9d-9fd0-ec3db024aab1",
+    "description": "Company Strategy and Vision"
+  },
+  {
+    "id": "c519dac3-f0d4-46ed-9995-30e509fbd8ae",
+    "description": "Sales forecasting and strategy development"
+  },
+  {
+    "id": "8e2df8a8-99d4-486d-9c88-e598b5530534",
+    "description": "Overall company performance and growth"
+  },
+  {
+    "id": "d75545eb-4a6a-4ee4-9d6c-4ce10e17f15f",
+    "description": "Marketing strategy development and execution"
+  },
+  {
+    "id": "fcce8704-fac5-46b4-b06f-dba27ed0082c",
+    "description": "Operational Management"
+  },
+  {
+    "id": "9f3c5ff6-9fd9-40d1-b124-446ca166b195",
+    "description": "Customer Complaint Handling"
+  },
+  {
+    "id": "c16996fb-e5b0-4203-9785-8c6ff4946d0d",
+    "description": "Managing company's operations and procedures"
+  },
+  {
+    "id": "01ed6649-16ff-484c-b16a-e54cf2e6e9dc",
+    "description": "Driving sales through leads generated by marketing activities"
+  },
+  {
+    "id": "14e2d7ae-5736-458a-a6b6-ff6ef3c8f1d0",
+    "description": "Executing Department's Strategy"
+  },
+  {
+    "id": "8e9ccdc3-5b1c-4f73-aa2b-127d7f6b23d7",
+    "description": "Marketing Strategy Development"
+  },
+  {
+    "id": "323006bd-871b-486a-b8c6-1a4a946338af",
+    "description": "Procuring necessary goods and services for the company"
+  },
+  {
+    "id": "c28a2adc-2aea-49b1-80fa-827d0c46242a",
+    "description": "Answering customer service calls"
+  },
+  {
+    "id": "5dd02844-6309-4b51-bcbe-86963fa66808",
+    "description": "Operational Efficiency and Process Improvement"
+  },
+  {
+    "id": "97eab94f-1074-41dc-a3e0-40d1ca44f7ea",
+    "description": "Handling customer complaints and inquiries"
+  },
+  {
+    "id": "c16977d0-6d48-47e7-b03a-c7cfbbe1d00e",
+    "description": "Performing day-to-day tasks"
+  },
+  {
+    "id": "6dbcc72d-7b15-44dd-be41-60663d665bb9",
+    "description": "Overall company strategy"
+  },
+  {
+    "id": "452fecaa-0633-412d-bd10-74447a7c5ce3",
+    "description": "Procurement of goods"
+  },
+  {
+    "id": "3fec6644-631c-43ff-ab59-f6e8ff367dce",
+    "description": "Developing new product features based on customer feedback"
+  },
+  {
+    "id": "a64d6ec1-22f3-4202-ac24-263862979f1e",
+    "description": "Setting company strategy and goals"
+  },
+  {
+    "id": "b9336bbf-5af2-4066-bcbd-055f34846399",
+    "description": "Executing marketing campaigns"
+  },
+  {
+    "id": "0709213c-bca1-4c1d-a68e-82033f8a70b5",
+    "description": "Ensuring overall company performance and growth"
+  },
+  {
+    "id": "0cf4b4d2-e89a-4301-b3c6-abb23f61a764",
+    "description": "Analyzing marketing campaign performance"
+  },
+  {
+    "id": "43a55212-768e-42b8-8903-0dda0b82ac35",
+    "description": "Financial Forecasting and Budgeting"
+  },
+  {
+    "id": "58943068-2239-4ede-91b1-04bc5d24fb4c",
+    "description": "Managing production schedules and ensuring timely production"
+  },
+  {
+    "id": "6d2f1751-9262-4806-9faf-d2ca004ce8e3",
+    "description": "Budget planning and allocation"
+  },
+  {
+    "id": "e5310e9f-5c69-469c-ad2f-19dc0c5ca3be",
+    "description": "Strategic financial decision making"
+  },
+  {
+    "id": "29bb2a95-cc31-4cc8-bf36-fa6bb2a4aad1",
+    "description": "Managing sales forecasts and meeting sales targets"
+  },
+  {
+    "id": "515e3ef7-4fd8-499c-afc2-b38400478189",
+    "description": "Develop products that meet market demand"
+  },
+  {
+    "id": "87355aaf-b36b-43fa-9650-e2f4007bf2a6",
+    "description": "Closing sales deals"
+  },
+  {
+    "id": "d60eee51-0218-44e0-ac1b-9c0c7821bafe",
+    "description": "Overall company strategy and direction"
+  },
+  {
+    "id": "58c6c1b0-e83d-4d10-b3c3-ae28f21b74c6",
+    "description": "Executing Marketing Campaigns"
+  },
+  {
+    "id": "5a59df34-da72-4bcd-8712-2026efa7d5b0",
+    "description": "Marketing planning and execution"
+  },
+  {
+    "id": "5ac03beb-1f41-4d2a-b461-acad2864c798",
+    "description": "Creating effective marketing strategies"
+  },
+  {
+    "id": "62e79e75-ecf4-44b5-bb9e-f0ff96f7a706",
+    "description": "Warehouse space management"
+  },
+  {
+    "id": "ab819296-af30-4047-9bfc-8b917bbfc700",
+    "description": "Marketing Campaign Execution"
+  },
+  {
+    "id": "1c9a5a74-7e7b-42aa-87d1-095ffdd68add",
+    "description": "Sales forecasting"
+  },
+  {
+    "id": "b48efa82-d623-405e-a2b0-b5e0f718a501",
+    "description": "Overseeing the recruitment process"
+  },
+  {
+    "id": "28767f7b-3689-43ed-ab82-490dfa1d1222",
+    "description": "Meeting sales targets"
+  },
+  {
+    "id": "9990154b-97a3-4a05-affa-1ed6af732794",
+    "description": "Technology Strategy and Execution"
+  },
+  {
+    "id": "67c64be7-a9d3-4e8a-b41f-8fe1ed1ac13a",
+    "description": "Drive sales and revenue growth"
+  },
+  {
+    "id": "aa76d020-f34c-4562-b437-1244685220d1",
+    "description": "Ensure company profitability and growth"
+  },
+  {
+    "id": "f975a8b6-2492-437d-adaa-9ec70e78b10d",
+    "description": "Managing the product lifecycle"
+  },
+  {
+    "id": "6ee27afc-47d9-41ce-b1df-18ed233324d1",
+    "description": "Sales strategy and execution"
+  },
+  {
+    "id": "d5466be6-514c-4a99-9af0-4fb246e94cd7",
+    "description": "Employee Retention and Engagement"
+  },
+  {
+    "id": "c2fb0950-dd7e-41b7-85e9-6c8fc9499515",
+    "description": "Converting Leads"
+  },
+  {
+    "id": "2624e342-6d13-4078-8b7d-59645e6e81de",
+    "description": "Brand Management"
+  },
+  {
+    "id": "00a9db10-b6c4-4ca0-973a-55af335c9af0",
+    "description": "Financial Planning and Budgeting"
+  },
+  {
+    "id": "34b27aec-36aa-4d81-b0cf-8ceba7df06e6",
+    "description": "Lead conversion and sales closing"
+  },
+  {
+    "id": "c317cc1d-2b66-492d-bfe8-ca694902f9de",
+    "description": "Managing department workload"
+  },
+  {
+    "id": "fe982a05-521a-4bdf-ada0-3e688d666dfc",
+    "description": "Budget planning and financial forecasting"
+  },
+  {
+    "id": "96989a2b-f966-4339-94a8-6f120356c9c5",
+    "description": "Develop and execute marketing strategies"
+  },
+  {
+    "id": "f0fb2642-0d3b-45bd-a62c-d2036b1da802",
+    "description": "Legal Advice and Compliance"
+  },
+  {
+    "id": "480095fe-5cb7-46ed-ba3b-cfd843e89c53",
+    "description": "Budget Allocation and Forecasting"
+  },
+  {
+    "id": "b8e7ca23-5034-4b05-9617-ef5f6d8095c2",
+    "description": "Product planning and execution"
+  },
+  {
+    "id": "ea756eec-6621-428c-8371-228cf081dac8",
+    "description": "Design and implement product features"
+  },
+  {
+    "id": "a791e9ed-c48b-494d-ab74-1d002fcef966",
+    "description": "Financial forecasting"
+  },
+  {
+    "id": "fc6a7b10-cc6d-480e-bad0-2f7f351869b0",
+    "description": "Overseeing the implementation of the company's marketing strategy"
+  },
+  {
+    "id": "6a997092-ad09-44bf-b313-13d32a56bf02",
+    "description": "Developing and implementing marketing strategies"
+  },
+  {
+    "id": "4d260c5b-5483-4e0d-9e62-f57168b2c266",
+    "description": "business intelligence and data analysis"
+  },
+  {
+    "id": "7c75a6af-1d8f-40ac-864f-ac81e6a84dbf",
+    "description": "real-time business monitoring and decision making"
+  },
+  {
+    "id": "d74c8689-e3dd-40d8-9af1-c7f4a1a7fd45",
+    "description": "application development and analytics integration"
+  },
+  {
+    "id": "dba2e9aa-1dd8-4d5b-83b0-c253ebb3c361",
+    "description": "business intelligence and strategy planning"
+  },
+  {
+    "id": "e7be5dab-7cac-4640-8dc8-e3f69e3dc5db",
+    "description": "business data analysis and interpretation"
+  },
+  {
+    "id": "aa1331e3-27d4-4c8d-8a7b-072f20afb3fa",
+    "description": "data management and modeling"
+  },
+  {
+    "id": "891e8c97-adae-4bb5-8723-690a1512458c",
+    "description": "data analysis and reporting"
+  },
+  {
+    "id": "6caa8635-f3aa-4fd6-9d6b-57551a2d3528",
+    "description": "data visualization and reporting"
+  },
+  {
+    "id": "004d76d0-0cd4-40fe-a9af-a56492d9c33c",
+    "description": "application development and data integration"
+  },
+  {
+    "id": "4f8724fd-c783-46a3-bb84-2025691ffa30",
+    "description": "data analysis and interpretation"
+  },
+  {
+    "id": "d8d9c0b2-dbf2-44d8-b8f1-9401303197fa",
+    "description": "analyzing business data to derive insights"
+  },
+  {
+    "id": "e815523a-6323-4a9e-aee9-e40b81f368cb",
+    "description": "creating and managing business dashboards"
+  },
+  {
+    "id": "6f6bc414-21bb-4b40-b7e9-f966029f23bb",
+    "description": "performing data analysis using sql, r, python"
+  },
+  {
+    "id": "4f48fed7-64b7-44f4-a1f7-7b2991fd9f2e",
+    "description": "development and management of custom applications"
+  },
+  {
+    "id": "16f92d7d-5ec1-4957-b7a6-f806d07cf186",
+    "description": "implementing ai solutions for business insights"
+  },
+  {
+    "id": "fec14bf3-fc99-460b-a57a-d742df0c6ba8",
+    "description": "designing and managing business dashboards"
+  },
+  {
+    "id": "4989482f-1197-4094-a9e7-368dcf1e0b97",
+    "description": "interpreting and diagnosing business data"
+  },
+  {
+    "id": "1a4f00af-4ef4-4bd8-8ebc-1b6f740396e1",
+    "description": "managing and shaping data"
+  },
+  {
+    "id": "ff3c1a5a-1a24-4dee-844a-fa28a593a6e2",
+    "description": "Forecasting sales and setting targets"
+  },
+  {
+    "id": "59913675-657c-42bf-870e-b8d1fe334a0a",
+    "description": "Analyzing and interpreting complex data to provide business insights"
+  },
+  {
+    "id": "621e254c-51f4-45c7-9f66-8a02d7a57b62",
+    "description": "Interpreting data to provide actionable insights"
+  },
+  {
+    "id": "61e5167c-1b21-4227-a3b3-048064373a38",
+    "description": "Making strategic business decisions based on data"
+  },
+  {
+    "id": "c2230187-173c-4e1a-9a4e-1af9aa264956",
+    "description": "Forecasting sales and setting sales targets"
+  },
+  {
+    "id": "ebfe0ebf-f882-4d98-bf3c-4cd7aec1b52e",
+    "description": "Designing and improving products based on customer needs and market trends"
+  },
+  {
+    "id": "f8db3760-96e2-40be-b974-ad3409cde7a8",
+    "description": "Managing IT projects and ensuring timely delivery"
+  },
+  {
+    "id": "d2c8b16b-2578-44d9-a3e3-baa2db0e7769",
+    "description": "Making data-driven decisions for product development"
+  },
+  {
+    "id": "dcf637fe-58d0-4874-a4b6-b7f957099caf",
+    "description": "Achieving sales targets and expanding customer base"
+  },
+  {
+    "id": "94086fa1-f098-4a40-826a-a30d87185eb1",
+    "description": "Developing and implementing effective marketing strategies"
+  },
+  {
+    "id": "4988ab79-6c69-4b36-a75d-c4056d8686a9",
+    "description": "Making strategic decisions to drive company growth"
+  },
+  {
+    "id": "efae2fb3-cc2c-47c9-a93f-0f44afcee6b5",
+    "description": "Overseeing IT operations and ensuring system functionality"
+  },
+  {
+    "id": "38a97c9c-420d-4f38-9c6b-1b191d569ec5",
+    "description": "Using the applications for daily tasks"
+  },
+  {
+    "id": "bcd501d7-8153-4310-9559-b3232361495d",
+    "description": "Using data to guide marketing strategies"
+  },
+  {
+    "id": "5844c502-7adb-41f0-a2e3-f4798f50f516",
+    "description": "Driving sales and revenue growth"
+  },
+  {
+    "id": "9e9c20f4-855f-4c2c-9d0b-0fc20f50f268",
+    "description": "Managing sales team and driving sales performance"
+  },
+  {
+    "id": "7f2026aa-da5d-4b8c-89ca-486502d9dc56",
+    "description": "Providing technical support"
+  },
+  {
+    "id": "c22bfad3-83b8-4cbe-97fb-7a43facd6834",
+    "description": "Company strategy and growth planning"
+  },
+  {
+    "id": "236f33b6-b731-4b10-8510-5cd4e44fc862",
+    "description": "Managing sales team and ensuring sales targets are met"
+  },
+  {
+    "id": "6021c393-3945-468d-892e-a397fb75a548",
+    "description": "Ensuring company profitability"
+  },
+  {
+    "id": "d411a509-455a-4877-9e39-735105cdb19d",
+    "description": "Managing sales team and driving sales"
+  },
+  {
+    "id": "3dbc2df0-ef88-49b8-a07a-02e5b6f5b339",
+    "description": "Forecasting sales"
+  },
+  {
+    "id": "25d05c84-f006-421e-8abc-6e47b003f77c",
+    "description": "Setting the company's strategic direction"
+  },
+  {
+    "id": "f8240b80-cfa5-47e5-98c8-4615ed0423fd",
+    "description": "Operational Efficiency"
+  },
+  {
+    "id": "5d657250-1859-44c5-9f8c-f50024490b1f",
+    "description": "Closing deals and meeting sales targets"
+  },
+  {
+    "id": "aa6b5e4d-9c62-43e5-b661-ba6647188743",
+    "description": "Sales Forecasting"
+  },
+  {
+    "id": "55c4b1bc-f1e6-4116-83f3-07ed2f04b7de",
+    "description": "Developing new products"
+  },
+  {
+    "id": "eadc72a1-d8a8-4f60-814c-7f0ed1269103",
+    "description": "Setting sales targets"
+  },
+  {
+    "id": "526afee7-bd75-4c38-bac2-caa9accf337f",
+    "description": "Ensuring company growth and profitability"
+  },
+  {
+    "id": "d7396df1-09c2-4397-8e41-1e61abc3bb16",
+    "description": "Driving sales and meeting sales targets"
+  },
+  {
+    "id": "98f9c20c-e621-4d62-9f9c-328e8e412a70",
+    "description": "Leading the sales team to reach sales targets"
+  },
+  {
+    "id": "a984396b-ee42-4305-a659-18d733e6b701",
+    "description": "Promoting the company's products to the market"
+  },
+  {
+    "id": "eb5b39c9-6704-4a9c-9260-6d5f1046b3f8",
+    "description": "Overseeing company performance and strategy"
+  },
+  {
+    "id": "7070d022-6100-417e-b6cc-74197ba39dd7",
+    "description": "Planning product roadmap"
+  },
+  {
+    "id": "91920181-e51d-4f3c-b218-91ca50703b94",
+    "description": "Managing IT projects"
+  },
+  {
+    "id": "3599da76-142e-4743-b36e-81981a08fbba",
+    "description": "Defining company strategy"
+  },
+  {
+    "id": "29813412-a620-4689-b235-92b1b4955966",
+    "description": "Overseeing project progress"
+  },
+  {
+    "id": "ed8e2138-54a0-4233-b4ef-9e1df3df3e76",
+    "description": "Managing IT infrastructure and team"
+  },
+  {
+    "id": "4e306759-7884-48dd-bb33-14fd9cf845b3",
+    "description": "Product planning and strategy"
+  },
+  {
+    "id": "8e26923d-9c3f-454c-af2f-270401af55a9",
+    "description": "Creating and executing marketing campaigns to generate leads"
+  },
+  {
+    "id": "089600eb-b421-4f5c-b2c5-2734e27285ce",
+    "description": "Using the software or system for daily tasks"
+  },
+  {
+    "id": "1a51714a-5c4f-44b5-817c-d08c7ae4e886",
+    "description": "Planning marketing strategies"
+  },
+  {
+    "id": "9c1f1415-80a9-4ee5-82aa-a0ee6f4dccb4",
+    "description": "Making company-wide strategic decisions"
+  },
+  {
+    "id": "26590fb2-2b1a-47fc-9f36-3c33797be034",
+    "description": "Ensuring customer satisfaction and retention"
+  },
+  {
+    "id": "ae2cb29a-0166-474c-a248-8726178aa979",
+    "description": "Talent acquisition and retention"
+  },
+  {
+    "id": "ce813e20-cfd3-476f-aeaf-8d71c6ec63ce",
+    "description": "Inventory planning and management"
+  },
+  {
+    "id": "1da48ce8-d229-491f-9ac7-2a5f4c081a3a",
+    "description": "Analyzing effectiveness of marketing strategies"
+  },
+  {
+    "id": "371d0252-6ab6-4ed1-a7d6-d35aa899d1b3",
+    "description": "Developing marketing strategies"
+  },
+  {
+    "id": "b72bed65-5e22-4574-b167-f0aba5d8eb3c",
+    "description": "Analyzing system requirements and functionality"
+  },
+  {
+    "id": "7deb82bd-3b65-41a0-885c-2f3ab22a5f0f",
+    "description": "Developing and deploying software"
+  },
+  {
+    "id": "50b20126-082f-4ccd-a88a-3d90a401a317",
+    "description": "Addressing customer complaints and queries about the products"
+  },
+  {
+    "id": "cd123c02-ed8b-4533-a495-482774296b13",
+    "description": "Analyzing and interpreting complex digital data to assist strategic decision-making"
+  },
+  {
+    "id": "1e6fed34-1058-4fca-adc9-160cef82ae41",
+    "description": "Selling the company's products to potential customers"
+  },
+  {
+    "id": "f5eaa8e5-449e-4050-a341-474e083f5b32",
+    "description": "Creating and executing marketing campaigns"
+  },
+  {
+    "id": "468d53ca-633c-4419-9078-4c3925e4a238",
+    "description": "Developing and maintaining applications"
+  },
+  {
+    "id": "3a2006a5-6774-42b0-abe2-78fc319dab46",
+    "description": "Developing and maintaining software applications"
+  },
+  {
+    "id": "484580d0-10e4-4842-8454-142a2dd9d0d6",
+    "description": "Recruiting and retaining talent"
+  },
+  {
+    "id": "137abb26-fc6e-45cc-870f-0bf9c10ff14f",
+    "description": "Managing company's finances and ensuring profitability"
+  },
+  {
+    "id": "709db40b-5008-4970-8268-1a9b6ed0f273",
+    "description": "Handling customer inquiries and complaints"
+  },
+  {
+    "id": "a3e55d92-3219-4ad4-8685-1d366f0517ac",
+    "description": "Analyzing marketing campaign success"
+  },
+  {
+    "id": "4d9fc758-924a-4c7f-aa1e-ce860ac9e27a",
+    "description": "ensuring revenue recognition and compliance"
+  },
+  {
+    "id": "7bd7ff7c-5a7e-40dc-875a-233389e3119e",
+    "description": "improving customer experience and checkout process"
+  },
+  {
+    "id": "5df6c9ea-64f4-4aae-b45c-ba3fa3459911",
+    "description": "customer retention and analytics"
+  },
+  {
+    "id": "edde6839-a4a9-4125-85b5-a6fcb8c58b86",
+    "description": "revenue accounting and compliance"
+  },
+  {
+    "id": "91d2b5aa-8817-45b1-ac7b-f247d327abee",
+    "description": "customer experience and checkout flow design"
+  },
+  {
+    "id": "7774eb8a-e77a-4fab-a826-da9a99ed45bd",
+    "description": "product management and feature mapping"
+  },
+  {
+    "id": "b0e40bb4-672b-4d37-b5a0-d2f6f5a06af4",
+    "description": "improving user experience and customer journey"
+  },
+  {
+    "id": "967bb6bb-8292-409d-b6a0-d81e4b1b5c0f",
+    "description": "maintaining security and regulatory compliance"
+  },
+  {
+    "id": "8571f136-7e5e-4d88-839c-980792cd8ff8",
+    "description": "implementing pricing models"
+  },
+  {
+    "id": "14ed3847-0b18-470e-b047-cdd2c7bb99ba",
+    "description": "analyzing customer behavior and churn"
+  },
+  {
+    "id": "212ad21a-fe34-405f-bddf-320dad34f0f1",
+    "description": "Promoting the product to potential customers"
+  },
+  {
+    "id": "22043e6b-1179-45ea-b078-7da1cbc83a8f",
+    "description": "Promoting Product Offers"
+  },
+  {
+    "id": "2cfec827-b52d-46ab-a667-8041b30c866e",
+    "description": "Handling Customer Inquiries"
+  },
+  {
+    "id": "3a82e5b2-2daf-4ad4-b84b-27c009673b0e",
+    "description": "Maintaining Profit Margins"
+  },
+  {
+    "id": "54eb2f82-79f8-463b-a6bb-127da172b98a",
+    "description": "Developing products that meet customer needs"
+  },
+  {
+    "id": "211395e7-efe9-4e29-9d25-669b02de949c",
+    "description": "Product development and pricing"
+  },
+  {
+    "id": "03749f89-490e-4f00-8f23-365745953a84",
+    "description": "Creating effective marketing campaigns"
+  },
+  {
+    "id": "6f806106-d8de-42fc-b864-c4d9ff28c99a",
+    "description": "Managing and forecasting company revenue"
+  },
+  {
+    "id": "82f8e28d-d65b-4688-ad36-f25f488f6df0",
+    "description": "Resolving customer queries and issues related to the product"
+  },
+  {
+    "id": "6271543d-7412-45d9-a5bb-db26ac4aec7a",
+    "description": "Overseeing financial operations and strategy"
+  },
+  {
+    "id": "6b59db2d-7304-4452-ba35-cfbfe568994b",
+    "description": "Ensuring customer satisfaction and renewals"
+  },
+  {
+    "id": "400725ac-9d1c-4bc1-bbfb-9b2c4c22d1e2",
+    "description": "Planning and executing marketing campaigns based on customer data"
+  },
+  {
+    "id": "1a0cba42-1cf8-41d5-a410-5f48a3d9cb1e",
+    "description": "Achieving Sales Targets"
+  },
+  {
+    "id": "ff227a59-c477-40bf-b900-05296ccd1fd8",
+    "description": "Analyzing financial data and creating financial models"
+  },
+  {
+    "id": "c9d77067-99cc-4a65-8032-2b190c2ddbae",
+    "description": "Auditing the company's financial statements"
+  },
+  {
+    "id": "3c6be330-aa66-41c1-877a-208a0e7b181a",
+    "description": "data analysis"
+  },
+  {
+    "id": "734d3ae6-377d-4f27-9f9e-13b5853bf02d",
+    "description": "data visualization"
+  },
+  {
+    "id": "72800356-71af-4957-bb71-f71d7bc430f7",
+    "description": "data collaboration"
+  },
+  {
+    "id": "0e5af1c7-abf0-4e12-98f8-da23a1d4a844",
+    "description": "app development"
+  },
+  {
+    "id": "1ddd9471-23a0-4de5-97de-6cfa83b690ed",
+    "description": "data interpretation"
+  },
+  {
+    "id": "41ed7489-9bee-4a46-893f-9cd395d800d4",
+    "description": "data management"
+  },
+  {
+    "id": "0d428778-9c87-4a5b-a3ac-c1906ff57838",
+    "description": "business decision making"
+  },
+  {
+    "id": "673ed056-a46f-4507-90bb-86e6ad6f4db9",
+    "description": "business strategy"
+  },
+  {
+    "id": "8a8efdf6-0d77-45a2-bdd0-ac379b5b0b1a",
+    "description": "collaborative data analysis"
+  },
+  {
+    "id": "98eada62-65fc-4539-bd46-16f984c058c3",
+    "description": "data team collaboration"
+  },
+  {
+    "id": "bc394a64-b5d2-4e41-bf02-75643c25e1b6",
+    "description": "app development with embedded analytics"
+  },
+  {
+    "id": "28528c38-cca4-45ef-b9d9-4b5c0a7ca52d",
+    "description": "data analysis with business context"
+  },
+  {
+    "id": "8c5b132b-468f-475e-afa7-9318923f1f34",
+    "description": "data interpretation and diagnosis"
+  },
+  {
+    "id": "89a11f16-979f-471d-ad87-c18505d24b63",
+    "description": "Providing data-driven insights"
+  },
+  {
+    "id": "18f25428-fa28-44a9-96ca-02e271239c96",
+    "description": "Sales strategy formulation and execution"
+  },
+  {
+    "id": "530abd0a-b214-4ea1-8592-e2c98f1d3e1d",
+    "description": "Product development and improvement based on data analysis"
+  },
+  {
+    "id": "ecae3a53-22ec-4f05-99dc-8d9c05929a83",
+    "description": "Campaign performance analysis"
+  },
+  {
+    "id": "21c5d9ca-c2a4-47dd-bafa-7e70bc559e7d",
+    "description": "Marketing strategy formulation and execution"
+  },
+  {
+    "id": "98672a31-e641-4422-9cb8-df45c2d851ad",
+    "description": "Creating marketing strategies based on data analysis"
+  },
+  {
+    "id": "abbdb7e7-53d2-4099-8e90-f2c7cb20c07a",
+    "description": "Developing and managing product roadmap"
+  },
+  {
+    "id": "42e1d139-00d7-4be4-94d1-bd7581a3a9be",
+    "description": "Developing product features based on customer behavior insights"
+  },
+  {
+    "id": "7b3ceb1e-b66b-4a7e-a940-246237260174",
+    "description": "Generating sales leads"
+  },
+  {
+    "id": "b49b527d-8bd4-4e42-b3c7-e4cd5fd5e2dc",
+    "description": "Product development decisions based on data analysis"
+  },
+  {
+    "id": "b553894a-8cee-4da0-a526-2057c0d4d7ad",
+    "description": "Designing user-friendly app interfaces"
+  },
+  {
+    "id": "68aae354-46ac-4297-8386-bdd5f41fff25",
+    "description": "Market Trend Analysis"
+  },
+  {
+    "id": "ec7e0937-b054-4005-948d-bc0326459e87",
+    "description": "Data Analysis and Reporting"
+  },
+  {
+    "id": "ffb1fa66-5c9b-4572-8ebe-5ff540a4bc70",
+    "description": "Product planning and development"
+  },
+  {
+    "id": "0625af86-8dc5-4acf-a842-d50dc833970b",
+    "description": "Creating marketing strategies based on data insights"
+  },
+  {
+    "id": "6162961e-1315-4f1f-b5d0-cb796fa7e493",
+    "description": "Product performance tracking"
+  },
+  {
+    "id": "7ea80cb7-3509-421f-9c69-e6ac550770f2",
+    "description": "Creating predictive models"
+  },
+  {
+    "id": "bc936d6e-aee0-4852-b072-343af621daa5",
+    "description": "Project Planning and Execution"
+  },
+  {
+    "id": "0f2967bc-8d62-4e7c-b106-fd2a3fc3c080",
+    "description": "Maintaining data infrastructure"
+  },
+  {
+    "id": "3f685831-7475-4301-9b2b-45d9bec9985c",
+    "description": "Business trend analysis"
+  },
+  {
+    "id": "fad4b512-0453-45dd-b78c-0e4b85a50ce2",
+    "description": "Overseeing product development and strategy"
+  },
+  {
+    "id": "c7d3fb07-6690-4dc1-baee-6eb7ea5d4b70",
+    "description": "Developing and executing marketing strategies"
+  },
+  {
+    "id": "e78ec672-71d6-4e42-ac2a-6a05b7f46591",
+    "description": "Managing project timelines and deliverables"
+  },
+  {
+    "id": "754b0aa4-edd0-4955-bdb6-8c1d7b8dc929",
+    "description": "Product Development Strategy"
+  },
+  {
+    "id": "f6f25b43-8deb-4eeb-8814-fe1c9b5a73cd",
+    "description": "Model building and validation"
+  },
+  {
+    "id": "c4939230-4b81-416a-bdf2-a1d1508bad65",
+    "description": "Making strategic decisions based on data analysis"
+  },
+  {
+    "id": "89694365-4dd4-4a31-9045-8b7829e14e76",
+    "description": "Implementing analytics into app features"
+  },
+  {
+    "id": "f78c9d26-c180-4b87-bf67-aa32e9923f1b",
+    "description": "Project planning and execution"
+  },
+  {
+    "id": "b825ed09-9094-43d2-a2c9-d8112bcc9fd5",
+    "description": "Forecasting sales based on data analysis"
+  },
+  {
+    "id": "dd3dbb8f-b496-4e7d-b2e8-2d4093d655a5",
+    "description": "Making strategic decisions based on company-wide data"
+  },
+  {
+    "id": "e5421ff3-3004-4c18-8f12-bee57403a158",
+    "description": "Creating marketing campaigns based on data analysis"
+  },
+  {
+    "id": "db3d079b-c546-4519-824d-f768e2aa2cd1",
+    "description": "Developing strategies based on data-driven insights"
+  },
+  {
+    "id": "1a6f2859-893f-49de-9d04-ac04cb147e08",
+    "description": "Creating marketing strategies"
+  },
+  {
+    "id": "b55cc16a-1161-49b1-afcc-7de3baae4556",
+    "description": "Planning sales strategies based on data analysis"
+  },
+  {
+    "id": "e04e98a8-230e-4d91-a010-d090640f7860",
+    "description": "real-time business monitoring"
+  },
+  {
+    "id": "6db0dfee-1976-4870-9023-6afe31b5ef75",
+    "description": "data collaboration and analysis"
+  },
+  {
+    "id": "e089682e-6610-43ad-b2c0-df48440ac8d8",
+    "description": "custom app development"
+  },
+  {
+    "id": "ea1d48c8-43d6-42ef-be4c-36faf350720f",
+    "description": "business strategy formulation"
+  },
+  {
+    "id": "60733f93-c3f7-491d-a023-7a7858f4118f",
+    "description": "data interpretation and pattern discovery"
+  },
+  {
+    "id": "61c4ab7e-de8b-4392-9ba3-8fc6067fd9ac",
+    "description": "data management and shaping"
+  },
+  {
+    "id": "acba540a-b70b-49cf-8e65-c26c8f3d955d",
+    "description": "data integration into applications"
+  },
+  {
+    "id": "23cc229d-74f7-4e2f-a532-e064ac01e712",
+    "description": "deep data analysis"
+  },
+  {
+    "id": "77c16fad-ff90-47f8-9026-7e073bb732fc",
+    "description": "monitoring business performance and identifying trends"
+  },
+  {
+    "id": "d1da9917-0808-43f0-858d-28c4d28ce27f",
+    "description": "application development and integration"
+  },
+  {
+    "id": "bc16329c-d9e1-44bd-9bf9-c8d2f8790c9d",
+    "description": "strategic decision making"
+  },
+  {
+    "id": "e6ed59bc-45e1-4cdf-bd0d-c38b9748990a",
+    "description": "Market trend analysis and strategy formulation"
+  },
+  {
+    "id": "4cbe2af4-d6e6-42e0-90d5-90f6d300bdbd",
+    "description": "Campaign Planning and Execution"
+  },
+  {
+    "id": "014a8da1-e3ed-44d6-90ec-3b469566836c",
+    "description": "Product planning and execution based on data insights"
+  },
+  {
+    "id": "17002b4e-1496-4795-b876-ba574c50a08b",
+    "description": "Sales Strategy and Forecasting"
+  },
+  {
+    "id": "9514bfb0-d6fe-499c-aa49-afe91f496a2e",
+    "description": "Product development and enhancement"
+  },
+  {
+    "id": "f9ae0bdf-7182-4017-9eca-df18a2b03326",
+    "description": "IT infrastructure management and oversight"
+  },
+  {
+    "id": "1145735b-d4d4-4852-93e9-2d4ba8d0e66b",
+    "description": "Formulating marketing strategies based on data insights"
+  },
+  {
+    "id": "ee7fa726-b42b-4c77-9ed9-2532162c13ab",
+    "description": "Setting sales targets and strategies based on data insights"
+  },
+  {
+    "id": "d79488d9-69b7-4c8b-83ec-d2ca0f33058a",
+    "description": "Product Development and Strategy"
+  },
+  {
+    "id": "fa7b11ee-df3a-429d-a936-12f480ffb998",
+    "description": "Analyzing business trends and providing actionable insights"
+  },
+  {
+    "id": "31cedae1-0247-4392-8825-308f816ebdae",
+    "description": "Company Strategy and Decision Making"
+  },
+  {
+    "id": "cd39c308-8931-4fa2-b6bd-50c19316491b",
+    "description": "Driving sales and meeting revenue targets"
+  },
+  {
+    "id": "f41267be-a84b-4eff-b8d3-69a31adab714",
+    "description": "Strategic marketing planning"
+  },
+  {
+    "id": "812d567e-9e12-483b-800b-e1cb85dcdb76",
+    "description": "Daily tasks and operations"
+  },
+  {
+    "id": "0be9f5bf-d6aa-41b1-b0a0-fb9555e0a7af",
+    "description": "Business decision making"
+  },
+  {
+    "id": "f1e53236-fc2b-42ac-81b6-45fa75c92021",
+    "description": "Planning and executing sales strategies"
+  },
+  {
+    "id": "a70e4ecd-bbe7-4836-b8bb-18015c32deea",
+    "description": "Marketing campaign planning"
+  },
+  {
+    "id": "814a5530-4363-4938-9369-db5e3bdc340e",
+    "description": "Company Direction"
+  },
+  {
+    "id": "bc664abe-faa3-4049-a46b-3f7f020b529c",
+    "description": "Company strategy and growth"
+  },
+  {
+    "id": "ce6bc7be-57d7-4e5d-96df-42713c215e61",
+    "description": "Allocating budget for marketing activities"
+  },
+  {
+    "id": "5e99f9bc-48d2-4f1c-8948-3c278cfdd78b",
+    "description": "Campaign Budgeting"
+  },
+  {
+    "id": "933a5e9b-edba-49b6-8b6f-84b3d3fb0196",
+    "description": "Sales Conversion"
+  },
+  {
+    "id": "e8b796d4-b349-4f0d-8ebf-d3719e227792",
+    "description": "Driving company growth"
+  },
+  {
+    "id": "df720a20-de02-4a83-91f7-5435ccd89c08",
+    "description": "Financial planning and strategy"
+  },
+  {
+    "id": "9759ded9-cede-4cf2-8656-14f50bc5d24a",
+    "description": "Developing products that meet market needs"
+  },
+  {
+    "id": "ab2bc12b-bad8-42e1-9045-e3e49e571fbd",
+    "description": "Overall business decision making"
+  },
+  {
+    "id": "00d04656-c3fb-409e-a5c2-a95b319bcafc",
+    "description": "Product development based on market trends"
+  },
+  {
+    "id": "a97cd370-0faa-4f9e-aa81-82e7ed3c9661",
+    "description": "Budget planning"
+  },
+  {
+    "id": "e72b2d9a-1158-43ab-b1ab-67abeac87181",
+    "description": "Software Development"
+  },
+  {
+    "id": "e2c65816-7cfb-40f6-8926-61ce1d522ed9",
+    "description": "Driving sales and revenue"
+  },
+  {
+    "id": "fcf4809c-6548-4abd-b70a-d8e25c95b5be",
+    "description": "Developing product roadmaps"
+  },
+  {
+    "id": "ff2348cd-2bf1-4cc8-baa4-f0f1cfb86e90",
+    "description": "Project Management"
+  },
+  {
+    "id": "f4771d7c-bd18-426d-b6f0-a90f3a142bcb",
+    "description": "Budget planning and management"
+  },
+  {
+    "id": "32bf7437-9e0f-4a25-848a-6c13d42fa90f",
+    "description": "Inventory management and procurement planning"
+  },
+  {
+    "id": "25d22504-1beb-4aa6-995e-6573ded0d729",
+    "description": "Designing and implementing strategic sales plans"
+  },
+  {
+    "id": "ffcceb5c-bfd6-4ab8-ad5d-f18f87c7f660",
+    "description": "Software Quality Assurance"
+  },
+  {
+    "id": "0b50657a-7103-4577-9af8-934521026967",
+    "description": "Developing marketing campaigns"
+  },
+  {
+    "id": "2b474292-948d-4222-874f-e84e6da8de8f",
+    "description": "Defining the company's strategic direction"
+  },
+  {
+    "id": "7771a1ea-a806-4b0f-a55c-24e5444fad88",
+    "description": "Company Strategy Formulation"
+  },
+  {
+    "id": "4c7afbc8-7dd8-4823-aea4-645a4d1a0c12",
+    "description": "Company strategy planning"
+  },
+  {
+    "id": "136db991-8874-4043-9940-def28fef8682",
+    "description": "Market research and strategy development"
+  },
+  {
+    "id": "57866f3e-8956-4ace-8031-deeb41d586b3",
+    "description": "Setting company vision and strategy"
+  },
+  {
+    "id": "0c4ba74f-b711-4a22-8fa6-ab23c50c654b",
+    "description": "Marketing Strategy Formulation"
+  },
+  {
+    "id": "828e482e-f07c-410f-87ae-cde73f271d41",
+    "description": "Inventory management"
+  },
+  {
+    "id": "d9124ef5-ea7f-402d-9eba-b332ac88bc33",
+    "description": "Lead generation and nurturing"
+  },
+  {
+    "id": "fe6ad503-82d2-4794-bfcc-f37d57242e13",
+    "description": "Budget allocation for marketing"
+  },
+  {
+    "id": "9908e577-7792-4de4-88b2-5320b3ccc1c3",
+    "description": "Operational Planning"
+  },
+  {
+    "id": "12384e2a-616a-43a1-9804-e135b0bb7216",
+    "description": "Campaign Planning"
+  },
+  {
+    "id": "db87845a-8691-417b-8bb4-b1b8da486988",
+    "description": "Business strategy formulation"
+  },
+  {
+    "id": "b98cc041-5d86-4f47-8ceb-72e508e01f95",
+    "description": "Investing in the company"
+  },
+  {
+    "id": "011cf9b3-aaf1-43d6-a17f-057fc25fa32b",
+    "description": "Developing and maintaining software products"
+  },
+  {
+    "id": "16b41db5-f704-4f38-b680-b6debf60e164",
+    "description": "Product Development"
+  },
+  {
+    "id": "ddd061eb-f20c-46dd-b050-7eac0bee3ca4",
+    "description": "Setting company direction"
+  },
+  {
+    "id": "33ab89f8-1943-4d42-b051-bd084c21a341",
+    "description": "Marketing strategy planning"
+  },
+  {
+    "id": "f65a9ac4-6099-4e2d-ab8b-7867839b1f54",
+    "description": "Implementing marketing strategies"
+  },
+  {
+    "id": "edd349d4-feed-4133-8399-d568237be3dc",
+    "description": "Marketing strategy and execution"
+  },
+  {
+    "id": "ccc46db3-3a06-4a05-8611-1861f6b2c42b",
+    "description": "Developing and implementing sales strategies"
+  },
+  {
+    "id": "4e86a3b3-1298-42d9-87bd-4a4313901258",
+    "description": "Sales team management"
+  },
+  {
+    "id": "3262d5b6-8bf8-4c67-a159-55adcf75377b",
+    "description": "Developing and executing marketing campaigns"
+  },
+  {
+    "id": "83169d73-2393-4d64-93f6-0a6a3b2410c9",
+    "description": "Daily Operations"
+  },
+  {
+    "id": "2a8ea87c-bc76-4dfb-9138-b30b101035b6",
+    "description": "Product development based on market feedback"
+  },
+  {
+    "id": "7683c5aa-a777-4623-81cd-9d95c74d7cb9",
+    "description": "Closing Deals"
+  },
+  {
+    "id": "0a2d4590-c276-426e-b2de-fee15615060c",
+    "description": "Company's strategic planning"
+  },
+  {
+    "id": "77b589ce-66f5-450b-92c7-e408aa4a9d0b",
+    "description": "Strategic planning"
+  },
+  {
+    "id": "7d94c57d-615f-4688-b096-2e83900e6198",
+    "description": "Production planning and inventory management"
+  },
+  {
+    "id": "0d5f5e41-5312-4950-bcca-f02c4c3c6660",
+    "description": "Creating marketing strategies based on product offerings"
+  },
+  {
+    "id": "9038c77d-a3da-4667-98a2-5c5e419f1095",
+    "description": "Budget Planning and Management"
+  },
+  {
+    "id": "ee59a14d-1d42-474e-927d-02076a9d2cb2",
+    "description": "Developing marketing strategies and campaigns"
+  },
+  {
+    "id": "abf0591e-9aac-403a-903a-3617c1f1b444",
+    "description": "Product strategy and roadmap development"
+  },
+  {
+    "id": "e636d8ab-1a0f-496a-8014-10527cc8acf9",
+    "description": "Company's overall strategic decision making"
+  },
+  {
+    "id": "d03ad89d-9b36-41f6-9954-06ce4c633fbb",
+    "description": "Manage and plan product development based on market trends"
+  },
+  {
+    "id": "591062b6-2125-49b3-81d5-6298e6ed4a3e",
+    "description": "Financial Planning & Analysis"
+  },
+  {
+    "id": "a5f2fcd6-b85f-4b86-902f-c19beb6f7bf5",
+    "description": "Drive sales and meet revenue goals"
+  },
+  {
+    "id": "0179df39-7095-4d6b-92ec-976c22e908bd",
+    "description": "Designing product features"
+  },
+  {
+    "id": "35768057-8a3e-4ad8-bd91-ec3aeadb579f",
+    "description": "Product Development and Management"
+  },
+  {
+    "id": "3f5ed07a-aabe-4fd5-88b1-1471342b5e03",
+    "description": "Setting marketing strategy and budget"
+  },
+  {
+    "id": "c27fd052-7b8d-4b11-9f3a-a3f643f90695",
+    "description": "Product planning and execution throughout the Product Lifecycle"
+  },
+  {
+    "id": "52491fe3-0e5a-433f-bcb4-1ba344592e86",
+    "description": "Managing customer relationships and expectations"
+  },
+  {
+    "id": "7c08e089-ffb7-45db-87a0-97a6431c4585",
+    "description": "Overall company performance and profitability"
+  },
+  {
+    "id": "a54205b4-109a-4f7c-ac92-ae5a22f853c2",
+    "description": "Setting company's strategy and vision"
+  },
+  {
+    "id": "8c4bfcd1-d3d0-46b8-9962-344206689250",
+    "description": "Managing company budget"
+  },
+  {
+    "id": "59ffc2f7-b592-4bf3-a481-8998d3fe2331",
+    "description": "Setting the company direction"
+  },
+  {
+    "id": "e779e795-95bf-4fcf-94c0-a7accee55bcd",
+    "description": "Company strategy and vision"
+  },
+  {
+    "id": "2357254d-72b7-4057-a3b8-0a7008032dae",
+    "description": "Product development strategy and planning"
+  },
+  {
+    "id": "2a30eafb-0d67-4457-885f-967569bbc38d",
+    "description": "Brand Awareness & Lead Generation"
+  },
+  {
+    "id": "2e5a02aa-44e3-4183-bdce-7978ce653a9f",
+    "description": "Generating leads"
+  },
+  {
+    "id": "3ef12c1d-478c-41c2-90c3-88f74156060d",
+    "description": "Marketing strategy and campaign development"
+  },
+  {
+    "id": "35ebb03e-825e-445e-804a-7ce927824e73",
+    "description": "Company Strategy Setting"
+  },
+  {
+    "id": "e4bdc771-745b-40ec-b21c-44bd37309308",
+    "description": "Company Strategy and Growth Planning"
+  },
+  {
+    "id": "ce5e8fb8-b143-4c47-8dc2-09dc30d9b596",
+    "description": "Developing sales strategy"
+  },
+  {
+    "id": "d716582c-7b41-43b3-8129-e32784989649",
+    "description": "Closing leads"
+  },
+  {
+    "id": "c238faf6-9fdd-4b4f-9f0b-e716de512373",
+    "description": "Developing products based on market needs and sales feedback"
+  },
+  {
+    "id": "41de53dc-82b3-49ff-95e7-c85843d99f0a",
+    "description": "qualifying and categorizing leads"
+  },
+  {
+    "id": "49642805-1b30-4ff5-8639-f8a8660101af",
+    "description": "assigning leads to sales reps"
+  },
+  {
+    "id": "b37301a0-4ced-4172-8d10-7d452b26b75d",
+    "description": "qualifying prospects for sales"
+  },
+  {
+    "id": "491bbca4-22b2-4e68-bdfc-1a0382317b83",
+    "description": "ensuring meeting attendance"
+  },
+  {
+    "id": "d1a42f4a-156a-490d-ab27-a4cdab7db132",
+    "description": "assigning and distributing leads"
+  },
+  {
+    "id": "2fb34f9e-a4d5-4e9d-b2c4-0e0ad80f8228",
+    "description": "logging and updating crm"
+  },
+  {
+    "id": "c4aa3ede-621c-4516-9ea5-f3e4a119205f",
+    "description": "customizing lead routing"
+  },
+  {
+    "id": "23bd72b2-4be0-4e2d-a5d6-a82f0f5dbb47",
+    "description": "lead assignment and distribution"
+  },
+  {
+    "id": "6b4445b5-afd4-44fe-8a26-73820501b5d6",
+    "description": "client meeting scheduling"
+  },
+  {
+    "id": "d014b3f1-2517-4c90-95c4-604328dd88db",
+    "description": "event planning and management"
+  },
+  {
+    "id": "018e12a6-03e9-4921-b58a-27b25f542094",
+    "description": "sales performance tracking"
+  },
+  {
+    "id": "375fd836-854b-4fe3-9f78-4f4d6a936fff",
+    "description": "crm management"
+  },
+  {
+    "id": "d81d2f58-23a6-499e-8940-c86a090616f0",
+    "description": "lead qualification"
+  },
+  {
+    "id": "86878d3f-8751-4c6d-b42f-545d8b7debb4",
+    "description": "meeting reminder"
+  },
+  {
+    "id": "61ca3bbb-5af1-46ab-9dd5-de8707af0bb6",
+    "description": "prospect assignment"
+  },
+  {
+    "id": "f89b4e54-dfab-4259-894c-ff444867a08e",
+    "description": "event lead conversion"
+  },
+  {
+    "id": "3be7eb9a-835c-482b-b383-46f8ba4a40e1",
+    "description": "meeting logging"
+  },
+  {
+    "id": "0a34cc75-28df-4437-8c87-92d0a611c9b5",
+    "description": "lead qualification and assignment"
+  },
+  {
+    "id": "0ae643d4-21b1-4e52-9684-efe48565664a",
+    "description": "meeting follow-up and management"
+  },
+  {
+    "id": "ef67eeee-387f-4a53-a405-30b72be4e263",
+    "description": "event planning and execution"
+  },
+  {
+    "id": "b4f6834d-cc37-46c8-b7eb-6d5dc0366254",
+    "description": "sales data management and analysis"
+  },
+  {
+    "id": "8d66fc07-bab2-437a-a2e7-3e0049b47530",
+    "description": "qualifying incoming leads"
+  },
+  {
+    "id": "ec27eaef-f317-4ee2-8769-2e4fcfdd81f6",
+    "description": "scheduling meetings with prospects"
+  },
+  {
+    "id": "4261c429-6341-49aa-881e-ef3aa0d9e7fc",
+    "description": "managing event leads"
+  },
+  {
+    "id": "219860e1-8e14-4d96-9ff4-e4c3cba947a5",
+    "description": "monitoring and managing meeting lifecycle"
+  },
+  {
+    "id": "816b6eed-c323-4f31-b151-87e368de0884",
+    "description": "customizing lead routing logic"
+  },
+  {
+    "id": "d9c5005e-7119-49de-9a7e-96790ce25542",
+    "description": "Creating targeted marketing campaigns"
+  },
+  {
+    "id": "890593d1-1d4c-4368-b208-0e15289c7f3f",
+    "description": "Creating and executing marketing strategies to generate leads"
+  },
+  {
+    "id": "f34e6760-8c18-4da2-9d04-4bce840c951e",
+    "description": "Overseeing sales operations and performance"
+  },
+  {
+    "id": "2ed8056e-1aae-46a2-80c1-58e4cc5b3881",
+    "description": "Setting sales targets and ensuring they are met"
+  },
+  {
+    "id": "c8a5450e-e50f-4e91-af23-41537d552434",
+    "description": "Managing sales pipeline"
+  },
+  {
+    "id": "82fdd3c0-67c3-4a41-8439-b640212c6905",
+    "description": "Managing customer relationships post-sale"
+  },
+  {
+    "id": "ac4d3f25-51f6-4331-8b03-0739b7d4a7a4",
+    "description": "Managing sales team and setting targets"
+  },
+  {
+    "id": "4df0a9c6-b394-4574-8252-5bf5eb2cb11c",
+    "description": "Closing deals with potential clients"
+  },
+  {
+    "id": "9fa5cee2-867a-400d-bdf2-bc750b4c9082",
+    "description": "Generating and nurturing leads"
+  },
+  {
+    "id": "c98bec47-f650-42f3-90fb-f01575d04322",
+    "description": "Coordinating with sales team for campaign strategies"
+  },
+  {
+    "id": "5b8c99c3-7661-44a4-a8eb-b877bf48dd57",
+    "description": "Overseeing sales operations and meeting sales targets"
+  },
+  {
+    "id": "bf1f9319-5082-43d2-9e31-297017e7e133",
+    "description": "Company growth strategy"
+  },
+  {
+    "id": "0ed4ea2e-009e-4464-a0cf-751b5e30653a",
+    "description": "Developing marketing strategy"
+  },
+  {
+    "id": "cf6ca12f-1f05-4bb5-920e-776d71bf9c47",
+    "description": "Closing deals"
+  },
+  {
+    "id": "17ebde3a-fccf-48fb-8705-63c1bfae2ab1",
+    "description": "Ensuring customer satisfaction"
+  },
+  {
+    "id": "5c01a60f-1bf2-4c17-bb08-3facb46496f6",
+    "description": "Overseeing sales operations and team performance"
+  },
+  {
+    "id": "c991362c-5cd0-43a8-b178-e4d3c5705c3d",
+    "description": "Overall company management"
+  },
+  {
+    "id": "ba562525-8d95-4389-be2c-4dab719acac3",
+    "description": "Optimizing marketing strategies"
+  },
+  {
+    "id": "8ccd6128-2e20-484b-954c-2fd29c227b40",
+    "description": "Developing marketing strategies and campaigns to generate leads"
+  },
+  {
+    "id": "4c92b5a6-0e07-4a6d-a94b-475a505417d6",
+    "description": "Supply chain management"
+  },
+  {
+    "id": "488d01b4-b30d-4746-b444-49caf20b7da9",
+    "description": "Setting strategic direction and making high-level decisions"
+  },
+  {
+    "id": "5c9a5f5d-0d13-4275-84ad-b819b04bb0e1",
+    "description": "Product development based on revenue"
+  },
+  {
+    "id": "ec44ba87-d758-41b5-9726-2e6aeb12c2f8",
+    "description": "Generating qualified leads for sales"
+  },
+  {
+    "id": "cc45fac1-3177-4b60-8657-6b9f9743332f",
+    "description": "Developing products based on customer feedback"
+  },
+  {
+    "id": "1754e940-57be-4b52-9d48-6d9052c1871e",
+    "description": "Selling product or service to clients"
+  },
+  {
+    "id": "a149ece9-7b24-4b6c-be89-c0936fd7839e",
+    "description": "Lead generation"
+  },
+  {
+    "id": "b426380d-3d33-4a94-9ec9-6581981d236e",
+    "description": "Setting company's strategy and future direction"
+  },
+  {
+    "id": "fed7a187-0fd5-4bc0-8be9-2726c650c9fc",
+    "description": "Financial planning and budget management"
+  },
+  {
+    "id": "cff713f5-d56a-42ff-9187-cb2243ffa0c7",
+    "description": "Maintaining customer satisfaction"
+  },
+  {
+    "id": "5e55f78e-bf7c-425f-8f6a-058f8e55d899",
+    "description": "Maintaining and growing existing customer accounts"
+  },
+  {
+    "id": "32e12775-9936-416d-8ec9-b2453a46c6f4",
+    "description": "Production planning"
+  },
+  {
+    "id": "8f10bace-578b-44e1-a4a4-da0a9024c95e",
+    "description": "Managing and improving product offerings"
+  },
+  {
+    "id": "3f0f32fe-7a08-45f7-9dce-4a96c871d4fd",
+    "description": "Campaign planning"
+  },
+  {
+    "id": "1bac6954-4ed1-43ac-a9ea-b4a3259f2f2e",
+    "description": "Revenue forecasting"
+  },
+  {
+    "id": "2d0a7aa3-8fe0-4328-8b19-14500f150061",
+    "description": "Budgeting and financial forecasting"
+  },
+  {
+    "id": "b5346915-49fd-4b23-9980-979723e8a7fa",
+    "description": "Technology strategy and roadmap"
+  },
+  {
+    "id": "1742d6b5-ad77-44f5-b047-b5e4d38e2ad2",
+    "description": "Marketing planning"
+  },
+  {
+    "id": "ab54d3f9-33f2-4172-b01a-fe4190ebc64e",
+    "description": "Operational planning and management"
+  },
+  {
+    "id": "07ef0005-f793-4391-8a04-2dc73be33f90",
+    "description": "Overseeing company performance"
+  },
+  {
+    "id": "f3427824-72e7-45ff-a8a2-b41b581f9d91",
+    "description": "Managing customer relationships and satisfaction"
+  },
+  {
+    "id": "d940ffff-ec0d-4e04-9fcb-0025de0d85b7",
+    "description": "Budget planning and control"
+  },
+  {
+    "id": "98edb496-4661-4130-a2dc-c24032aad44d",
+    "description": "Setting company strategy and overseeing all departments"
+  },
+  {
+    "id": "ed4323d5-0df4-4ab6-a4c2-a64919ec639a",
+    "description": "Managing sales team and meeting sales targets"
+  },
+  {
+    "id": "48d76276-09e1-466b-8b5c-0b1e48e3c951",
+    "description": "Maintaining customer relationships"
+  },
+  {
+    "id": "3a5c763a-aa5c-493f-ae10-c0340c1311dd",
+    "description": "Monitoring and improving campaign performance"
+  },
+  {
+    "id": "fee38a89-798e-42e1-a78e-fc025f165ad6",
+    "description": "Analyzing campaign performance"
+  },
+  {
+    "id": "461c6b7c-1d05-4403-8b45-a1da59f51c7f",
+    "description": "Analyzing the effectiveness of marketing strategies"
+  },
+  {
+    "id": "566ca3af-909b-4b79-9ded-0c1909d66d33",
+    "description": "Financial planning"
+  },
+  {
+    "id": "dbd209e1-e34a-4a15-ae93-100d2317de7e",
+    "description": "Managing customer complaints and issues"
+  },
+  {
+    "id": "b3974305-3ab4-43ec-b323-e203c7f8a7d9",
+    "description": "Budget forecasting"
+  },
+  {
+    "id": "640b63ea-e3f5-4999-9e07-84191edc8c79",
+    "description": "Developing and managing product portfolio"
+  },
+  {
+    "id": "48663b14-0625-423e-963d-61a36858e5b0",
+    "description": "Setting marketing strategy"
+  },
+  {
+    "id": "829c2190-c9db-48dd-8dff-33e1ca7c28c2",
+    "description": "Addressing customer queries"
+  },
+  {
+    "id": "a280f709-0045-44e9-840e-29fa2073c98f",
+    "description": "Addressing customer queries and complaints"
   }
 ]

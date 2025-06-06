@@ -23,136 +23,80 @@ PAIN_CANONICAL_MAP = load_canonical_map(CANONICAL_PATH / "pain_to_canonical.json
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-def load_graph_persona_combos():
-    print("running load graph persona combos")
-    personas = load_json(PERSONA_PATH)
-    jobs = load_json(JOB_PATH)
-    pains = load_json(PAIN_PATH)
-    edges = load_json(EDGE_PATH)
+import json
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
-    
-    
-    job_map = {j["id"]: j["description"] for j in jobs}
-    pain_map = {p["id"]: p["text"] for p in pains}
-
-    
-
-    # Collect personas for canonicalization
-    persona_cache = [
-        {"title": persona["title"], "department": persona.get("department", ""), "seniority": persona.get("seniority", "")}
-        for persona in personas
-    ]
-    canonical_personas = canonicalize_persona(persona_cache)
-    
-
-    combo_entries = []
-
-    for persona in personas:
-        pid = persona["id"]
-        persona_name = persona["title"]
-        dept = persona.get("department", "")
-        seniority = persona.get("seniority", "")
-
-        # Canonicalize persona
-        raw_persona = {"title": persona_name, "department": dept, "seniority": seniority}
-        raw_persona_key = tuple(sorted(raw_persona.items()))  # Option 2: Use tuple representation
-        canonical_persona = canonical_personas.get(raw_persona_key, raw_persona)
-        
-        # Jobs linked to persona
-        job_edges = [e for e in edges if e["target"] == pid and e["type"] == "performed_by"]
-        for je in job_edges:
-            job_id = je["source"]
-            job_text = job_map.get(job_id, "")
-
-            canonical_job = JOB_CANONICAL_MAP.get(job_text, job_text)
-
-            # Pains linked to job
-            pain_edges = [e for e in edges if e["target"] == job_id and e["type"] == "addresses"]
-            for pe in pain_edges:
-                pain_id = pe["source"]
-                pain_text = pain_map.get(pain_id, "")
-
-                canonical_pain = PAIN_CANONICAL_MAP.get(pain_text, pain_text)
-
-                combo_entries.append({
-                    "persona": canonical_persona["title"],
-                    "department": canonical_persona["department"],
-                    "seniority": canonical_persona["seniority"],
-                    "original_job": job_text,
-                    "original_pain": pain_text,
-                    "canonical_job": canonical_job,
-                    "canonical_pain": canonical_pain,
-                    "combo_text": f"{canonical_job}. Pain: {canonical_pain}",
-                    "source": "openai"
-                })
-    return combo_entries
+from backend.utils.graph_base.edges.edge_manager import add_edge
 
 
-def match_capabilities_to_canonical_personas(capabilities: list[dict], threshold=0.7):
-    if not capabilities:
-        print("❌ No capabilities provided.")
-        return []
+def match_capabilities_to_canonical_personas(capabilities: list[dict], base_graph, threshold=0.7):
+    results = []
+    for cap in capabilities:
+        cap_name = cap.get("name", "").strip().lower()
+        cap_desc = cap.get("description", "").strip().lower()
+        # Try both (name, description) and just name for flexibility
+        cap_id = base_graph.node_registry.get(("capability", (cap_name, cap_desc))) \
+            or base_graph.node_registry.get(("capability", cap_name))
+        if not cap_id:
+            continue
 
-    combo_entries = load_graph_persona_combos()
-    if not combo_entries:
-        print("❌ No persona/job/pain graph data found.")
-        return []
+        # Find all pain nodes this capability solves
+        for edge in base_graph.graph_edges:
+            if edge.get("source") == cap_id and edge.get("type") == "solves":
+                pain_id = edge.get("target")
+                relevance = edge.get("weight", 0.5)
+                if relevance < threshold:
+                    continue
+                pain_value = base_graph.get_node_by_id(pain_id)
+                pain_text = pain_value["value"] if pain_value else ""
 
-    cap_texts = [f'{c["name"]}: {c["description"]}' for c in capabilities if c.get("name") and c.get("description")]
-    cap_vecs = model.encode(cap_texts)
+                 # --- NEW: Find pain triggers for this pain ---
+                pain_triggers = []
+                for trigger_edge in base_graph.graph_edges:
+                    if trigger_edge.get("source") == pain_id and trigger_edge.get("type") == "triggered_by":
+                        trigger_id = trigger_edge.get("target")
+                        trigger_value = base_graph.get_node_by_id(trigger_id)
+                        if trigger_value:
+                            pain_triggers.append(trigger_value["value"])
+                # If only one trigger, just use the string; else, use the list
+                pain_trigger = pain_triggers[0] if len(pain_triggers) == 1 else pain_triggers
 
-    combo_texts = [e["combo_text"] for e in combo_entries]
-    combo_vecs = model.encode(combo_texts)
+                
 
-    sim_matrix = cosine_similarity(cap_vecs, combo_vecs)  # shape: (cap, combos)
+                # Find all jobs addressed by this pain
+                for job_edge in base_graph.graph_edges:
+                    if job_edge.get("source") == pain_id and job_edge.get("type") == "addresses":
+                        job_id = job_edge.get("target")
+                        job_value = base_graph.get_node_by_id(job_id)
+                        job_text = job_value["value"] if job_value else ""
 
-    # Compute max similarity per combo to find best matching capability
-    max_relevance = sim_matrix.max(axis=0)
-    best_cap_indices = sim_matrix.argmax(axis=0)
 
-    for i, entry in enumerate(combo_entries):
-        best_cap_idx = best_cap_indices[i]
-        entry["capability"] = capabilities[best_cap_idx]["name"]
-
-        # Extract the similarity score for this capability-pain combination
-        similarity_relevance = max_relevance[i]
-
-        # Determine the weight for the edge
-        if entry.get("source") == "openai":
-            weight = float(max(similarity_relevance, 0.75))  # OpenAI responses get a minimum weight of 0.75
-        else:
-            weight = float(similarity_relevance)  # Use the similarity score directly for non-OpenAI sources
-        # Add the edge to the graph with the calculated weight
-        add_edge(
-            source_id=entry["canonical_pain"],
-            target_id=capabilities[best_cap_idx]["name"],
-            edge_type="solves",
-            weight=weight
-        )
-
-        # Assign the score to the entry for ranking purposes
-        entry["relevance"] = round(float(similarity_relevance), 3)
-        
-    results = [e for e in combo_entries if e["relevance"] >= threshold]
+                        # Find all personas who perform this job
+                        for persona_edge in base_graph.graph_edges:
+                            if persona_edge.get("source") == job_id and persona_edge.get("type") == "performed_by":
+                                persona_id = persona_edge.get("target")
+                                persona_value = base_graph.get_node_by_id(persona_id)
+                                if persona_value and isinstance(persona_value["value"], tuple):
+                                    title, seniority, department = persona_value["value"]
+                                else:
+                                    title, seniority, department = "", "", ""
+                                results.append({
+                                    "persona": {
+                                        "title": title,
+                                        "department": department,
+                                        "seniority": seniority
+                                    },
+                                    "job": job_text,
+                                    "pain": pain_text,
+                                    "capability": cap.get("name"),
+                                    "relevance": relevance,
+                                    "source": edge.get("source", "graph"),
+                                    "last_updated": edge.get("last_updated", datetime.utcnow().isoformat()),
+                                    "pain_trigger": pain_trigger
+                                })
+    # Optionally sort and filter as before
+    results = [e for e in results if e["relevance"] >= threshold]
     results.sort(key=lambda x: x["relevance"], reverse=True)
-    for entry in results:
-        persona = entry.get("persona", "Unknown Persona")
-        if isinstance(persona, str):
-            # Convert string persona to dictionary format
-            entry["persona"] = {
-                "title": persona,
-                "department": entry.get("department", "Unknown Department"),
-                "seniority": entry.get("seniority", "Unknown Seniority")
-            }
-    
+    print("Relevance Results generated for:", len(results))
     return results
-
-
-def extract_top_personas(match_results: list[dict], threshold=0.05):
-    seen = {}
-    for entry in match_results:
-        name = entry["persona"]
-        relevance = entry["relevance"]
-        if relevance >= threshold:
-            seen[name] = max(seen.get(name, 0), relevance)
-    return sorted([{"persona": k, "relevance": v} for k, v in seen.items()], key=lambda x: x["relevance"], reverse=True)

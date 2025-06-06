@@ -9,6 +9,10 @@ from backend.database import get_db
 from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
 from backend.utils.graph_base.graph import Graph
 from backend.utils.inference.hop_plus_agent import infer_upstream_with_rules
+from backend.utils.dev_environment.graph_loader import load_graph_from_folder
+
+# Hardcoded path to graph data folder - to be updated in production
+GRAPH_DATA_PATH = "backend/utils/graph_base/graph_data"
 
 
 router = APIRouter()
@@ -76,7 +80,13 @@ async def analyze_deep(payload: dict, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        result = infer_with_rules_then_fallback(summary, capabilities)
+        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        base_graph = Graph(
+            node_registry=node_registry,
+            graph_edges=graph_edges,
+            edge_weights=edge_weights
+        )
+        result = infer_with_rules_then_fallback(summary, capabilities, base_graph=base_graph)
         # 💾 Save value prop for company
         db = SessionLocal()
         save_company_value_prop(db, company_id, url, summary, capabilities)
@@ -108,7 +118,15 @@ async def analyze_hop_plus(payload: dict, request: Request):
 
         db = SessionLocal()
         hop_0_graph = payload.get("results", [])
-        hop_plus_graph = Graph()
+        print("Starting Hop0 graph load")
+        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        
+        hop_plus_graph = Graph(
+            node_registry=node_registry,
+            graph_edges=graph_edges,
+            edge_weights=edge_weights
+        )
+        
         hop_plus_results = infer_upstream_with_rules(
             base_nodes=hop_0_graph,
             graph=hop_plus_graph,

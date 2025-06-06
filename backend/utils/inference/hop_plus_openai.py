@@ -17,7 +17,6 @@ def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
           "seniority": "..."
         },
         "job": "...",
-        "job_criticality": "High",
         "impact":0.5,
         "pain": "...",
         "pain_trigger": "Volume of incoming leads"
@@ -35,7 +34,6 @@ def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
         - Their job
         - The pain they would experience
         - How much does failing the original job impact this pain (Scale: 0.0 to 1.0)
-        - How critical this job is to their role (Scale: 0.0 to 1.0)
         - What attribute must scale in volume, frequency or complexity for this new pain to become intolerable
 
         Return your output in JSON format as a list of entries:
@@ -48,7 +46,6 @@ def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
             "seniority": "..."
             }},
             "dependent_job": "...",
-            "dependent_job_criticality": "0.5",
             "dependent_pain": "...",
             "dependent_pain_impact": "0.5",
             "dependent_pain_trigger": "Volume of incoming leads"

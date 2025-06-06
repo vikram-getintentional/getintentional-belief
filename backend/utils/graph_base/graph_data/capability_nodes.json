@@ -198,5 +198,45 @@
     "id": "82d0fbd0-14c4-4dc8-ad5e-10e828cdf163",
     "name": "AI-Enabled",
     "description": ""
+  },
+  {
+    "id": "5fa208d5-ec3c-48f7-9631-772c5bbc95c9",
+    "name": "Automated Lead Qualification",
+    "description": ""
+  },
+  {
+    "id": "ef42c996-f31c-4520-a999-da685cf4e15c",
+    "name": "Meeting Booking Automation",
+    "description": ""
+  },
+  {
+    "id": "1ada076e-23fe-4fe0-b8a8-412e3c95f8d6",
+    "name": "Prospect Routing",
+    "description": ""
+  },
+  {
+    "id": "49bda5b6-e983-43bb-adb3-c15da123cacf",
+    "name": "Event Scheduling",
+    "description": ""
+  },
+  {
+    "id": "980a61af-82c4-4b68-a050-5451bd84bb9f",
+    "name": "Meeting Reminders",
+    "description": ""
+  },
+  {
+    "id": "ad591039-3058-4f72-a6cb-7e28fd3f59b9",
+    "name": "Real-Time Visibility",
+    "description": ""
+  },
+  {
+    "id": "f83e2b97-4254-44a1-a6db-b4d020f51e16",
+    "name": "CRM Integration",
+    "description": ""
+  },
+  {
+    "id": "ab74e011-a630-4655-aa3c-463dc8dddec4",
+    "name": "Customizable Routing Logic",
+    "description": ""
   }
 ]
