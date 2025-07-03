@@ -32,69 +32,83 @@ from backend.utils.graph_base.edges.edge_manager import add_edge
 
 def match_capabilities_to_canonical_personas(capabilities: list[dict], base_graph, threshold=0.7):
     results = []
+    base_graph.node_registry = {
+        (key[0].lower(), key[1].lower() if isinstance(key[1], str) else key[1]): value
+        for key, value in base_graph.node_registry.items()
+    }
     for cap in capabilities:
         cap_name = cap.get("name", "").strip().lower()
         cap_desc = cap.get("description", "").strip().lower()
         # Try both (name, description) and just name for flexibility
-        cap_id = base_graph.node_registry.get(("capability", (cap_name, cap_desc))) \
-            or base_graph.node_registry.get(("capability", cap_name))
+        cap_id = base_graph.get_nodes_list("capability", {"name": cap_name, "description": cap_desc}) 
         if not cap_id:
+            print(f"Capability '{cap_name}' not found in graph.")
             continue
+        else:
+            print(f"Found capability '{cap_name}' with ID {cap_id} in graph.")
+        
 
         # Find all pain nodes this capability solves
-        for edge in base_graph.graph_edges:
-            if edge.get("source") == cap_id and edge.get("type") == "solves":
-                pain_id = edge.get("target")
-                relevance = edge.get("weight", 0.5)
-                if relevance < threshold:
-                    continue
-                pain_value = base_graph.get_node_by_id(pain_id)
-                pain_text = pain_value["value"] if pain_value else ""
+        pain_ids = base_graph.get_source_nodes_by_target_and_type(cap_id, "solves")
+        if not pain_ids:
+            print(f"No pains found for capability '{cap_name}'.")
+            continue
+        for pain_id in pain_ids:
+            pain = base_graph.get_node_by_id(pain_id)
+            pain_text = pain["text"]
+            relevance = pain.get("weight", 0.5)
+            if relevance < threshold:
+                continue
 
-                 # --- NEW: Find pain triggers for this pain ---
-                pain_triggers = []
-                for trigger_edge in base_graph.graph_edges:
-                    if trigger_edge.get("source") == pain_id and trigger_edge.get("type") == "triggered_by":
-                        trigger_id = trigger_edge.get("target")
-                        trigger_value = base_graph.get_node_by_id(trigger_id)
-                        if trigger_value:
-                            pain_triggers.append(trigger_value["value"])
-                # If only one trigger, just use the string; else, use the list
-                pain_trigger = pain_triggers[0] if len(pain_triggers) == 1 else pain_triggers
-
+            # --- NEW: Find pain triggers for this pain ---
+            pain_trigger_ids = base_graph.get_source_nodes_by_target_and_type(pain_id, "triggered_by")
+            if not pain_trigger_ids:
+                print(f"No triggers found for pain '{pain_text}'.")
+                continue
+            else:
+                for pain_trigger_id in pain_trigger_ids:
+                    pain_trigger = base_graph.get_node_by_id(pain_trigger_id)
+                    if pain_trigger:
+                        pain_trigger_text = pain_trigger["text"]
+                    
                 
 
-                # Find all jobs addressed by this pain
-                for job_edge in base_graph.graph_edges:
-                    if job_edge.get("source") == pain_id and job_edge.get("type") == "addresses":
-                        job_id = job_edge.get("target")
-                        job_value = base_graph.get_node_by_id(job_id)
-                        job_text = job_value["value"] if job_value else ""
-
-
-                        # Find all personas who perform this job
-                        for persona_edge in base_graph.graph_edges:
-                            if persona_edge.get("source") == job_id and persona_edge.get("type") == "performed_by":
-                                persona_id = persona_edge.get("target")
-                                persona_value = base_graph.get_node_by_id(persona_id)
-                                if persona_value and isinstance(persona_value["value"], tuple):
-                                    title, seniority, department = persona_value["value"]
-                                else:
-                                    title, seniority, department = "", "", ""
-                                results.append({
-                                    "persona": {
-                                        "title": title,
-                                        "department": department,
-                                        "seniority": seniority
-                                    },
-                                    "job": job_text,
-                                    "pain": pain_text,
-                                    "capability": cap.get("name"),
-                                    "relevance": relevance,
-                                    "source": edge.get("source", "graph"),
-                                    "last_updated": edge.get("last_updated", datetime.utcnow().isoformat()),
-                                    "pain_trigger": pain_trigger
-                                })
+            # Find all jobs addressed by this pain
+            job_ids = base_graph.get_target_nodes_by_source_and_type(pain["id"], "addresses")
+            if not job_ids:
+                print(f"No jobs found for pain '{pain_text}'.")
+                continue
+            for job_id in job_ids:
+                job = base_graph.get_node_by_id(job_id)
+                job_description = job["description"]
+                
+                # Find all personas who perform this job
+                persona_ids = base_graph.get_source_nodes_by_target_and_type(job['id'], "performed_by")
+                for persona_id in persona_ids:
+                    persona = base_graph.get_node_by_id(persona_id)
+                    if not persona:
+                        print(f"No persona found for job '{job_description}'.")
+                        continue
+                    persona_value = persona["value"]
+                    if persona_value and isinstance(persona_value["value"], tuple):
+                        title, seniority, department = persona_value["value"]
+                    else:
+                        title, seniority, department = "", "", ""
+                    results.append({
+                        "persona": {
+                            "title": title,
+                            "department": department,
+                            "seniority": seniority
+                        },
+                        "job": job_text,
+                        "pain": pain_text,
+                        "capability": cap.get("name"),
+                        "relevance": relevance,
+                        "source": cap.get("source", "graph"),
+                        "last_updated": cap.get("last_updated", ""),
+                        "pain_trigger": pain_trigger
+                    })
+                    print(f"Matched persona '{title}' with job '{job_description}' and pain '{pain_text}' for capability '{cap_name}'.")
     # Optionally sort and filter as before
     results = [e for e in results if e["relevance"] >= threshold]
     results.sort(key=lambda x: x["relevance"], reverse=True)

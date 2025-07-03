@@ -1,7 +1,7 @@
 import uuid
 import json
 from backend.utils.graph_base.graph_utils.json_store import load_json, save_json
-from datetime import datetime
+from datetime import datetime, timezone
 
 EDGE_PATH = "backend/utils/graph_base/graph_data/graph_edges.json"
 
@@ -43,6 +43,8 @@ def calculate_edge_weight(edge_type, source=None, relevance=None):
         return 1.0  # Default weight for persona-job edges
     elif edge_type == "addresses":  # Job-Pain
         return 1.0  # Default weight for job-pain edges
+    elif edge_type == "offered_by":  # Product-Capability
+        return 1.0  # Default weight for product-capability edges
     elif edge_type == "solves":  # Pain-Capability
         if relevance is not None:
             return relevance

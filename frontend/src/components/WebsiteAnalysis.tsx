@@ -1,48 +1,48 @@
-import { useEffect, useState } from 'react';
-import PersonaBuilder from './PersonaBuilder';
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import PersonaBuilder from "./PersonaBuilder";
 import SpinnerIcon from "../utils/SpinnerIcon";
-
-
+import debounce from "lodash.debounce"; // Install lodash.debounce via npm or yarn
 
 type Props = {
-    url: string;
-    scrapedText: string;
-    plgCta?: boolean;
-    footerFeatures?: string[];
-};
-
-type OrgTypes = {
-  industries: string[];
-  regions: string[];
-  revenue_ranges: string[];
+  url: string;
+  scrapedText: string;
+  plgCta?: boolean;
+  footerFeatures?: string[];
 };
 
 type Capability = {
-    name: string;
-    description: string;
-  };
+  node_id?: string;
+  name: string;
+  description: string;
+};
 
-
-  
 const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = [] }: Props) => {
-  const [personaSuggestions, setPersonaSuggestions] = useState<PersonaPainCombo[]>([]);
-  const [summary, setSummary] = useState('');
+  const [personaSuggestions, setPersonaSuggestions] = useState([]);
+  const [summary, setSummary] = useState("");
   const [capabilities, setCapabilities] = useState<Capability[]>([]);
-  const [originalSummary, setOriginalSummary] = useState('');
-  const [originalCapabilities, setOriginalCapabilities] = useState<Capability[]>([]);
-
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [edited, setEdited] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
+  const [editedSummary, setEditedSummary] = useState(false);
+  const [editedCapabilities, setEditedCapabilities] = useState<Capability[]>([]);
+  const [newCapabilities, setNewCapabilities] = useState<Capability[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false); 
+  const [productId, setProductId] = useState<string | null>(null);
+  const [companyIdLoading, setCompanyIdLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false); // Define isGenerating state
+  const location = useLocation();
 
+  useEffect(() => {
+    // Save when the route changes
+    return () => {
+      handleSave();
+    };
+    // Only run when the location changes
+  }, [location]);
 
+  // Fetch company ID
   useEffect(() => {
     const token = localStorage.getItem("token");
     fetch("http://localhost:8000/me", {
@@ -51,61 +51,210 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
       .then((res) => res.json())
       .then((data) => {
         setCompanyId(data.company_id);
-        setUserEmail(data.email || "unknown");
+        setCompanyIdLoading(false);
         console.log("✅ Company ID set:", data.company_id);
+      })
+      .catch(() => {
+        console.error("❌ Failed to fetch company ID.");
+        setCompanyIdLoading(false);
       });
-
   }, []);
 
+  // Analyze website content
   useEffect(() => {
-    if (!scrapedText || !url) return;
+    if (companyIdLoading || !scrapedText || !url || !companyId) return;
 
     setLoading(true);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     console.log("🚀 Sending to /analyze:", { companyId, scrapedText });
-    fetch('http://localhost:8000/analyze', {
-      method: 'POST',
+    fetch("http://localhost:8000/analyze", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        url: url,
+        url,
         company_id: companyId,
         text: scrapedText,
         plg_cta_found: plgCta,
         footer_features: footerFeatures,
       }),
     })
-    .then((res) => res.json())
-    .then((data) => {
-    setSummary(data.summary || '');
-    setCapabilities(data.capabilities || []);
-    setOriginalSummary(data.summary || '');
-    setOriginalCapabilities(data.capabilities || []);
-    setLoading(false);
-    })
-    .catch(() => {
-    setError('Failed to analyze content.');
-    setLoading(false);
-    });
-  }, [scrapedText, url, companyId]);
+      .then((res) => res.json())
+      .then((data) => {
+        setProductId(data.product_node_id || "");
+        setSummary(data.summary || "");
+        setCapabilities(data.capabilities || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to analyze content.");
+        setLoading(false);
+      });
+  }, [scrapedText, url, companyId, companyIdLoading]);
 
-  const handleSave = () => {
-    setSaved(true);
-    const token = localStorage.getItem('token');  
-
-    setTimeout(() => setSaved(false), 1500);
+  // Handle summary change
+  const handleSummaryChange = (value: string) => {
+    setSummary(value);
+    setEditedSummary(true);
+    //debouncedSave();
   };
 
-  const handleAnalyzeClick = () => {
+  // Handle capability change
+  const handleCapabilityChange = (index: number, field: "name" | "description", value: string) => {
+    const updated = [...capabilities];
+    updated[index][field] = value;
+    setCapabilities(updated);
+
+    const edited = [...editedCapabilities];
+    const capNodeId = updated[index].node_id;
+    const existingIdx = edited.findIndex((cap) => cap.node_id === capNodeId);
+    if (existingIdx !== -1) {
+      edited[existingIdx] = { ...updated[index] };
+    } else {
+      edited.push({ ...updated[index] });
+    }
+    setEditedCapabilities(edited);
+
+    //debouncedSave();
+  };
+
+  // Handle adding a new capability
+  const handleAddCapability = () => {
+    const newCapability = { name: "", description: "" };
+    setCapabilities([...capabilities, newCapability]);
+    setNewCapabilities([...newCapabilities, newCapability]);
+  };
+
+  // Save changes
+  const handleSave = () => {
+    const token = localStorage.getItem("token");
+
+    if (editedSummary) {
+      console.log("🚀 Sending summary update:", { summary });
+      fetch("http://localhost:8000/save-summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          company_id: companyId,
+          product_id: productId,
+          summary,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ Summary saved:", data);
+          setEditedSummary(false);
+        })
+        .catch((err) => {
+          console.error("❌ Summary save failed:", err);
+        });
+    }
+
+    if (editedCapabilities.length > 0) {
+      console.log("🚀 Sending capability updates:", { capabilities: editedCapabilities });
+      fetch("http://localhost:8000/update-capabilities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          company_id: companyId,
+          product_id: productId,
+          capabilities: editedCapabilities.map(cap => ({
+            node_id: cap.node_id, // must be present!
+            name: cap.name,
+            description: cap.description
+          })),
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ Capabilities updated:", data);
+          setEditedCapabilities([]);
+        })
+        .catch((err) => {
+          console.error("❌ Capability update failed:", err);
+        });
+    }
+
+    if (newCapabilities.length > 0) {
+      console.log("🚀 Sending new capabilities:", { capabilities: newCapabilities });
+      fetch("http://localhost:8000/add-capabilities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          company_id: companyId,
+          product_id: productId,
+          capabilities: newCapabilities,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ New capabilities added:", data);
+          setCapabilities(prev =>
+            prev.map(cap =>
+              // If cap has no node_id, try to match by name/description and update with node_id from backend
+              cap.node_id
+                ? cap
+                : data.capabilities.find(
+                    c => c.name === cap.name && c.description === cap.description
+                  ) || cap
+            )
+          );
+          setNewCapabilities([]); // Clear new capabilities if you track them separately
+        })
+        .catch((err) => {
+          console.error("❌ New capability save failed:", err);
+        });
+    }
+  };
+
+  // Save changes before exiting
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      handleSave();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  // Debounce the save function
+  const debouncedSave = debounce(() => {
+    console.log("🔄 Autosave triggered");
+    handleSave();
+  }, 1000);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch("http://localhost:8000/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setCompanyId(data.company_id);
+        console.log("✅ Company ID set:", data.company_id);
+      });
+  }, []);
+
+  /*const handleAnalyzeClick = () => {
     const token = localStorage.getItem("token");
     setIsGenerating(true);
   
     // 🛡️ Prevent running before company_id is ready
-    if (!companyId) {
-      alert("Company ID is not yet available. Please wait a moment and try again.");
-      console.error("❌ Cannot run analysis without company_id.");
+    if (!productId) {
+      alert("Product ID is not yet available. Please wait a moment and try again.");
+      console.error("❌ Cannot run analysis without product_id.");
       setIsGenerating(false);
       return;
     }
@@ -117,13 +266,7 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        company_id: companyId,
-        url,
-        summary,
-        capabilities,
-        texT: scrapedText,
-        plg_cta_found: plgCta,
-        footer_features: footerFeatures,
+        product_id: productId,
       }),
     })
       .then((res) => res.json())
@@ -145,16 +288,8 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
         alert("An unexpected error occurred while generating analysis.");
         setIsGenerating(false);
       });
-      
-  };
-  
+  };*/
 
-  const handleCapabilityChange = (index: number, value: string) => {
-    const updated = [...capabilities];
-    updated[index] = value;
-    setCapabilities(updated);
-    setEdited(true);
-  };
 
   return (
     <div className="bg-white rounded-xl shadow p-6 space-y-4">
@@ -167,10 +302,8 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
             <h3 className="text-lg font-semibold">Value Prop Summary</h3>
             <textarea
               value={summary}
-              onChange={(e) => {
-                setSummary(e.target.value);
-                setEdited(true);
-              }}
+              onChange={(e) => handleSummaryChange(e.target.value)}
+              onBlur={handleSave}
               rows={4}
               className="bg-transparent text-md font-normal text-indigo-700 w-full focus:outline-none focus:ring-0 border-none p-0 m-0"
             />
@@ -184,22 +317,14 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
                         <input
                             type="text"
                             value={cap.name}
-                            onChange={(e) => {
-                            const updated = [...capabilities];
-                            updated[idx].name = e.target.value;
-                            setCapabilities(updated);
-                            setEdited(true);
-                            }}
+                            onChange={(e) => handleCapabilityChange(idx, "name", e.target.value)}
+                            onBlur={handleSave}
                             className="w-full text-indigo-700 font-semibold bg-transparent border-b border-gray-300 focus:outline-none"
                         />
                         <textarea
                             value={cap.description}
-                            onChange={(e) => {
-                            const updated = [...capabilities];
-                            updated[idx].description = e.target.value;
-                            setCapabilities(updated);
-                            setEdited(true);
-                            }}
+                            onChange={(e) => handleCapabilityChange(idx, "description", e.target.value)}
+                            onBlur={handleSave}
                             rows={2}
                             className="w-full text-sm text-gray-600 bg-transparent border-none focus:outline-none"
                         />
@@ -208,49 +333,13 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
             </ul>
 
             <button
-              onClick={() => {
-                setCapabilities([...capabilities, { name: '', description: '' }]);
-                setEdited(true);
-              }}
+              onClick={handleAddCapability}
               className="mt-2 text-blue-600 hover:underline text-sm"
             >
               + Add Capability
             </button>
           </div>
 
-          {!showAdvanced && (
-            <button
-              onClick={handleAnalyzeClick}
-              disabled={isGenerating}
-              className={`px-4 py-2 rounded text-white flex items-center gap-2 ${
-                isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
-            >
-              {isGenerating ? <><SpinnerIcon /> Analyzing...</> : "Get Primary Personas"}
-            </button>
-          )}
-
-          {saved && <p className="text-green-600 text-sm">Insights saved!</p>}
-          
-
-          {showAdvanced && (
-            <PersonaBuilder
-                url={url}
-                summary={summary}
-                capabilities={capabilities}
-                userEmail={userEmail}
-                initialSuggestions={personaSuggestions}
-        
-                onSave={(finalCombos) => {
-                    console.log("✅ Final approved combos:", finalCombos);
-                    setSaved(true);
-                    setTimeout(() => setSaved(false), 2000);
-                }}
-                onComplete={() => {
-                console.log("✅ Persona + pain analysis complete");
-                }}
-            />
-            )}  
 
 
         </>

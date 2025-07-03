@@ -83,9 +83,31 @@ def is_sparse_results(relevance_results, base_graph):
 
 
 # 🧠 Rule-based first, fallback to 2-step OpenAI reasoning
-def infer_with_rules_then_fallback(summary, capabilities, force_openai=False, retry_depth=0, base_graph=None) -> dict:
+def infer_with_rules_then_fallback(product_id, force_openai=False, retry_depth=0, base_graph=None) -> dict:
     print("Starting inference loop with retry depth:", retry_depth)
     MAX_RETRY_DEPTH = 2
+
+    product_node = base_graph.get_node_by_id(product_id)
+    if not product_node:
+        raise ValueError("Product node not found.")
+    summary = product_node.get("summary")
+    capability_ids = base_graph.get_target_nodes_by_source_and_type(product_id, "offered_by")
+    capabilities = [
+        base_graph.get_node_by_id(cid)
+        for cid in capability_ids
+        if base_graph.get_node_by_id(cid)
+    ]
+
+    # Add a rule here to check if summary and capabilities are empty. If empty we will prompt the frontend for the user to run value prop again.
+    if not summary or not capabilities:
+        print("⚠️ Summary or capabilities are empty. Cannot proceed with inference.")
+        return {
+            "capability_map": [],
+            "personas": [],
+            "aggregated_personas": [],
+            "source": "empty",
+            "error": "Summary or capabilities are empty."
+        } 
 
     # Filter valid capabilities
     capabilities = [c for c in capabilities if c.get("name") and c.get("description")]
@@ -154,27 +176,56 @@ def run_two_step_reasoning(summary, capabilities, retry_depth=0, dump_path=None)
             print("🧠 [GPT] Generating capability map...")
             gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities)
             flattened_capability_map = []
+            # Step 1: Collect all relevance scores for each (pain, capability) pair
+            pain_capability_scores = {}  # (pain, capability) -> list of scores
+            pain_capability_jobs_personas = {}  # (pain, capability) -> list of (job, persona, pain_trigger, cap_desc)
+
             for capability_entry in gpt_output:
                 capability = capability_entry.get("capability", "Unknown Capability")
                 cap_desc = capability_entry.get("description", "")
                 for pain_entry in capability_entry.get("pains", []):
                     pain = pain_entry.get("pain", "Unknown Pain")
                     pain_trigger = pain_entry.get("pain_trigger", "")
-                    relevance = float(pain_entry.get("relevance", 0.5))
+                    relevance = pain_entry.get("relevance", 0.0)
+                    if isinstance(relevance, list):
+                        scores = [float(r) for r in relevance]
+                    else:
+                        scores = [float(relevance)]
+                    key = (pain, capability)
+                    if key not in pain_capability_scores:
+                        pain_capability_scores[key] = []
+                    if key not in pain_capability_jobs_personas:
+                        pain_capability_jobs_personas[key] = []
+                    pain_capability_scores[key].extend(scores)
                     for job_entry in pain_entry.get("jobs", []):
                         job = job_entry.get("description", "Unknown Job")
                         for persona in job_entry.get("personas", []):
-                            flattened_capability_map.append({
-                                "capability": capability,
-                                "capability_description": cap_desc,
-                                "pain": pain,
-                                "pain_trigger": pain_trigger,
+                            pain_capability_jobs_personas[key].append({
                                 "job": job,
                                 "persona": persona,
-                                "relevance": relevance,
+                                "pain_trigger": pain_trigger,
+                                "capability_description": cap_desc,
+                                "capability": capability,
                                 "source": "openai"
                             })
-
+        # Step 2: For each pair, take max score and flatten
+        flattened_capability_map = []
+        for (pain, capability), scores in pain_capability_scores.items():
+            if not scores:
+                continue
+            max_score = max(scores)
+            if max_score > 0.0:
+                for entry in pain_capability_jobs_personas[(pain, capability)]:
+                    flattened_capability_map.append({
+                        "capability": capability,
+                        "capability_description": entry.get("capability_description", ""),
+                        "pain": pain,
+                        "pain_trigger": entry.get("pain_trigger", ""),
+                        "job": entry.get("job", ""),
+                        "persona": entry.get("persona", ""),
+                        "relevance": max_score,
+                        "source": "openai"
+                    })
         # Step 3: Normalize and canonicalize the capability map
         print("📊 [Graph] Canonicalizing capability map...")
         capability_map = convert_rule_matches_to_capability_map(flattened_capability_map)

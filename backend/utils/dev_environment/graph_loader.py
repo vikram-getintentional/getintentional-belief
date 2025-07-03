@@ -10,6 +10,7 @@ def load_graph_from_folder(folder_path: str):
     for fname in os.listdir(folder_path):
         if fname.endswith("_nodes.json"):
             node_type = fname.replace("_nodes.json", "")
+            
             with open(os.path.join(folder_path, fname), "r") as f:
                 nodes = json.load(f)
                 for node in nodes:
@@ -26,9 +27,15 @@ def load_graph_from_folder(folder_path: str):
                                  node.get("description", "").strip().lower())
                     elif node_type == "scaling_factor":
                         value = node.get("description", "").strip().lower()
+                    elif node_type == "product":
+                        value = (node.get("summary", "").strip().lower(),
+                                 node.get("company_id", "").strip().lower(),
+                                 node.get("url", "").strip().lower(),
+                                 node.get("plg_flag", ""))
                     else:
                         value = node.get("id")
-                    node_registry[(node_type, value)] = node["id"]
+                    node["node_type"] = node_type
+                    node_registry[node["id"]] = node
 
     # Load edges
     edges_path = os.path.join(folder_path, "graph_edges.json")
@@ -37,5 +44,5 @@ def load_graph_from_folder(folder_path: str):
             graph_edges = json.load(f)
             for edge in graph_edges:
                 edge_weights[(edge["source"], edge["target"])] = edge.get("weight", 1.0)
-
+    print("Graph loaded with nodes:", len(node_registry), "and edges:", len(graph_edges))
     return node_registry, graph_edges, edge_weights

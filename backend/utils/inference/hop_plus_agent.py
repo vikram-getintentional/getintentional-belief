@@ -8,36 +8,6 @@ from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
 from backend.utils.graph_base.edges.edge_manager import add_edge
 
-def get_all_pain_paths_to_base_by_id(pain_id, graph, base_pain_ids, visited=None):
-    if visited is None:
-        visited = set()
-    if pain_id in visited:
-        return []
-    visited.add(pain_id)
-    if pain_id in base_pain_ids:
-        return [[(pain_id, None, 1.0)]]
-    all_paths = []
-    upstream_jobs = graph.get_upstream_jobs_by_id(pain_id)
-    for upstream in upstream_jobs:
-        dep_job_id = upstream["job_id"]
-        dep_pain_id = upstream["pain_id"]
-        impact = upstream.get("impact") or graph.get_edge_weight(pain_id, dep_job_id) or 0.5
-        sub_paths = get_all_pain_paths_to_base_by_id(dep_pain_id, graph, base_pain_ids, visited.copy())
-        for path in sub_paths:
-            all_paths.append([(pain_id, dep_job_id, impact)] + path)
-    return all_paths
-
-def compute_cumulative_criticality_for_pain_id(pain_id, graph, base_pain_ids):
-    all_paths = get_all_pain_paths_to_base_by_id(pain_id, graph, base_pain_ids)
-    print("All paths discovered for pain ID:", pain_id, "->", all_paths)
-    cumulative_criticality = 0.0
-    for path in all_paths:
-        path_impact = 1.0
-        for (_, _, weight) in path:
-            path_impact *= weight
-        cumulative_criticality += path_impact
-    return cumulative_criticality, all_paths
-
 def infer_upstream_with_rules(
     base_nodes: List[Dict[str, Any]],
     graph: Graph,
@@ -84,7 +54,7 @@ def infer_upstream_with_rules(
     all_pain_ids = set(node["pain_id"] for node in hop_results) | base_pain_ids
     all_families = []
     for pain_id in all_pain_ids:
-        cumulative_criticality, all_paths = compute_cumulative_criticality_for_pain_id(pain_id, graph, base_pain_ids)
+        cumulative_criticality, all_paths = graph.compute_cumulative_criticality_for_pain_id(pain_id, base_pain_ids)
         all_families.append({
             "pain_id": pain_id,
             "pain_text": id_to_text.get(pain_id, ""),
@@ -171,6 +141,13 @@ def hop_plus_one_hop(lower_nodes, graph, threshold, id_to_text):
                 "cumulative_criticality": triplet.get("cumulative_criticality", 1.0),
                 "capability": triplet.get("capability", "")
             })
+        for triplet in gpt_upstreams:
+            add_hop_subgraph(
+                gpt_upstreams=[triplet],
+                id_to_text=id_to_text,
+                from_pain_id=triplet.get("from_pain_id"),
+                source="hop_plus_gpt"
+            )
 
     print("Total upstream nodes found in this hop:", len(all_upstream_nodes))
     return all_upstream_nodes, gpt_cache
@@ -201,8 +178,9 @@ def add_hop_subgraph(
         job = triplet["job"]
         pain = triplet["pain"]
         impact = triplet.get("impact", 1.0)
-        job_criticality = triplet.get("job_criticality", 1.0)
+        pain_importance = triplet.get("pain_importance", 1.0)
         capability = triplet.get("capability", "")
+        job_criticality = triplet.get("job_criticality", 1.0)
 
         persona_node = get_or_create_persona_node(persona.get("title"), persona.get("seniority"), persona.get("department"))
         job_node = get_or_create_job_node(job)
@@ -217,7 +195,7 @@ def add_hop_subgraph(
             source_id=pain_node["id"],
             target_id=job_node["id"],
             edge_type="addresses",
-            weight=impact,
+            weight=pain_importance,
             last_updated=now,
             source=source
         )
@@ -231,9 +209,9 @@ def add_hop_subgraph(
         )
         # Optionally, link to the original nodes (if provided)
         # Logic if given a "source job" that impacts a "target pain" in upstream traversal
-        if from_job_id:
+        if triplet.get("from_job_id"):
             add_edge(
-                source_id=from_job_id,
+                source_id=triplet["from_job_id"],
                 target_id=pain_node["id"],
                 edge_type="impacts",
                 weight=impact,
@@ -279,32 +257,48 @@ def hop_plus_gpt_lookup(gpt_cache: List[Dict[str, Any]]) -> List[Dict[str, Any]]
         print("Processing entry in hop_plus_gpt_lookup:", entry)
         persona = entry["persona"]
         job = entry["job"]
-        cumulative_criticality = entry.get("cumulative_criticality", 1.0)
+        parent_cumulative_criticality = entry.get("cumulative_criticality", 1.0)
         capability = entry.get("capability", "")
         gpt_results = get_upstream_triplets(persona, job)
         print("GPT results for persona/job:", gpt_results)
-        for triplet in gpt_results:
-            canonical_dep_persona = triplet["dependent_persona"]
-            canonical_dep_job = triplet["dependent_job"]
-            canonical_dep_pain = triplet["dependent_pain"]
-            impact = float(triplet.get("dependent_pain_impact", 1.0))
-            job_criticality = float(triplet.get("dependent_job_criticality", 1.0))
-            persona_cache.add(json.dumps(canonical_dep_persona, sort_keys=True))
-            pain_cache.add(canonical_dep_pain)
-            job_cache.add(canonical_dep_job)
-            upstream_triplets.append({
-                "persona": canonical_dep_persona,
-                "job": canonical_dep_job,
-                "pain": canonical_dep_pain,
-                "impact": impact,
-                "job_criticality": job_criticality,
-                "from_persona": persona,
-                "from_job": job,
-                "from_pain": entry["pain"],
-                "cumulative_criticality": cumulative_criticality * impact,
-                "capability": capability
-            })
-            print("Added triplet:", upstream_triplets[-1])
+        for result in gpt_results:
+            original_job = result.get("original_job", "")
+            dependent_pains = result.get("dependent_pains", [])
+            for pain_obj in dependent_pains:
+                pain = pain_obj.get("pain", "")
+                pain_impact = float(pain_obj.get("pain_impact", 1.0))
+                pain_trigger = pain_obj.get("pain_trigger", "")
+                dependent_jobs = pain_obj.get("dependent_jobs", [])
+                for job_obj in dependent_jobs:
+                    job_desc = job_obj.get("description", "")
+                    dependent_personas = job_obj.get("dependent_personas", [])
+                    for persona_obj in dependent_personas:
+                        canonical_dep_persona = persona_obj
+                        canonical_dep_job = job_desc
+                        canonical_dep_pain = pain
+                        impact = pain_impact
+
+                        # Calculate cumulative_criticality for this triplet
+                        new_cumulative_criticality = parent_cumulative_criticality * impact
+
+
+                        # Add caches
+                        persona_cache.add(json.dumps(canonical_dep_persona, sort_keys=True))
+                        pain_cache.add(canonical_dep_pain)
+                        job_cache.add(canonical_dep_job)
+                        upstream_triplets.append({
+                            "persona": canonical_dep_persona,
+                            "job": canonical_dep_job,
+                            "pain": canonical_dep_pain,
+                            "impact": impact,
+                            "pain_trigger": pain_trigger,
+                            "from_persona": persona,
+                            "from_job": job,
+                            "from_pain": entry.get("pain", ""),
+                            "cumulative_criticality": new_cumulative_criticality,
+                            "capability": capability
+                        })
+                        print("Added triplet:", upstream_triplets[-1])
 
     # Canonicalize caches
     print("Canonicalizing persona, job, and pain caches")

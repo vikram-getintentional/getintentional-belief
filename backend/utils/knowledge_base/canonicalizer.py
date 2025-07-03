@@ -144,6 +144,41 @@ def canonicalize_persona(personas: list[dict]) -> dict:
     personas = deduplicated_personas
     print("Deduplicated personas")
 
+    # Step 0.5: Merge by title+department, keep lowest seniority
+    SENIORITY_NORMALIZATION = {
+        "intern": "Junior",
+        "junior": "Junior",
+        "associate": "Operator",
+        "mid level": "Operator",
+        "mid-senior level": "Manager",
+        "senior level": "Senior",
+        "lead": "Senior",
+        "director": "Executive",
+        "vp": "Executive",
+        "c-level": "Executive",
+        # fallback for unknowns
+    }
+    NORMALIZED_ORDER = ["Junior", "Operator", "Manager", "Senior", "Executive"]
+    NORMALIZED_RANK = {s: i for i, s in enumerate(NORMALIZED_ORDER)}
+
+    def normalize_seniority(seniority: str) -> str:
+        if not seniority:
+            return "Operator"
+        return SENIORITY_NORMALIZATION.get(seniority.strip().lower(), "Operator")
+
+    merged = {}
+    for p in personas:
+        norm_seniority = normalize_seniority(p.get("seniority", ""))
+        key = (p["title"].strip().lower(), p["department"].strip().lower())
+        current = merged.get(key)
+        current_rank = NORMALIZED_RANK.get(normalize_seniority(current["seniority"])) if current else None
+        this_rank = NORMALIZED_RANK.get(norm_seniority, 1)  # Default to "Operator"
+        if not current or this_rank < current_rank:
+            merged[key] = {**p, "seniority": norm_seniority}
+    personas = list(merged.values())
+    print("Merged personas by title and department, keeping lowest normalized seniority")
+
+
     if not personas:
         print("⚠️ No personas provided for canonicalization.")
         return {}

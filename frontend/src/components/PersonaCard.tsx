@@ -12,7 +12,7 @@ export type PersonaSuggestion = {
     description: string;
     pains: string[];
   }[];
-  capabilities: string[];
+  capabilities?: string[];
 };
 
 
@@ -63,14 +63,16 @@ const PersonaCard = ({ persona, isSelected, onToggle }: Props) => {
         ))}
       </div>
 
-      <div className="mt-3 text-xs text-gray-500">
-        Capabilities matched:
-        <ul className="list-disc list-inside ml-4 mt-1">
-          {persona.capabilities.map((cap, i) => (
-            <li key={i}>{cap}</li>
-          ))}
-        </ul>
-      </div>
+      {persona.capabilities && persona.capabilities.length > 0 && (
+        <div className="mt-3 text-xs text-gray-500">
+          Capabilities matched:
+          <ul className="list-disc list-inside ml-4 mt-1">
+            {persona.capabilities.map((cap, i) => (
+              <li key={i}>{cap}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

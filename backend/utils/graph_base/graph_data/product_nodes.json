@@ -1,0 +1,16 @@
+[
+  {
+    "id": "3a0975c1-d574-4a37-954f-0320f03d9b35",
+    "summary": "Chargebee offers a comprehensive subscription and billing management solution with capabilities such as subscription management, usage-based pricing, payment retries and collections, and detailed reporting and analytics. The product aims to simplify complex financial transactions, predict and manage customer churn, and ensure GAAP-compliant revenue recognition.",
+    "company_id": "3572f8cd-49f0-44fe-be5c-e7df224798db",
+    "url": "https://chargebee.com",
+    "plg_flag": true
+  },
+  {
+    "id": "9a461ae3-4ac6-44ad-ad46-8ef268460b49",
+    "summary": "ThoughtSpot is a leader in Agentic Analytics and Business Intelligence, leveraging AI to empower users with connected insights. Their platform features Spotter, an AI Analyst providing business-ready insights, Liveboards for connected insights in every process, Analyst Studio for data teams, and Smart Apps for intelligent experiences. ThoughtSpot aims to democratize data by making it accessible and understandable for everyone.",
+    "company_id": "dc796c4a-d90d-4c2e-b693-1fa67b3c8642",
+    "url": "https://thoughtspot.com",
+    "plg_flag": true
+  }
+]

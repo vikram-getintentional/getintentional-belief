@@ -16,6 +16,26 @@ def process_capability_map_to_graph(capability_map: dict):
         for pain_text, jobs in pains.items():
             pain_node = get_or_create_pain_node(pain_text)
 
+            # Find the max relevance for this capability-pain pair
+            max_relevance = 0.0
+            for job_desc, persona_list in jobs.items():
+                for persona_entry in persona_list:
+                    relevance = persona_entry.get("relevance", 0.5)
+                    if relevance > max_relevance:
+                        max_relevance = relevance
+
+            # Only add the edge if max_relevance > 0.0
+            if max_relevance > 0.0:
+                now = datetime.utcnow().isoformat()
+                add_edge(
+                    source_id=capability_node["id"],
+                    target_id=pain_node["id"],
+                    edge_type="solves",
+                    weight=max_relevance,
+                    last_updated=now,
+                    source="openai"  # or use persona_entry.get("source", "unknown") if you want
+                )
+
             for job_desc, persona_list in jobs.items():
                 job_node = get_or_create_job_node(job_desc)
 
@@ -25,16 +45,6 @@ def process_capability_map_to_graph(capability_map: dict):
                     source = persona_entry.get("source", "unknown")
                     pain_trigger = persona_entry.get("pain_trigger", None)
                     now = datetime.utcnow().isoformat()
-
-                    # Add edge: Capability → Pain (weight = relevance)
-                    add_edge(
-                        source_id=capability_node["id"],
-                        target_id=pain_node["id"],
-                        edge_type="solves",
-                        weight=relevance,
-                        last_updated=now,
-                        source=source
-                    )
 
                     # Add edge: Pain → Job (weight = 1)
                     add_edge(

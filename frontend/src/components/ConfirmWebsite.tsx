@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WebsiteAnalysis from './WebsiteAnalysis';
 import SpinnerIcon from '../utils/SpinnerIcon';
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const normalizeWebsiteInput = (input: string): { cleanDisplay: string; fullUrl: string } => {
   const withoutProtocol = input.replace(/^(https?:\/\/)?(www\.)?/, '');
@@ -178,12 +179,15 @@ const ConfirmWebsite = () => {
 
           {!loading && !error && scrapedText && (
             <div className="mt-6 space-y-2">
-              <WebsiteAnalysis
-                scrapedText={scrapedText}
-                url={fullWebsite}
-                plgCta={plgCta}
-                footerFeatures={footerFeatures}
-              />
+              <ErrorBoundary>
+                <WebsiteAnalysis
+                  scrapedText={scrapedText}
+                  url={fullWebsite}
+                  plgCta={plgCta}
+                  footerFeatures={footerFeatures}
+                />
+              </ErrorBoundary>
+              
             </div>
           )}
         </>

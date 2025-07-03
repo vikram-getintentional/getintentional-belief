@@ -1,154 +1,126 @@
 [
   {
-    "id": "3b48d247-d7d9-4bc4-8788-82b4ebdbb03f",
-    "text": "manual and time-consuming qualification of prospects"
+    "id": "39aec88f-fd81-4f83-bd2c-75aa5d50546f",
+    "text": "difficulty in managing subscription models"
   },
   {
-    "id": "ce661486-0590-4677-9b57-fa62c499882e",
-    "text": "inefficient and error-prone manual meeting booking"
+    "id": "746c8763-7a53-4c06-9260-82f72fcfb857",
+    "text": "difficulty in implementing usage-based pricing model"
   },
   {
-    "id": "f9cc34c7-4baa-4772-8f7b-aef8f40962d4",
-    "text": "manual assignment and distribution of prospects to sales reps"
+    "id": "e18caa02-691c-412a-8ca4-512ade50035e",
+    "text": "inefficient process of retrying failed payments and managing collections"
   },
   {
-    "id": "7b4a7db1-11b0-470b-a611-c847bb415abf",
-    "text": "inefficient conversion of event leads into meetings"
+    "id": "bc35045c-f81f-4106-bea1-1cea53e47bed",
+    "text": "lack of detailed reports and analytics"
   },
   {
-    "id": "bdb76999-5c13-4a8d-af9e-2bee9b529480",
-    "text": "low meeting attendance due to missed reminders"
+    "id": "8e78cbbb-0a87-4b4e-b2fc-f3f55023e867",
+    "text": "difficulty in predicting and managing customer churn"
   },
   {
-    "id": "7a5f8524-6a39-466a-8896-9ffe1e2d5968",
-    "text": "lack of real-time insight into meeting lifecycle"
+    "id": "632e4296-bc9a-48d9-be16-55472377c1c0",
+    "text": "inaccurate revenue recognition and non-compliance with gaap"
   },
   {
-    "id": "ca1d831e-bdfe-48cb-91c9-803ef3cf2d3e",
-    "text": "manual logging and updating of meeting activities in crm"
+    "id": "9e02950c-d4c4-4351-94cb-1aea52c39b7c",
+    "text": "difficulty in integrating with other systems and payment gateways"
   },
   {
-    "id": "d49dc028-d9fb-483c-84aa-8b4e3db902bb",
-    "text": "inflexible lead routing that doesn't cater to specific business needs"
+    "id": "c8a1de9e-85dc-43cf-adba-b50b1b90b496",
+    "text": "non-compliance with industry security standards"
   },
   {
-    "id": "87c842fe-8bf8-4bec-8dc4-1caf022a3d30",
-    "text": "manual lead qualification process"
+    "id": "8fc50d82-f785-4397-9374-fdb71ae72adc",
+    "text": "difficulty in managing and controlling subscription models"
   },
   {
-    "id": "f186b0c7-2581-42cb-8128-341f226d3b6e",
-    "text": "inefficient manual meeting scheduling"
+    "id": "77bae397-5749-40f9-bb14-9697c025b202",
+    "text": "inability to implement and manage usage-based pricing"
   },
   {
-    "id": "626c7ada-6035-4286-a5dd-41b71eee4afa",
-    "text": "unstructured assignment of leads to sales reps"
+    "id": "aead37a4-bbfb-4b61-b945-49800a1a0dd0",
+    "text": "difficulty in managing failed payments and collections"
   },
   {
-    "id": "69a1bc0e-733f-418c-8e38-0917ab723bf6",
-    "text": "inefficient management of event leads"
+    "id": "2bf0b1e8-a545-4c52-a0e6-05ac86926842",
+    "text": "inability to make informed decisions due to lack of detailed reports and analytics"
   },
   {
-    "id": "5756c28d-c16a-46b1-aeb5-8b3053f3b999",
-    "text": "low meeting attendance due to lack of reminders"
+    "id": "2c9c728d-8186-4f7f-8ac4-a359b8223d98",
+    "text": "difficulty in predicting churn and growing customer lifetime value"
   },
   {
-    "id": "94c39400-699f-4ac0-bfdf-1355ee2eec94",
-    "text": "lack of visibility into the meeting lifecycle"
+    "id": "149f950d-f1e9-4c17-a753-7f2b4d9fe1e2",
+    "text": "difficulty in ensuring accurate revenue recognition and gaap compliance"
   },
   {
-    "id": "18859cba-8973-49e7-8d4c-584338d689ae",
-    "text": "inefficient tracking of meeting activities in crm"
+    "id": "6ac7e281-44f5-4960-992d-e902d8e7b376",
+    "text": "difficulty in ensuring high-level security and compliance with industry standards"
   },
   {
-    "id": "a5d6bd2d-bb85-4a72-a969-293579c457fa",
-    "text": "inflexible lead assignment process"
+    "id": "663cdc04-e434-4e39-99c2-56b6cf687c1b",
+    "text": "difficulty in getting timely and relevant business insights"
   },
   {
-    "id": "f3514a74-6e5d-46c4-9b53-f4024015ef8e",
-    "text": "inefficient manual qualification of leads"
+    "id": "2baaa04e-5bca-4d66-9f97-dab3b64f6621",
+    "text": "lack of real-time data in decision making"
   },
   {
-    "id": "4b3aafa3-3161-4085-83ed-c0de8c7cabe0",
-    "text": "time-consuming manual meeting booking"
+    "id": "488a5ea3-1e8a-4936-8ed9-44e2c0988fc6",
+    "text": "inefficient collaboration among data teams"
   },
   {
-    "id": "daaf0d99-cc1f-4e9c-b4e7-8d7361497d31",
-    "text": "inefficient manual assignment of prospects"
+    "id": "7499ec9b-e2c6-4a75-aeec-7941771eeaf8",
+    "text": "inability to embed analytics into custom applications"
   },
   {
-    "id": "4a4632b3-6707-4a40-b57f-1ca3be698b4d",
-    "text": "inefficient conversion of event leads"
+    "id": "6b9c64e4-4d0d-4640-ae10-a427d440d5f6",
+    "text": "difficulty in conducting self-service analytics"
   },
   {
-    "id": "7b704aca-ea67-416f-8b28-78432c7fddf0",
-    "text": "missed meetings due to lack of reminders"
+    "id": "430b6ebd-3c6d-411a-82ac-a2a4309b470e",
+    "text": "difficulty in achieving roi from data analytics"
   },
   {
-    "id": "adb3260d-ffb3-4801-b6a7-4b0b477ce6b8",
-    "text": "lack of real-time insights into meeting lifecycle"
+    "id": "65bfe7a6-305b-45ea-9613-695cd3d751f9",
+    "text": "difficulty in prepping and shaping data"
   },
   {
-    "id": "b088ac23-cf66-4f9e-a6b8-005940e91c13",
-    "text": "inefficient manual logging of meetings"
+    "id": "d0800ff2-4c53-4483-b106-67c0be611283",
+    "text": "difficulty in getting actionable, trusted, data-driven insights"
   },
   {
-    "id": "44faa535-7dc5-446e-8ada-74ebdef539bc",
-    "text": "inflexible prospect assignment"
+    "id": "136c6d31-a483-4b85-808a-22d2a4947520",
+    "text": "difficulty in obtaining business-ready insights"
   },
   {
-    "id": "861b05e3-1f14-416e-9c2c-aa84b1944d83",
-    "text": "manual lead qualification is time-consuming and error-prone"
+    "id": "5ae5c490-a91f-47fa-8bd1-fc178476b1e1",
+    "text": "difficulty in embedding data into decision-making process"
   },
   {
-    "id": "7e3202b0-8384-43b4-a397-529784da17bc",
-    "text": "manual meeting booking is inefficient and can lead to missed opportunities"
+    "id": "2ec1d274-053c-4f27-bc9c-3acfe2d4609c",
+    "text": "inadequate tools for data analysis"
   },
   {
-    "id": "5313966e-679d-46f0-834d-0dee43fa9dbc",
-    "text": "inefficient prospect assignment can lead to missed sales opportunities"
+    "id": "28616fa9-57a2-4866-b895-418f62cde081",
+    "text": "difficulty in embedding ai analytics into custom apps"
   },
   {
-    "id": "84905d24-d729-4828-a5d6-cdb2386f02c0",
-    "text": "manual event scheduling is time-consuming and can lead to errors"
+    "id": "9203a014-196f-46f1-af03-9b52d74bf95e",
+    "text": "difficulty in driving business outcomes with self-service analytics"
   },
   {
-    "id": "37c3ad9a-4297-4276-87d5-53b8ec760dec",
-    "text": "manual reminders are inefficient and can lead to missed meetings"
+    "id": "8ccb23ed-66a9-47a9-a456-6e9b0cca2dcb",
+    "text": "difficulty in obtaining roi from ai"
   },
   {
-    "id": "e6c8b4f5-f6b2-4f21-b99a-bdc49ba95774",
-    "text": "lack of real-time visibility into meetings can lead to inefficiencies and missed opportunities"
+    "id": "c0084b60-2f61-4a4a-98e0-7cd8e1e80d88",
+    "text": "difficulty in handling data in different formats and locations"
   },
   {
-    "id": "b61cfd69-aff2-4675-9550-578a9ff8629d",
-    "text": "lack of integration with crm can lead to inefficiencies and errors"
-  },
-  {
-    "id": "4dd97db0-d41e-4fb9-8fc3-7d633a7e60da",
-    "text": "inflexible routing logic can lead to inefficiencies and missed sales opportunities"
-  },
-  {
-    "id": "8f6516f2-968d-401a-9dd7-6be53e9e141d",
-    "text": "scheduling conflicts and manual back-and-forth communication"
-  },
-  {
-    "id": "18afc079-0fb7-444f-91fa-3d733d400911",
-    "text": "inefficient distribution of leads among sales team"
-  },
-  {
-    "id": "c4592813-88d3-4ed0-aaf0-95a956aa2dc1",
-    "text": "difficulty in managing and tracking event leads"
-  },
-  {
-    "id": "74c80f24-eed6-4d2a-93e7-3c3aa7a009bd",
-    "text": "no-shows due to lack of reminders"
-  },
-  {
-    "id": "000db04f-f082-4889-970b-bb999ec1bc6c",
-    "text": "lack of transparency in the meeting lifecycle"
-  },
-  {
-    "id": "10f08b34-e260-48e9-bd50-f8a674c48bf6",
-    "text": "inefficient lead assignment due to rigid routing rules"
+    "id": "961c9f58-98dd-419a-8216-27c9eb51ab7c",
+    "text": "difficulty in obtaining actionable, data-driven insights"
   }
 ]

@@ -19,21 +19,18 @@ export type PersonaSuggestion = {
 };
 
 type Props = {
-  url: string;
-  summary: string;
-  capabilities: { name: string; description: string }[];
+  product_id: string;
   onSave: (confirmed: PersonaSuggestion[]) => void;
-  userEmail: string;
 };
 
-const PersonaBuilder = ({ url, summary, capabilities, userEmail, onSave }: Props) => {
+const PersonaBuilder = ({ product_id, onSave }: Props) => {
   const [personaSuggestions, setPersonaSuggestions] = useState<PersonaSuggestion[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
-    if (!summary || !capabilities.length) return;
+    if (!product_id) return;
     const token = localStorage.getItem("token");
     setLoading(true);
 
@@ -43,7 +40,7 @@ const PersonaBuilder = ({ url, summary, capabilities, userEmail, onSave }: Props
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ summary, capabilities }),
+      body: JSON.stringify({ product_id }),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -66,7 +63,7 @@ const PersonaBuilder = ({ url, summary, capabilities, userEmail, onSave }: Props
         setFetchError("Could not load personas.");
         setLoading(false);
       });
-  }, [summary, capabilities]);
+  }, [product_id]);
 
   const togglePersona = (key: string) => {
     setSelected((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -107,7 +104,7 @@ const PersonaBuilder = ({ url, summary, capabilities, userEmail, onSave }: Props
         },
         body: JSON.stringify({
           results,
-          url,
+          product_id,
         }),
       });
 
@@ -154,7 +151,7 @@ const PersonaBuilder = ({ url, summary, capabilities, userEmail, onSave }: Props
           disabled={Object.values(selected).every((v) => !v)}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          ✅ Save & Analyze
+          ✅ Infer Hop+ Dependencies
         </button>
       </div>
     </div>

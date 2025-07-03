@@ -26,33 +26,41 @@ def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
     """
 
     prompt = f"""
-        You are a {persona['title']} in the {persona['department']} team at {persona['seniority']} level with a {job} job.
-        If you fail to do this job well, what pain does it create, for whom, when performing what job?
+      You are a {persona['title']} in the {persona['department']} team at {persona['seniority']} level with an original job – {job}.
+      If you fail to do this job well, what upstream pain does it create, for whom, when performing what job?
 
-        For each upstream impact, provide:
-        - The persona affected
-        - Their job
-        - The pain they would experience
-        - How much does failing the original job impact this pain (Scale: 0.0 to 1.0)
-        - What attribute must scale in volume, frequency or complexity for this new pain to become intolerable
+      Provide a structured upstream impact mapping that shows:
+      - For each original job, list the upstream business pain experienced by the failure of this job
+      - For each upstream pain, include how much does failing this job impact this upstream pain (Scale: 0.0 to 1.0)
+      - For each pain what attribute must scale in volume, frequency or complexity for this pain to become intolerable.
+      - For each upstream pain list the upstream jobs that are blocked by this pain, or directly improved if this pain is alleviated.
+      - For each upstream job, list the persona responsible for that job (include title, department, and seniority).
+      
 
-        Return your output in JSON format as a list of entries:
-
-        [
-        {{
-            "dependent_persona": {{
-            "title": "...",
-            "department": "...",
-            "seniority": "..."
-            }},
-            "dependent_job": "...",
-            "dependent_pain": "...",
-            "dependent_pain_impact": "0.5",
-            "dependent_pain_trigger": "Volume of incoming leads"
-        }},
-        ...
-        ]
-    """
+      Return your output in JSON format as a list of entries:
+      [
+      {{
+          "original_job": "{job}",
+          "dependent_pains": [{{
+              "pain": "...",
+              "pain_impact": "0.5",
+              "pain_trigger": "Volume of incoming leads",
+              "dependent_jobs": [{{
+                  "description": "Job description that is blocked or affected",
+                  "dependent_personas": [
+                      {{
+                          "title": "Job holder title",
+                          "department": "Department",
+                          "seniority": "Seniority level (must be one of: Junior, Operator, Manager, Senior, Executive)"
+                      }},
+                      ...
+                  ]
+              }}],
+          }}]
+      }},
+      ...
+      ]
+  """
 
     try:
         response = client.chat.completions.create(

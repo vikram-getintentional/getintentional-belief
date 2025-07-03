@@ -1,242 +1,114 @@
 [
   {
-    "id": "103ed70d-7616-4d55-b50c-a5252a524516",
-    "name": "AI Analyst for Business-Ready Insights",
-    "description": ""
-  },
-  {
-    "id": "03620ae1-f7dd-44d7-9915-3984d6bf0af0",
-    "name": "Live Interactive Dashboards",
-    "description": ""
-  },
-  {
-    "id": "14c286e4-75e2-4449-a062-59aff0de3db5",
-    "name": "Analyst Studio with collaborative notebooks",
-    "description": ""
-  },
-  {
-    "id": "ef201440-6585-46d0-99a4-1181a444dea8",
-    "name": "Smart Apps to integrate dashboards and analytics into any application",
-    "description": ""
-  },
-  {
-    "id": "0b54d500-28e8-450e-af2a-3af73348f850",
-    "name": "AI Agents for deep insights",
-    "description": ""
-  },
-  {
-    "id": "e65b8968-267f-4fd0-9698-04e7292138bc",
-    "name": "AI-Augmented Dashboards",
-    "description": ""
-  },
-  {
-    "id": "88e9e331-3d69-4e32-b159-29f660e02ce1",
-    "name": "Automated Insights",
-    "description": ""
-  },
-  {
-    "id": "6662d2fa-37b1-4337-ad77-ee62d9ef3ece",
-    "name": "Any Data, Anywhere",
-    "description": ""
-  },
-  {
-    "id": "dd058331-94d5-4de6-a1a4-127d5d2077cc",
+    "id": "5e0fdded-02f8-453c-a57a-3ad618b03b64",
     "name": "Subscription Management",
-    "description": ""
+    "description": "Allows businesses to manage and control their subscription models effectively.",
+    "coreness": 1.0,
+    "centrality": 0.0
   },
   {
-    "id": "b1971516-cb27-49c8-87dc-304e11dd50e8",
-    "name": "Customizable Pricing Models",
-    "description": ""
+    "id": "79f5b49f-9099-472d-b225-fd416a427f9e",
+    "name": "Usage-based Pricing",
+    "description": "Enables businesses to implement and manage a usage-based pricing model.",
+    "coreness": 0.9,
+    "centrality": 0.0
   },
   {
-    "id": "9c77762a-a028-4fa5-8f20-c58643cc58e9",
-    "name": "Customer Retention through Reporting and Dunning",
-    "description": ""
+    "id": "a95d75ea-0c22-4a5a-adf2-b494b47b881c",
+    "name": "Payment Retries and Collections",
+    "description": "Facilitates the process of retrying failed payments and managing collections.",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "287033ed-38dd-4331-abfe-06213254adfd",
-    "name": "Revenue Recognition with ASC606",
-    "description": ""
+    "id": "69ee0f09-da04-4df9-8aec-cfa51f448c0b",
+    "name": "Reporting and Analytics",
+    "description": "Provides detailed reports and analytics for better business decision making.",
+    "coreness": 0.9,
+    "centrality": 0.0
   },
   {
-    "id": "27486f94-b405-475e-ba08-deb811959292",
-    "name": "Deep Discounting and Trial Management",
-    "description": ""
+    "id": "46d04ae8-943a-4a1f-a703-911fef708dd6",
+    "name": "Customer Retention",
+    "description": "Helps predict churn, deflect cancellation attempts, and grow Customer Lifetime Value (CLTV).",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "f2be813a-0686-4dfe-a806-6cb9bf638e1f",
-    "name": "Self-Service and Customizable Checkout Flows",
-    "description": ""
+    "id": "8010f75e-4420-4f32-9595-ee89c510168f",
+    "name": "Revenue Recognition",
+    "description": "Ensures accurate revenue recognition and compliance with Generally Accepted Accounting Principles (GAAP).",
+    "coreness": 1.0,
+    "centrality": 0.0
   },
   {
-    "id": "662f5754-dfe6-4823-ae25-dc2c7c02c930",
+    "id": "b688b55f-67e7-4c8d-992d-b916b781812c",
+    "name": "Integration",
+    "description": "Offers 60+ integrations and 30+ payment gateways for seamless operations.",
+    "coreness": 0.7,
+    "centrality": 0.0
+  },
+  {
+    "id": "0f88c5a4-e071-4c8c-b778-7807c58156d1",
     "name": "Security & Compliance",
-    "description": ""
+    "description": "Ensures high-level security and compliance with industry standards.",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "8357091d-7052-47cc-944a-ca3bf351dbff",
-    "name": "Entitlements Management",
-    "description": ""
+    "id": "42edfa98-8f69-4a7b-92b1-d4945bd8ab0c",
+    "name": "Spotter",
+    "description": "An autonomous AI agent that provides business-ready insights for anyone, anywhere, ensuring enterprise-grade trust.",
+    "coreness": 0.9,
+    "centrality": 0.0
   },
   {
-    "id": "342e9b32-347f-408f-8ea9-0f82ae268a2b",
-    "name": "Entitlements Managment",
-    "description": ""
+    "id": "0322e077-5735-43c4-89b1-47bc440c6cd7",
+    "name": "Liveboards",
+    "description": "A feature that embeds data in every decision, interaction, and process, turning insights into action with autonomous workflows.",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "813c50bc-19bf-463a-a87c-938567a6636d",
-    "name": "AI-Powered Case Alerts & Research",
-    "description": ""
+    "id": "f15eefb4-80dc-4ecd-b7c0-eda7ec3e8aa0",
+    "name": "Analyst Studio",
+    "description": "A collaborative creator space that empowers data teams with SQL, R, Python, and visual analysis tools in an integrated intelligence platform.",
+    "coreness": 0.7,
+    "centrality": 0.0
   },
   {
-    "id": "33b51dc4-2c27-476d-a8fe-b5581092c4a7",
-    "name": "Collaborative Workspace",
-    "description": ""
+    "id": "4107fb60-4ad9-4c63-a7e2-bdc626793c24",
+    "name": "Smart Apps",
+    "description": "Allows embedding of AI analytics into custom apps, empowering users with embedded custom actions, writebacks, and workflows.",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "9f620162-3571-474b-8d99-a30e2bc5945c",
-    "name": "Personalized Reporting",
-    "description": ""
+    "id": "a62f9cde-ff91-4682-a924-a16804085329",
+    "name": "Enterprise BI",
+    "description": "Drives business outcomes in the AI era with self-service analytics.",
+    "coreness": 0.9,
+    "centrality": 0.0
   },
   {
-    "id": "c9ad8fd5-b29a-477d-a134-d7a507564639",
-    "name": "User-Friendly Interface",
-    "description": ""
+    "id": "acccd9a9-690d-4f09-8288-110b02073a13",
+    "name": "Automated Insights",
+    "description": "Delivers real ROI with ThoughtSpot\u2019s enterprise-grade AI.",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "c07eb29a-7daa-4726-8e09-28e25ae5a3e3",
-    "name": "Mobile App",
-    "description": ""
+    "id": "1e2f30e9-6ed8-4722-b3dd-32b9f01bad64",
+    "name": "Any Data, Anywhere",
+    "description": "Enables prep, join, model, and shape your data \u2013 real-time or cached \u2013 any way you want.",
+    "coreness": 0.8,
+    "centrality": 0.0
   },
   {
-    "id": "29cad808-f5c9-4ca5-bbb3-7fd69c202386",
-    "name": "Case Directory",
-    "description": ""
-  },
-  {
-    "id": "250b537b-4852-4b05-b94d-1256e24681fa",
-    "name": "High Security",
-    "description": ""
-  },
-  {
-    "id": "48d55daa-df2b-4383-a861-80d10b065f26",
-    "name": "Remote Access",
-    "description": ""
-  },
-  {
-    "id": "57b26865-ebc7-4c66-bc85-9e8d7c2d2b9d",
-    "name": "Fast Launch",
-    "description": ""
-  },
-  {
-    "id": "17674b12-318b-48a2-b70c-fa97d36cbb4d",
-    "name": "Scalability",
-    "description": ""
-  },
-  {
-    "id": "cdcb47fb-1c54-49f0-a78f-b7df34cbd9c1",
-    "name": "Management",
-    "description": ""
-  },
-  {
-    "id": "3ffc9c5d-e496-497b-aec1-2f1e986fc512",
-    "name": "Analytics",
-    "description": ""
-  },
-  {
-    "id": "4f9b9ada-a8fd-444e-8954-39d5bffc3dbb",
-    "name": "Site Speed",
-    "description": ""
-  },
-  {
-    "id": "5e696d5f-fe81-4be6-b4ca-6e8ce5217bfe",
-    "name": "Multi-Warehouse Shipping",
-    "description": ""
-  },
-  {
-    "id": "1b773377-8d13-44f3-aeb0-1759c9c091b5",
-    "name": "Optimized Checkouts",
-    "description": ""
-  },
-  {
-    "id": "61f512c4-b682-4f50-a21c-8d499bd41777",
-    "name": "OKR Management",
-    "description": ""
-  },
-  {
-    "id": "a4233a5f-80f3-4343-8463-6047888f1b21",
-    "name": "Performance Management",
-    "description": ""
-  },
-  {
-    "id": "fcd67d61-2cf1-40db-86b1-c0a55a755740",
-    "name": "Task Management",
-    "description": ""
-  },
-  {
-    "id": "95345847-e577-445a-a310-0b99bac7ba45",
-    "name": "Employee Engagement",
-    "description": ""
-  },
-  {
-    "id": "11b80945-2e33-43d5-81f3-4c3ff7dd817e",
-    "name": "Integrations",
-    "description": ""
-  },
-  {
-    "id": "5a1606a1-8e7d-4066-bdc8-d0d488483c7a",
-    "name": "Resources",
-    "description": ""
-  },
-  {
-    "id": "e9c9ceec-630c-4030-81a6-a4c6273a53cc",
-    "name": "Support",
-    "description": ""
-  },
-  {
-    "id": "82d0fbd0-14c4-4dc8-ad5e-10e828cdf163",
-    "name": "AI-Enabled",
-    "description": ""
-  },
-  {
-    "id": "5fa208d5-ec3c-48f7-9631-772c5bbc95c9",
-    "name": "Automated Lead Qualification",
-    "description": ""
-  },
-  {
-    "id": "ef42c996-f31c-4520-a999-da685cf4e15c",
-    "name": "Meeting Booking Automation",
-    "description": ""
-  },
-  {
-    "id": "1ada076e-23fe-4fe0-b8a8-412e3c95f8d6",
-    "name": "Prospect Routing",
-    "description": ""
-  },
-  {
-    "id": "49bda5b6-e983-43bb-adb3-c15da123cacf",
-    "name": "Event Scheduling",
-    "description": ""
-  },
-  {
-    "id": "980a61af-82c4-4b68-a050-5451bd84bb9f",
-    "name": "Meeting Reminders",
-    "description": ""
-  },
-  {
-    "id": "ad591039-3058-4f72-a6cb-7e28fd3f59b9",
-    "name": "Real-Time Visibility",
-    "description": ""
-  },
-  {
-    "id": "f83e2b97-4254-44a1-a6db-b4d020f51e16",
-    "name": "CRM Integration",
-    "description": ""
-  },
-  {
-    "id": "ab74e011-a630-4655-aa3c-463dc8dddec4",
-    "name": "Customizable Routing Logic",
-    "description": ""
+    "id": "4dcd8fc5-41d1-4ab3-921f-46b5796fa3fe",
+    "name": "Actionable Insights",
+    "description": "AI-powered BI that lets anyone get actionable, trusted, data-driven insights, wherever they are.",
+    "coreness": 0.9,
+    "centrality": 0.0
   }
 ]

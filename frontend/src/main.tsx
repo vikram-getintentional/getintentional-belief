@@ -9,7 +9,7 @@ import './output.css';
 import Onboarding from './pages/Onboarding';
 import AppLayout from './layout/AppLayout';
 import Personas from './pages/Personas'; 
-
+import './output.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
