@@ -3,92 +3,73 @@ from backend.utils.inference.openai_client import client  # uses our centralized
 
 def infer_persona_job_pain_from_capabilities(summary, capabilities):
     """
-    Given a product summary and its capabilities, this function queries OpenAI to produce a mapping in the following structure:
-
-    [
-      {
-        "capability": "Automated forecasting",
-        "description": "Enables accurate revenue prediction by automating the forecasting process.",
-        "pains": [
-          {
-            "pain": "Manual spreadsheet forecasting causes delays and errors",
-            "relevance": "0.85",
-            "pain_trigger": "Increase in volume of incoming leads",
-            "jobs": [
-              {
-                "description": "Forecast revenue across regions",
-                "personas": [
-                  {
-                    "title": "VP of Sales",
-                    "department": "Sales",
-                    "seniority": "Senior Management"
-                  },
-                  {
-                    "title": "Head of Sales Operations",
-                    "department": "Sales",
-                    "seniority": "Mid Management"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      ...
-    ]
+    Given a product summary and its capabilities, this function queries OpenAI to produce a mapping of pains, jobs and personas, and specific relevance scores corresponding to this pain-capability.
     """
     capabilities_json = json.dumps(capabilities, indent=2)
 
     prompt = f"""
 You are an expert in business design and job architecture.
+Given:
+- A product summary
+- A list of product capabilities
+For each capability, do the following:
+1. List 1–3 business pains this capability solves. These should be specific workflow inefficiencies or failure modes.
+2. For each pain, assign a relevance score to every capability in the list, even if that capability is only indirectly related or shares an overlapping job or data dependency.
+- The relevance score must be a float between 0.0 and 1.0.
+- The array must be the same length as the list of capabilities, aligned by order.
+- Directly related capabilities should have scores between 0.7–1.0.
+- Indirectly related ones (e.g. same persona, downstream workflow, or shared pain) should have scores between 0.1–0.6.
+- Only use 0.0 if the capability has no meaningful connection to the pain.
 
-For the given product summary and a list of product capabilities, provide a structured mapping that shows:
-1. For each capability:
-   - The workflow or business pains that this capability solves.
-   - For each pain, rate the relevance of each capability in the list to this pain from 1.0 (directly highly relevant) to 0.5 (indirectly supports or partially resolves pain) to 0.0 (not relevant).
-   - For each pain what attribute must scale in volume, frequency or complexity for this pain to become intolerable.
-   - For each pain, list the jobs that are blocked or directly improved when this pain is alleviated.
-   - For each job, list the personas responsible for that job (include title, department, and seniority).
+3. For each pain Specify what attribute must scale for this pain to become intolerable (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
+4. List 1–3 jobs that are directly blocked or improved when this pain is solved.
+   For each job, provide a list of personas responsible for that job, each with:
+      - title
+      - department
+      - seniority (one of: Junior, Operator, Manager, Senior, Executive)
 
 Return your output in JSON format as a list of entries:
 [
   {{
-    "capability": "Capability Name",
+    "capability_id": "string",
+    "capability": "string",
     "pains": [
       {{
-        "pain": "Description of the pain",
-        "relevance": ["0.85", "0.45", "1.0"],
-        "pain_trigger": "Increase in volume of incoming leads",
+        "pain": "string",
+        "relevance": [0.8, 0.5, 1.0],
+        "pain_trigger": "Increase in volume of incoming support tickets",
         "jobs": [
           {{
-            "description": "Job description that is blocked or affected",
+            "description": "Resolve incoming customer tickets in under 24 hours",
             "personas": [
               {{
-                "title": "Job holder title",
-                "department": "Department",
-                "seniority": "Seniority level (must be one of: Junior, Operator, Manager, Senior, Executive)"
+                "title": "Customer Support Executive",
+                "department": "Support",
+                "seniority": "Operator"
               }},
-              ...
+              {{
+                "title": "Support Team Lead",
+                "department": "Support",
+                "seniority": "Manager"
+              }}
             ]
-          }},
-          ...
+          }}
         ]
-      }},
-      ...
+      }}
     ]
-  }},
-  ...
+  }}
 ]
+
+Use only realistic, clearly defined jobs and persona roles. Do not invent exotic titles unless required by the domain. All capabilities should return at least one pain with structured jobs and personas.
 
 Summary:
 {summary}
 
 Capabilities:
 {capabilities_json}
-print("🔍 Capabilities passed to OpenAI:", capabilities)
-print("🧠 Prompt being sent:\n", prompt)
-
 """
+    print("🔍 Capabilities passed to OpenAI:", capabilities)
+    print("🧠 Prompt being sent:\n", prompt)
 
     try:
         response = client.chat.completions.create(

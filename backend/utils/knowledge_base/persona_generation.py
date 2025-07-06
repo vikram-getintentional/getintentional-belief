@@ -29,6 +29,8 @@ def get_company_products(base_graph: Graph, company_id: str) -> List[Dict[str, A
 # The code looks through the graph and returns a list of persona dictionaries that have product_id matching the input.
 
 def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, Any]]:
+    print("Recalculating capability centralities")
+    base_graph.update_capability_centralities()
     print("Starting product persona discovery for product ID:", product_id)
     personas = {}
     base_pain_ids = set()
@@ -118,6 +120,8 @@ def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, A
 # Logic is to traverse each persona and compute cumulative relevance downwards. 
 # Returns a list of aggregated_personas using the aggregate_persona_cards function.
 def get_persona_relevance(sub_graph: Graph) -> list[dict]:
+    print("Recalculating capability centralities")
+    sub_graph.update_capability_centralities()
     print("Starting persona relevance computation")
     personas = []
     product_id = sub_graph.get_node_id("product",{})

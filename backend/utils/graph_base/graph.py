@@ -257,6 +257,58 @@ class Graph:
            cumulative_relevance += path_impact
         return cumulative_relevance, all_paths
 
+    def get_product_id_from_subgraph(self) -> str:
+        # Assumes there is only one product node in the subgraph
+        for node in self.node_registry.values():
+            if node.get("type") == "product":
+                return node["id"]
+        raise ValueError("No product node found in subgraph.")
+    
+    def update_capability_centralities(self):
+        """
+        Updates each capability node in the graph with its degree centrality score.
+        """
+        # Assuming self.node_registry or similar holds all nodes
+        for node in self.node_registry.values():
+            if node.get("type") == "capability":
+                capability_id = node["id"]
+                print("Starting update centrality for capability:", capability_id)
+                centrality = self.calculate_capability_centrality(capability_id)
+                # Update the node's centrality  
+                node["capability_centrality"] = centrality
+                print(f"Updated centrality for capability {capability_id}: {centrality}")
+
+
+    def calculate_capability_centrality(self, capability_id):
+        """
+        Calculates the centrality of a capability node based on its connections.
+        
+        Args:
+            base_graph (Graph): The graph object containing nodes and edges.
+            capability_id (str): The ID of the capability node.
+
+        Logic:
+            For an input capability id - find all edges where source is this capability ID and target is any pain ID. 
+            Set cap_centrality = 0
+            For each edge: cap_centrality+=weight of edge
+            normalized_centrality = cap_centrality / self.get_total_pain_count() if self.get_total_pain_count() > 0 else 0
+
+        Returns:
+            float: The centrality score of the capability node.
+        """
+        print("Calculating centrality for capability:", capability_id)
+        cap_centrality = 0.0
+        for edge in self.graph_edges:
+            if edge.get("source") == capability_id and edge.get("type") == "solves":
+                target_id = edge.get("target")
+                weight = self.get_edge_weight(edge.get("source"), edge.get("target")) or 1.0
+                cap_centrality += weight
+                print(f"Edge from {capability_id} to {target_id} with weight {weight} contributes to centrality.")
+
+        normalized_centrality = cap_centrality / self.get_total_pain_count() if self.get_total_pain_count() > 0 else 0
+        print(f"Normalized centrality for capability {capability_id}: {normalized_centrality}")
+
+        return normalized_centrality
 
 # Example usage:
 if __name__ == "__main__":

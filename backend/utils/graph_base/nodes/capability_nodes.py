@@ -93,3 +93,4 @@ def update_capabilities_by_node_id(capabilities):
         )
         updated_nodes.append(updated_node)
     return updated_nodes
+

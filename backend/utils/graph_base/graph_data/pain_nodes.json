@@ -1,110 +1,34 @@
 [
   {
-    "id": "09e92734-f4f5-45ea-aa73-b68e0f952c28",
-    "text": "difficulty in managing subscription models"
+    "id": "caddddcd-bf89-451f-ab2b-4cb84c7aa849",
+    "text": "unknown pain"
   },
   {
-    "id": "25bd7698-fb01-4347-895e-1cf042e91403",
-    "text": "difficulty in implementing usage-based pricing model"
+    "id": "6b68fc04-1bfa-48ad-aac8-7382844d4ccc",
+    "text": "potential backlash from drastic pricing changes"
   },
   {
-    "id": "39449980-271f-41a0-b166-2696018361c0",
-    "text": "inefficient process of retrying failed payments and managing collections"
+    "id": "6a251781-28b0-43fb-9d09-6f3699420b36",
+    "text": "inflexibility of billing cycles leading to customer dissatisfaction"
   },
   {
-    "id": "2e355d6a-a368-4e66-80bc-2a0c70800bdf",
-    "text": "lack of detailed reports and analytics"
+    "id": "b44d8059-9095-4c0f-ad2b-3db2934befb6",
+    "text": "difficulty winning deals due to lack of custom pricing options"
   },
   {
-    "id": "98fee0af-6b88-45bd-86df-cba125885236",
-    "text": "difficulty in predicting and managing customer churn"
+    "id": "cce8b8e9-b49d-425f-99f7-b8b69c0c738a",
+    "text": "difficulty in testing new pricing models"
   },
   {
-    "id": "1a7375fa-ef03-4af6-9568-32b81e45853e",
-    "text": "inaccurate revenue recognition and non-compliance with gaap"
+    "id": "c4ef62f1-c65e-49a9-909f-10621898a891",
+    "text": "difficulty in managing price changes without losing demand"
   },
   {
-    "id": "02bdf28e-28aa-4c19-a9e8-a37249c9bd86",
-    "text": "difficulty in integrating with other systems and payment gateways"
+    "id": "b9176619-5030-4fdc-bf6c-a83c8629d031",
+    "text": "inflexible billing cycles"
   },
   {
-    "id": "e381ff67-0eeb-4be6-a86f-ade9d82cbb04",
-    "text": "non-compliance with industry security standards"
-  },
-  {
-    "id": "7f11968c-6efa-4316-8ebb-5db8530d2344",
-    "text": "difficulty in managing and controlling subscription models"
-  },
-  {
-    "id": "ce4ad526-9c51-4377-a5b6-4cd37086037e",
-    "text": "inability to implement and manage usage-based pricing"
-  },
-  {
-    "id": "8e21f573-cd65-4804-b5e7-cb57ed0ea1b5",
-    "text": "difficulty in managing failed payments and collections"
-  },
-  {
-    "id": "d4f8c987-f3aa-44c5-ac63-67876dfffc0a",
-    "text": "inability to make informed decisions due to lack of detailed reports and analytics"
-  },
-  {
-    "id": "c36849fd-dd31-4a0c-a8ba-0693ff4754a1",
-    "text": "difficulty in predicting churn and growing customer lifetime value"
-  },
-  {
-    "id": "25a05025-f615-46bd-ac10-9a55f157cf8a",
-    "text": "difficulty in ensuring accurate revenue recognition and gaap compliance"
-  },
-  {
-    "id": "cc2a1455-23f5-40f2-8a61-5eef7d968dfd",
-    "text": "difficulty in ensuring high-level security and compliance with industry standards"
-  },
-  {
-    "id": "b4b89acd-690a-4908-b2a8-7c3c122c4462",
-    "text": "difficulty in getting timely and relevant business insights"
-  },
-  {
-    "id": "bce91977-4f16-478c-ac97-44f9c40e4599",
-    "text": "lack of real-time data in decision making"
-  },
-  {
-    "id": "bfaa2883-b622-4c0b-a18d-d0ed2d251256",
-    "text": "inefficient collaboration among data teams"
-  },
-  {
-    "id": "e8d0ec18-f063-483b-a4ff-8b0a156a3317",
-    "text": "difficulty in conducting self-service analytics"
-  },
-  {
-    "id": "cb0eb9d8-a6b0-45db-ba7c-9ce677f464f7",
-    "text": "difficulty in achieving roi from data analytics"
-  },
-  {
-    "id": "a65c84d6-c559-46dd-b0c8-af36c7cbe24a",
-    "text": "difficulty in prepping and shaping data"
-  },
-  {
-    "id": "41bd34c5-da80-423a-9161-a1e59a13ddcc",
-    "text": "difficulty in obtaining business-ready insights"
-  },
-  {
-    "id": "3c1d1451-ef56-49db-99e5-e4a8e68cba9a",
-    "text": "difficulty in embedding data into decision-making process"
-  },
-  {
-    "id": "907c0c42-7dc0-456b-9bf7-42c45e21efdc",
-    "text": "inadequate tools for data analysis"
-  },
-  {
-    "id": "b6f8eb3c-6ceb-4090-b508-c4bd55fd8dac",
-    "text": "difficulty in embedding ai analytics into custom apps"
-  },
-  {
-    "id": "9d863656-91b0-4846-b347-dbfb748f225a",
-    "text": "difficulty in obtaining roi from ai"
-  },
-  {
-    "id": "4dc78356-d0f9-4d36-b171-21e9bfea0ef2",
-    "text": "difficulty in handling data in different formats and locations"
+    "id": "b968ca5e-e887-4fb2-ab51-55975177eb74",
+    "text": "difficulty in aligning pricing with value delivered"
   }
 ]

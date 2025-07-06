@@ -30,7 +30,7 @@ def generate_new_id(prefix="pain"):
     return f"{prefix}_{uuid.uuid4().hex[:8]}"
 
 def canonicalize_job(jobs: list[str]) -> dict:
-    print("Starting job canonicalization")
+    
     # Step 0: Dedupes
     jobs = list(set(jobs))
     if not jobs:
@@ -38,7 +38,7 @@ def canonicalize_job(jobs: list[str]) -> dict:
         return {}
 
     # Step 1: Generate embeddings
-    print(f"🔍 Generating embeddings for {len(jobs)} jobs.")
+    
     job_embeddings = generate_and_save_embeddings(jobs, "job")
 
     # Handle case with only one embedding
@@ -46,24 +46,24 @@ def canonicalize_job(jobs: list[str]) -> dict:
         print("⚠️ Only one job provided. Skipping clustering.")
         canonical_map = {jobs[0]: jobs[0]}
         save_canonical_map(canonical_map, JOB_CANONICAL_MAP_PATH)
-        print(f"✅ Job canonical map saved to {JOB_CANONICAL_MAP_PATH}")
+    
         return canonical_map
 
     # Step 2: Cluster jobs
     clustered_jobs = cluster_items(job_embeddings)
-    print(f"🔍 Clustered jobs into {len(clustered_jobs)} clusters.")
+    
 
     # Step 3: Assign canonical labels
     canonical_map = assign_canonical_labels(clustered_jobs)
 
     # Step 4: Save the canonical map
     save_canonical_map(canonical_map, JOB_CANONICAL_MAP_PATH)
-    print(f"✅ Job canonical map saved to {JOB_CANONICAL_MAP_PATH}")
+    
 
     return canonical_map
 
 def canonicalize_pain(pains: list[str]) -> dict:
-    print("Starting pain canonicalization")
+    
     # Step 0: Dedupes
     pains = list(set(pains))
     
@@ -72,7 +72,7 @@ def canonicalize_pain(pains: list[str]) -> dict:
         return {}
 
     # Step 1: Generate embeddings
-    print(f"🔍 Generating embeddings for {len(pains)} pains.")
+    
     pain_embeddings = generate_and_save_embeddings(pains, "pain")
     
     # Handle case with only one embedding
@@ -80,24 +80,24 @@ def canonicalize_pain(pains: list[str]) -> dict:
         print("⚠️ Only one pain provided. Skipping clustering.")
         canonical_map = {pains[0]: pains[0]}
         save_canonical_map(canonical_map, PAIN_CANONICAL_MAP_PATH)
-        print(f"✅ Pain canonical map saved to {PAIN_CANONICAL_MAP_PATH}")
+        
         return canonical_map
 
     # Step 2: Cluster pains
     clustered_pains = cluster_items(pain_embeddings)
-    print(f"🔍 Clustered pains into {len(clustered_pains)} clusters.")
+    
 
     # Step 3: Assign canonical labels
     canonical_map = assign_canonical_labels(clustered_pains)
 
     # Step 4: Save the canonical map
     save_canonical_map(canonical_map, PAIN_CANONICAL_MAP_PATH)
-    print(f"✅ Pain canonical map saved to {PAIN_CANONICAL_MAP_PATH}")
+    
 
     return canonical_map
 
 def canonicalize_pain_trigger(pain_triggers: list[str]) -> dict:
-    print("Starting pain trigger canonicalization")
+    
     # Step 0: Dedupes
     pain_triggers = list(set(pain_triggers))
     
@@ -106,7 +106,7 @@ def canonicalize_pain_trigger(pain_triggers: list[str]) -> dict:
         return {}
 
     # Step 1: Generate embeddings
-    print(f"🔍 Generating embeddings for {len(pain_triggers)} pain triggers.")
+    
     pain_trigger_embeddings = generate_and_save_embeddings(pain_triggers, "pain_trigger")
     
     # Handle case with only one embedding
@@ -118,31 +118,31 @@ def canonicalize_pain_trigger(pain_triggers: list[str]) -> dict:
 
     # Step 2: Cluster pain triggers
     clustered_triggers = cluster_items(pain_trigger_embeddings)
-    print(f"🔍 Clustered pain triggers into {len(clustered_triggers)} clusters.")
+    
 
     # Step 3: Assign canonical labels
     canonical_map = assign_canonical_labels(clustered_triggers)
 
     # Step 4: Optionally save the canonical map
     save_canonical_map(canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
-    print(f"✅ Pain trigger canonical map saved to {CANONICAL_MAP_PATH / 'pain_trigger_to_canonical.json'}")
+    
 
     return canonical_map
 
 def canonicalize_persona(personas: list[dict]) -> dict:
-    print("Starting persona canonicalization with input")
+    
 
     # Step 0: Dedupes
     seen = set()
     deduplicated_personas = []
     for persona in personas:
-        print("Processing persona:", persona, "of type", type(persona))
+    
         persona_tuple = tuple(sorted(persona.items()))  # Convert dict to a sorted tuple of key-value pairs
         if persona_tuple not in seen:
             seen.add(persona_tuple)
             deduplicated_personas.append(persona)
     personas = deduplicated_personas
-    print("Deduplicated personas")
+    
 
     # Step 0.5: Merge by title+department, keep lowest seniority
     SENIORITY_NORMALIZATION = {
@@ -176,7 +176,7 @@ def canonicalize_persona(personas: list[dict]) -> dict:
         if not current or this_rank < current_rank:
             merged[key] = {**p, "seniority": norm_seniority}
     personas = list(merged.values())
-    print("Merged personas by title and department, keeping lowest normalized seniority")
+    
 
 
     if not personas:
@@ -184,7 +184,7 @@ def canonicalize_persona(personas: list[dict]) -> dict:
         return {}
 
     # Step 1: Generate embeddings for persona titles
-    print(f"🔍 Generating embeddings for {len(personas)} personas.")
+    
     persona_texts = [f"{p['title']}|{p['department']}|{p['seniority']}" for p in personas]
     persona_embeddings = generate_and_save_embeddings(persona_texts, "persona")
 
@@ -193,12 +193,12 @@ def canonicalize_persona(personas: list[dict]) -> dict:
         print("⚠️ Only one persona provided. Skipping clustering.")
         canonical_map = {persona_texts[0]: persona_texts[0]}  # Map the raw persona text to itself
         save_canonical_map(canonical_map, PERSONA_CANONICAL_MAP_PATH)
-        print(f"✅ Persona canonical map saved to {PERSONA_CANONICAL_MAP_PATH}")
+    
         return canonical_map
 
     # Step 2: Cluster personas
     clustered_personas = cluster_items(persona_embeddings)
-    print(f"🔍 Clustered personas into {len(clustered_personas)} clusters.")
+    
 
     # Step 3: Assign canonical labels
     canonical_map = assign_canonical_labels(clustered_personas)
@@ -217,7 +217,7 @@ def canonicalize_persona(personas: list[dict]) -> dict:
         persona_canonical_map[str(persona)] = canonical_persona
     # Step 5: Save the canonical map
     save_canonical_map(persona_canonical_map, PERSONA_CANONICAL_MAP_PATH)
-    print(f"✅ Persona canonical map saved to {PERSONA_CANONICAL_MAP_PATH}")
+    
 
     return persona_canonical_map
 

@@ -1,86 +1,26 @@
 [
   {
-    "id": "196af166-9ecf-4089-9476-3b620779066a",
-    "description": "managing subscription models"
+    "id": "a7a703d7-0e3f-458f-99a9-ba386889d02a",
+    "description": "unknown job"
   },
   {
-    "id": "97d2c8ef-39ae-4939-ac6f-27a314100c4d",
-    "description": "implementing usage-based pricing model"
+    "id": "80b4aef7-c3ec-4122-a9f3-f888984c1f7a",
+    "description": "develop and implement new pricing models"
   },
   {
-    "id": "9e3eaede-0892-4d16-b5c9-b901b2b3cff1",
-    "description": "managing failed payments and collections"
+    "id": "c8d14b97-217e-47f3-9f30-3adb4fe5e457",
+    "description": "offer flexible billing options to customers"
   },
   {
-    "id": "8bee1453-fcf9-412c-8ed7-8732982119f7",
-    "description": "generating detailed reports and analytics"
+    "id": "6df6ff94-c8e2-4e12-9102-56305bc714c3",
+    "description": "win deals with custom pricing options"
   },
   {
-    "id": "e9363f3f-fa80-4042-8b8c-1a2c0a1f828d",
-    "description": "predicting and managing customer churn"
+    "id": "8b7b134f-0d75-4b34-adcb-7e200afcaec9",
+    "description": "launch new products/services with optimized pricing"
   },
   {
-    "id": "7051a630-1390-42e2-85ca-18311d2e60e5",
-    "description": "ensuring accurate revenue recognition and compliance with gaap"
-  },
-  {
-    "id": "7f5b469d-6261-47a5-845e-7f8cc4388a95",
-    "description": "integrating with other systems and payment gateways"
-  },
-  {
-    "id": "4f1a0230-7734-4070-bd35-d2763c7ae07f",
-    "description": "ensuring compliance with industry security standards"
-  },
-  {
-    "id": "d7b74251-3a4d-4abd-ad51-db536dddd558",
-    "description": "managing and controlling subscription models"
-  },
-  {
-    "id": "5889c7d2-e852-4982-80a5-e274a2edd95b",
-    "description": "implementing and managing usage-based pricing"
-  },
-  {
-    "id": "282d0c6a-9201-4aa6-96d4-7aa71e9b8025",
-    "description": "making informed business decisions"
-  },
-  {
-    "id": "cf6db6db-8f91-4b45-97f9-306b3bcc6749",
-    "description": "predicting churn and growing customer lifetime value"
-  },
-  {
-    "id": "0c7be98c-5d76-46b3-a9a9-0418f96c6313",
-    "description": "ensuring accurate revenue recognition and gaap compliance"
-  },
-  {
-    "id": "457b24e9-0c9f-43fb-9f59-6e001477dfbd",
-    "description": "ensuring high-level security and compliance with industry standards"
-  },
-  {
-    "id": "2364b256-55be-41de-98ff-c22d86c27f19",
-    "description": "data analysis and reporting"
-  },
-  {
-    "id": "a0da96f7-6ce4-447c-bab6-4918b35e751c",
-    "description": "decision making and strategic planning"
-  },
-  {
-    "id": "bdc7758e-9528-47bd-82c3-0c567fc2846e",
-    "description": "application development and management"
-  },
-  {
-    "id": "eb35ce0b-8f01-499d-ace9-13fb3e77d157",
-    "description": "data analysis"
-  },
-  {
-    "id": "d23fb1a9-6892-4d56-8428-6df2ce8cb4f4",
-    "description": "decision-making"
-  },
-  {
-    "id": "81299463-98d6-4f95-a187-b46f71af0b0c",
-    "description": "app development"
-  },
-  {
-    "id": "b42a8064-eb95-4a61-855f-8d36e8232709",
-    "description": "ai implementation"
+    "id": "f6c88649-1904-4b4a-9e74-1fc2b3ce3011",
+    "description": "provide flexible billing options to customers"
   }
 ]

@@ -64,7 +64,7 @@ def save_canonical_map(canonical_map: dict, file_path: str):
     with open(file_path, "w") as f:
         json.dump(existing_data, f, indent=2)
 
-    print(f"✅ Canonical map saved to {file_path}")
+    
 
 
 def save_embeddings(entity_type: str, new_data: dict):
@@ -94,4 +94,4 @@ def save_embeddings(entity_type: str, new_data: dict):
     with open(path, "w") as f:
         json.dump(existing_data, f, indent=2)
 
-    print(f"✅ Embeddings saved to {path}")
+    

@@ -1,146 +1,86 @@
 [
   {
-    "id": "5e8bd98c-7650-4e36-921c-6698f7daa542",
-    "title": "subscription manager",
+    "id": "1457232f-7669-44cd-b8d7-0997f42487d8",
+    "title": "unknown persona",
+    "seniority": "unknown",
+    "department": "unknown"
+  },
+  {
+    "id": "2eaca31e-6f70-4e7e-82a3-63996992261c",
+    "title": "pricing analyst",
+    "seniority": "junior",
+    "department": "finance"
+  },
+  {
+    "id": "1f4ba402-0177-45e0-bf34-c9a9a81aaa27",
+    "title": "pricing manager",
+    "seniority": "senior",
+    "department": "finance"
+  },
+  {
+    "id": "5b250ed9-8d5b-4ba9-b692-9e62657ec4f9",
+    "title": "pricing strategist",
+    "seniority": "senior",
+    "department": "sales"
+  },
+  {
+    "id": "71cd90c8-787d-4d04-907d-15269f4741c5",
+    "title": "sales manager",
     "seniority": "manager",
     "department": "sales"
   },
   {
-    "id": "cdf0bd31-5de4-4211-89ea-09b95587f476",
-    "title": "pricing analyst",
-    "seniority": "senior",
-    "department": "finance"
-  },
-  {
-    "id": "8c5dd2de-c966-4ab7-9024-de99d19687bc",
-    "title": "collections specialist",
+    "id": "2f742bc9-ed1a-4043-a74b-13f7364cce01",
+    "title": "billing specialist",
     "seniority": "operator",
     "department": "finance"
   },
   {
-    "id": "8bf5de0c-daed-41f9-9533-23115c6caeae",
-    "title": "business analyst",
-    "seniority": "senior",
-    "department": "business intelligence"
-  },
-  {
-    "id": "9dfea19d-a1c4-47e7-a0a0-87ed7506b2c9",
-    "title": "customer success manager",
-    "seniority": "senior",
-    "department": "customer success"
-  },
-  {
-    "id": "36071a36-37d2-47fd-8728-75b782d6cafd",
-    "title": "accountant",
-    "seniority": "senior",
-    "department": "finance"
-  },
-  {
-    "id": "8d4e7ea2-f7ef-410e-9433-5aec8a960c6e",
-    "title": "it specialist",
-    "seniority": "senior",
-    "department": "it"
-  },
-  {
-    "id": "add9e753-bb0e-4b11-9ceb-47c848d5a63d",
-    "title": "security officer",
-    "seniority": "senior",
-    "department": "it"
-  },
-  {
-    "id": "e98fb54a-65be-4f8f-bfb7-6532e61d7cae",
-    "title": "pricing analyst",
-    "seniority": "junior",
-    "department": "finance"
-  },
-  {
-    "id": "b35598df-290b-47d9-bdb4-c6448bb78506",
-    "title": "business analyst",
-    "seniority": "senior",
-    "department": "strategy"
-  },
-  {
-    "id": "1175bea2-2a00-4a41-80b7-e239aa18d349",
+    "id": "8f26eb04-e851-41d6-a738-a02e1159f9f1",
     "title": "customer success manager",
     "seniority": "manager",
     "department": "customer success"
   },
   {
-    "id": "b96f24d9-629f-47b2-8ad9-510aa6f38769",
-    "title": "integration specialist",
-    "seniority": "operator",
-    "department": "it"
-  },
-  {
-    "id": "877262e4-739d-42dd-83d9-9d95303f9964",
-    "title": "security officer",
+    "id": "490abc49-d3aa-449d-926f-7848f233405d",
+    "title": "product manager",
     "seniority": "senior",
-    "department": "security"
+    "department": "product"
   },
   {
-    "id": "2760755b-efe9-43f9-ab7d-2f254f21f929",
-    "title": "data analyst",
-    "seniority": "junior",
-    "department": "analytics"
+    "id": "084623aa-a721-481c-ba94-3cc0c41ee4c2",
+    "title": "risk management specialist",
+    "seniority": "senior",
+    "department": "risk management"
   },
   {
-    "id": "44c9b5bd-7637-4e0e-84a7-3233d3c04add",
-    "title": "business manager",
+    "id": "cead1cc5-1d91-4262-aa50-e1f67226408e",
+    "title": "pricing manager",
     "seniority": "manager",
-    "department": "operations"
+    "department": "finance"
   },
   {
-    "id": "ed556fb3-40b9-45da-8b24-2e9ae7ac1a8e",
-    "title": "data scientist",
-    "seniority": "senior",
-    "department": "analytics"
-  },
-  {
-    "id": "ad282c77-d21f-4343-8b38-af8e921790ce",
-    "title": "application developer",
+    "id": "efe8808c-bcf6-47ef-941d-286af5b88b40",
+    "title": "sales representative",
     "seniority": "operator",
-    "department": "it"
+    "department": "sales"
   },
   {
-    "id": "6f523d32-6baf-48ff-a0ce-05335cf38740",
-    "title": "data engineer",
-    "seniority": "operator",
-    "department": "it"
-  },
-  {
-    "id": "1caa15da-78f4-49ef-b0a1-ee0054346531",
-    "title": "data analyst",
-    "seniority": "operator",
-    "department": "data"
-  },
-  {
-    "id": "4c027088-9630-487a-a4c0-83105421231c",
-    "title": "manager",
+    "id": "0575d420-8144-418c-85dd-9955cd0eddcb",
+    "title": "product manager",
     "seniority": "manager",
-    "department": "operations"
+    "department": "product"
   },
   {
-    "id": "a2fc3707-e04a-4c2a-99cd-3afffca2d0ab",
-    "title": "app developer",
-    "seniority": "operator",
-    "department": "tech"
-  },
-  {
-    "id": "0303ae2d-ee8b-4a94-8332-6e40bd52c52f",
-    "title": "bi specialist",
+    "id": "c5921d11-a265-4c4b-9642-24b0191308fb",
+    "title": "sales manager",
     "seniority": "senior",
-    "department": "data"
+    "department": "sales"
   },
   {
-    "id": "e752c749-a8f1-46aa-a892-eb65b7b7d8aa",
-    "title": "ai specialist",
+    "id": "059af5fa-3012-4bc2-bc58-ff8c47860564",
+    "title": "billing manager",
     "seniority": "senior",
-    "department": "tech"
-  },
-  {
-    "id": "b8bc3972-baff-411f-819f-43aee954d59f",
-    "title": "data manager",
-    "seniority": "senior",
-    "department": "data"
+    "department": "finance"
   }
 ]

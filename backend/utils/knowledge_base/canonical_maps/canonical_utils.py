@@ -41,7 +41,6 @@ def cluster_items(embeddings: dict, distance_threshold=0.5, entity_type="generic
             clustered_items[cluster_id] = []
         clustered_items[cluster_id].append(item)
 
-    print(f"✅ Clustered {len(items)} {entity_type}(s) into {len(clustered_items)} clusters.")
     return clustered_items
 
 
@@ -68,7 +67,6 @@ def assign_canonical_labels(clustered_items: dict, selection_strategy="shortest"
         for item in items:
             canonical_map[item] = canonical_label
 
-    print(f"✅ Assigned canonical labels to {len(canonical_map)} items using '{selection_strategy}' strategy.")
     return canonical_map
 
 

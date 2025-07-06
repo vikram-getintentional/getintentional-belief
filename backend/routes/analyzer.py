@@ -190,6 +190,7 @@ def save_summary(payload: dict, request: Request, db: Depends = None):
 @router.post("/analyze/deep")
 async def analyze_deep(payload: dict, request: Request):
     product_id = payload.get("product_id")
+    print("Analyzing deep for product_id:", product_id)
     if not product_id:
         raise HTTPException(status_code=400, detail="Product ID required.")
 
@@ -214,9 +215,14 @@ async def analyze_deep(payload: dict, request: Request):
             edge_weights=edge_weights
         )
 
-        result = infer_with_rules_then_fallback(product_id, base_graph=base_graph)
-
-        return result
+        # Extract the product subgraph
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        print("Extracted product subgraph with total nodes:", len(product_subgraph.node_registry))
+        print("Starting hop0 inference")
+        hop_0_results = infer_with_rules_then_fallback(product_id, product_subgraph)
+        # Run Hop+ upstream inference
+        #hop_plus_results = infer_upstream_with_rules(product_subgraph)
+        return {"hop_0_results": hop_0_results}
 
     except Exception as e:
         print("❌ Deep inference error:", e)

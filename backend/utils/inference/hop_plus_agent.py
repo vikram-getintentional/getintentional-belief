@@ -8,61 +8,95 @@ from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
 from backend.utils.graph_base.edges.edge_manager import add_edge
 
+
 def infer_upstream_with_rules(
-    base_nodes: List[Dict[str, Any]],
-    graph: Graph,
-    threshold: float = 0.6,
-    max_hops: int = 1
+    product_subgraph: Graph,
+    cap_threshold: float = 0.1,
+    relevance_threshold: float = 0.6,
+    max_depth: int = 5
 ):
     """
-    Batched, breadth-first Hop+ traversal with GPT batching and criticality threshold.
-    Only runs for one hop per call.
+    Traverse up from product_id to capabilities, pains, jobs, personas.
+    For each persona, calculate cumulative relevance to product.
+    If cumulative relevance > threshold, traverse jobs and upstream pains.
+    If no upstream pains, use hop_plus_one_hop (GPT fallback).
+    Recurse until cumulative relevance drops below threshold or max_depth reached.
     """
-    print("Starting Hop+ with Base Nodes:")
-    id_to_text = {}
-    base_nodes_with_ids = []
-    for node in base_nodes:
-        persona = node["persona"]
-        job = node["job"]
-        pain = node["pain"]
-        capability = node.get("capability", "")
-        relevance = node.get("relevance", 1.0)
-        persona_node = get_or_create_persona_node(persona.get("title"), persona.get("seniority"), persona.get("department"))
-        job_node = get_or_create_job_node(job)
-        pain_node = get_or_create_pain_node(pain)
-        id_to_text[persona_node["id"]] = persona
-        id_to_text[job_node["id"]] = job
-        id_to_text[pain_node["id"]] = pain
-        base_nodes_with_ids.append({
-            "persona_id": persona_node["id"],
-            "job_id": job_node["id"],
-            "pain_id": pain_node["id"],
-            "capability": capability,
-            "cumulative_criticality": relevance
+    product_id = product_subgraph.get_node_id("product", {})
+    if not product_id:
+        raise ValueError("Product ID not found in the provided subgraph.")
+    product_subgraph.update_capability_centralities()
+    results = []
+    visited_personas = set()
+
+    def recurse_from_persona(persona_id, current_depth):
+        if current_depth > max_depth or persona_id in visited_personas:
+            return
+        visited_personas.add(persona_id)
+        cum_relevance, all_paths = product_subgraph.compute_cumulative_relevance_from_node(persona_id, product_id)
+        if cum_relevance < relevance_threshold:
+            return
+
+        persona_node = product_subgraph.get_node_by_id(persona_id)
+        results.append({
+            "persona_id": persona_id,
+            "persona": persona_node,
+            "cumulative_relevance": cum_relevance,
+            "paths": all_paths
         })
 
-    # Only run one hop per call
-    hop_results, gpt_cache = hop_plus_one_hop(
-        lower_nodes=base_nodes_with_ids,
-        graph=graph,
-        threshold=threshold,
-        id_to_text=id_to_text
-    )
+        # Step 5: Get jobs "performed_by" this persona
+        job_ids = product_subgraph.get_source_nodes_by_target_and_type(persona_id, "performed_by")
+        if not job_ids:
+            print("No jobs found for persona:", persona_id)
+            return
+        for job_id in job_ids:
+            # Step 6: For each job, get upstream pains "impacted_by" this job
+            upstream_pain_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "impacts")
+            if upstream_pain_ids:
+                for up_pain_id in upstream_pain_ids:
+                    # Step 7: For each upstream pain, get jobs and personas recursively
+                    up_job_ids = product_subgraph.get_target_nodes_by_source_and_type(up_pain_id, "addresses")
+                    for up_job_id in up_job_ids:
+                        up_persona_ids = product_subgraph.get_target_nodes_by_source_and_type(up_job_id, "performed_by")
+                        for up_persona_id in up_persona_ids:
+                            recurse_from_persona(up_persona_id, current_depth + 1)
+            else:
+                # Step 7: If no impacted pains, use GPT fallback
+                print(f"No upstream pains for job {job_id}, persona {persona_id}. Using GPT fallback.")
+                gpt_results, _ = hop_plus_one_hop(
+                    lower_nodes=[{
+                        "persona_id": persona_id,
+                        "job_id": job_id,
+                        "cumulative_criticality": cum_relevance
+                    }],
+                    graph=product_subgraph,
+                    threshold=relevance_threshold,
+                    id_to_text={}
+                )
+                for gpt_node in gpt_results:
+                    gpt_persona_id = gpt_node.get("persona_id")
+                    if gpt_persona_id:
+                        recurse_from_persona(gpt_persona_id, current_depth + 1)
 
-    # Compute cumulative_criticality and family trees for each unique pain node found
-    base_pain_ids = set(node["pain_id"] for node in base_nodes_with_ids)
-    all_pain_ids = set(node["pain_id"] for node in hop_results) | base_pain_ids
-    all_families = []
-    for pain_id in all_pain_ids:
-        cumulative_criticality, all_paths = graph.compute_cumulative_criticality_for_pain_id(pain_id, base_pain_ids)
-        all_families.append({
-            "pain_id": pain_id,
-            "pain_text": id_to_text.get(pain_id, ""),
-            "cumulative_criticality": cumulative_criticality,
-            "family_tree": all_paths
-        })
-    print("\n\n Final families with cumulative criticality:", all_families)
-    return all_families, gpt_cache  # gpt_cache can be used for the next hop
+    # Step 2: Get capability nodes with centrality > cap_threshold
+    for node in product_subgraph.node_registry.values():
+        if node.get("type") == "capability" and node.get("capability_centrality", 0.0) >= cap_threshold:
+            cap_id = node["id"]
+            # Step 3: Traverse up to pains, jobs, personas
+            pain_ids = product_subgraph.get_target_nodes_by_source_and_type(cap_id, "solves")
+            for pain_id in pain_ids:
+                job_ids = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "addresses")
+                for job_id in job_ids:
+                    persona_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "performed_by")
+                    for persona_id in persona_ids:
+                        recurse_from_persona(persona_id, current_depth=1)
+
+    return results
+
+
+
+# hop_plus_one_hop and add_hop_subgraph remain unchanged
 
 def hop_plus_one_hop(lower_nodes, graph, threshold, id_to_text):
     """
