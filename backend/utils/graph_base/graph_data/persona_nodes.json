@@ -82,5 +82,209 @@
     "title": "billing manager",
     "seniority": "senior",
     "department": "finance"
+  },
+  {
+    "id": "198681c2-6bee-4bf7-98cc-f3c4871d93d6",
+    "title": "data analyst",
+    "seniority": "operator",
+    "department": "data"
+  },
+  {
+    "id": "620ad8e6-14a7-40dc-9949-4d6bbac86bc7",
+    "title": "data manager",
+    "seniority": "manager",
+    "department": "data"
+  },
+  {
+    "id": "5dbc458e-bb0b-45c4-8cc1-7466e458460f",
+    "title": "business analyst",
+    "seniority": "operator",
+    "department": "strategy"
+  },
+  {
+    "id": "6e6181df-a72d-43e0-bdea-691fd6f9d222",
+    "title": "strategy manager",
+    "seniority": "manager",
+    "department": "strategy"
+  },
+  {
+    "id": "9cc14840-b924-4c96-98c6-4925402c64c3",
+    "title": "data visualization specialist",
+    "seniority": "operator",
+    "department": "data"
+  },
+  {
+    "id": "f426ce60-7929-44d9-b653-89d3ef5fe139",
+    "title": "data scientist",
+    "seniority": "senior",
+    "department": "data"
+  },
+  {
+    "id": "eb8298d1-4a77-449f-87fa-47912e9371d8",
+    "title": "it manager",
+    "seniority": "manager",
+    "department": "it"
+  },
+  {
+    "id": "65c83512-4ae3-41d9-b4ce-78f1f998ea84",
+    "title": "data analyst",
+    "seniority": "operator",
+    "department": "data management"
+  },
+  {
+    "id": "e97eedbe-e0a0-40fe-a4e4-2434754e0950",
+    "title": "data manager",
+    "seniority": "manager",
+    "department": "data management"
+  },
+  {
+    "id": "7dc3ffdf-ece8-4e5b-8fcc-789620c71a0a",
+    "title": "data scientist",
+    "seniority": "senior",
+    "department": "data analysis"
+  },
+  {
+    "id": "53c241c0-fbdc-487a-b105-41b85b11db7d",
+    "title": "business analyst",
+    "seniority": "manager",
+    "department": "business intelligence"
+  },
+  {
+    "id": "58bfb121-5949-4480-9a03-6e3f1098de9d",
+    "title": "data visualization specialist",
+    "seniority": "operator",
+    "department": "data analysis"
+  },
+  {
+    "id": "216d3dd4-745a-4cd2-a2c3-5d9755899cab",
+    "title": "data analyst",
+    "seniority": "manager",
+    "department": "data analysis"
+  },
+  {
+    "id": "82ec1f73-7cc6-4a93-b0b3-c2c11ef0d8f8",
+    "title": "ai specialist",
+    "seniority": "senior",
+    "department": "data analysis"
+  },
+  {
+    "id": "8187f2c9-463e-459b-880d-c2616aa65985",
+    "title": "software developer",
+    "seniority": "operator",
+    "department": "development"
+  },
+  {
+    "id": "33cfe722-6a9c-4c73-a42d-2bc076399b29",
+    "title": "data analyst",
+    "seniority": "operator",
+    "department": "data analysis"
+  },
+  {
+    "id": "53fb9386-c012-4d8b-9f03-84903b22e12b",
+    "title": "business analyst",
+    "seniority": "operator",
+    "department": "business intelligence"
+  },
+  {
+    "id": "69fb96f0-5157-4fce-832c-92ab0ac74613",
+    "title": "business intelligence manager",
+    "seniority": "manager",
+    "department": "business intelligence"
+  },
+  {
+    "id": "41759ae3-9787-49da-8b8e-2d5cdec78081",
+    "title": "business intelligence analyst",
+    "seniority": "operator",
+    "department": "business intelligence"
+  },
+  {
+    "id": "7ea1606c-1689-4ef5-a4a2-537a6598f1f4",
+    "title": "data analysis manager",
+    "seniority": "manager",
+    "department": "data analysis"
+  },
+  {
+    "id": "58a7e587-64a9-4a84-8ba8-80be041db890",
+    "title": "data scientist",
+    "seniority": "operator",
+    "department": "data science"
+  },
+  {
+    "id": "321a13e8-1a8c-4155-a5cd-0d5fb261064c",
+    "title": "data science manager",
+    "seniority": "manager",
+    "department": "data science"
+  },
+  {
+    "id": "ff8b7ca1-c22b-433d-a40e-3fade0bec2a7",
+    "title": "application developer",
+    "seniority": "operator",
+    "department": "application development"
+  },
+  {
+    "id": "4c4064a5-33b5-42d4-8d1f-d4aa28240e1e",
+    "title": "application development manager",
+    "seniority": "manager",
+    "department": "application development"
+  },
+  {
+    "id": "c99b1c63-118e-4c42-9f75-4aa9d49d4976",
+    "title": "data analysis team lead",
+    "seniority": "manager",
+    "department": "data analysis"
+  },
+  {
+    "id": "9aef6828-712d-4b35-a99f-3633318ce663",
+    "title": "business analyst",
+    "seniority": "operator",
+    "department": "business analysis"
+  },
+  {
+    "id": "6b5dd0b2-16cc-455a-93cc-199496e305d1",
+    "title": "business analysis manager",
+    "seniority": "manager",
+    "department": "business analysis"
+  },
+  {
+    "id": "1700d904-8618-4b80-b3c3-e7851fe164ea",
+    "title": "data manager",
+    "seniority": "senior",
+    "department": "data management"
+  },
+  {
+    "id": "9742d9e1-d4ad-46c1-8762-830943c7514c",
+    "title": "data science manager",
+    "seniority": "manager",
+    "department": "data analysis"
+  },
+  {
+    "id": "bd1fac4a-6b3e-44fa-a04a-fe7176d3fd09",
+    "title": "data visualization manager",
+    "seniority": "manager",
+    "department": "data analysis"
+  },
+  {
+    "id": "e1f1b7be-914d-4615-a581-faf92a176fb2",
+    "title": "data engineer",
+    "seniority": "operator",
+    "department": "data analysis"
+  },
+  {
+    "id": "e124f585-5253-4a2c-8f53-8131673b765d",
+    "title": "app developer",
+    "seniority": "operator",
+    "department": "development"
+  },
+  {
+    "id": "ca04bed7-dbf4-44c8-bbee-c426474147f8",
+    "title": "development manager",
+    "seniority": "manager",
+    "department": "development"
+  },
+  {
+    "id": "1df18876-a070-4f52-9589-3f0dd8b3e588",
+    "title": "data scientist",
+    "seniority": "operator",
+    "department": "data analysis"
   }
 ]

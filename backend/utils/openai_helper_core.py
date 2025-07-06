@@ -198,30 +198,47 @@ def run_two_step_reasoning(product_subgraph, retry_depth=0, dump_path=None):
         else:
             print("🧠 [GPT] Generating capability map...")
             gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities_list)
-            
-        """
-        Manas - I know Im stuck somewhere around here.
-        I am getting the gpt output in the format I need... 
-        Each response has a capabiltiy id - a bunch of pains - each pain has a trigger, pain text, and an array or relevance.
-        The relevance array is the relevance of that pain to all capabilities in the set. 
-        Somewhere my code is buggy here... 
-        """    
-        
-        flattened_capability_map = []
-        #Step 2: First pass - created a flattened map with capability, pain, job, personas, pain triggers
-        for index, entry in enumerate(gpt_output):
+
+         """
+         Manas - here's where I'm stuck. 
+            The gpt_output is a list of dictionaries, each containing a capability_id and a list of pains with relevance.
+            Each pain has a relevance array with scored values corresponding to every capability in the list.
+            The output we want is:
+            Every capability node has an edge to every pain node
+            The relevance of capability[i]-pain[j] is gpt_output[i]["pains"][j]["relevance"][i]
+            If a relevance score already exists for this pain-capability combo - choose the highest value.
+         """
+
+        # Build a mapping from capability_id to its index in capabilities_list
+        cap_id_to_index = {cap["id"]: idx for idx, cap in enumerate(capabilities_list)}
+
+        # Dict to store max relevance for each (pain, capability) pair
+        pain_cap_to_relevance = {}
+
+        # First pass: Build pain_cap_to_relevance
+        pain_cap_to_relevance = {}
+        for entry in gpt_output:
             cap_id = entry.get("capability_id", "Unknown").strip()
-            capability_node = product_subgraph.get_node_by_id(cap_id)
-            if not capability_node:
-                print(f"⚠️ Capability node {cap_id} not found in graph. Skipping entry.")
-                continue
-            for pain in entry.get("pains",[]):
+            for pain in entry.get("pains", []):
+                pain_desc = pain.get("pain", "Unknown Pain")
+                relevance_array = [float(x) for x in pain.get("relevance", [])]
+                for idx, rel in enumerate(relevance_array):
+                    target_cap_id = capabilities_list[idx]["id"]
+                    key = (pain_desc, target_cap_id)
+                    prev = pain_cap_to_relevance.get(key, 0.0)
+                    pain_cap_to_relevance[key] = max(prev, rel)
+
+
+        # Second pass: Build flattened_capability_map using the max relevance
+        flattened_capability_map = []
+        for entry in gpt_output:
+            cap_id = entry.get("capability_id", "Unknown").strip()
+            for pain in entry.get("pains", []):
                 pain_desc = pain.get("pain", "Unknown Pain")
                 pain_trigger = pain.get("pain_trigger", "")
                 jobs = pain.get("jobs", [])
-                relevance_array = pain.get("relevance", [])
-                relevance_array = [float(x) for x in relevance_array]
-                relevance = max(relevance_array[index],relevance) if relevance>0 else relevance_array[index]
+                # Look up the max relevance for this (pain, capability) pair
+                relevance = pain_cap_to_relevance.get((pain_desc, cap_id), 0.0)
                 for job in jobs:
                     job_desc = job.get("description", "")
                     personas = job.get("personas", [])
@@ -229,12 +246,11 @@ def run_two_step_reasoning(product_subgraph, retry_depth=0, dump_path=None):
                         persona_title = persona.get("title", "")
                         persona_department = persona.get("department", "")
                         persona_seniority = persona.get("seniority", "")
-                        key = (pain_desc, capability_node["name"], job_desc, persona_title)
                         flattened_capability_map.append({
-                            "capability_id": capability_node["id"],
+                            "capability_id": cap_id,
                             "pain": pain_desc,
                             "pain_trigger": pain_trigger,
-                            "relevance": relevance,  # Default relevance, can be updated later
+                            "relevance": relevance,
                             "job": job_desc,
                             "persona": {
                                 "title": persona_title,
@@ -243,7 +259,8 @@ def run_two_step_reasoning(product_subgraph, retry_depth=0, dump_path=None):
                             },
                             "source": "openai",
                         })
-                        print("Flattened map for persona:", persona_title)
+                        print("Flattened map for persona:", cap_id,"+",pain_desc, " with rel: ", relevance)
+        print("\n\n\nFull flattened capability map: ", flattened_capability_map)
         
         # Step 3: Normalize and canonicalize the flattened capability map
         print("📊 [Graph] Canonicalizing capability map...")

@@ -30,5 +30,73 @@
   {
     "id": "b968ca5e-e887-4fb2-ab51-55975177eb74",
     "text": "difficulty in aligning pricing with value delivered"
+  },
+  {
+    "id": "b7488611-575a-4119-965a-c5a96f25dfef",
+    "text": "inefficiency in data preparation and shaping"
+  },
+  {
+    "id": "990467ee-2ee4-4a47-a79f-e8027fc2ddbd",
+    "text": "difficulty in deriving insights from data"
+  },
+  {
+    "id": "e181ccd0-53af-4ece-8a1f-94b569814796",
+    "text": "difficulty in visualizing complex data"
+  },
+  {
+    "id": "f99bbaf9-6677-49d1-9193-b9e3fcd799ce",
+    "text": "lack of self-service data analytics capabilities"
+  },
+  {
+    "id": "5d4e6c54-2317-453e-af99-53089639891b",
+    "text": "inefficient data management and integration"
+  },
+  {
+    "id": "47f48405-3501-4b7a-a75f-65ce1ef7eab3",
+    "text": "difficulty in turning insights into action"
+  },
+  {
+    "id": "d62a6da6-6eef-427f-9b88-ab53c741b07e",
+    "text": "inefficient data visualization and understanding"
+  },
+  {
+    "id": "90a9c36c-03e3-48af-ac71-e9dd0b49dcf1",
+    "text": "lack of autonomous data analysis"
+  },
+  {
+    "id": "309253b4-0cb2-4663-9d52-a0adf62d1731",
+    "text": "lack of collaborative space for data teams"
+  },
+  {
+    "id": "6c245f71-7baa-4bbf-8255-b7e352818d9a",
+    "text": "inefficiency in data management and integration"
+  },
+  {
+    "id": "bfc2ea9b-02d0-4068-aca9-03c28d65cc43",
+    "text": "limited access to ready-to-use insights"
+  },
+  {
+    "id": "1319f392-30ba-4e37-8e39-85b44f66a94e",
+    "text": "limited self-service capabilities in analytics"
+  },
+  {
+    "id": "697c6ced-ced5-44f0-a1b3-80cc432f50d8",
+    "text": "difficulty in embedding analytics into custom apps"
+  },
+  {
+    "id": "1b8c6a06-63e1-455e-9cf5-55aabe9bc6b4",
+    "text": "inefficiency in data management across different sources"
+  },
+  {
+    "id": "88768e0f-ce77-4d55-be83-fd5831ba3ecf",
+    "text": "time-consuming manual data analysis"
+  },
+  {
+    "id": "bf197246-6b13-4e4e-b8ac-197bfce07001",
+    "text": "difficulty in integrating ai analytics into custom apps"
+  },
+  {
+    "id": "a4372d87-f872-45d2-b5ed-86b9f3b31620",
+    "text": "difficulty in obtaining business-ready insights"
   }
 ]

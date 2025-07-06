@@ -50,5 +50,101 @@
   {
     "id": "a302ceb4-89c2-4f42-89ff-0945c7481780",
     "text": "difficulty in aligning pricing with value delivered"
+  },
+  {
+    "id": "531a4965-8270-4f32-8d24-5b111afc6eae",
+    "text": "inefficiency in data preparation and shaping"
+  },
+  {
+    "id": "5891247f-b041-42b5-99a7-87d03c773459",
+    "text": "difficulty in deriving insights from data"
+  },
+  {
+    "id": "5ce8dbe8-4d5c-432c-834f-f4c17b92d52c",
+    "text": "difficulty in visualizing complex data"
+  },
+  {
+    "id": "07085e9e-f134-43c5-93d2-5daa8233ca34",
+    "text": "lack of self-service data analytics capabilities"
+  },
+  {
+    "id": "6d7a871e-c801-4ef6-9a1c-9e50dbd554e6",
+    "text": "inefficient data management and integration"
+  },
+  {
+    "id": "e77136ee-372a-4341-a58f-81abc07901e2",
+    "text": "difficulty in extracting actionable insights from data"
+  },
+  {
+    "id": "7afda35a-b4c7-4c41-9854-e1da2a9fb565",
+    "text": "inefficient data visualization and understanding"
+  },
+  {
+    "id": "f26dea79-53d8-41c7-97ec-7efeaf417fb9",
+    "text": "lack of autonomous data analysis"
+  },
+  {
+    "id": "7260db69-5707-4641-b572-1d81cddf5b14",
+    "text": "inefficient analytics integration into custom apps"
+  },
+  {
+    "id": "c3095e39-b9ab-43cb-a22d-ad026a20c515",
+    "text": "lack of collaborative space for data teams"
+  },
+  {
+    "id": "93cbc9f7-0959-4ab4-9335-ea087e8624c7",
+    "text": "difficulty in turning insights into action"
+  },
+  {
+    "id": "180b05ec-00d5-40c6-a4ee-fc32aecf223f",
+    "text": "difficulty in getting business-ready insights"
+  },
+  {
+    "id": "1229fec4-439f-4a63-8b61-8eb12d25004a",
+    "text": "inefficiency in data management and integration"
+  },
+  {
+    "id": "53637d06-1a2d-407f-b1f0-4b2f9ce2524c",
+    "text": "inability to visualize and interact with data insights"
+  },
+  {
+    "id": "b9639ff2-7e44-4c75-8699-6022d9dac454",
+    "text": "limited self-service capabilities in analytics"
+  },
+  {
+    "id": "99bcb34d-3b37-4568-883d-e48788b51941",
+    "text": "difficulty in embedding analytics into custom apps"
+  },
+  {
+    "id": "ee81ff92-e25b-4d35-bfce-0aa1c5eff9ae",
+    "text": "limited access to ready-to-use insights"
+  },
+  {
+    "id": "b41c45a4-2717-4181-928c-c63e0e633674",
+    "text": "inefficiency in data management across different sources"
+  },
+  {
+    "id": "eabc6ecd-bdad-4493-9e0f-582749c16e9f",
+    "text": "time-consuming manual data analysis"
+  },
+  {
+    "id": "77ec010e-04a6-493a-bca8-0004b9e2b32b",
+    "text": "difficulty in automating data analysis tasks"
+  },
+  {
+    "id": "a6d3ca3e-5ba6-4765-8c27-e46fff4c6593",
+    "text": "difficulty in integrating ai analytics into custom apps"
+  },
+  {
+    "id": "fe655c84-1372-4689-802b-8ee203fcc574",
+    "text": "difficulty in performing advanced data analysis"
+  },
+  {
+    "id": "129dc0f9-377b-480e-a1a0-d67f07a7fa12",
+    "text": "difficulty in making data-driven decisions"
+  },
+  {
+    "id": "4606d08b-fad6-49c0-ba79-14b0b926f6e8",
+    "text": "difficulty in obtaining business-ready insights"
   }
 ]

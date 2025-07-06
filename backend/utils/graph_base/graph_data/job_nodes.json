@@ -22,5 +22,65 @@
   {
     "id": "f6c88649-1904-4b4a-9e74-1fc2b3ce3011",
     "description": "provide flexible billing options to customers"
+  },
+  {
+    "id": "4721b165-6c71-4732-9bae-609ea65bcffb",
+    "description": "organize and prepare data for analysis"
+  },
+  {
+    "id": "1a22cbad-4aca-4927-b517-5bd9cbd9c927",
+    "description": "derive insights from data for strategic decision-making"
+  },
+  {
+    "id": "f60a1016-e38e-432c-acdf-8bf8d3c046ac",
+    "description": "enable self-service data analytics for various teams"
+  },
+  {
+    "id": "acfdcfd5-6214-403f-990e-f822e4da5b5d",
+    "description": "ensure seamless data integration and management"
+  },
+  {
+    "id": "06746648-1ea1-4b02-911c-bb9cb257049d",
+    "description": "turn insights into actionable decisions"
+  },
+  {
+    "id": "3c36a54b-1ce5-46a2-b381-c29f152a0a18",
+    "description": "visualize and interpret complex data sets"
+  },
+  {
+    "id": "65a1443b-d63a-4d60-8438-10b6d2e30e90",
+    "description": "automate data analysis and reporting"
+  },
+  {
+    "id": "8301153d-bb2e-43ee-9c27-b48407dbcab9",
+    "description": "integrate analytics into custom applications"
+  },
+  {
+    "id": "af277de0-dea8-4810-a99a-e183eebf56ce",
+    "description": "deliver business-ready insights"
+  },
+  {
+    "id": "bd55b6d8-4e6f-4718-ad0c-c15114b34a3b",
+    "description": "collaborate effectively on data projects"
+  },
+  {
+    "id": "e2ad6b1e-c25f-46f2-b91f-528f96a5f4df",
+    "description": "provide self-service analytics capabilities"
+  },
+  {
+    "id": "21e0ac46-aea0-4bfb-b8b2-180e7c4d8a4e",
+    "description": "embed analytics into custom apps"
+  },
+  {
+    "id": "496a6e83-a899-4aaf-92b3-028dbe5b1f6a",
+    "description": "manage and maintain data from various sources"
+  },
+  {
+    "id": "b2f547a1-f109-4833-8a17-784a24ec336b",
+    "description": "make data-driven decisions"
+  },
+  {
+    "id": "2364fa60-56c3-447f-9533-91057a4b940c",
+    "description": "integrate ai analytics into custom apps"
   }
 ]
