@@ -23,7 +23,7 @@ from backend.utils.knowledge_base.persona_generation import (
 from backend.utils.inference.hop_plus_agent import infer_upstream_with_rules
 
 # Hardcoded path to graph data folder - to be updated in production
-GRAPH_DATA_PATH = "backend/utils/graph_base/graph_data"
+GRAPH_DATA_PATH = "utils/graph_base/graph_data"
 
 router = APIRouter()
 
