@@ -45,7 +45,7 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
       .then((res) => res.json())
       .then((data) => {
         console.log("Raw API response in PersonaBuilder:", data);
-        const aggregated = Array.isArray(data.aggregated_personas) ? data.aggregated_personas : [];
+        const aggregated = Array.isArray(data.hop_0_results?.aggregated_personas) ? data.hop_0_results.aggregated_personas : [];
         console.log("✅ Loaded aggregated persona cards:", aggregated);
 
         setPersonaSuggestions(aggregated);

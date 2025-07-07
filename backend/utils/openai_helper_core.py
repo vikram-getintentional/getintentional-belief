@@ -199,15 +199,15 @@ def run_two_step_reasoning(product_subgraph, retry_depth=0, dump_path=None):
             print("🧠 [GPT] Generating capability map...")
             gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities_list)
 
-         """
-         Manas - here's where I'm stuck. 
-            The gpt_output is a list of dictionaries, each containing a capability_id and a list of pains with relevance.
-            Each pain has a relevance array with scored values corresponding to every capability in the list.
-            The output we want is:
-            Every capability node has an edge to every pain node
-            The relevance of capability[i]-pain[j] is gpt_output[i]["pains"][j]["relevance"][i]
-            If a relevance score already exists for this pain-capability combo - choose the highest value.
-         """
+        """
+        Manas - here's where I'm stuck. 
+           The gpt_output is a list of dictionaries, each containing a capability_id and a list of pains with relevance.
+           Each pain has a relevance array with scored values corresponding to every capability in the list.
+           The output we want is:
+           Every capability node has an edge to every pain node
+           The relevance of capability[i]-pain[j] is gpt_output[i]["pains"][j]["relevance"][i]
+           If a relevance score already exists for this pain-capability combo - choose the highest value.
+        """
 
         # Build a mapping from capability_id to its index in capabilities_list
         cap_id_to_index = {cap["id"]: idx for idx, cap in enumerate(capabilities_list)}

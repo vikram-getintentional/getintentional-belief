@@ -270,7 +270,7 @@ class Graph:
         """
         # Assuming self.node_registry or similar holds all nodes
         for node in self.node_registry.values():
-            if node.get("type") == "capability":
+            if node.get("node_type") == "capability":
                 capability_id = node["id"]
                 print("Starting update centrality for capability:", capability_id)
                 centrality = self.calculate_capability_centrality(capability_id)
@@ -279,7 +279,11 @@ class Graph:
                 print(f"Updated centrality for capability {capability_id}: {centrality}")
 
 
+    def get_total_pain_count(self) -> int:
+        return 0
+
     def calculate_capability_centrality(self, capability_id):
+
         """
         Calculates the centrality of a capability node based on its connections.
         
