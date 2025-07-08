@@ -275,7 +275,7 @@ class Graph:
 
         """
         
-        all_paths = self.get_all_paths_between_nodes(start_id, sink_id)
+        """all_paths = self.get_all_paths_between_nodes(start_id, sink_id)
         cumulative_relevance = 0.0
         for path in all_paths:
            path_impact = 1.0
@@ -284,7 +284,25 @@ class Graph:
                path_impact *= weight
            cumulative_relevance += path_impact
            normalized_cumulative_relevance = cumulative_relevance / len(path) if path else 0.0
+           """
+        all_paths =[]
+        cumulative_relevance = 1.0
+        normalized_cumulative_relevance = 1.0
         return cumulative_relevance, normalized_cumulative_relevance, all_paths
+
+    def percolate_cumulative_relevance(self):
+        """
+        Starting from product node - percolates to each connected node and updates cumulative relevance for each node.
+        This method assumes that the product node is the root of the graph and all other nodes are connected to it.
+        Logic is:
+        From self - find product node
+        For product node id - find all connected nodes and edge weight. 
+        For each connected node - Set cum_relevance of each node as edge weight.
+        For each connected node - traverse up to find next level node
+        Set cum relevance as previous level cum_relevance * current edge weight.
+        Recurse to find cumulative relevance until no more new connections exist.
+        """
+        
 
     def get_product_id_from_subgraph(self) -> str:
         # Assumes there is only one product node in the subgraph
