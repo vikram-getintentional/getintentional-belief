@@ -6,6 +6,10 @@ def load_graph_from_folder(folder_path: str):
     node_registry = {}
     graph_edges = []
     edge_weights = {}
+    
+    print("Current working directory:", os.getcwd())
+    print("GRAPH_DATA_PATH:", folder_path)
+    print("Exists?", os.path.exists(folder_path))
 
     for fname in os.listdir(folder_path):
         if fname.endswith("_nodes.json"):

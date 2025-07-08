@@ -9,6 +9,8 @@ from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
 from backend.utils.graph_base.edges.edge_manager import add_edge
 
 
+
+
 def infer_upstream_with_rules(
     product_subgraph: Graph,
     cap_threshold: float = 0.1,
@@ -17,7 +19,8 @@ def infer_upstream_with_rules(
 ):
     """
     Traverse up from product_id to capabilities, pains, jobs, personas.
-    For each persona, calculate cumulative relevance to product.
+    For each capability check that capability_centrality > cap_threshold (0.6)
+    For each persona, calculate normalized cumulative relevance to product.
     If cumulative relevance > threshold, traverse jobs and upstream pains.
     If no upstream pains, use hop_plus_one_hop (GPT fallback).
     Recurse until cumulative relevance drops below threshold or max_depth reached.
@@ -33,8 +36,8 @@ def infer_upstream_with_rules(
         if current_depth > max_depth or persona_id in visited_personas:
             return
         visited_personas.add(persona_id)
-        cum_relevance, all_paths = product_subgraph.compute_cumulative_relevance_from_node(persona_id, product_id)
-        if cum_relevance < relevance_threshold:
+        cum_relevance, normalized_cumulative_relevance, all_paths = product_subgraph.compute_cumulative_relevance_from_node(persona_id, product_id)
+        if normalized_cumulative_relevance < relevance_threshold:
             return
 
         persona_node = product_subgraph.get_node_by_id(persona_id)

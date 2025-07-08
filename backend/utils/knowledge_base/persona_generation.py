@@ -127,10 +127,10 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
     product_id = sub_graph.get_node_id("product",{})
 
     for persona_id, _ in sub_graph.get_nodes_list("persona",{}):
-        cumulative_relevance, _ = sub_graph.compute_cumulative_relevance_from_node(
+        _, normalized_relevance, _ = sub_graph.compute_cumulative_relevance_from_node(
             persona_id, product_id
         )
-        print("Cumulative relevance for persona ID:", persona_id, "is", cumulative_relevance)
+        print("Cumulative relevance for persona ID:", persona_id, "is", normalized_relevance)
         persona_node = sub_graph.get_node_by_id(persona_id)
         jobs = []
         # For each job performed by this persona
@@ -164,7 +164,7 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
                 "department": persona_node.get("department"),
                 "seniority": persona_node.get("seniority"),
             },
-            "relevance": cumulative_relevance,
+            "relevance": normalized_relevance,
             "jobs": jobs
         }
         personas.append(persona)

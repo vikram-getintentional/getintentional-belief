@@ -3500,13 +3500,13 @@
   },
   "data analyst|data science|Operator": "data analyst|data science|Operator",
   "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'data analyst', 'department': 'data science', 'seniority': 'Operator'}": {
-    "title": "it manager",
-    "department": "it",
+    "title": "data analyst",
+    "department": "data science",
     "seniority": "Operator"
   },
   "{'title': 'manager', 'department': 'operations', 'seniority': 'Operator'}": {
@@ -3536,13 +3536,13 @@
     "seniority": "Operator"
   },
   "{'title': 'data scientist', 'department': 'data science', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "it manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'data engineer', 'department': 'data engineering', 'seniority': 'Operator'}": {
     "title": "data analyst",
-    "department": "data analysis",
+    "department": "data science",
     "seniority": "Operator"
   },
   "{'department': 'Executive', 'seniority': 'Operator', 'title': 'Chief Executive Officer'}": {
@@ -3648,8 +3648,8 @@
   },
   "data analyst|data analysis|Operator": "data analyst|data analysis|Operator",
   "{'title': 'data analyst', 'department': 'data analysis', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'business analyst', 'department': 'business strategy', 'seniority': 'Operator'}": {
@@ -3668,8 +3668,8 @@
     "seniority": "Operator"
   },
   "{'title': 'software developer', 'department': 'software development', 'seniority': 'Operator'}": {
-    "title": "software developer",
-    "department": "software development",
+    "title": "product manager",
+    "department": "product development",
     "seniority": "Operator"
   },
   "{'title': 'data analyst', 'department': 'data analysis', 'seniority': 'Junior'}": {
@@ -3678,13 +3678,13 @@
     "seniority": "Junior"
   },
   "{'title': 'data manager', 'department': 'data management', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "data management",
     "seniority": "Operator"
   },
   "customer relationship manager|customer service|Operator": "customer relationship manager|customer service|Operator",
   "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "pricing analyst",
+    "title": "accountant",
     "department": "finance",
     "seniority": "Operator"
   },
@@ -3694,8 +3694,8 @@
     "seniority": "Operator"
   },
   "{'title': 'finance manager', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "account manager",
-    "department": "sales",
+    "title": "accountant",
+    "department": "finance",
     "seniority": "Operator"
   },
   "{'title': 'customer success manager', 'department': 'customer service', 'seniority': 'Operator'}": {
@@ -3709,8 +3709,8 @@
     "seniority": "Operator"
   },
   "{'title': 'operations manager', 'department': 'operations', 'seniority': 'Operator'}": {
-    "title": "it manager",
-    "department": "it",
+    "title": "strategy manager",
+    "department": "strategy",
     "seniority": "Operator"
   },
   "{'title': 'information security officer', 'department': 'it', 'seniority': 'Operator'}": {
@@ -3719,13 +3719,13 @@
     "seniority": "Operator"
   },
   "{'title': 'business analyst', 'department': 'strategy', 'seniority': 'Operator'}": {
-    "title": "strategy manager",
-    "department": "strategy",
+    "title": "accountant",
+    "department": "finance",
     "seniority": "Operator"
   },
   "subscription manager|sales|Operator": "subscription manager|sales|Operator",
   "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'Operator'}": {
-    "title": "subscription manager",
+    "title": "sales executive",
     "department": "sales",
     "seniority": "Operator"
   },
@@ -3735,7 +3735,7 @@
     "seniority": "Operator"
   },
   "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'Operator'}": {
-    "title": "sales manager",
+    "title": "sales executive",
     "department": "sales",
     "seniority": "Operator"
   },
@@ -3851,8 +3851,8 @@
   },
   "subscription manager|customer service|Operator": "subscription manager|customer service|Operator",
   "{'title': 'subscription manager', 'department': 'customer service', 'seniority': 'Operator'}": {
-    "title": "subscription manager",
-    "department": "customer service",
+    "title": "retention specialist",
+    "department": "customer success",
     "seniority": "Operator"
   },
   "{'title': 'pricing strategist', 'department': 'sales', 'seniority': 'Operator'}": {
@@ -3876,7 +3876,7 @@
     "seniority": "Operator"
   },
   "{'title': 'security officer', 'department': 'it', 'seniority': 'Operator'}": {
-    "title": "it specialist",
+    "title": "it manager",
     "department": "it",
     "seniority": "Operator"
   },
@@ -3952,13 +3952,13 @@
   },
   "{'title': 'business intelligence manager', 'department': 'business intelligence', 'seniority': 'Operator'}": {
     "title": "data analyst",
-    "department": "data analysis",
+    "department": "data science",
     "seniority": "Operator"
   },
   "{'title': 'chief data officer', 'department': 'executive', 'seniority': 'Operator'}": {
     "title": "data analyst",
     "department": "analytics",
-    "seniority": "Junior"
+    "seniority": "Operator"
   },
   "{'title': 'business intelligence developer', 'department': 'business intelligence', 'seniority': 'Operator'}": {
     "title": "data analyst",
@@ -3997,7 +3997,7 @@
   },
   "{'title': 'business analyst', 'department': 'business intelligence', 'seniority': 'Operator'}": {
     "title": "data analyst",
-    "department": "data analysis",
+    "department": "data science",
     "seniority": "Operator"
   },
   "{'department': 'Finance', 'seniority': 'Operator', 'title': 'Billing Manager'}": {
@@ -4031,9 +4031,9 @@
     "seniority": "Junior"
   },
   "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'Junior'}": {
-    "title": "pricing analyst",
+    "title": "accountant",
     "department": "finance",
-    "seniority": "Junior"
+    "seniority": "Operator"
   },
   "{'title': 'pricing strategist', 'department': 'marketing', 'seniority': 'Operator'}": {
     "title": "business analyst",
@@ -4092,13 +4092,13 @@
     "seniority": "Operator"
   },
   "{'title': 'business analyst', 'department': 'business analysis', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'app developer', 'department': 'app development', 'seniority': 'Operator'}": {
-    "title": "ai specialist",
-    "department": "ai development",
+    "title": "app developer",
+    "department": "app development",
     "seniority": "Operator"
   },
   "{'title': 'business user', 'department': 'various', 'seniority': 'Junior'}": {
@@ -4112,8 +4112,8 @@
     "seniority": "Operator"
   },
   "{'title': 'ai specialist', 'department': 'ai development', 'seniority': 'Operator'}": {
-    "title": "ai specialist",
-    "department": "ai development",
+    "title": "data analyst",
+    "department": "data analysis",
     "seniority": "Operator"
   },
   "{'title': 'data security officer', 'department': 'data security', 'seniority': 'Operator'}": {
@@ -4127,7 +4127,7 @@
     "seniority": "Operator"
   },
   "{'title': 'integration specialist', 'department': 'it', 'seniority': 'Operator'}": {
-    "title": "it manager",
+    "title": "integration specialist",
     "department": "it",
     "seniority": "Operator"
   },
@@ -4159,7 +4159,7 @@
   },
   "data analyst|data|Operator": "data analyst|data|Operator",
   "{'title': 'data analyst', 'department': 'data', 'seniority': 'Operator'}": {
-    "title": "data manager",
+    "title": "data analyst",
     "department": "data",
     "seniority": "Operator"
   },
@@ -4179,18 +4179,18 @@
     "seniority": "Operator"
   },
   "{'title': 'data manager', 'department': 'data', 'seniority': 'Operator'}": {
-    "title": "data manager",
+    "title": "data analyst",
     "department": "data",
     "seniority": "Operator"
   },
   "marketing manager|marketing|Operator": "marketing manager|marketing|Operator",
   "{'title': 'marketing manager', 'department': 'marketing', 'seniority': 'Operator'}": {
-    "title": "sales manager",
-    "department": "sales",
+    "title": "strategy manager",
+    "department": "strategy",
     "seniority": "Operator"
   },
   "{'title': 'sales director', 'department': 'sales', 'seniority': 'Operator'}": {
-    "title": "sales manager",
+    "title": "sales director",
     "department": "sales",
     "seniority": "Operator"
   },
@@ -4235,7 +4235,7 @@
     "seniority": "Junior"
   },
   "{'title': 'data visualization specialist', 'department': 'data', 'seniority': 'Operator'}": {
-    "title": "data manager",
+    "title": "data analyst",
     "department": "data",
     "seniority": "Operator"
   },
@@ -4245,13 +4245,13 @@
     "seniority": "Operator"
   },
   "{'title': 'systems integrator', 'department': 'it', 'seniority': 'Operator'}": {
-    "title": "it manager",
+    "title": "cio",
     "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'business intelligence manager', 'department': 'analytics', 'seniority': 'Operator'}": {
-    "title": "data engineer",
-    "department": "data",
+    "title": "data analyst",
+    "department": "analytics",
     "seniority": "Operator"
   },
   "{'title': 'analytics team lead', 'department': 'analytics', 'seniority': 'Operator'}": {
@@ -4404,7 +4404,7 @@
     "seniority": "Junior"
   },
   "{'title': 'chief financial officer', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "billing manager",
+    "title": "accountant",
     "department": "finance",
     "seniority": "Operator"
   },
@@ -4430,8 +4430,8 @@
     "seniority": "Operator"
   },
   "{'title': 'chief strategy officer', 'department': 'strategy', 'seniority': 'Operator'}": {
-    "title": "business analyst",
-    "department": "strategy",
+    "title": "accountant",
+    "department": "finance",
     "seniority": "Operator"
   },
   "{'title': 'payment processing specialist', 'department': 'finance', 'seniority': 'Operator'}": {
@@ -4501,8 +4501,8 @@
   },
   "data analyst|analytics|Operator": "data analyst|analytics|Operator",
   "{'title': 'data analyst', 'department': 'analytics', 'seniority': 'Operator'}": {
-    "title": "data engineer",
-    "department": "data",
+    "title": "data analyst",
+    "department": "analytics",
     "seniority": "Operator"
   },
   "{'title': 'data visualization specialist', 'department': 'design', 'seniority': 'Operator'}": {
@@ -4536,9 +4536,9 @@
     "seniority": "Junior"
   },
   "{'title': 'data science team lead', 'department': 'data science', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data science",
-    "seniority": "Junior"
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
   },
   "{'title': 'data visualization specialist', 'department': 'data science', 'seniority': 'Operator'}": {
     "title": "data analyst",
@@ -4553,9 +4553,9 @@
   "unknown persona|unknown|Operator": "unknown persona|unknown|Operator",
   "pricing analyst|finance|Junior": "pricing analyst|finance|Junior",
   "{'title': 'pricing manager', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "pricing analyst",
+    "title": "cfo",
     "department": "finance",
-    "seniority": "Junior"
+    "seniority": "Operator"
   },
   "{'title': 'risk management specialist', 'department': 'risk management', 'seniority': 'Operator'}": {
     "title": "risk management specialist",
@@ -4574,13 +4574,13 @@
     "seniority": "Operator"
   },
   "{'title': 'data analyst', 'department': 'data management', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "data management",
     "seniority": "Operator"
   },
   "{'title': 'data visualization specialist', 'department': 'data analysis', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'ai specialist', 'department': 'data analysis', 'seniority': 'Operator'}": {
@@ -4595,28 +4595,28 @@
   },
   "{'title': 'data science manager', 'department': 'data science', 'seniority': 'Operator'}": {
     "title": "data analyst",
-    "department": "data analysis",
-    "seniority": "Operator"
+    "department": "data science",
+    "seniority": "Junior"
   },
   "{'title': 'business analysis manager', 'department': 'business analysis', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'application developer', 'department': 'application development', 'seniority': 'Operator'}": {
-    "title": "application developer",
+    "title": "development team lead",
     "department": "application development",
     "seniority": "Operator"
   },
   "{'title': 'data analysis manager', 'department': 'data analysis', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data analysis",
+    "title": "data manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'application development manager', 'department': 'application development', 'seniority': 'Operator'}": {
     "title": "application developer",
     "department": "application development",
-    "seniority": "Operator"
+    "seniority": "Junior"
   },
   "{'title': 'data analysis team lead', 'department': 'data analysis', 'seniority': 'Operator'}": {
     "title": "data analyst",
@@ -4634,13 +4634,303 @@
     "seniority": "Operator"
   },
   "{'title': 'development manager', 'department': 'development', 'seniority': 'Operator'}": {
-    "title": "app developer",
+    "title": "development manager",
     "department": "development",
     "seniority": "Operator"
   },
   "{'title': 'data visualization manager', 'department': 'data analysis', 'seniority': 'Operator'}": {
     "title": "data analyst",
     "department": "data analysis",
+    "seniority": "Operator"
+  },
+  "{'title': 'bi manager', 'department': 'business intelligence', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data science",
+    "seniority": "Operator"
+  },
+  "{'title': 'business decision maker', 'department': 'executive', 'seniority': 'Operator'}": {
+    "title": "cio",
+    "department": "executive",
+    "seniority": "Operator"
+  },
+  "{'title': 'bi analyst', 'department': 'business intelligence', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data architect', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'cio', 'department': 'executive', 'seniority': 'Operator'}": {
+    "title": "cio",
+    "department": "executive",
+    "seniority": "Operator"
+  },
+  "{'title': 'application developer', 'department': 'development', 'seniority': 'Operator'}": {
+    "title": "development manager",
+    "department": "development",
+    "seniority": "Operator"
+  },
+  "{'title': 'business user', 'department': 'various', 'seniority': 'Operator'}": {
+    "title": "business user",
+    "department": "various",
+    "seniority": "Operator"
+  },
+  "{'title': 'enterprise architect', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'business analyst', 'department': 'decision making', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data analysis",
+    "seniority": "Operator"
+  },
+  "{'title': 'development team lead', 'department': 'application development', 'seniority': 'Operator'}": {
+    "title": "development team lead",
+    "department": "application development",
+    "seniority": "Operator"
+  },
+  "{'title': 'decision manager', 'department': 'decision making', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data analysis",
+    "seniority": "Operator"
+  },
+  "{'title': 'analysis team lead', 'department': 'data analysis', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data analysis",
+    "seniority": "Operator"
+  },
+  "{'title': 'data analyst', 'department': 'data management', 'seniority': 'Junior'}": {
+    "title": "data analyst",
+    "department": "data management",
+    "seniority": "Junior"
+  },
+  "{'title': 'application developer', 'department': 'application development', 'seniority': 'Junior'}": {
+    "title": "application developer",
+    "department": "application development",
+    "seniority": "Junior"
+  },
+  "{'title': 'data visualization specialist', 'department': 'data visualization', 'seniority': 'Operator'}": {
+    "title": "data manager",
+    "department": "data management",
+    "seniority": "Operator"
+  },
+  "{'title': 'data visualization manager', 'department': 'data visualization', 'seniority': 'Operator'}": {
+    "title": "data manager",
+    "department": "data management",
+    "seniority": "Operator"
+  },
+  "{'title': 'app development manager', 'department': 'app development', 'seniority': 'Operator'}": {
+    "title": "app developer",
+    "department": "app development",
+    "seniority": "Operator"
+  },
+  "{'title': 'business intelligence analyst', 'department': 'bi', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'bi manager', 'department': 'bi', 'seniority': 'Operator'}": {
+    "title": "bi manager",
+    "department": "bi",
+    "seniority": "Operator"
+  },
+  "{'title': 'data visualization specialist', 'department': 'data science', 'seniority': 'Junior'}": {
+    "title": "data analyst",
+    "department": "data science",
+    "seniority": "Junior"
+  },
+  "{'title': 'app development manager', 'department': 'application development', 'seniority': 'Operator'}": {
+    "title": "app developer",
+    "department": "application development",
+    "seniority": "Operator"
+  },
+  "{'title': 'app developer', 'department': 'application development', 'seniority': 'Operator'}": {
+    "title": "app developer",
+    "department": "application development",
+    "seniority": "Operator"
+  },
+  "{'title': 'development team lead', 'department': 'development', 'seniority': 'Operator'}": {
+    "title": "app developer",
+    "department": "development",
+    "seniority": "Operator"
+  },
+  "{'title': 'business analyst', 'department': 'business', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'business intelligence manager', 'department': 'business', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "Operator"
+  },
+  "{'title': 'strategic planner', 'department': 'strategy', 'seniority': 'Operator'}": {
+    "title": "strategy manager",
+    "department": "strategy",
+    "seniority": "Operator"
+  },
+  "{'title': 'data manager', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "data manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data analyst', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "data manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'Junior'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "Junior"
+  },
+  "{'title': 'data science lead', 'department': 'data', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "Junior"
+  },
+  "{'title': 'business intelligence manager', 'department': 'data science', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data science",
+    "seniority": "Junior"
+  },
+  "{'title': 'data strategist', 'department': 'data science', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data science",
+    "seniority": "Junior"
+  },
+  "{'title': 'data engineering manager', 'department': 'data engineering', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data science",
+    "seniority": "Junior"
+  },
+  "{'title': 'business intelligence analyst', 'department': 'data science', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data science",
+    "seniority": "Junior"
+  },
+  "{'title': 'director of business operations', 'department': 'business', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'senior data scientist', 'department': 'data science', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'data analyst', 'department': 'business intelligence', 'seniority': 'Junior'}": {
+    "title": "data engineer",
+    "department": "data engineering",
+    "seniority": "Operator"
+  },
+  "{'title': 'data scientist', 'department': 'research & development', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "data engineering",
+    "seniority": "Operator"
+  },
+  "{'title': 'data visualization specialist', 'department': 'business intelligence', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "data engineering",
+    "seniority": "Operator"
+  },
+  "{'title': 'product manager', 'department': 'product development', 'seniority': 'Operator'}": {
+    "title": "product manager",
+    "department": "product development",
+    "seniority": "Operator"
+  },
+  "{'title': 'cfo', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "cfo",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'controller', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "cfo",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'data security officer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'cio', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "cio",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'international business manager', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "cfo",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'vp of customer success', 'department': 'customer success', 'seniority': 'Operator'}": {
+    "title": "vp of customer success",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'retention specialist', 'department': 'customer success', 'seniority': 'Operator'}": {
+    "title": "retention specialist",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer service representative', 'department': 'customer service', 'seniority': 'Junior'}": {
+    "title": "customer service representative",
+    "department": "customer service",
+    "seniority": "Junior"
+  },
+  "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'Operator'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'ciso', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "cio",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'global expansion manager', 'department': 'strategy', 'seniority': 'Operator'}": {
+    "title": "global expansion manager",
+    "department": "strategy",
+    "seniority": "Operator"
+  },
+  "{'title': 'international sales manager', 'department': 'sales', 'seniority': 'Operator'}": {
+    "title": "sales executive",
+    "department": "sales",
+    "seniority": "Junior"
+  },
+  "{'title': 'chief information officer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'sales executive', 'department': 'sales', 'seniority': 'Junior'}": {
+    "title": "sales executive",
+    "department": "sales",
+    "seniority": "Junior"
+  },
+  "{'title': 'subscription manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "subscription manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'sales executive', 'department': 'sales', 'seniority': 'Operator'}": {
+    "title": "sales executive",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer service representative', 'department': 'customer service', 'seniority': 'Operator'}": {
+    "title": "sales executive",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'business intelligence manager', 'department': 'data', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data",
     "seniority": "Operator"
   }
 }

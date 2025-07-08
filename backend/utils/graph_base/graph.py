@@ -27,12 +27,12 @@ class Graph:
     def get_node_id(self, node_type: str, properties: dict) -> str:
         for node_id, node_data in self.node_registry.items():
             if node_data.get("node_type") == node_type:
-                print(f"Comparing node {node_id}:")
+                
                 for k, v in properties.items():
                     print(f"  {k}: node has '{node_data.get(k)}', looking for '{v}'")
                     print(f"    Equal? {node_data.get(k) == v}")
                 if all(node_data.get(k) == v for k, v in properties.items()):
-                    print(f"Match found: {node_id}")
+                    
                     return node_id
         print("No match found.")
         return None
@@ -142,11 +142,35 @@ class Graph:
             graph_edges=subgraph_edges,
             edge_weights=subgraph_weights
         )
-    
+    def get_all_source_nodes(self, node) -> Set[str]:
+        """
+        Returns all source nodes for a given node by traversing incoming edges.
+        """
+        source_list = []
+        node_id = node["id"]
+        for edge in self.graph_edges:
+            if edge["target"] == node_id:
+                source_id = edge["source"]
+                source = self.get_node_by_id(source_id)
+                source_list.append(source)
+        return source_list
+
+    def get_all_target_node_ids(self, node) -> Set[str]:
+        """
+        Returns all target nodes for a given node by traversing outgoing edges.
+        """
+        target_list = []
+        node_id = node["id"]
+        for edge in self.graph_edges:
+            if edge["source"] == node_id:
+                target_id = edge["target"]
+                target = self.get_node_by_id(target_id)
+                target_list.append(target)
+        return target_list
     def extract_product_subgraph(self, product_id: str) -> "Graph":
         """
-        Extracts a subgraph containing all nodes and edges reachable from the given product_id
-        by traversing only outgoing edges (i.e., downstream traversal).
+        Extracts a subgraph containing all nodes and edges connected to the given product_id,
+        by traversing both incoming and outgoing edges (undirected traversal).
         """
         visited = set()
         to_visit = [product_id]
@@ -163,14 +187,17 @@ class Graph:
             if node:
                 subgraph_nodes[node_id] = node
 
-            # Only traverse outgoing edges from the current node
             for edge in self.graph_edges:
-                if edge.get("source") == node_id:
-                    target_id = edge.get("target")
-                    if target_id not in visited:
+                # If this node is source or target, add the edge and the other node
+                if edge.get("source") == node_id or edge.get("target") == node_id:
+                    # Add edge if not already added
+                    if edge not in subgraph_edges:
                         subgraph_edges.append(edge)
                         subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(target_id)
+                    # Add the other node to to_visit if not visited
+                    other_id = edge.get("target") if edge.get("source") == node_id else edge.get("source")
+                    if other_id not in visited and other_id not in to_visit:
+                        to_visit.append(other_id)
 
         return Graph(
             node_registry=subgraph_nodes,
@@ -252,10 +279,12 @@ class Graph:
         cumulative_relevance = 0.0
         for path in all_paths:
            path_impact = 1.0
+           path_length = len(path)
            for (_, _, weight) in path:
                path_impact *= weight
            cumulative_relevance += path_impact
-        return cumulative_relevance, all_paths
+           normalized_cumulative_relevance = cumulative_relevance / len(path) if path else 0.0
+        return cumulative_relevance, normalized_cumulative_relevance, all_paths
 
     def get_product_id_from_subgraph(self) -> str:
         # Assumes there is only one product node in the subgraph
@@ -269,50 +298,27 @@ class Graph:
         Updates each capability node in the graph with its degree centrality score.
         """
         # Assuming self.node_registry or similar holds all nodes
-        for node in self.node_registry.values():
-            if node.get("node_type") == "capability":
-                capability_id = node["id"]
-                print("Starting update centrality for capability:", capability_id)
-                centrality = self.calculate_capability_centrality(capability_id)
-                # Update the node's centrality  
-                node["capability_centrality"] = centrality
-                print(f"Updated centrality for capability {capability_id}: {centrality}")
+        capability_list = self.get_nodes_list("capability", {})
+        for cap in capability_list:
+            cap_node = cap[1]
+            cap_id = cap_node["id"]
+            print("Starting update centrality for capability:", cap_id, "name:", cap_node["name"])
+            connected_pains = self.get_target_nodes_by_source_and_type(cap_id, "solves")
+            print(f"Capability {cap_id} is connected to {len(connected_pains)} pains.")
+            cap_centrality = 0.0
+            for pain_id in connected_pains:
+                print("Pulling centrality for pain:", pain_id)
+                edge_weight = self.get_edge_weight(cap_id, pain_id)
+                print(f"Edge from {cap_id} to {pain_id} has weight {edge_weight}")
+                cap_centrality += edge_weight
+                print(f"Current centrality for capability: {cap_centrality}")
+            print(f"Calculated total centrality for capability {cap_id}: {cap_centrality}")
+            # Normalize the centrality score
+            normalized_centrality = cap_centrality/len(connected_pains) if connected_pains else 0.0
+            print(f"Normalized centrality for capability {cap_id}: {normalized_centrality}")
+            # Update the node's centrality
+            cap_node["centrality"] = normalized_centrality
 
-
-    def get_total_pain_count(self) -> int:
-        return 0
-
-    def calculate_capability_centrality(self, capability_id):
-
-        """
-        Calculates the centrality of a capability node based on its connections.
-        
-        Args:
-            base_graph (Graph): The graph object containing nodes and edges.
-            capability_id (str): The ID of the capability node.
-
-        Logic:
-            For an input capability id - find all edges where source is this capability ID and target is any pain ID. 
-            Set cap_centrality = 0
-            For each edge: cap_centrality+=weight of edge
-            normalized_centrality = cap_centrality / self.get_total_pain_count() if self.get_total_pain_count() > 0 else 0
-
-        Returns:
-            float: The centrality score of the capability node.
-        """
-        print("Calculating centrality for capability:", capability_id)
-        cap_centrality = 0.0
-        for edge in self.graph_edges:
-            if edge.get("source") == capability_id and edge.get("type") == "solves":
-                target_id = edge.get("target")
-                weight = self.get_edge_weight(edge.get("source"), edge.get("target")) or 1.0
-                cap_centrality += weight
-                print(f"Edge from {capability_id} to {target_id} with weight {weight} contributes to centrality.")
-
-        normalized_centrality = cap_centrality / self.get_total_pain_count() if self.get_total_pain_count() > 0 else 0
-        print(f"Normalized centrality for capability {capability_id}: {normalized_centrality}")
-
-        return normalized_centrality
 
 # Example usage:
 if __name__ == "__main__":

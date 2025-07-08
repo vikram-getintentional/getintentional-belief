@@ -112,6 +112,22 @@ const Personas = () => {
       {/* 4. If no products, show message */}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
 
+      {personas.length > 0 && (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {personas.map((p, i) => (
+          <PersonaCard
+            key={i}
+            persona={p}
+            selectedPains={p.pains || []}
+            isSelected={true}
+            onTogglePain={() => {}}
+            onTogglePersona={() => {}}
+          />
+        ))}
+      </div>
+    )}
+
+    
       {/* 5. Show personas if they exist */}
       {personas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -128,7 +144,35 @@ const Personas = () => {
         </div>
       )}
 
-      {/* 6. Show Infer Personas button if no personas and product is selected */}
+     {personas.length > 0 && (
+        <button
+          className="mt-6 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          onClick={async () => {
+            if (!selectedProductId) return;
+            setStatusMsg("Inferring Hop+ Personas...");
+            try {
+              const res = await fetch("http://localhost:8000/analyze/hop_plus", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ product_id: selectedProductId }),
+              });
+              if (!res.ok) throw new Error("Failed to infer Hop+ personas");
+              setStatusMsg("Hop+ Personas inferred! Refresh to see updates.");
+              // Optionally, refresh personas here by calling fetchPersonas()
+            } catch (err) {
+              setStatusMsg("Error inferring Hop+ personas.");
+              console.error(err);
+            }
+          }}
+        >
+          Infer Hop+ Personas
+        </button>
+      )}
+
+      {/* 7. Show Infer Personas button if no personas and product is selected */}
       {!showBuilder && selectedProductId && !statusMsg.includes("Value Prop") && (
         <button
           className="mt-8 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
@@ -137,8 +181,9 @@ const Personas = () => {
           {personas.length === 0 ? "Infer Personas" : "Re-infer Personas"}
         </button>
       )}
+      
 
-      {/* 7. Show PersonaBuilder when button is clicked */}
+      {/* 8. Show PersonaBuilder when button is clicked */}
       {showBuilder && selectedProductId && (
         <div className="mt-8">
           <PersonaBuilder

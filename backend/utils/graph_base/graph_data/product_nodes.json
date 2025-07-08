@@ -1,16 +1,9 @@
 [
   {
-    "id": "b7efa9d5-adaa-432c-91f8-26ef433ad9fb",
-    "summary": "Chargebee provides a versatile billing infrastructure that allows businesses to quickly launch, experiment, and iterate pricing structures. It offers a range of pricing models to help businesses unlock hidden revenue, insulate price shocks, and implement unique pricing strategies.",
+    "id": "93dea467-3aa3-495d-a131-7850d98561d3",
+    "summary": "Chargebee offers a robust, flexible subscription management and billing platform that supports global expansion, multiple currencies, and over 30 payment gateways. It streamlines financial operations and enhances customer experiences, enabling businesses to efficiently manage customer churn, revenue recognition, and pricing experiments.",
     "company_id": "3572f8cd-49f0-44fe-be5c-e7df224798db",
     "url": "https://chargebee.com",
-    "plg_flag": true
-  },
-  {
-    "id": "26cc81b5-4687-4f70-a80f-74915976c358",
-    "summary": "ThoughtSpot is a leader in the AI-driven analytics and BI platforms, offering an Agentic Analytics Platform that empowers every user with connected insights. It provides products such as Spotter, an autonomous agent for analytics, Liveboards for connected insights, Analyst Studio for accelerating data to insights, and Smart Apps for intelligent experiences.",
-    "company_id": "dc796c4a-d90d-4c2e-b693-1fa67b3c8642",
-    "url": "https://thoughtspot.com",
     "plg_flag": true
   }
 ]

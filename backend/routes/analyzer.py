@@ -23,7 +23,11 @@ from backend.utils.knowledge_base.persona_generation import (
 from backend.utils.inference.hop_plus_agent import infer_upstream_with_rules
 
 # Hardcoded path to graph data folder - to be updated in production
-GRAPH_DATA_PATH = "utils/graph_base/graph_data"
+
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
 
 router = APIRouter()
 
@@ -333,20 +337,25 @@ async def analyze_hop_plus(payload: dict, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         db = SessionLocal()
-        hop_0_graph = payload.get("results", [])
+        product_id = payload.get("product_id")
+        if not product_id:
+            raise HTTPException(status_code=400, detail="Product ID required.")
         print("Starting Hop0 graph load")
         node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
         
-        hop_plus_graph = Graph(
+        base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
             edge_weights=edge_weights
         )
+
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
         
         hop_plus_results = infer_upstream_with_rules(
-            base_nodes=hop_0_graph,
-            graph=hop_plus_graph,
-            max_hops=1
+            product_subgraph=product_subgraph,
+            cap_threshold = 0.3,
+            relevance_threshold = 0.6,
+            max_depth=3
         )
 
         print("results in analyze_hop_plus:", hop_plus_results)
