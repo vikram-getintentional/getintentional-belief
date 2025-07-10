@@ -231,7 +231,8 @@ class Graph:
         cumulative_relevance = self.calculate_cumulative_relevance(product_id)
         if not cumulative_relevance:
             raise ValueError(f"No cumulative relevance calculated for product ID {product_id}.")
-        add_or_update_cumulative_relevance_data(None, product_id, cumulative_relevance)
+        print("Cumulative relevance calculated for graph")
+        add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
 
         return Graph(
             node_registry=subgraph_nodes,
@@ -245,6 +246,7 @@ class Graph:
         Calculates and normalizes cumulative relevance for all nodes connected to the given product_id.
         Returns a dict: node_id -> normalized cumulative_relevance (0-1).
         """
+        print("Starting cumulative relevance calculation")
         cumulative_relevance = defaultdict(float)
         cumulative_relevance[product_id] = 1.0
         visited = set()
@@ -255,6 +257,7 @@ class Graph:
             if node_id in visited:
                 continue
             visited.add(node_id)
+            
 
             # Traverse outgoing edges
             for edge in self.graph_edges:
@@ -273,7 +276,7 @@ class Graph:
                         to_visit.append(source_id)
                     weight = edge.get("weight", 1.0)
                     cumulative_relevance[source_id] += cumulative_relevance[node_id] * weight
-
+        print("Cumulative relevance calculation complete. Now normalizing")
         # Normalize all scores to 0-1
         if cumulative_relevance:
             max_relevance = max(cumulative_relevance.values())
