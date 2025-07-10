@@ -117,7 +117,7 @@ def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, A
 
 # Function to get persona relevance for all personas in a graph.
 # Input is a graph object. 
-# Logic is to traverse each persona and compute cumulative relevance downwards. 
+# Logic is to traverse each persona and compute cumulative relevance for each. 
 # Returns a list of aggregated_personas using the aggregate_persona_cards function.
 def get_persona_relevance(sub_graph: Graph) -> list[dict]:
     print("Recalculating capability centralities")

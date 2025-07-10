@@ -1,4 +1,8 @@
+from collections import defaultdict, deque
 from typing import Dict, List, Set
+
+from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 
 class Graph:
     def __init__(
@@ -171,13 +175,35 @@ class Graph:
         """
         Extracts a subgraph containing all nodes and edges connected to the given product_id,
         by traversing both incoming and outgoing edges (undirected traversal).
+        Additionally, it collects the weights of edges and calculates cumulative_relevance.
+        It then checks cumulative_relevance.json. If product_id exists, and node_id exists, it updates the cumulative_relevance value. 
+        If product_id exists and node_id does not exist, it appends the node_id and cumulative relevance inside product_id.
+        If product_id does not exist it creates product_id and node_id & cumulative_relevance in the json.
+        cumulative_relevance.json is structured as follows:
+        [product_id: {
+            {
+            "node_id": node_id,
+            "cumulative_relevance": node_cumulative_relevance
+            },
+            {
+            "node_id": node_id,
+            "cumulative_relevance": node_cumulative_relevance
+            }...
+        }]
         """
+        # Initialize the subgraph
+        if not product_id:
+            raise ValueError("Product ID cannot be empty.")
+        if product_id not in self.node_registry:
+            raise ValueError(f"Product ID {product_id} does not exist in the graph.")
+        # Initialize visited set and queue for BFS
         visited = set()
         to_visit = [product_id]
         subgraph_nodes = {}
         subgraph_edges = []
         subgraph_weights = {}
-
+    
+        # Now we have the subgraph with all nodes and edges connected to the product_id
         while to_visit:
             node_id = to_visit.pop()
             if node_id in visited:
@@ -187,23 +213,81 @@ class Graph:
             if node:
                 subgraph_nodes[node_id] = node
 
+            # Traverse outgoing edges
             for edge in self.graph_edges:
-                # If this node is source or target, add the edge and the other node
-                if edge.get("source") == node_id or edge.get("target") == node_id:
-                    # Add edge if not already added
-                    if edge not in subgraph_edges:
+                if edge.get("source") == node_id:
+                    target_id = edge.get("target")
+                    if target_id not in visited:
                         subgraph_edges.append(edge)
                         subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                    # Add the other node to to_visit if not visited
-                    other_id = edge.get("target") if edge.get("source") == node_id else edge.get("source")
-                    if other_id not in visited and other_id not in to_visit:
-                        to_visit.append(other_id)
+                        to_visit.append(target_id)
+                elif edge.get("target") == node_id:
+                    source_id = edge.get("source")
+                    if source_id not in visited:
+                        subgraph_edges.append(edge)
+                        subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
+                        to_visit.append(source_id)
+        # Calculate cumulative relevance for all nodes in the subgraph
+        cumulative_relevance = self.calculate_cumulative_relevance(product_id)
+        if not cumulative_relevance:
+            raise ValueError(f"No cumulative relevance calculated for product ID {product_id}.")
+        add_or_update_cumulative_relevance_data(None, product_id, cumulative_relevance)
 
         return Graph(
             node_registry=subgraph_nodes,
             graph_edges=subgraph_edges,
             edge_weights=subgraph_weights
         )
+        
+
+    def calculate_cumulative_relevance(self, product_id: str) -> dict:
+        """
+        Calculates and normalizes cumulative relevance for all nodes connected to the given product_id.
+        Returns a dict: node_id -> normalized cumulative_relevance (0-1).
+        """
+        cumulative_relevance = defaultdict(float)
+        cumulative_relevance[product_id] = 1.0
+        visited = set()
+        to_visit = [product_id]
+
+        while to_visit:
+            node_id = to_visit.pop()
+            if node_id in visited:
+                continue
+            visited.add(node_id)
+
+            # Traverse outgoing edges
+            for edge in self.graph_edges:
+                if edge.get("source") == node_id:
+                    target_id = edge.get("target")
+                    if target_id not in visited:
+                        to_visit.append(target_id)
+                    weight = edge.get("weight", 1.0)
+                    cumulative_relevance[target_id] += cumulative_relevance[node_id] * weight
+
+            # Traverse incoming edges
+            for edge in self.graph_edges:
+                if edge.get("target") == node_id:
+                    source_id = edge.get("source")
+                    if source_id not in visited:
+                        to_visit.append(source_id)
+                    weight = edge.get("weight", 1.0)
+                    cumulative_relevance[source_id] += cumulative_relevance[node_id] * weight
+
+        # Normalize all scores to 0-1
+        if cumulative_relevance:
+            max_relevance = max(cumulative_relevance.values())
+            if max_relevance > 0:
+                cumulative_relevance = {
+                    node_id: score / max_relevance
+                    for node_id, score in cumulative_relevance.items()
+                }
+            else:
+                cumulative_relevance = dict(cumulative_relevance)
+        else:
+            cumulative_relevance = {}
+
+        return dict(cumulative_relevance)
     
     def get_all_pain_paths_to_base_by_id(self, pain_id, base_pain_ids, visited=None):
         """
@@ -227,81 +311,6 @@ class Graph:
             for path in sub_paths:
                 all_paths.append([(pain_id, dep_job_id, impact)] + path)
         return all_paths
-    
-    def get_all_paths_between_nodes(self, start_node_id, end_node_id, path=None, visited=None, edge_types=None):
-        """
-        Finds all paths from start_node_id to end_node_id in a directed graph,
-        traversing both incoming and outgoing edges, but never revisiting a node in the same path.
-        Each path is a list of (source_id, target_id, weight) tuples.
-        edge_types: set of edge types to follow (if None, follow all).
-        """
-        if path is None:
-            path = []
-        if visited is None:
-            visited = set()
-        if edge_types is None:
-            edge_types = set(edge["type"] for edge in self.graph_edges)
-
-        if start_node_id == end_node_id:
-            return [path.copy()]
-
-        visited.add(start_node_id)
-        all_paths = []
-
-        for edge in self.graph_edges:
-            # Outgoing edges
-            if edge["source"] == start_node_id and edge["type"] in edge_types:
-                target = edge["target"]
-                if target not in visited:
-                    new_path = path + [(start_node_id, target, self.get_edge_weight(start_node_id, target) or 1.0)]
-                    all_paths.extend(
-                        self.get_all_paths_between_nodes(target, end_node_id, new_path, visited.copy(), edge_types)
-                    )
-            # Incoming edges
-            elif edge["target"] == start_node_id and edge["type"] in edge_types:
-                source = edge["source"]
-                if source not in visited:
-                    new_path = path + [(source, start_node_id, self.get_edge_weight(source, start_node_id) or 1.0)]
-                    all_paths.extend(
-                        self.get_all_paths_between_nodes(source, end_node_id, new_path, visited.copy(), edge_types)
-                    )
-        return all_paths
-
-    def compute_cumulative_relevance_from_node(self, start_id, sink_id):
-        """
-        For a given node_id, computes cumulative relevance by summing product of impacts along all downstream paths leading to the base node
-        Starting from the node_id, runs a DFS to find all paths to base_node_ids along with edge weights.
-        Cumulative relevance is calculated as the sum of (product of edge weights along each path).
-
-        """
-        
-        """all_paths = self.get_all_paths_between_nodes(start_id, sink_id)
-        cumulative_relevance = 0.0
-        for path in all_paths:
-           path_impact = 1.0
-           path_length = len(path)
-           for (_, _, weight) in path:
-               path_impact *= weight
-           cumulative_relevance += path_impact
-           normalized_cumulative_relevance = cumulative_relevance / len(path) if path else 0.0
-           """
-        all_paths =[]
-        cumulative_relevance = 1.0
-        normalized_cumulative_relevance = 1.0
-        return cumulative_relevance, normalized_cumulative_relevance, all_paths
-
-    def percolate_cumulative_relevance(self):
-        """
-        Starting from product node - percolates to each connected node and updates cumulative relevance for each node.
-        This method assumes that the product node is the root of the graph and all other nodes are connected to it.
-        Logic is:
-        From self - find product node
-        For product node id - find all connected nodes and edge weight. 
-        For each connected node - Set cum_relevance of each node as edge weight.
-        For each connected node - traverse up to find next level node
-        Set cum relevance as previous level cum_relevance * current edge weight.
-        Recurse to find cumulative relevance until no more new connections exist.
-        """
         
 
     def get_product_id_from_subgraph(self) -> str:
@@ -336,7 +345,16 @@ class Graph:
             print(f"Normalized centrality for capability {cap_id}: {normalized_centrality}")
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
-
+            # Persist the update to capability_nodes.json
+            get_or_create_capability_node(
+                name=cap_node["name"],
+                description=cap_node.get("description", ""),
+                capability_coreness=cap_node.get("coreness", 0.0),
+                capability_centrality=normalized_centrality,
+                node_id=cap_id
+            )
+        
+        
 
 # Example usage:
 if __name__ == "__main__":

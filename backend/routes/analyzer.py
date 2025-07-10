@@ -53,11 +53,12 @@ def analyze(payload: dict, request: Request, db: Session = Depends(get_db)):
         return {"error": "URL required."}
 
     # 🧠 Load graph
-    node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+    node_registry, graph_edges, edge_weights, cumulative_relevance = load_graph_from_folder(GRAPH_DATA_PATH)
     base_graph = Graph(
         node_registry=node_registry,
         graph_edges=graph_edges,
-        edge_weights=edge_weights
+        edge_weights=edge_weights,
+        
     )
 
     # Call the core logic function
@@ -128,11 +129,13 @@ def add_capabilities_route(payload: dict, request: Request, db: Depends = None):
         if not product_id or not capabilities:
             raise HTTPException(status_code=400, detail="Product ID and capabilities are required.")
 
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        # 🧠 Load graph
+        node_registry, graph_edges, edge_weights, cumulative_relevance = load_graph_from_folder(GRAPH_DATA_PATH)
         base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
-            edge_weights=edge_weights
+            edge_weights=edge_weights,
+            
         )
         product_node = base_graph.get_node_by_id(product_id)
         if not product_node:
@@ -211,12 +214,13 @@ async def analyze_deep(payload: dict, request: Request):
         if not company_id:
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
-        # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        # 🧠 Load graph
+        node_registry, graph_edges, edge_weights, cumulative_relevance = load_graph_from_folder(GRAPH_DATA_PATH)
         base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
-            edge_weights=edge_weights
+            edge_weights=edge_weights,
+            
         )
 
         # Extract the product subgraph
@@ -251,12 +255,13 @@ async def get_products(company_id: str, request: Request):
         if not company_id:
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
-        # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        # 🧠 Load graph
+        node_registry, graph_edges, edge_weights, cumulative_relevance = load_graph_from_folder(GRAPH_DATA_PATH)
         base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
-            edge_weights=edge_weights
+            edge_weights=edge_weights,
+            
         )
 
         products = get_company_products(base_graph, company_id)
@@ -287,12 +292,13 @@ async def get_personas(product_id: str, request: Request):
         if not company_id:
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
-        # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        # 🧠 Load graph
+        node_registry, graph_edges, edge_weights, cumulative_relevance = load_graph_from_folder(GRAPH_DATA_PATH)
         base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
-            edge_weights=edge_weights
+            edge_weights=edge_weights,
+            
         )
         aggregated_personas = []
         print("Loading personas for product_id:", product_id)
@@ -341,12 +347,13 @@ async def analyze_hop_plus(payload: dict, request: Request):
         if not product_id:
             raise HTTPException(status_code=400, detail="Product ID required.")
         print("Starting Hop0 graph load")
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        
+        node_registry, graph_edges, edge_weights, cumulative_relevance = load_graph_from_folder(GRAPH_DATA_PATH)
+
         base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
-            edge_weights=edge_weights
+            edge_weights=edge_weights,
+            
         )
 
         product_subgraph = base_graph.extract_product_subgraph(product_id)

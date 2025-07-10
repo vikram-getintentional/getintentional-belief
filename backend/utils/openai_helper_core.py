@@ -12,6 +12,7 @@ from backend.utils.nlp.matcher import match_capabilities_to_canonical_personas
 from backend.utils.nlp.scorer import persona_relevance_score
 from backend.utils.graph_base.graph_builder import convert_rule_matches_to_capability_map, process_capability_map_to_graph
 from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.graph_base.graph import Graph
 
 
@@ -119,6 +120,11 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
 
         print("Calculating capability centralities")
         product_subgraph.update_capability_centralities()
+
+        print("Calculating cumulative relevance for new edges")
+        cumulative_relevance = product_subgraph.calculate_cumulative_relevance(product_id)
+        
+        add_or_update_cumulative_relevance_data(None, product_id, cumulative_relevance)
 
         return {
                 "capability_map": capability_map,

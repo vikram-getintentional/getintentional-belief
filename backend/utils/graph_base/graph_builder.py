@@ -5,6 +5,7 @@ from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain
 from backend.utils.graph_base.edges.edge_manager import add_edge
 from collections import defaultdict
 from datetime import datetime
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
 
 # This function creates edges for the node IDs in the flattened list
@@ -60,6 +61,7 @@ def process_capability_map_to_graph(capabilities_list, capability_map: dict):
             # (Optional) Add to flattened_results for downstream use
             flattened_results.append(entry)
     print("Finished final flattened results:", flattened_results)
+    
     return flattened_results
 
 
