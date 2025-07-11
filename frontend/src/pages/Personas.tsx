@@ -56,6 +56,8 @@ const Personas = () => {
       return;
     }
     const fetchPersonas = async () => {
+      setPersonas([]); // Clear old data immediately
+      setStatusMsg("Fetching personas...");
       try {
         console.log("🔄 Fetching personas for product:", selectedProductId);
         const personaRes = await fetch(
@@ -112,22 +114,7 @@ const Personas = () => {
       {/* 4. If no products, show message */}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
 
-      {personas.length > 0 && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {personas.map((p, i) => (
-          <PersonaCard
-            key={i}
-            persona={p}
-            selectedPains={p.pains || []}
-            isSelected={true}
-            onTogglePain={() => {}}
-            onTogglePersona={() => {}}
-          />
-        ))}
-      </div>
-    )}
 
-    
       {/* 5. Show personas if they exist */}
       {personas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

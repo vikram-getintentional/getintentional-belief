@@ -78,7 +78,10 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
             cap_id = entry.get("capability_id", "Unknown").strip()
             for pain in entry.get("pains", []):
                 pain_desc = pain.get("pain", "Unknown Pain")
-                pain_trigger = pain.get("pain_trigger", "")
+                pain_trigger = pain.get("pain_trigger", {})
+                pain_trigger_attribute = pain_trigger.get("attribute", "").strip().lower()
+                pain_trigger_dimension = pain_trigger.get("dimension", "").strip().lower()
+                pain_trigger_direction = pain_trigger.get("direction", "").strip().lower()
                 relevance_array = pain.get("relevance", [])
                 jobs = pain.get("jobs", [])
                 for job in jobs:
@@ -91,7 +94,11 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                         flattened_capability_map.append({
                             "capability_id": cap_id,
                             "pain": pain_desc,
-                            "pain_trigger": pain_trigger,
+                            "pain_trigger":{
+                                "attribute": pain_trigger_attribute,
+                                "dimension": pain_trigger_dimension,
+                                "direction": pain_trigger_direction
+                            },
                             "relevance": relevance_array,
                             "job": job_desc,
                             "persona": {
@@ -124,7 +131,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         print("Calculating cumulative relevance for new edges")
         cumulative_relevance = product_subgraph.calculate_cumulative_relevance(product_id)
         
-        add_or_update_cumulative_relevance_data(None, product_id, cumulative_relevance)
+        add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
 
         return {
                 "capability_map": capability_map,

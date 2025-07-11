@@ -332,20 +332,20 @@ class Graph:
         for cap in capability_list:
             cap_node = cap[1]
             cap_id = cap_node["id"]
-            print("Starting update centrality for capability:", cap_id, "name:", cap_node["name"])
+            
             connected_pains = self.get_target_nodes_by_source_and_type(cap_id, "solves")
-            print(f"Capability {cap_id} is connected to {len(connected_pains)} pains.")
+            
             cap_centrality = 0.0
             for pain_id in connected_pains:
-                print("Pulling centrality for pain:", pain_id)
+                
                 edge_weight = self.get_edge_weight(cap_id, pain_id)
-                print(f"Edge from {cap_id} to {pain_id} has weight {edge_weight}")
+                
                 cap_centrality += edge_weight
-                print(f"Current centrality for capability: {cap_centrality}")
-            print(f"Calculated total centrality for capability {cap_id}: {cap_centrality}")
+                
+            
             # Normalize the centrality score
             normalized_centrality = cap_centrality/len(connected_pains) if connected_pains else 0.0
-            print(f"Normalized centrality for capability {cap_id}: {normalized_centrality}")
+            
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
             # Persist the update to capability_nodes.json

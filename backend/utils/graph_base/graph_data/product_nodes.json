@@ -1,9 +1,16 @@
 [
   {
-    "id": "93dea467-3aa3-495d-a131-7850d98561d3",
-    "summary": "Chargebee offers a robust, flexible subscription management and billing platform that supports global expansion, multiple currencies, and over 30 payment gateways. It streamlines financial operations and enhances customer experiences, enabling businesses to efficiently manage customer churn, revenue recognition, and pricing experiments.",
+    "id": "ecb118f4-4436-4799-b59e-5d9b6f0ad4ad",
+    "summary": "Chargebee provides a comprehensive subscription management and billing solution with capabilities including usage-based pricing, customer retention, and revenue recognition. With 60+ integrations and 30+ payment gateways, it allows businesses to launch subscription models, experiment with pricing, and serve customers worldwide.",
     "company_id": "3572f8cd-49f0-44fe-be5c-e7df224798db",
     "url": "https://chargebee.com",
+    "plg_flag": true
+  },
+  {
+    "id": "763daa7a-def1-4f6c-a951-da7681ff2e80",
+    "summary": "ThoughtSpot offers an Agentic Analytics platform, named a Leader in the 2025 Gartner Magic Quadrant, that empowers users with AI-driven insights. The platform includes multiple features such as Spotter, an autonomous AI agent, and Analyst Studio, a space for data teams to accelerate insights, among others. It aims to democratize data, enabling anyone to derive actionable intelligence from it.",
+    "company_id": "dc796c4a-d90d-4c2e-b693-1fa67b3c8642",
+    "url": "https://thoughtspot.com",
     "plg_flag": true
   }
 ]
