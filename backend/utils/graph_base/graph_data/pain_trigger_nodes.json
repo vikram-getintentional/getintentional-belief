@@ -38,5 +38,29 @@
   {
     "id": "d9df731a-53e7-4474-9657-d140c2f18264",
     "text": "increase in frequency of customer churn"
+  },
+  {
+    "id": "1bad441c-640e-416f-a93c-9fc92af9cb14",
+    "attribute": "revenue recognition errors",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "42d6d491-7bfa-4085-a234-d971f1c996e4",
+    "attribute": "customer churn rate",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "91bb1ed5-e468-4ae9-acee-8fea4e10afcf",
+    "attribute": "number of subscriptions",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "7fd26ae5-4313-4906-be80-22537a48001c",
+    "attribute": "revenue transactions",
+    "dimension": "volume",
+    "direction": "increase"
   }
 ]

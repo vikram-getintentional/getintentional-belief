@@ -112,7 +112,12 @@ def convert_rule_matches_to_capability_map(results):
         pain_cache.add(raw_pain)
         job_cache.add(raw_job)
         persona_cache.add((title, dept, seniority))
-        trigger_cache.add(raw_pain_trigger)
+        trigger_tuple = (
+            raw_pain_trigger["attribute"],
+            raw_pain_trigger["dimension"],
+            raw_pain_trigger["direction"]
+        )
+        trigger_cache.add(trigger_tuple)
 
         persona_entry = {
             "persona": {
@@ -141,7 +146,15 @@ def convert_rule_matches_to_capability_map(results):
     )
     canonical_pains = canonicalize_pain(list(pain_cache))
     canonical_jobs = canonicalize_job(list(job_cache))
-    canonical_pain_triggers = canonicalize_pain_trigger(list(trigger_cache))
+    trigger_dicts = [
+        {
+            "attribute": t[0],
+            "dimension": t[1],
+            "direction": t[2]
+        }
+        for t in trigger_cache
+    ]
+    canonical_pain_triggers = canonicalize_pain_trigger(trigger_dicts)
 
     # Add nodes
     for pain in canonical_pains.values():

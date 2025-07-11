@@ -58,5 +58,33 @@
   {
     "id": "be06d357-4d90-4f4e-b339-47e71b1ca898",
     "description": "set and manage flexible pricing models based on usage"
+  },
+  {
+    "id": "54c7837f-8081-401e-a533-3c187e55d819",
+    "description": "manage and track subscriptions, ensuring timely billing and payments."
+  },
+  {
+    "id": "3cb686be-b1df-48db-bfec-876a811ae228",
+    "description": "develop and implement adaptive pricing models based on usage."
+  },
+  {
+    "id": "f2fa729f-0a7f-4f85-b719-76e11b35a5a4",
+    "description": "ensure accurate revenue recognition in compliance with gaap."
+  },
+  {
+    "id": "27eac295-3e37-4831-83d7-e47865a7af72",
+    "description": "implement strategies to predict and prevent customer churn."
+  },
+  {
+    "id": "7e98a62e-d982-4c22-9f5a-45b08a7a78da",
+    "description": "manage and track all customer subscriptions effectively"
+  },
+  {
+    "id": "f94841c3-b6f1-4e74-849a-67225401a65f",
+    "description": "design and implement flexible pricing models based on usage"
+  },
+  {
+    "id": "38578a83-b1ab-47a6-b446-438c8bfcfbd3",
+    "description": "ensure accurate and compliant revenue recognition"
   }
 ]

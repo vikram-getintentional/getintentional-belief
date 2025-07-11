@@ -46,5 +46,29 @@
     "title": "sales executive",
     "seniority": "sales",
     "department": "Operator"
+  },
+  {
+    "id": "16b59bc0-af5e-4304-8bde-1300e7151527",
+    "title": "subscription manager",
+    "seniority": "sales",
+    "department": "Operator"
+  },
+  {
+    "id": "7e21c98c-7e8c-4b59-b152-7c310db6b6e4",
+    "title": "accountant",
+    "seniority": "finance",
+    "department": "Junior"
+  },
+  {
+    "id": "9b184abb-7493-42ff-846a-80704e8ea859",
+    "title": "subscription manager",
+    "seniority": "customer success",
+    "department": "Operator"
+  },
+  {
+    "id": "fdda6bac-0075-4e8b-9b7e-6cfe012c530c",
+    "title": "data analyst",
+    "seniority": "data",
+    "department": "Junior"
   }
 ]

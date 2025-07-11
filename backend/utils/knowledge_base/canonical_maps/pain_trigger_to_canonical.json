@@ -379,5 +379,30 @@
   "increase in customer demand for flexible pricing": "increase in customer demand for flexible pricing",
   "increase in volume of products and services offered": "increase in volume of subscriptions",
   "increase in global transactions and diverse payment methods": "increase in global transactions and diverse payment methods",
-  "increase in frequency of customer churn": "increase in frequency of customer churn"
+  "increase in frequency of customer churn": "increase in frequency of customer churn",
+  "{'attribute': 'revenue recognition errors', 'dimension': 'frequency', 'direction': 'increase'}": {
+    "attribute": "revenue recognition errors",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  "{'attribute': 'customer churn rate', 'dimension': 'frequency', 'direction': 'increase'}": {
+    "attribute": "customer churn rate",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  "{'attribute': 'customer usage patterns', 'dimension': 'complexity', 'direction': 'increase'}": {
+    "attribute": "customer churn rate",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  "{'attribute': 'number of subscriptions', 'dimension': 'volume', 'direction': 'increase'}": {
+    "attribute": "revenue transactions",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "{'attribute': 'revenue transactions', 'dimension': 'volume', 'direction': 'increase'}": {
+    "attribute": "revenue transactions",
+    "dimension": "volume",
+    "direction": "increase"
+  }
 }

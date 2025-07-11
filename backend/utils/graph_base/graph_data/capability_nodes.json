@@ -11,49 +11,49 @@
     "name": "Usage-based Pricing",
     "description": "Enables businesses to set pricing based on usage, allowing for flexible and adaptive pricing models.",
     "coreness": 0.9,
-    "centrality": 0.5
+    "centrality": 0.375
   },
   {
     "id": "09b6c310-d626-416a-afd6-0610ef3722ab",
     "name": "Customer Retention",
     "description": "Tools to predict churn and deflect cancellation attempts, enhancing customer lifetime value.",
     "coreness": 0.8,
-    "centrality": 0.4
+    "centrality": 0.275
   },
   {
     "id": "8d4a7b20-ca62-437a-8455-50c5b2e94693",
     "name": "Revenue Recognition",
     "description": "Ensures accurate revenue recognition, maintaining GAAP compliance and audit readiness.",
     "coreness": 0.8,
-    "centrality": 0.3
+    "centrality": 0.35000000000000003
   },
   {
     "id": "e339cf75-bbdf-43ca-8418-86fc58e76b8c",
     "name": "Product Catalog",
     "description": "Helps businesses manage multiple products, add-ons, charges, and currencies under one roof.",
     "coreness": 0.7,
-    "centrality": 0.2
+    "centrality": 0.39999999999999997
   },
   {
     "id": "9649276b-84b6-4cc9-a8df-c0216e827d04",
     "name": "Integrations",
     "description": "Offers 60+ integrations, enhancing compatibility with other systems and tools.",
     "coreness": 0.7,
-    "centrality": 0.1
+    "centrality": 0.4
   },
   {
     "id": "6ae44937-d7dc-433c-a090-b4092968482d",
     "name": "Payment Gateways",
     "description": "Supports 30+ payment gateways, facilitating global transactions and diverse payment methods.",
     "coreness": 0.7,
-    "centrality": 0.6
+    "centrality": 0.55
   },
   {
     "id": "b148d844-f65a-4379-aaf6-be25dd720ed9",
     "name": "Security & Compliance",
     "description": "Ensures secure transactions and compliance with relevant regulations, building trust with users.",
     "coreness": 0.6,
-    "centrality": 0.2
+    "centrality": 0.42500000000000004
   },
   {
     "id": "05e92435-7533-47a5-826c-d830867360a2",
