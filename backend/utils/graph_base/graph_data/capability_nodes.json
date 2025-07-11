@@ -1,58 +1,114 @@
 [
   {
-    "id": "05334a45-051f-499f-8724-f872d3abfb84",
+    "id": "7f5c9a59-7eae-4e91-839a-904fafd09033",
     "name": "Subscription Management",
-    "description": "Manage and monitor your subscriptions in a simplified manner.",
+    "description": "Allows businesses to manage subscriptions effectively, including billing and payments.",
+    "coreness": 1.0,
+    "centrality": 1.0
+  },
+  {
+    "id": "f22db69a-4fef-45b5-b624-3f4ca9aef984",
+    "name": "Usage-based Pricing",
+    "description": "Enables businesses to set pricing based on usage, allowing for flexible and adaptive pricing models.",
+    "coreness": 0.9,
+    "centrality": 0.5
+  },
+  {
+    "id": "09b6c310-d626-416a-afd6-0610ef3722ab",
+    "name": "Customer Retention",
+    "description": "Tools to predict churn and deflect cancellation attempts, enhancing customer lifetime value.",
+    "coreness": 0.8,
+    "centrality": 0.4
+  },
+  {
+    "id": "8d4a7b20-ca62-437a-8455-50c5b2e94693",
+    "name": "Revenue Recognition",
+    "description": "Ensures accurate revenue recognition, maintaining GAAP compliance and audit readiness.",
+    "coreness": 0.8,
+    "centrality": 0.3
+  },
+  {
+    "id": "e339cf75-bbdf-43ca-8418-86fc58e76b8c",
+    "name": "Product Catalog",
+    "description": "Helps businesses manage multiple products, add-ons, charges, and currencies under one roof.",
+    "coreness": 0.7,
+    "centrality": 0.2
+  },
+  {
+    "id": "9649276b-84b6-4cc9-a8df-c0216e827d04",
+    "name": "Integrations",
+    "description": "Offers 60+ integrations, enhancing compatibility with other systems and tools.",
+    "coreness": 0.7,
+    "centrality": 0.1
+  },
+  {
+    "id": "6ae44937-d7dc-433c-a090-b4092968482d",
+    "name": "Payment Gateways",
+    "description": "Supports 30+ payment gateways, facilitating global transactions and diverse payment methods.",
+    "coreness": 0.7,
+    "centrality": 0.6
+  },
+  {
+    "id": "b148d844-f65a-4379-aaf6-be25dd720ed9",
+    "name": "Security & Compliance",
+    "description": "Ensures secure transactions and compliance with relevant regulations, building trust with users.",
+    "coreness": 0.6,
+    "centrality": 0.2
+  },
+  {
+    "id": "05e92435-7533-47a5-826c-d830867360a2",
+    "name": "Spotter - Autonomous Agent for Analytics",
+    "description": "Spotter acts as a dedicated AI analyst, providing business-ready insights for users anywhere, anytime, while ensuring enterprise-grade trust.",
     "coreness": 1.0,
     "centrality": 0.0
   },
   {
-    "id": "f2050010-7aa0-472f-96e5-b35829885fca",
-    "name": "Global Expansion Support",
-    "description": "Support for multiple currencies and over 30 payment gateways, facilitating international business operations.",
+    "id": "3bef179a-e4f4-44c7-8d5b-f33c71533771",
+    "name": "Liveboards - Connected Insights",
+    "description": "Liveboards turn insights into action with autonomous workflows that seamlessly connect data to decision-making.",
     "coreness": 0.9,
     "centrality": 0.0
   },
   {
-    "id": "29f3597b-4a13-4dae-94e4-26b1c0e079c6",
-    "name": "Customer Retention",
-    "description": "Predict churn, deflect cancellation attempts, and grow your customer lifetime value.",
+    "id": "47bb081a-32bf-49d3-b64b-335c32c59ceb",
+    "name": "Analyst Studio - Accelerate Data to Insights",
+    "description": "Analyst Studio is a collaborative space for data teams, providing them with tools like SQL, R, Python, and visual analysis, all integrated into one intelligence platform.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "60ce716d-90ee-4575-b8e3-6e35336be180",
+    "name": "Smart Apps - Intelligent Experiences",
+    "description": "Smart Apps allow users to embed AI analytics into custom apps, enhancing user experience with embedded custom actions, writebacks, and workflows.",
     "coreness": 0.8,
     "centrality": 0.0
   },
   {
-    "id": "683603d5-5baa-4173-9c71-86effb678f4b",
-    "name": "Revenue Recognition",
-    "description": "Recognize revenue accurately to be GAAP-compliant and audit ready.",
+    "id": "f278341a-a0cd-47e5-89cc-a98ae01fe8f8",
+    "name": "Trusted AI & Agentic Analytics",
+    "description": "The platform offers AI agents that deliver self-service with enterprise-grade trust, and AI-augmented dashboards for interactive visualizations.",
+    "coreness": 1.0,
+    "centrality": 0.0
+  },
+  {
+    "id": "86995915-cbbc-4ea1-9c11-f9f996f53e32",
+    "name": "Any Data, Anywhere - Data Management",
+    "description": "The platform allows users to prep, join, model, and shape their data in real-time or cached, in any way they want.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "69b4b712-1c62-43cc-a5b7-9cebaffbbe0d",
+    "name": "Enterprise BI",
+    "description": "The platform provides self-service analytics to drive business outcomes in the AI era.",
     "coreness": 0.8,
     "centrality": 0.0
   },
   {
-    "id": "b4f22fdf-715b-4572-9a7e-8adb06bfbd95",
-    "name": "Experiment with Pricing",
-    "description": "Allows businesses to experiment with their pricing models to find the most profitable approach.",
-    "coreness": 0.7,
-    "centrality": 0.0
-  },
-  {
-    "id": "b66b11ea-6e0c-46a4-8993-013e5a77aecf",
-    "name": "Security & Compliance",
-    "description": "Ensures that all transactions and data handling are secure and compliant with relevant regulations.",
-    "coreness": 0.7,
-    "centrality": 0.0
-  },
-  {
-    "id": "42a3f0a2-c2a8-4b76-a077-f99af036c92b",
-    "name": "Reporting and Analytics",
-    "description": "Provides insights into business performance and customer behavior through detailed reports and analytics.",
-    "coreness": 0.6,
-    "centrality": 0.0
-  },
-  {
-    "id": "9e53abb3-82fb-47b7-9f9e-972c1d8c8c61",
-    "name": "60+ Integrations",
-    "description": "Seamlessly integrates with various other platforms for enhanced functionality.",
-    "coreness": 0.6,
+    "id": "fc90a331-13be-4224-8043-ec8863d2b82d",
+    "name": "Actionable Insights",
+    "description": "The platform's AI-powered BI enables anyone to get actionable, trusted, data-driven insights, wherever they are.",
+    "coreness": 1.0,
     "centrality": 0.0
   }
 ]

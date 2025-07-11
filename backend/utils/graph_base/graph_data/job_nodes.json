@@ -1,166 +1,62 @@
 [
   {
-    "id": "410f5903-9954-4d16-ba82-3af1165013e5",
-    "description": "generate insights from business data"
+    "id": "6705e44f-30ea-41c8-9b1c-9d500ae5f479",
+    "description": "manage product catalog"
   },
   {
-    "id": "c1e60645-9e24-4901-aff8-6a7563a5494f",
-    "description": "determine and implement the most profitable pricing model"
+    "id": "0e7ec41a-92a4-4bdf-8345-fb09cfa4ba2e",
+    "description": "ensure compatibility with other systems and tools"
   },
   {
-    "id": "910c01ae-5b7e-42ca-a741-12d14e5ccadb",
-    "description": "handle international transactions and payments"
+    "id": "8877dfb4-5c3c-4e05-ad6a-d873e13a9561",
+    "description": "maintain gaap compliance and audit readiness"
   },
   {
-    "id": "0f9deda3-62dc-423a-9654-f4ee0a6cfcb0",
-    "description": "manage and monitor all business subscriptions"
+    "id": "f064ade1-ee5b-475a-8586-d1156a1af9dc",
+    "description": "develop and implement pricing strategies"
   },
   {
-    "id": "57cbac07-c7f7-4ff4-be80-384e1bde459c",
-    "description": "accurate recognition and reporting of revenue"
+    "id": "05a7ae36-75c5-45b5-9663-ffca9baa0bc2",
+    "description": "manage payment gateways"
   },
   {
-    "id": "c2716867-c230-4cab-859d-b8766378f5b3",
-    "description": "ensure seamless integration with various platforms"
+    "id": "05237341-1349-423e-8173-6dc9b2b78a6e",
+    "description": "ensure transaction security and regulatory compliance"
   },
   {
-    "id": "955130d8-23ec-497c-a600-f0e946ab31a4",
-    "description": "retain customers and reduce churn rate"
+    "id": "65f048b4-1bd5-4490-ab11-e295df97028e",
+    "description": "improve customer retention strategies"
   },
   {
-    "id": "5a788bc8-347a-4cea-8970-fcb36c76c2db",
-    "description": "ensure compliance with data security regulations"
+    "id": "05005c49-6e66-4cb9-85af-895f36b3e60f",
+    "description": "manage and monitor payment gateways"
   },
   {
-    "id": "8dad48e0-854b-4b8f-856d-cb989cf9c44d",
-    "description": "improve customer retention and reduce churn"
+    "id": "55d8ce83-0736-45f4-a7a8-a842e18845eb",
+    "description": "manage and monitor subscriptions effectively"
   },
   {
-    "id": "3e3fb274-0686-4ae7-85ae-5534c0be6e98",
-    "description": "ensure seamless data flow and functionality across various platforms"
+    "id": "2d547855-5f5f-48d0-873d-59e89549bb35",
+    "description": "ensure compliance with relevant regulations"
   },
   {
-    "id": "b930d7fe-8714-4085-8ad6-684510b4eb66",
-    "description": "expand business operations globally"
+    "id": "45f64515-651c-4e41-9e9c-862f6af874ec",
+    "description": "ensure accurate revenue recognition and compliance with gaap"
   },
   {
-    "id": "3ca571df-f0c6-408e-adce-0efdd7345be0",
-    "description": "provide actionable insights for business decision making"
+    "id": "fb2a2223-aae2-4370-8c6f-dc1156ca8c8d",
+    "description": "manage and maintain product catalog"
   },
   {
-    "id": "eaa233da-42bd-444e-ac6a-0f90b5952fef",
-    "description": "accurately recognize and report revenue"
+    "id": "38113ded-b384-43a9-9110-dd94d5ee4e79",
+    "description": "ensure smooth integration with other systems and tools"
   },
   {
-    "id": "9e213243-2797-480c-9ebb-43b32e95ce4b",
-    "description": "ensure data security and regulatory compliance"
+    "id": "5f2b1e05-1231-4f22-9af0-f0fdf3f7e7ff",
+    "description": "predict and mitigate customer churn"
   },
   {
-    "id": "b84224ad-3c1e-486d-ae97-fc1087f4ea4e",
-    "description": "develop and implement optimal pricing strategies"
-  },
-  {
-    "id": "9a5697d7-7abd-4405-9e60-238768601237",
-    "description": "reduce customer churn and improve customer satisfaction"
-  },
-  {
-    "id": "aeff6e08-d498-467d-9f94-a61f3477bcd5",
-    "description": "ensure data security and compliance with regulations"
-  },
-  {
-    "id": "c5c02b60-61c2-43ed-bb37-4bd8447b1cae",
-    "description": "find the most profitable pricing model"
-  },
-  {
-    "id": "917cc1c6-4581-41ae-a3e4-cc75f8526fef",
-    "description": "provide insights into business performance and customer behavior"
-  },
-  {
-    "id": "07924514-0149-41db-a078-b3d0421d3be4",
-    "description": "ensure accurate and compliant revenue recognition"
-  },
-  {
-    "id": "08301e51-c223-4f84-94a4-78b12ee875cb",
-    "description": "manage international transactions smoothly"
-  },
-  {
-    "id": "461ca523-6a1a-47ab-b4f6-c4bfe499341e",
-    "description": "ensure seamless integration with other platforms"
-  },
-  {
-    "id": "392e578a-80e2-48fc-8789-cb9f0048af99",
-    "description": "manage and track all subscriptions effectively"
-  },
-  {
-    "id": "a8fd930a-a87f-4c56-9709-6be1178f2403",
-    "description": "improve customer retention and reduce churn rate"
-  },
-  {
-    "id": "9489025e-327c-4f3a-937d-96adfe9f495f",
-    "description": "experiment with and find the most profitable pricing model"
-  },
-  {
-    "id": "2c697da5-b646-4b53-bed9-face8603ed45",
-    "description": "generate insights into business performance and customer behavior"
-  },
-  {
-    "id": "1f781312-5f89-44df-84a4-7fa9ff24ade8",
-    "description": "ensure smooth international transactions and payments"
-  },
-  {
-    "id": "b9382d6a-7334-451b-930f-c06bc81c5148",
-    "description": "manage and track all subscriptions efficiently"
-  },
-  {
-    "id": "13b5bea6-93f0-4e1b-bf9a-84f5ecc82dfb",
-    "description": "manage and monitor subscriptions"
-  },
-  {
-    "id": "141e660e-d3c7-430f-b2ce-fc1fb0f4fdd1",
-    "description": "generate insights from data"
-  },
-  {
-    "id": "757fa56f-f27c-40ff-b2fd-d84ea2171331",
-    "description": "reduce customer churn"
-  },
-  {
-    "id": "e95c0f49-b259-42dc-964b-c08e8f74d6b9",
-    "description": "optimize pricing models"
-  },
-  {
-    "id": "83bb3c14-71fb-434a-8bf3-a2d714c25dda",
-    "description": "ensure accurate revenue recognition"
-  },
-  {
-    "id": "60b9e8a9-07dd-4066-b3b3-329c47ffc35e",
-    "description": "manage international transactions"
-  },
-  {
-    "id": "81bcc83d-984f-4ea2-ba6c-70f964f32083",
-    "description": "manage international transactions and currency conversions"
-  },
-  {
-    "id": "63490a7b-0699-4090-bc82-46d0e514fe46",
-    "description": "ensure data security and compliance with relevant regulations"
-  },
-  {
-    "id": "0b49bfeb-d824-430a-8f17-43d79b545c46",
-    "description": "ensure accurate and gaap-compliant revenue recognition"
-  },
-  {
-    "id": "fc36f9de-022d-4a34-ac44-42ab3ad9a64b",
-    "description": "experiment and implement profitable pricing models"
-  },
-  {
-    "id": "6c1b9502-ea7e-419e-b2e0-496a805f0ece",
-    "description": "analyze and report on business performance"
-  },
-  {
-    "id": "63d87819-bb4a-46d1-a47c-468c11f57262",
-    "description": "manage customer relationships and reduce churn"
-  },
-  {
-    "id": "95119724-c160-47f4-abb7-0d563789ec8a",
-    "description": "track and manage customer subscriptions"
+    "id": "be06d357-4d90-4f4e-b339-47e71b1ca898",
+    "description": "set and manage flexible pricing models based on usage"
   }
 ]

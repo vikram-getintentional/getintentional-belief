@@ -1,120 +1,48 @@
 [
   {
-    "id": "56a96098-7e0a-4478-85f9-605b58080b3f",
-    "title": "cio",
-    "seniority": "it",
-    "department": "Operator"
-  },
-  {
-    "id": "35975c94-db71-45cc-aef4-a441a3742da7",
-    "title": "cfo",
-    "seniority": "finance",
-    "department": "Operator"
-  },
-  {
-    "id": "053ff670-b3e3-4be4-bf9a-b0d87b870485",
-    "title": "sales director",
-    "seniority": "sales",
-    "department": "Operator"
-  },
-  {
-    "id": "e7e5b54d-1cd3-48cd-adc5-e4161625caa7",
-    "title": "vp of customer success",
-    "seniority": "customer success",
-    "department": "Operator"
-  },
-  {
-    "id": "a8eedf23-b99b-47a1-9137-2178f76feaf0",
-    "title": "retention specialist",
-    "seniority": "customer success",
-    "department": "Operator"
-  },
-  {
-    "id": "6a0fd2da-7278-46c8-88b2-510867665383",
-    "title": "customer service representative",
-    "seniority": "customer service",
-    "department": "Junior"
-  },
-  {
-    "id": "e4a95b3b-c81a-4c4c-8d86-4cb3d48b052f",
-    "title": "compliance officer",
-    "seniority": "legal",
-    "department": "Operator"
-  },
-  {
-    "id": "49bfbb1e-6ff4-407e-b67e-ee0fb326564f",
-    "title": "global expansion manager",
-    "seniority": "strategy",
-    "department": "Operator"
-  },
-  {
-    "id": "38c620e0-1b3c-49a5-957e-941e03deb0be",
-    "title": "data analyst",
-    "seniority": "data",
-    "department": "Operator"
-  },
-  {
-    "id": "9a8b2fed-7236-469e-9283-8a23cf835f23",
+    "id": "3e06baf8-5be7-4cb5-94ad-4509f417e5be",
     "title": "accountant",
     "seniority": "finance",
     "department": "Operator"
   },
   {
-    "id": "1d3b801c-0d97-402a-b11e-4b6ed338764d",
-    "title": "it manager",
-    "seniority": "it",
-    "department": "Operator"
-  },
-  {
-    "id": "396993e3-295d-46bd-b831-d5a28d5f085e",
-    "title": "pricing analyst",
-    "seniority": "finance",
-    "department": "Junior"
-  },
-  {
-    "id": "c73882d7-f2ba-48b3-8548-8417d9e9e043",
+    "id": "b3d86f66-f218-466e-8ed0-97cdd5e05acd",
     "title": "product manager",
     "seniority": "product",
     "department": "Operator"
   },
   {
-    "id": "805b0e11-9bb8-4697-99bd-2bc3661a1d8d",
-    "title": "subscription manager",
-    "seniority": "sales",
-    "department": "Operator"
-  },
-  {
-    "id": "3092dcf8-dea0-4196-9ca9-86c0e6cd1c3f",
-    "title": "sales executive",
-    "seniority": "sales",
-    "department": "Junior"
-  },
-  {
-    "id": "3b1d3fbf-e138-48bb-997e-e30ef4b92dc4",
+    "id": "5393df13-f4dd-4786-af3a-313f4f002c0d",
     "title": "customer success manager",
     "seniority": "customer success",
     "department": "Operator"
   },
   {
-    "id": "2f33f898-5aa7-4225-8689-ad9d1f80e1c2",
-    "title": "data analyst",
-    "seniority": "data",
-    "department": "Junior"
-  },
-  {
-    "id": "ae33a84d-b3a9-45e7-ade4-fdfefd159ceb",
-    "title": "subscription manager",
-    "seniority": "operations",
+    "id": "2f085840-2c6c-4632-aed4-e202c19c6f7d",
+    "title": "compliance officer",
+    "seniority": "legal",
     "department": "Operator"
   },
   {
-    "id": "34b4bf13-9a97-4808-8fb3-b723ddd84b5a",
-    "title": "integration specialist",
+    "id": "4c6ca59d-9641-496a-ba7b-83675d5bbcd8",
+    "title": "retention specialist",
+    "seniority": "marketing",
+    "department": "Junior"
+  },
+  {
+    "id": "eeb8dfe7-fa3d-43bd-adc8-622dc99a2872",
+    "title": "it manager",
     "seniority": "it",
     "department": "Operator"
   },
   {
-    "id": "372ac4db-e5b7-42cb-89d8-c8ba8f841377",
+    "id": "486136ac-9771-473f-b836-4a49a293dd6e",
+    "title": "legal executive",
+    "seniority": "legal",
+    "department": "Operator"
+  },
+  {
+    "id": "11d3d6dd-6c71-47b8-9dad-f072646868ca",
     "title": "sales executive",
     "seniority": "sales",
     "department": "Operator"

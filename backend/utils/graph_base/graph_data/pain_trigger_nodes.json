@@ -1,106 +1,42 @@
 [
   {
-    "id": "34f2253c-03bf-44d8-aeb0-2f9043e42014",
-    "text": "need for revenue optimization"
+    "id": "f2d127db-a254-473a-bd0d-fa272b811ded",
+    "text": "increase in complexity of pricing models"
   },
   {
-    "id": "bd69fb21-6884-4cf1-a8d4-9d375904ab2f",
-    "text": "increase in volume of sensitive data handled"
-  },
-  {
-    "id": "e596554c-f0a9-4539-998c-48cd03299ee2",
+    "id": "058b45b1-fe19-479a-a5a6-95fa1a6435c5",
     "text": "increase in volume of subscriptions"
   },
   {
-    "id": "8108c116-5460-4449-aaa6-ee7957f24f1a",
-    "text": "expansion to new international markets"
+    "id": "4ac0fac2-fdc9-4345-9114-4d93b482a7ac",
+    "text": "increase in number of systems and tools used"
   },
   {
-    "id": "640edc9f-19c8-47ec-ab34-927abbc17021",
+    "id": "c6edbd3b-bddd-4d5d-8baf-f482016b8367",
     "text": "increase in frequency of customer cancellations"
   },
   {
-    "id": "85f4a3eb-430e-4629-826b-7d8cf3994885",
-    "text": "increase in number of platforms used in the business"
+    "id": "8e22539a-2b15-439a-9051-c01d028715a2",
+    "text": "increase in need for integration with other systems"
   },
   {
-    "id": "bb250b52-848f-447d-9c96-5405e91c4336",
+    "id": "2ed91de5-f44c-4d60-b4d7-6c698fc8ca25",
+    "text": "increase in regulatory scrutiny"
+  },
+  {
+    "id": "a4fcfeb9-2e3e-4371-872f-b837729e8426",
     "text": "increase in complexity of revenue streams"
   },
   {
-    "id": "62d32516-f0f1-4a8e-9474-c8a883296f22",
-    "text": "increase in churn rate"
+    "id": "fe00ab3e-cc1b-40d9-85bc-ab146f0031df",
+    "text": "increase in customer demand for flexible pricing"
   },
   {
-    "id": "6a3df83c-38e2-49b3-a6fb-09abee312927",
-    "text": "increase in international customers"
+    "id": "1d399386-e5a9-480a-9319-7655b9a1e735",
+    "text": "increase in global transactions and diverse payment methods"
   },
   {
-    "id": "f7f594de-7256-47d4-bea4-bb6b9d27b310",
-    "text": "increase in number of platforms used within the organization"
-  },
-  {
-    "id": "51411e6c-df81-41d0-80ad-309d2b382ac7",
-    "text": "increase in number of subscriptions"
-  },
-  {
-    "id": "0b7e8bfe-56c6-402d-8023-44ae8a85f63b",
-    "text": "increase in customer complaints"
-  },
-  {
-    "id": "97d075f1-7197-410c-98bd-4922afb58012",
-    "text": "increase in business complexity"
-  },
-  {
-    "id": "1f20ebd8-3e00-46c5-ba61-ab3c14a30219",
-    "text": "decrease in profitability"
-  },
-  {
-    "id": "cef51cd4-11b0-40d6-a1fa-6a43a007d874",
-    "text": "increase in number of platforms used"
-  },
-  {
-    "id": "98538ba0-ca9d-424c-b9cc-4a214d017bf8",
-    "text": "increase in volume of sensitive data"
-  },
-  {
-    "id": "b029fda7-8e64-4570-8b7b-744601f6546a",
-    "text": "expansion into new international markets"
-  },
-  {
-    "id": "e831c3a9-572e-41d1-8194-d2e4b77dc6cc",
-    "text": "need for optimizing profitability"
-  },
-  {
-    "id": "b38dcd2b-62a2-48bc-902e-fa6d19b2b824",
-    "text": "need to increase profitability"
-  },
-  {
-    "id": "6362ab1e-3b54-4c3d-b3de-153acfc92a26",
-    "text": "increase in volume of data"
-  },
-  {
-    "id": "3f34aabf-a3f6-4ed2-a353-65abad3c60bb",
-    "text": "introduction of new platforms in the ecosystem"
-  },
-  {
-    "id": "292295c7-18ec-458d-882d-f0b03a3ac134",
-    "text": "increase in customer cancellations"
-  },
-  {
-    "id": "c63d52c8-06da-4441-b959-2d0b21970d9b",
-    "text": "introduction of new data security regulations"
-  },
-  {
-    "id": "559f8366-da4d-4444-a52b-b604dc60a13d",
-    "text": "need for data-driven decision making"
-  },
-  {
-    "id": "540d2954-3f31-4127-be32-4b20f073488d",
-    "text": "need to maximize profitability"
-  },
-  {
-    "id": "aa476c7b-82b5-42df-b6b6-13f7674fd640",
-    "text": "need for enhanced functionality"
+    "id": "d9df731a-53e7-4474-9657-d140c2f18264",
+    "text": "increase in frequency of customer churn"
   }
 ]

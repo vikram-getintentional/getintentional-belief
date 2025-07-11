@@ -1,0 +1,90 @@
+{
+  "ecb118f4-4436-4799-b59e-5d9b6f0ad4ad": [
+    {
+      "node_id": "ecb118f4-4436-4799-b59e-5d9b6f0ad4ad",
+      "cumulative_relevance": 1.0
+    },
+    {
+      "node_id": "7f5c9a59-7eae-4e91-839a-904fafd09033",
+      "cumulative_relevance": 0.12474012474012475
+    },
+    {
+      "node_id": "f22db69a-4fef-45b5-b624-3f4ca9aef984",
+      "cumulative_relevance": 0.11434511434511437
+    },
+    {
+      "node_id": "09b6c310-d626-416a-afd6-0610ef3722ab",
+      "cumulative_relevance": 0.11226611226611229
+    },
+    {
+      "node_id": "8d4a7b20-ca62-437a-8455-50c5b2e94693",
+      "cumulative_relevance": 0.11018711018711021
+    },
+    {
+      "node_id": "e339cf75-bbdf-43ca-8418-86fc58e76b8c",
+      "cumulative_relevance": 0.10810810810810811
+    },
+    {
+      "node_id": "9649276b-84b6-4cc9-a8df-c0216e827d04",
+      "cumulative_relevance": 0.10602910602910603
+    },
+    {
+      "node_id": "6ae44937-d7dc-433c-a090-b4092968482d",
+      "cumulative_relevance": 0.11642411642411644
+    },
+    {
+      "node_id": "b148d844-f65a-4379-aaf6-be25dd720ed9",
+      "cumulative_relevance": 0.10810810810810811
+    },
+    {
+      "node_id": "2364cce0-8e3f-4cc3-aa54-7ac63ca2a809",
+      "cumulative_relevance": 0.40353430353430364
+    },
+    {
+      "node_id": "65f048b4-1bd5-4490-ab11-e295df97028e",
+      "cumulative_relevance": 0.04158004158004158
+    },
+    {
+      "node_id": "3e06baf8-5be7-4cb5-94ad-4509f417e5be",
+      "cumulative_relevance": 0.02079002079002079
+    }
+  ],
+  "763daa7a-def1-4f6c-a951-da7681ff2e80": [
+    {
+      "node_id": "763daa7a-def1-4f6c-a951-da7681ff2e80",
+      "cumulative_relevance": 1.0
+    },
+    {
+      "node_id": "05e92435-7533-47a5-826c-d830867360a2",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "3bef179a-e4f4-44c7-8d5b-f33c71533771",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "47bb081a-32bf-49d3-b64b-335c32c59ceb",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "60ce716d-90ee-4575-b8e3-6e35336be180",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "f278341a-a0cd-47e5-89cc-a98ae01fe8f8",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "86995915-cbbc-4ea1-9c11-f9f996f53e32",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "69b4b712-1c62-43cc-a5b7-9cebaffbbe0d",
+      "cumulative_relevance": 0.1111111111111111
+    },
+    {
+      "node_id": "fc90a331-13be-4224-8043-ec8863d2b82d",
+      "cumulative_relevance": 0.1111111111111111
+    }
+  ]
+}
