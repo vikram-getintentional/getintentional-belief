@@ -14,6 +14,7 @@ Given:
 - A list of product capabilities
 For each capability, do the following:
 1. List 1–3 business pains this capability solves. These should be specific workflow inefficiencies or failure modes.
+- Each pain must be a clear, actionable description of a problem that the capability addresses.
 2. For each pain, assign a relevance score to every capability in the list, even if that capability is only indirectly related or shares an overlapping job or data dependency.
 - The relevance score must be a float between 0.0 and 1.0.
 - The array must be the same length as the list of capabilities, aligned by order.
@@ -21,7 +22,11 @@ For each capability, do the following:
 - Indirectly related ones (e.g. same persona, downstream workflow, or shared pain) should have scores between 0.1–0.6.
 - Only use 0.0 if the capability has no meaningful connection to the pain.
 
-3. For each pain Specify what attribute must scale for this pain to become intolerable (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
+3. For each pain specify what attribute must scale for this pain to become intolerable. The pain trigger should include: 
+- Trigger attribute :What must increase or change for this pain to become intolerable,
+- Dimension: 'volume', 'complexity', 'frequency', 'compliance', etc.,
+- Direction: Increase, Decrease, or Change.
+- Example: "Increasing Volume of incoming support tickets" > "Incoming support tickets", "Volume", "Increase". "Increasing Complexity of data processing tasks" > "Data processing", "Complexity", "Increase".
 4. List 1–3 jobs that are directly blocked or improved when this pain is solved.
    For each job, provide a list of personas responsible for that job, each with:
       - title
@@ -37,7 +42,11 @@ Return your output in JSON format as a list of entries:
       {{
         "pain": "string",
         "relevance": [0.8, 0.5, 1.0],
-        "pain_trigger": "Increase in volume of incoming support tickets",
+        "pain_trigger": {{
+          "attribute": "Incoming support tickets",
+          "dimension": "Volume",
+          "direction": "Increase"
+        }},
         "jobs": [
           {{
             "description": "Resolve incoming customer tickets in under 24 hours",

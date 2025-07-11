@@ -1,138 +1,86 @@
 [
   {
-    "id": "dc93701a-f6d6-4e9c-a0f3-54ec719d9f00",
-    "text": "inability to find the most profitable pricing model"
+    "id": "dd924943-05c7-4923-b648-faa3e7ac9f55",
+    "text": "difficulty facilitating global transactions and diverse payment methods"
   },
   {
-    "id": "1d0e4ad8-2a17-4903-930a-4de8d90e7732",
+    "id": "f4852cd8-68c1-432d-a8f7-2ea8e0e7a401",
+    "text": "difficulty managing multiple products, add-ons, charges, and currencies"
+  },
+  {
+    "id": "acef4a13-d089-4ba9-bab4-45c6bae67b16",
+    "text": "inability to implement flexible and adaptive pricing models"
+  },
+  {
+    "id": "6529a5f5-02fd-4b40-ba28-a0385545cdb4",
+    "text": "inefficient management of subscription billing and payments"
+  },
+  {
+    "id": "f31a8dcf-bb4e-4d52-8c62-12924e058ec2",
+    "text": "incompatibility with other systems and tools"
+  },
+  {
+    "id": "e8b1ba3f-fb7f-41d1-8c24-c50064e8f1cc",
     "text": "high customer churn rate"
   },
   {
-    "id": "6df5117b-b323-47ca-b37a-f7b0b18a16bd",
-    "text": "inaccurate revenue recognition leading to non-compliance"
+    "id": "a295557c-9718-48a8-9572-0bcab4156a01",
+    "text": "inaccurate revenue recognition, risking non-compliance with gaap"
   },
   {
-    "id": "2480e3ad-7226-429f-bbf2-69880f38e4e1",
-    "text": "non-compliance with data security regulations"
+    "id": "2364cce0-8e3f-4cc3-aa54-7ac63ca2a809",
+    "text": "concerns over transaction security and regulatory compliance"
   },
   {
-    "id": "219e82da-3607-4c10-9226-5b7f058d645f",
-    "text": "inability to accept payments in multiple currencies and through different gateways"
+    "id": "d2926f3a-0272-47e1-9c23-9fbbc4731dd2",
+    "text": "inefficient management of product catalog leading to operational inefficiencies"
   },
   {
-    "id": "cb37bca0-ae29-44c7-8487-29736bad56ea",
-    "text": "inability to integrate with other platforms for enhanced functionality"
+    "id": "f13a3bd3-c07a-4e72-894c-773afab46c80",
+    "text": "inability to adapt pricing models to customer usage leading to loss of competitive advantage"
   },
   {
-    "id": "267b00de-8b9e-4f48-b1b6-caeaad7daeae",
-    "text": "difficulty in managing and monitoring multiple subscriptions"
+    "id": "2098a715-70da-47ac-873f-5ebe81b485ee",
+    "text": "non-compliance with regulations leading to legal issues"
   },
   {
-    "id": "eed0a732-368d-488a-808e-ff08effba6c2",
-    "text": "lack of insights into business performance"
+    "id": "a371232a-9e67-49d4-b1f5-db891943d5bb",
+    "text": "limited payment options leading to loss of sales"
   },
   {
-    "id": "5e9531bd-e9b8-444c-b593-c089820746b2",
-    "text": "high customer churn rate due to poor customer retention strategies."
+    "id": "e588bb8e-7ed9-461c-8abd-2dfade72ac6f",
+    "text": "incorrect revenue recognition leading to non-compliance with gaap"
   },
   {
-    "id": "219c65fa-3536-48f2-8de6-35bb539396dc",
-    "text": "inability to optimize pricing models leading to loss of potential revenue."
+    "id": "5d838d5c-85b0-46b4-8fbd-f1ffaa4fe4c3",
+    "text": "high customer churn rate leading to loss of revenue"
   },
   {
-    "id": "82322274-1ce0-4094-8ca2-05baa99cc72d",
-    "text": "inability to integrate with other platforms leading to inefficient workflows and data silos."
+    "id": "714a81d3-2ce6-4ffa-8e53-050baa0749a7",
+    "text": "incompatibility with other systems and tools leading to operational inefficiencies"
   },
   {
-    "id": "6383de0d-0ee9-435d-918f-07241c5affe7",
-    "text": "inaccurate revenue recognition leading to non-compliance and potential fines."
+    "id": "ad9338ed-cf1f-40c1-b833-e94ebc69a0f9",
+    "text": "inability to adapt pricing models based on usage, leading to lost revenue opportunities."
   },
   {
-    "id": "83c9bdfa-44c8-45b2-8c7e-eb31e31be414",
-    "text": "inability to accept international payments inhibits global expansion."
+    "id": "93614135-a7a4-4341-99e1-7fe08002d93a",
+    "text": "high customer churn due to lack of proactive retention efforts."
   },
   {
-    "id": "2170bacf-3a41-41a3-9504-926f1ce4d617",
-    "text": "difficulty in integrating with other platforms"
+    "id": "5463f8b8-eb21-48f5-96d1-64a0f7b22c09",
+    "text": "inaccurate revenue recognition leading to non-compliance with gaap and potential audit risks."
   },
   {
-    "id": "cb9fb77b-f5a8-4cd8-a8ff-c64017c5db4a",
-    "text": "lack of insights into business performance and customer behavior"
+    "id": "3a2881d0-c943-4dd4-80c7-adb54c23b465",
+    "text": "inefficient management of subscriptions leading to missed billing cycles and lost revenue."
   },
   {
-    "id": "4603138c-4e97-4074-aa6d-717792de269a",
-    "text": "difficulty in tracking and managing multiple subscriptions"
+    "id": "4bc67a12-6a1e-4c10-9315-47b086e50bdc",
+    "text": "inaccurate revenue recognition leading to non-compliance with gaap and potential legal issues."
   },
   {
-    "id": "7409a1cd-5b6a-495d-8171-610fe8d66014",
-    "text": "difficulty in managing international transactions due to currency differences"
-  },
-  {
-    "id": "9b20c011-da37-4e2a-bff9-91479ce584e0",
-    "text": "difficulty in finding the most profitable pricing model"
-  },
-  {
-    "id": "951102e0-dcb5-4d3a-aff1-3e3b3f824935",
-    "text": "difficulty in managing and tracking multiple subscriptions"
-  },
-  {
-    "id": "2e4bfa03-385e-4989-8575-2567bc92c942",
-    "text": "difficulty in gaining insights into business performance and customer behavior"
-  },
-  {
-    "id": "198419b7-5eed-4d8b-a94e-9950dc68cedb",
-    "text": "risk of data breaches and non-compliance with regulations"
-  },
-  {
-    "id": "b3c3a64a-b774-4832-8ae6-5f3cc5589218",
-    "text": "difficulty in managing international transactions and payments"
-  },
-  {
-    "id": "aa5075be-63b2-4a93-bd57-a9db387fc3be",
-    "text": "difficulty in accurately recognizing and reporting revenue"
-  },
-  {
-    "id": "e7e5628e-bd54-46d0-b039-5d4bdcedf0f0",
-    "text": "inaccurate revenue recognition"
-  },
-  {
-    "id": "6e2f0069-23b3-4f52-8c68-34c6a80d2f9a",
-    "text": "difficulty in handling multiple currencies and payment gateways"
-  },
-  {
-    "id": "d5a6481b-6641-4aca-af82-fa8028739689",
-    "text": "difficulty integrating with other platforms"
-  },
-  {
-    "id": "6f4678eb-119a-45d8-84f9-6b8128860a22",
-    "text": "inability to optimize pricing models"
-  },
-  {
-    "id": "99922dfc-7ff1-46cb-b8df-27f0744f8b33",
-    "text": "inefficiency in managing multiple subscriptions"
-  },
-  {
-    "id": "0348b83b-5422-4f32-add2-bf3ae2123cca",
-    "text": "risk of data breaches and non-compliance"
-  },
-  {
-    "id": "8033dace-d197-496f-a106-f3135f304ca6",
-    "text": "inability to integrate with other platforms"
-  },
-  {
-    "id": "b20890e3-6795-4e9d-acfe-03e7ac269686",
-    "text": "inability to gain insights into business performance"
-  },
-  {
-    "id": "2b601641-dd46-41ff-9033-26dda7adabc6",
-    "text": "inaccurate revenue reporting"
-  },
-  {
-    "id": "056760c8-06ae-484e-8ea1-d195ed74c13e",
-    "text": "difficulty in handling international transactions"
-  },
-  {
-    "id": "dbe2d3b9-8674-4523-a024-4a64e278e08d",
-    "text": "inefficient tracking and management of subscriptions"
+    "id": "82abe38d-35c1-486f-b4db-61ba8fcd02f7",
+    "text": "high customer churn rate due to lack of effective retention strategies."
   }
 ]

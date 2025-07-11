@@ -17,7 +17,8 @@ from backend.utils.graph_base.nodes.capability_nodes import (
 )
 from backend.utils.knowledge_base.persona_generation import (
     get_company_products,
-    get_persona_relevance
+    get_persona_relevance,
+    get_product_personas
 )
 
 from backend.utils.inference.hop_plus_agent import infer_upstream_with_rules
@@ -304,20 +305,8 @@ async def get_personas(product_id: str, request: Request):
         print("Loading personas for product_id:", product_id)
         product_subgraph = base_graph.extract_product_subgraph(product_id)
         # Print all extracted nodes in product_subgraph
-        print("Extracted product subgraph with total nodes:", len(product_subgraph.node_registry))
-        for node_id, node_data in product_subgraph.node_registry.items():
-            print(f"Node ID: {node_id}, Data: {node_data}")
-        
         aggregated_personas = get_persona_relevance(product_subgraph)
 
-        #personas = get_product_personas(base_graph, product_id)
-        
-        
-        # personas should be a list of persona dicts
-        #if personas is None:
-         #   print("No personas found for product_id from get_product_personas:", product_id)
-         #   return {"detail": "No Summaries or Capabilities Mapped"}
-        #print("Personas from get_product_personas:", personas)
         return aggregated_personas
     except Exception as e:
         print("❌ Get personas error:", e)
