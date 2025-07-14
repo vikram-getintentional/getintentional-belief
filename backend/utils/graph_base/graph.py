@@ -106,6 +106,31 @@ class Graph:
             if edge["source"] == source_id and edge["type"] == edge_type
         ]
     
+    def get_all_target_nodes(self, node) -> Set[str]:
+        """
+        Returns all target nodes for a given node by traversing outgoing edges.
+        """
+        target_list = []
+        node_id = node["id"]
+        for edge in self.graph_edges:
+            if edge["source"] == node_id:
+                target_id = edge["target"]
+                target = self.get_node_by_id(target_id)
+                target_list.append(target)
+        return target_list
+    def get_all_source_nodes(self, node) -> Set[str]:
+        """
+        Returns all source nodes for a given node by traversing incoming edges.
+        """
+        source_list = []
+        node_id = node["id"]
+        for edge in self.graph_edges:
+            if edge["target"] == node_id:
+                source_id = edge["source"]
+                source = self.get_node_by_id(source_id)
+                source_list.append(source)
+        return source_list
+
     def extract_subgraph(self, start_node_id: str) -> "Graph":
         visited = set()
         to_visit = [start_node_id]

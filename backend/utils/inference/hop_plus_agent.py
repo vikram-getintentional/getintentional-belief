@@ -1,5 +1,15 @@
+"""
+
+
+"""
+
+
+
+# Commenting out everything - feel free to reuse or kill
+"""
 import json
 from typing import List, Dict, Any, Set
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.inference.hop_plus_openai import get_upstream_triplets
 from backend.utils.graph_base.graph import Graph
 from backend.utils.knowledge_base.canonicalizer import canonicalize_job, canonicalize_pain, canonicalize_persona
@@ -8,13 +18,10 @@ from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
 from backend.utils.graph_base.edges.edge_manager import add_edge
 
-
-
-
 def infer_upstream_with_rules(
     product_subgraph: Graph,
     cap_threshold: float = 0.1,
-    relevance_threshold: float = 0.6,
+    relevance_threshold: float = 0.5,
     max_depth: int = 5
 ):
     """
@@ -36,16 +43,15 @@ def infer_upstream_with_rules(
         if current_depth > max_depth or persona_id in visited_personas:
             return
         visited_personas.add(persona_id)
-        cum_relevance, normalized_cumulative_relevance, all_paths = product_subgraph.compute_cumulative_relevance_from_node(persona_id, product_id)
-        if normalized_cumulative_relevance < relevance_threshold:
+        cumulative_relevance = get_cumulative_relevance_data(product_id, persona_id)
+        if cumulative_relevance < relevance_threshold:
             return
 
         persona_node = product_subgraph.get_node_by_id(persona_id)
         results.append({
             "persona_id": persona_id,
             "persona": persona_node,
-            "cumulative_relevance": cum_relevance,
-            "paths": all_paths
+            "cumulative_relevance": cumulative_relevance,
         })
 
         # Step 5: Get jobs "performed_by" this persona
@@ -359,3 +365,5 @@ def hop_plus_gpt_lookup(gpt_cache: List[Dict[str, Any]]) -> List[Dict[str, Any]]
         triplet["job"] = job_map.get(triplet["job"], triplet["job"])
         triplet["pain"] = pain_map.get(triplet["pain"], triplet["pain"])
     return upstream_triplets
+
+"""

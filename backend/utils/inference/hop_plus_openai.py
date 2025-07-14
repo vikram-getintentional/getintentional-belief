@@ -29,38 +29,73 @@ def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
       You are a {persona['title']} in the {persona['department']} team at {persona['seniority']} level with an original job – {job}.
       If you fail to do this job well, what upstream pain does it create, for whom, when performing what job?
 
-      Provide a structured upstream impact mapping that shows:
-      - For each original job, list the upstream business pain experienced by the failure of this job
-      - For each upstream pain, include how much does failing this job impact this upstream pain (Scale: 0.0 to 1.0)
-      - For each pain what attribute must scale in volume, frequency or complexity for this pain to become intolerable.
-      - For each upstream pain list the upstream jobs that are blocked by this pain, or directly improved if this pain is alleviated.
-      - For each upstream job, list the persona responsible for that job (include title, department, and seniority).
-      
+      For each of the following jobs, identify upstream dependencies as part of a causal graph traversal.
 
-      Return your output in JSON format as a list of entries:
-      [
+      1. For each input job, list 1–3 upstream business pains that block or degrade this job.
+        - Each pain must describe a **workflow bottleneck**, **data unavailability**, or **preceding task failure** that prevents this job from being done well.
+        - The pain must be **causally upstream** — i.e., if this pain exists, the current job will be delayed, done poorly, or skipped.
+        - The pain should not be a vague concern — it must be a **specific, operational dependency**.
+
+      2. For each pain, provide:
+        - **impact**: A float between 0.0 and 1.0 indicating how severely this pain affects the input job.
+          - Use 0.7–1.0 for direct blockers
+          - 0.3–0.6 for partial blockers or degraded context
+          - 0.1–0.2 for weak signals or related but non-critical issues
+        - A **pain_trigger** that describes when this pain becomes intolerable:
+          - attribute: the real-world metric or variable (e.g., "Number of support tickets")
+          - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
+          - direction: one of ["Increase", "Decrease", "Change"]
+
+      3. For each pain, list 1–2 **upstream jobs** responsible for resolving or preventing this pain.
+        - Each job should be a **specific task or responsibility** in a business process that describes a "job to be done".
+        - Avoid abstract statements. Use job phrases like “Prepare monthly financial reports” or “Maintain lead scoring logic”.
+
+      4. For each upstream job, list 1–2 personas responsible, with:
+        - title
+        - department
+        - seniority (one of: Junior, Operator, Manager, Senior, Executive)
+
+      ---
+
+      Input Jobs:
       {{
-          "original_job": "{job}",
-          "dependent_pains": [{{
-              "pain": "...",
-              "pain_impact": "0.5",
-              "pain_trigger": "Volume of incoming leads",
-              "dependent_jobs": [{{
-                  "description": "Job description that is blocked or affected",
-                  "dependent_personas": [
-                      {{
-                          "title": "Job holder title",
-                          "department": "Department",
-                          "seniority": "Seniority level (must be one of: Junior, Operator, Manager, Senior, Executive)"
-                      }},
-                      ...
+      {job_list_json}
+      }}
+
+      ---
+
+      Return the result in the following JSON format:
+      [
+        {{
+          "original_job_id": "string",
+          "upstream_pains": [
+            {{
+              "pain": "string",
+              "impact": float,
+              "pain_trigger": {{
+                "attribute": "string",
+                "dimension": "string",
+                "direction": "Increase" | "Decrease" | "Change"
+              }},
+              "upstream_jobs": [
+                {{
+                  "description": "string",
+                  "personas": [
+                    {{
+                      "title": "string",
+                      "department": "string",
+                      "seniority": "Junior" | "Operator" | "Manager" | "Senior" | "Executive"
+                    }}
                   ]
-              }}],
-          }}]
-      }},
-      ...
+                }}
+              ]
+            }}
+          ]
+        }}
       ]
-  """
+
+      All output must be realistic, based on actual workflows and organizational roles. Do not invent exotic personas or vague responsibilities.
+    """
 
     try:
         response = client.chat.completions.create(
