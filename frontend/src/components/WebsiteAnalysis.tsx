@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import PersonaBuilder from "./PersonaBuilder";
-import SpinnerIcon from "../utils/SpinnerIcon";
-import debounce from "lodash.debounce"; // Install lodash.debounce via npm or yarn
 
 type Props = {
   url: string;
@@ -18,20 +15,16 @@ type Capability = {
 };
 
 const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = [] }: Props) => {
-  const [personaSuggestions, setPersonaSuggestions] = useState([]);
   const [summary, setSummary] = useState("");
   const [capabilities, setCapabilities] = useState<Capability[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [editedSummary, setEditedSummary] = useState(false);
   const [editedCapabilities, setEditedCapabilities] = useState<Capability[]>([]);
   const [newCapabilities, setNewCapabilities] = useState<Capability[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [productId, setProductId] = useState<string | null>(null);
   const [companyIdLoading, setCompanyIdLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false); // Define isGenerating state
   const location = useLocation();
 
   useEffect(() => {
@@ -206,7 +199,7 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
               cap.node_id
                 ? cap
                 : data.capabilities.find(
-                    c => c.name === cap.name && c.description === cap.description
+                  (c: any) => c.name === cap.name && c.description === cap.description
                   ) || cap
             )
           );
@@ -230,22 +223,22 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
     };
   }, []);
 
-  // Debounce the save function
-  const debouncedSave = debounce(() => {
-    console.log("🔄 Autosave triggered");
-    handleSave();
-  }, 1000);
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch("http://localhost:8000/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setCompanyId(data.company_id);
-        console.log("✅ Company ID set:", data.company_id);
-      });
-  }, []);
+  // // Debounce the save function
+  // const _ = debounce(() => {
+  //   console.log("🔄 Autosave triggered");
+  //   handleSave();
+  // }, 1000);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   fetch("http://localhost:8000/me", {
+  //     headers: { Authorization: `Bearer ${token}` },
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setCompanyId(data.company_id);
+  //       console.log("✅ Company ID set:", data.company_id);
+  //     });
+  // }, []);
 
   /*const handleAnalyzeClick = () => {
     const token = localStorage.getItem("token");

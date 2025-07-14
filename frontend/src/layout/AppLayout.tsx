@@ -1,8 +1,6 @@
-import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from "react"; 
 import { Menu } from "lucide-react";
-import { cn } from '../../utils/cn'; // optional: or just use template strings
 
 const navSections = [
     {

@@ -1,6 +1,6 @@
-import React from "react";
 
 export type PersonaSuggestion = {
+  hop?: string;
   persona: {
     title: string;
     department: string;
@@ -20,13 +20,6 @@ type Props = {
   persona: PersonaSuggestion;
   isSelected: boolean;
   onToggle: () => void;
-};
-
-const relevanceLabel = (score: number): string => {
-  if (score >= 0.8) return "🔥 Very High";
-  if (score >= 0.6) return "💡 High";
-  if (score >= 0.3) return "🧐 Moderate";
-  return "🤷 Low";
 };
 
 const PersonaCard = ({ persona, isSelected, onToggle }: Props) => {

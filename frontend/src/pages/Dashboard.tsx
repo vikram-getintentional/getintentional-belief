@@ -7,7 +7,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) return navigate('/login');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
     fetch('http://localhost:8000/me', {
       headers: {
