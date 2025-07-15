@@ -12,7 +12,7 @@ const normalizeWebsiteInput = (input: string): { cleanDisplay: string; fullUrl: 
 };
 
 const ConfirmWebsite = () => {
-  const [email, setEmail] = useState('');
+  const [_, setEmail] = useState('');
   const [websiteInput, setWebsiteInput] = useState('');
   const [cleanWebsite, setCleanWebsite] = useState('');
   const [fullWebsite, setFullWebsite] = useState('');
@@ -38,7 +38,10 @@ const ConfirmWebsite = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) return navigate('/login');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
     fetch('http://localhost:8000/me', {
       headers: {

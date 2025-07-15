@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import PersonaCard from "./PersonaCard";
-import SpinnerIcon from "../utils/SpinnerIcon";
 
 // Types
 export type PersonaSuggestion = {
@@ -51,7 +50,7 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
         setPersonaSuggestions(aggregated);
 
         const toggles: Record<string, boolean> = {};
-        aggregated.forEach((p) => {
+        aggregated.forEach((p: any) => {
           const key = `${p.persona.title}__${p.persona.department}__${p.persona.seniority}`;
           toggles[key] = true;
         });

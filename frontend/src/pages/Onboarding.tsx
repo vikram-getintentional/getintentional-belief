@@ -1,14 +1,14 @@
 import ConfirmWebsite from '../components/ConfirmWebsite';
 import { useEffect, useState } from 'react';
 
-const getCompanyNameFromEmail = (email: string) => {
-  const domain = email.split('@')[1]?.split('.')[0]; // acme.com → acme
-  return domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : '';
-};
+// const getCompanyNameFromEmail = (email: string) => {
+//   const domain = email.split('@')[1]?.split('.')[0]; // acme.com → acme
+//   return domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : '';
+// };
 
 
 const Onboarding = () => {
-  const [email, setEmail] = useState('');
+  const [_, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
 
   useEffect(() => {

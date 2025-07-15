@@ -3,7 +3,7 @@ import PersonaCard from "../components/PersonaCard";
 import PersonaBuilder from "../components/PersonaBuilder";
 
 const Personas = () => {
-  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [_, setCompanyId] = useState<string | null>(null);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [personas, setPersonas] = useState([]);
@@ -122,10 +122,8 @@ const Personas = () => {
             <PersonaCard
               key={i}
               persona={p}
-              selectedPains={p.pains || []}
               isSelected={true}
-              onTogglePain={() => {}}
-              onTogglePersona={() => {}}
+              onToggle={() => {}}
             />
           ))}
         </div>
