@@ -171,9 +171,6 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
         
 
     
-<<<<<<< Updated upstream
-    return personas
-=======
     return personas
 
 
@@ -196,7 +193,7 @@ def rebuild_graph_with_relevance(sub_graph: Graph, capability_threshold = 0.4, r
     if not capability_node_ids:
         print(f"No capabilities found for product ID {product_id}.")
         return []
-    functional_cap_ids, blocker_cap_ids = set_capabilities_relevance(sub_graph, capability_node_ids, capability_threshold)
+    functional_cap_ids, blocker_cap_ids = set_capabilities_relevance(sub_graph, capability_threshold)
     traversed_nodes = set()
     traversed_nodes.add(product_id)
     relevant_next_hop_nodes = []
@@ -220,7 +217,7 @@ def rebuild_graph_with_relevance(sub_graph: Graph, capability_threshold = 0.4, r
         print(data,"\n")
     return aggregated_personas
 
-def set_capabilities_relevance(sub_graph: Graph, capability_id: str, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
+def set_capabilities_relevance(sub_graph: Graph, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
     """
     Sets the relevance for all capabilities in a product subgraph based on centrality and coreness as functional or blockers.
     """
@@ -234,19 +231,19 @@ def set_capabilities_relevance(sub_graph: Graph, capability_id: str, capability_
     functional_capabilities_ids = []
     blocker_capabilities_ids = []
     for capability_id in capability_node_ids:
-        capability_centrality = sub_graph.get_centrality(capability_id)
-        capability = sub_graph.get_node_by_id(capability_id)
-        coreness = capability.get("coreness", 0)
+        capability_node = sub_graph.get_node_by_id(capability_id)
+        capability_centrality = capability_node.get("centrality", 0)
+        coreness = capability_node.get("coreness", 0)
         if capability_centrality < capability_threshold and coreness < coreness_threshold:
-            capability["importance"]= "blocker"
+            capability_node["importance"]= "blocker"
             blocker_capabilities_ids.append(capability_id)
             continue
         elif capability_centrality > capability_threshold and coreness >= coreness_threshold:
-            capability["importance"] = "critical"
+            capability_node["importance"] = "critical"
             functional_capabilities_ids.append(capability_id)
         else:
             print("Detected anomaly in coreness vs cap centrality - please verify \n")
-            print(capability.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
+            print(capability_node.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
 
     return functional_capabilities_ids, blocker_capabilities_ids
 
@@ -281,4 +278,3 @@ def get_relevant_neighbor_nodes(sub_graph, parent_node_ids, relevance_threshold=
                     continue
                 neighbor_nodes.append(target_node_id)
         return neighbor_nodes
->>>>>>> Stashed changes

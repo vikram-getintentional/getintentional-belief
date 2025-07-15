@@ -100,7 +100,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                             },
                             "source": "openai",
                         })
-        print("\n\n\nFull flattened capability map: ", flattened_capability_map)
+        print("\n\n\Flattened capability map in Hop0 traversal")
 
         # Step 3: Normalize and canonicalize the flattened capability map
         print("📊 [Graph] Canonicalizing capability map...")

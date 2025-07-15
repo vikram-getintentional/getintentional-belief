@@ -5,56 +5,37 @@ from backend.utils.inference.openai_client import client  # uses our centralized
 # In the openAI output include the original job as "original_job" and original persona as "original_persona.title+department+seniority"
 
 
-def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
+def get_upstream_triplets(triplet: dict) -> list[dict[str, any]]:
     """
-    Given a persona, job description, pain description, department, and job title, this function queries OpenAI to produce a mapping in the following structure:
-
-    [
-      {
-        "persona": {
-          "title": "...",
-          "department": "...",
-          "seniority": "..."
-        },
-        "job": "...",
-        "impact":0.5,
-        "pain": "...",
-        "pain_trigger": "Volume of incoming leads"
-      },
-      ...
-    ]
+    Given a set of triplets of persona, job description, pain description, department, and job title, this function queries OpenAI to produce a mapping of upstream pains, jobs and personas tied to each original job id.
     """
-
+    job_list_json = json.dumps(triplet, indent=2)
     prompt = f"""
-      You are a {persona['title']} in the {persona['department']} team at {persona['seniority']} level with an original job – {job}.
-      If you fail to do this job well, what upstream pain does it create, for whom, when performing what job?
 
-      For each of the following jobs, identify upstream dependencies as part of a causal graph traversal.
+    You are given a list of persona-job-pain triplets, each with a relevance score.
 
-      1. For each input job, list 1–3 upstream business pains that block or degrade this job.
-        - Each pain must describe a **workflow bottleneck**, **data unavailability**, or **preceding task failure** that prevents this job from being done well.
-        - The pain must be **causally upstream** — i.e., if this pain exists, the current job will be delayed, done poorly, or skipped.
-        - The pain should not be a vague concern — it must be a **specific, operational dependency**.
-
-      2. For each pain, provide:
-        - **impact**: A float between 0.0 and 1.0 indicating how severely this pain affects the input job.
-          - Use 0.7–1.0 for direct blockers
-          - 0.3–0.6 for partial blockers or degraded context
-          - 0.1–0.2 for weak signals or related but non-critical issues
-        - A **pain_trigger** that describes when this pain becomes intolerable:
-          - attribute: the real-world metric or variable (e.g., "Number of support tickets")
-          - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
-          - direction: one of ["Increase", "Decrease", "Change"]
-
-      3. For each pain, list 1–2 **upstream jobs** responsible for resolving or preventing this pain.
+    For each triplet, do the following:
+    1. Treat the persona as the actor, performing the specified job, and experiencing the specified pain (with the given relevance).
+    2. Identify 1–3 **upstream business pains** directly resulting from the failure of this persona to perform their job well.
+      - Each pain must describe a **workflow bottleneck**, **data unavailability**, or **preceding task failure** that prevents this job from being done well.
+      - The pain must be **causally upstream** — i.e., if this pain exists, the current job is essential.
+      - The pain should not be a vague concern — it must be a **specific, operational dependency**.
+    3. For each upstream pain, provide:
+      - **impact**: A float between 0.0 and 1.0 indicating the degree to which the original job's failure drives this pain.
+      - an impact score of 0.7-1.0 indicates not performing this job well causes debilitating pain upstream, 0.3-0.6 indicates partial pain that can be mitigated with workarounds, and 0.1-0.2 indicates weak or non-critical pains that can be lived with.
+      - **pain_trigger**: An object with:
+        - attribute: the real-world metric or variable (e.g., "Number of support tickets")
+        - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
+        - direction: one of ["Increase", "Decrease", "Change"]
+    4. For each upstream pain, list 1–2 **upstream jobs to be done** where this pain is typically experienced.
         - Each job should be a **specific task or responsibility** in a business process that describes a "job to be done".
         - Avoid abstract statements. Use job phrases like “Prepare monthly financial reports” or “Maintain lead scoring logic”.
 
-      4. For each upstream job, list 1–2 personas responsible, with:
+    5. For each job, list 1–2 responsible personas with:
         - title
         - department
         - seniority (one of: Junior, Operator, Manager, Senior, Executive)
-
+          
       ---
 
       Input Jobs:
