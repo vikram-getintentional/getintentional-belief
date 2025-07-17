@@ -3694,9 +3694,9 @@
     "seniority": "Operator"
   },
   "{'title': 'finance manager', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "accountant",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "Operator"
+    "seniority": "Junior"
   },
   "{'title': 'customer success manager', 'department': 'customer service', 'seniority': 'Operator'}": {
     "title": "subscription manager",
@@ -3709,8 +3709,8 @@
     "seniority": "Operator"
   },
   "{'title': 'operations manager', 'department': 'operations', 'seniority': 'Operator'}": {
-    "title": "strategy manager",
-    "department": "strategy",
+    "title": "sales manager",
+    "department": "sales",
     "seniority": "Operator"
   },
   "{'title': 'information security officer', 'department': 'it', 'seniority': 'Operator'}": {
@@ -3725,7 +3725,7 @@
   },
   "subscription manager|sales|Operator": "subscription manager|sales|Operator",
   "{'title': 'subscription manager', 'department': 'sales', 'seniority': 'Operator'}": {
-    "title": "sales executive",
+    "title": "subscription manager",
     "department": "sales",
     "seniority": "Operator"
   },
@@ -3735,9 +3735,9 @@
     "seniority": "Operator"
   },
   "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'Operator'}": {
-    "title": "sales executive",
-    "department": "sales",
-    "seniority": "Operator"
+    "title": "customer success executive",
+    "department": "customer success",
+    "seniority": "Junior"
   },
   "{'title': 'it manager', 'department': 'it', 'seniority': 'Operator'}": {
     "title": "it manager",
@@ -3851,8 +3851,8 @@
   },
   "subscription manager|customer service|Operator": "subscription manager|customer service|Operator",
   "{'title': 'subscription manager', 'department': 'customer service', 'seniority': 'Operator'}": {
-    "title": "retention specialist",
-    "department": "customer success",
+    "title": "subscription manager",
+    "department": "customer service",
     "seniority": "Operator"
   },
   "{'title': 'pricing strategist', 'department': 'sales', 'seniority': 'Operator'}": {
@@ -3951,13 +3951,13 @@
     "seniority": "Operator"
   },
   "{'title': 'business intelligence manager', 'department': 'business intelligence', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data science",
-    "seniority": "Operator"
+    "title": "business analyst",
+    "department": "business intelligence",
+    "seniority": "Junior"
   },
   "{'title': 'chief data officer', 'department': 'executive', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "analytics",
+    "title": "accountant",
+    "department": "finance",
     "seniority": "Operator"
   },
   "{'title': 'business intelligence developer', 'department': 'business intelligence', 'seniority': 'Operator'}": {
@@ -3986,9 +3986,9 @@
     "seniority": "Operator"
   },
   "{'title': 'revenue accountant', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "revenue accountant",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "Operator"
+    "seniority": "Junior"
   },
   "{'title': 'chief information security officer', 'department': 'it', 'seniority': 'Operator'}": {
     "title": "it manager",
@@ -3996,9 +3996,9 @@
     "seniority": "Operator"
   },
   "{'title': 'business analyst', 'department': 'business intelligence', 'seniority': 'Operator'}": {
-    "title": "data analyst",
-    "department": "data science",
-    "seniority": "Operator"
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Junior"
   },
   "{'department': 'Finance', 'seniority': 'Operator', 'title': 'Billing Manager'}": {
     "title": "Billing Manager",
@@ -4031,9 +4031,9 @@
     "seniority": "Junior"
   },
   "{'title': 'pricing analyst', 'department': 'finance', 'seniority': 'Junior'}": {
-    "title": "accountant",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "Operator"
+    "seniority": "Junior"
   },
   "{'title': 'pricing strategist', 'department': 'marketing', 'seniority': 'Operator'}": {
     "title": "business analyst",
@@ -4185,12 +4185,12 @@
   },
   "marketing manager|marketing|Operator": "marketing manager|marketing|Operator",
   "{'title': 'marketing manager', 'department': 'marketing', 'seniority': 'Operator'}": {
-    "title": "strategy manager",
-    "department": "strategy",
+    "title": "sales manager",
+    "department": "sales",
     "seniority": "Operator"
   },
   "{'title': 'sales director', 'department': 'sales', 'seniority': 'Operator'}": {
-    "title": "sales director",
+    "title": "sales manager",
     "department": "sales",
     "seniority": "Operator"
   },
@@ -4212,7 +4212,7 @@
   "{'title': 'data science manager', 'department': 'data', 'seniority': 'Operator'}": {
     "title": "data analyst",
     "department": "data",
-    "seniority": "Junior"
+    "seniority": "Operator"
   },
   "{'title': 'app developer', 'department': 'development', 'seniority': 'Operator'}": {
     "title": "app developer",
@@ -4220,8 +4220,8 @@
     "seniority": "Operator"
   },
   "{'title': 'product manager', 'department': 'product', 'seniority': 'Operator'}": {
-    "title": "product manager",
-    "department": "product",
+    "title": "sales manager",
+    "department": "sales",
     "seniority": "Operator"
   },
   "{'title': 'data product manager', 'department': 'product', 'seniority': 'Operator'}": {
@@ -4240,8 +4240,8 @@
     "seniority": "Operator"
   },
   "{'title': 'chief technology officer', 'department': 'technology', 'seniority': 'Operator'}": {
-    "title": "marketing manager",
-    "department": "marketing",
+    "title": "risk manager",
+    "department": "risk management",
     "seniority": "Operator"
   },
   "{'title': 'systems integrator', 'department': 'it', 'seniority': 'Operator'}": {
@@ -4378,8 +4378,8 @@
     "seniority": "Operator"
   },
   "{'title': 'customer support manager', 'department': 'customer support', 'seniority': 'Operator'}": {
-    "title": "customer support agent",
-    "department": "customer support",
+    "title": "sales manager",
+    "department": "sales",
     "seniority": "Operator"
   },
   "{'title': 'sales operations analyst', 'department': 'sales', 'seniority': 'Junior'}": {
@@ -4399,13 +4399,13 @@
     "seniority": "Operator"
   },
   "{'title': 'business analyst', 'department': 'business intelligence', 'seniority': 'Junior'}": {
-    "title": "pricing analyst",
-    "department": "finance",
+    "title": "business analyst",
+    "department": "business intelligence",
     "seniority": "Junior"
   },
   "{'title': 'chief financial officer', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "accountant",
-    "department": "finance",
+    "title": "it manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'global sales manager', 'department': 'sales', 'seniority': 'Operator'}": {
@@ -4465,8 +4465,8 @@
     "seniority": "Operator"
   },
   "{'title': 'chief financial officer', 'department': 'executive', 'seniority': 'Operator'}": {
-    "title": "account manager",
-    "department": "sales",
+    "title": "accountant",
+    "department": "finance",
     "seniority": "Operator"
   },
   "{'department': 'Finance', 'seniority': 'Operator', 'title': 'Cash Flow Manager'}": {
@@ -4516,8 +4516,8 @@
     "seniority": "Operator"
   },
   "{'title': 'chief technology officer', 'department': 'executive', 'seniority': 'Operator'}": {
-    "title": "ai specialist",
-    "department": "ai",
+    "title": "accountant",
+    "department": "finance",
     "seniority": "Operator"
   },
   "{'title': 'data engineer', 'department': 'data', 'seniority': 'Operator'}": {
@@ -4864,9 +4864,9 @@
     "seniority": "Operator"
   },
   "{'title': 'international business manager', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "cfo",
+    "title": "pricing analyst",
     "department": "finance",
-    "seniority": "Operator"
+    "seniority": "Junior"
   },
   "{'title': 'vp of customer success', 'department': 'customer success', 'seniority': 'Operator'}": {
     "title": "vp of customer success",
@@ -4874,8 +4874,8 @@
     "seniority": "Operator"
   },
   "{'title': 'retention specialist', 'department': 'customer success', 'seniority': 'Operator'}": {
-    "title": "retention specialist",
-    "department": "customer success",
+    "title": "subscription manager",
+    "department": "sales",
     "seniority": "Operator"
   },
   "{'title': 'customer service representative', 'department': 'customer service', 'seniority': 'Junior'}": {
@@ -4884,8 +4884,8 @@
     "seniority": "Junior"
   },
   "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'Operator'}": {
-    "title": "compliance officer",
-    "department": "legal",
+    "title": "it manager",
+    "department": "it",
     "seniority": "Operator"
   },
   "{'title': 'ciso', 'department': 'it', 'seniority': 'Operator'}": {
@@ -4919,7 +4919,7 @@
     "seniority": "Operator"
   },
   "{'title': 'sales executive', 'department': 'sales', 'seniority': 'Operator'}": {
-    "title": "sales executive",
+    "title": "sales manager",
     "department": "sales",
     "seniority": "Operator"
   },
@@ -4931,6 +4931,231 @@
   "{'title': 'business intelligence manager', 'department': 'data', 'seniority': 'Operator'}": {
     "title": "data analyst",
     "department": "data",
+    "seniority": "Operator"
+  },
+  "{'title': 'health and safety officer', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'quality assurance manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'company secretary', 'department': 'legal', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'asset manager', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "asset manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'facilities manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'project manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'hr manager', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'cyber security specialist', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'support team lead', 'department': 'customer support', 'seniority': 'Operator'}": {
+    "title": "support team lead",
+    "department": "customer support",
+    "seniority": "Operator"
+  },
+  "{'title': 'business process analyst', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'internal auditor', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "asset manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer support executive', 'department': 'customer support', 'seniority': 'Operator'}": {
+    "title": "customer support manager",
+    "department": "customer support",
+    "seniority": "Operator"
+  },
+  "{'title': 'risk manager', 'department': 'risk management', 'seniority': 'Operator'}": {
+    "title": "risk manager",
+    "department": "risk management",
+    "seniority": "Operator"
+  },
+  "{'title': 'asset manager', 'department': 'asset management', 'seniority': 'Operator'}": {
+    "title": "risk manager",
+    "department": "risk management",
+    "seniority": "Operator"
+  },
+  "{'title': 'it security manager', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'safety officer', 'department': 'safety and compliance', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'human resources manager', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "asset manager",
+    "department": "asset management",
+    "seniority": "Operator"
+  },
+  "{'title': 'quality assurance manager', 'department': 'quality assurance', 'seniority': 'Operator'}": {
+    "title": "risk manager",
+    "department": "risk management",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer service manager', 'department': 'customer service', 'seniority': 'Operator'}": {
+    "title": "subscription manager",
+    "department": "customer service",
+    "seniority": "Operator"
+  },
+  "{'title': 'chief customer officer', 'department': 'executive', 'seniority': 'Operator'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'chief legal officer', 'department': 'executive', 'seniority': 'Operator'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'pricing analyst', 'department': 'strategy', 'seniority': 'Junior'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'business intelligence manager', 'department': 'strategy', 'seniority': 'Operator'}": {
+    "title": "global expansion manager",
+    "department": "strategy",
+    "seniority": "Operator"
+  },
+  "{'title': 'finance analyst', 'department': 'finance', 'seniority': 'Junior'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'customer success executive', 'department': 'customer success', 'seniority': 'Junior'}": {
+    "title": "customer success executive",
+    "department": "customer success",
+    "seniority": "Junior"
+  },
+  "{'title': 'finance executive', 'department': 'finance', 'seniority': 'Junior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'it support executive', 'department': 'it', 'seniority': 'Junior'}": {
+    "title": "it support executive",
+    "department": "it",
+    "seniority": "Junior"
+  },
+  "{'title': 'customer retention manager', 'department': 'customer success', 'seniority': 'Operator'}": {
+    "title": "subscription manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'security and compliance officer', 'department': 'security', 'seniority': 'Operator'}": {
+    "title": "security and compliance officer",
+    "department": "security",
+    "seniority": "Operator"
+  },
+  "{'title': 'facility manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "product manager",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'asset manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "product manager",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer support executive', 'department': 'support', 'seniority': 'Operator'}": {
+    "title": "support team lead",
+    "department": "support",
+    "seniority": "Operator"
+  },
+  "{'title': 'support team lead', 'department': 'support', 'seniority': 'Operator'}": {
+    "title": "support team lead",
+    "department": "support",
+    "seniority": "Operator"
+  },
+  "{'title': 'legal counsel', 'department': 'legal', 'seniority': 'Operator'}": {
+    "title": "legal counsel",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'chief compliance officer', 'department': 'compliance', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'chief operations officer', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'it security specialist', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'compliance officer', 'department': 'compliance', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer support representative', 'department': 'customer support', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'sales operations analyst', 'department': 'sales', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'sales operations analyst', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'marketing specialist', 'department': 'marketing', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'sales operations manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'ux designer', 'department': 'design', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'crm administrator', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
     "seniority": "Operator"
   }
 }

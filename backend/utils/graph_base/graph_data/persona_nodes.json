@@ -118,5 +118,113 @@
     "title": "sales executive",
     "seniority": "sales",
     "department": "Operator"
+  },
+  {
+    "id": "57dbe726-01c8-40b2-86c7-3b19191e7b37",
+    "title": "company secretary",
+    "seniority": "legal",
+    "department": "Operator"
+  },
+  {
+    "id": "3f99dc6b-fa05-4a7c-83f9-52328582eb70",
+    "title": "asset manager",
+    "seniority": "finance",
+    "department": "Operator"
+  },
+  {
+    "id": "1fdd22b3-c343-476c-ad54-38a16d04c63c",
+    "title": "support team lead",
+    "seniority": "customer support",
+    "department": "Operator"
+  },
+  {
+    "id": "aeacfd3a-7127-4a90-8f51-866c713f093e",
+    "title": "risk manager",
+    "seniority": "risk management",
+    "department": "Operator"
+  },
+  {
+    "id": "288f9dc5-657a-4f97-8460-f3a431f51682",
+    "title": "asset manager",
+    "seniority": "asset management",
+    "department": "Operator"
+  },
+  {
+    "id": "1f8e283d-6241-431e-931a-08d5b34447e2",
+    "title": "customer support manager",
+    "seniority": "customer support",
+    "department": "Operator"
+  },
+  {
+    "id": "bd4432f4-e919-4f4a-b4ff-be706bf6cdfc",
+    "title": "it security manager",
+    "seniority": "it",
+    "department": "Operator"
+  },
+  {
+    "id": "de2e3ee1-dce1-40ed-9167-f025bacce760",
+    "title": "subscription manager",
+    "seniority": "customer service",
+    "department": "Operator"
+  },
+  {
+    "id": "3873ede1-fb61-486c-90ed-946fcb66d642",
+    "title": "finance analyst",
+    "seniority": "finance",
+    "department": "Junior"
+  },
+  {
+    "id": "c8a9d635-39ee-4d14-9605-ec9b5b1fd5ac",
+    "title": "customer success executive",
+    "seniority": "customer success",
+    "department": "Junior"
+  },
+  {
+    "id": "636a2d45-1ef3-4e06-94a9-049f1114e937",
+    "title": "business analyst",
+    "seniority": "business intelligence",
+    "department": "Junior"
+  },
+  {
+    "id": "fc63d69e-1568-4c83-ac82-9074464ba71f",
+    "title": "it support executive",
+    "seniority": "it",
+    "department": "Junior"
+  },
+  {
+    "id": "e6f9d8e9-e694-4a65-8800-2a06e378e4a1",
+    "title": "security and compliance officer",
+    "seniority": "security",
+    "department": "Operator"
+  },
+  {
+    "id": "d5f1b056-f0ca-43fd-8cfd-edd8a5879e66",
+    "title": "support team lead",
+    "seniority": "support",
+    "department": "Operator"
+  },
+  {
+    "id": "18a61781-ae57-4198-b1f5-d1e92e51fe39",
+    "title": "hr manager",
+    "seniority": "human resources",
+    "department": "Operator"
+  },
+  {
+    "id": "7721a35b-ee28-4476-9ef8-6d674678bcc3",
+    "title": "legal counsel",
+    "seniority": "legal",
+    "department": "Operator"
+  },
+  {
+    "id": "7ce8ac27-72d2-4be4-b0e3-9b47b5645681",
+    "title": "sales manager",
+    "seniority": "sales",
+    "department": "Operator"
+  },
+  {
+    "id": "7be53787-c8f3-4def-af21-a48895da8a62",
+    "title": "ux designer",
+    "seniority": "design",
+    "department": "Operator"
   }
 ]

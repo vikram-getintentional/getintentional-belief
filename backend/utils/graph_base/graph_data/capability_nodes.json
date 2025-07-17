@@ -54,5 +54,117 @@
     "description": "Seamlessly integrates with various other platforms for enhanced functionality.",
     "coreness": 0.6,
     "centrality": 0.0
+  },
+  {
+    "id": "f63543ec-d4ff-4bd6-a5ba-4b2d386c6543",
+    "name": "Directors & Officers Insurance",
+    "description": "Protects the directors, officers, and employees of a business against personal liabilities.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "704d1f83-eaef-419c-bb04-d29242cc428a",
+    "name": "Commercial General Liability Insurance",
+    "description": "Protects a business against financial risks arising from death, bodily injury, or damage to property.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "a6ad2a0e-ec7c-4791-a06b-80f5e2a8e52a",
+    "name": "Asset Protection Insurance",
+    "description": "Safeguards a business from losses revolving around damage to physical assets.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "7e5b76cd-f9ee-4f47-804b-b07dde808dd1",
+    "name": "Errors and Omissions/Professional Indemnity",
+    "description": "Guards a business against financial risks arising from a negligent act, error/omission, unintentional breach of contract, or failure to render professional services to a party.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "b6426ecc-f1f8-43b2-a085-8e9d7acad7c2",
+    "name": "Cyber Liability Insurance",
+    "description": "Shields a business from information technology & infrastructure risks such as breaches of data/privacy, and malicious cyber attacks.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "03a887ea-30ae-4b65-a420-25bf4b6b61bd",
+    "name": "Employee Dishonesty Insurance",
+    "description": "Protects a business against financial losses due to criminal acts linked to money or securities, committed by an employee/employees.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "792b89e4-9761-4c7a-b395-d7dfaffb8889",
+    "name": "24x7 Support",
+    "description": "Provides round-the-clock support to ensure seamless and effective service.",
+    "coreness": 0.8,
+    "centrality": 0.0
+  },
+  {
+    "id": "845792ee-0cab-4bcf-b034-b21d1e63d473",
+    "name": "Tech for every need",
+    "description": "Leverages technology to meet various needs and deliver efficient services.",
+    "coreness": 0.8,
+    "centrality": 0.0
+  },
+  {
+    "id": "f2f567e6-501c-45ff-8eaf-5d384779fdcd",
+    "name": "Instant Qualification and Scheduling",
+    "description": "Qualifies prospects and enables meetings to be booked right on your website, reducing the need for email back-and-forth.",
+    "coreness": 1.0,
+    "centrality": 0.0
+  },
+  {
+    "id": "1bfecc4b-95bb-4ee0-9e50-73bc96ae6408",
+    "name": "CRM Integration",
+    "description": "Allows meetings to be booked directly within your CRM, eliminating the need for spreadsheets and calendar hunting.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "6e26c7a5-a14b-4cdd-980d-5223dc5dc8c0",
+    "name": "Smart Routing Links",
+    "description": "Enables prospects to self-schedule in one click, improving the efficiency of campaigns and nurture cadences.",
+    "coreness": 0.8,
+    "centrality": 0.0
+  },
+  {
+    "id": "850f3212-f9c4-4a22-a669-d40564368720",
+    "name": "Embedded Scheduling",
+    "description": "Allows scheduling within your app to convert active users into demo, success, or upsell calls.",
+    "coreness": 0.7,
+    "centrality": 0.0
+  },
+  {
+    "id": "2bf4d021-00e8-4f08-86e6-8c190512b7fb",
+    "name": "Chat Conversion",
+    "description": "Presents inline scheduling options in chat conversations, turning your chat widget into a converting asset.",
+    "coreness": 0.6,
+    "centrality": 0.0
+  },
+  {
+    "id": "16f7139d-8390-44fa-abc2-22699c12c28a",
+    "name": "Automated Distribution",
+    "description": "Automates the equal distribution of meetings among your sales team, taking into account cancellations and no-shows.",
+    "coreness": 0.9,
+    "centrality": 0.0
+  },
+  {
+    "id": "5de359ed-9425-4738-ab82-b38bb648dfcb",
+    "name": "Meeting Reminders",
+    "description": "Automates the sending of multiple reminders at different times before the meeting, improving attendance rates.",
+    "coreness": 0.8,
+    "centrality": 0.0
+  },
+  {
+    "id": "a88668f2-a278-4ec9-9607-bef66a3ce5e8",
+    "name": "Booking Interaction Visibility",
+    "description": "Provides immediate visibility into every single booking interaction, allowing for better tracking and understanding of booking behaviors.",
+    "coreness": 0.7,
+    "centrality": 0.0
   }
 ]

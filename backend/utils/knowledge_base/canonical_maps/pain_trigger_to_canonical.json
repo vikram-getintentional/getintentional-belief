@@ -41,7 +41,7 @@
   "increase in number of meetings to be scheduled": "increase in volume of meetings",
   "increase in number of events to be scheduled": "increase in volume of meetings",
   "increase in number of meetings to be reminded": "increase in volume of meetings",
-  "increase in complexity of business operations": "increase in complexity of revenue streams",
+  "increase in complexity of business operations": "increase in complexity of business operations",
   "increase in complexity of sales team structure": "increase in complexity of sales team structure",
   "increase in complexity of sales process": "increase in complexity of sales process",
   "increase in volume of data and insights": "increase in complexity of data sets",
@@ -208,7 +208,7 @@
   "increase in product usage variability": "increase in product usage variability",
   "increase in late payments": "increase in late payments",
   "increase in number of tools used": "increase in number of tools used",
-  "increase in volume of sensitive data": "increase in volume of sensitive data",
+  "increase in volume of sensitive data": "increase in volume of data",
   "increase in cyber threats": "increase in cyber threats",
   "increase in decision-making frequency": "increase in decision-making frequency",
   "increase in application complexity and user demand": "increase in application complexity and user demand",
@@ -366,5 +366,129 @@
   "introduction of new data security regulations": "introduction of new data security regulations",
   "need for data-driven decision making": "need for data-driven decision making",
   "need to maximize profitability": "need to maximize profitability",
-  "need for enhanced functionality": "need for enhanced functionality"
+  "need for enhanced functionality": "need for enhanced functionality",
+  "increase in frequency of cyber threats": "increase in frequency of cyber threats",
+  "increase in volume of valuable assets": "increase in volume of valuable assets",
+  "increase in volume of financial transactions handled by employees": "increase in volume of valuable assets",
+  "increase in complexity of professional services": "increase in complexity of professional services",
+  "increase in complexity of legal and regulatory environment": "increase in complexity of professional services",
+  "increase in frequency of workplace accidents": "increase in frequency of workplace accidents",
+  "increase in complexity of insurance processes": "increase in complexity of insurance processes",
+  "increase in volume of insurance-related queries and claims": "increase in complexity of insurance processes",
+  "increase in the frequency of lawsuits against directors and officers": "increase in the frequency of lawsuits against directors and officers",
+  "increase in the complexity of the services provided or contracts signed": "increase in the complexity of the services provided or contracts signed",
+  "increase in the frequency of workplace accidents": "increase in the frequency of workplace accidents",
+  "increase in the frequency of natural disasters or accidents causing damage to assets": "increase in the frequency of workplace accidents",
+  "increase in the frequency of fraudulent activities by employees": "increase in the frequency of fraudulent activities by employees",
+  "increase in the volume of operations": "increase in the volume of operations",
+  "increase in the volume of customer queries or claims": "increase in the volume of operations",
+  "increase in the frequency and complexity of cyber attacks": "increase in the frequency and complexity of cyber attacks",
+  "need to make data-driven business decisions": "need to make data-driven business decisions",
+  "need to enhance functionality through integrations": "need to enhance functionality through integrations",
+  "decrease in profit margins": "decrease in profit margins",
+  "increase in need for diverse functionality": "increase in need for diverse functionality",
+  "increase in complexity of financial transactions": "increase in complexity of business operations",
+  "increase in customer complaints or cancellation requests": "increase in customer complaints or cancellation requests",
+  "complexity in subscription models": "complexity in revenue models",
+  "complexity in revenue models": "complexity in revenue models",
+  "increase in frequency of customer churn": "increase in frequency of customer churn",
+  "increase in volume of international transactions": "increase in volume of international transactions",
+  "increase in complexity of business performance and customer behavior data": "increase in complexity of revenue streams",
+  "increase in volume of transactions and data": "increase in volume of transactions and data",
+  "increase in legal actions against directors and officers": "increase in legal actions due to professional errors",
+  "increase in legal actions due to professional errors": "increase in legal actions due to professional errors",
+  "increase in customer complaints due to lack of support": "increase in customer complaints due to lack of support",
+  "increase in customer complaints due to inefficient services": "increase in customer complaints due to lack of support",
+  "increase in incidents causing damage to assets": "increase in cyber attacks or data breaches",
+  "increase in cyber attacks or data breaches": "increase in cyber attacks or data breaches",
+  "increase in incidents causing injuries or property damage": "increase in cyber attacks or data breaches",
+  "increase in incidents of employee dishonesty": "increase in incidents of employee dishonesty",
+  "increase in legal disputes due to professional negligence": "increase in company's legal cases",
+  "increase in company's legal cases": "increase in company's legal cases",
+  "increase in employee-related fraud cases": "increase in company's legal cases",
+  "increase in customer expectations for digital services": "increase in customer expectations for digital services",
+  "increase in volume of incoming support tickets": "increase in volume of incoming support tickets",
+  "increase in frequency of natural disasters": "increase in frequency of natural disasters",
+  "increase in frequency and complexity of cyber attacks": "increase in frequency and complexity of cyber attacks",
+  "increase in workplace accidents": "increase in workplace accidents",
+  "number of meetings|volume|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of campaigns|volume|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of active users|volume|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of booking interactions|volume|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of prospects|volume|increase": {
+    "attribute": "number of prospects",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of chat conversations|volume|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of missed meetings|frequency|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "number of sales team members|volume|increase": {
+    "attribute": "number of meetings",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  "chat conversion rate|volume|decrease": {
+    "attribute": "chat conversion rate",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  "number of meetings per salesperson|equity|change": {
+    "attribute": "number of meetings per salesperson",
+    "dimension": "equity",
+    "direction": "change"
+  },
+  "number of platforms used for scheduling|complexity|increase": {
+    "attribute": "number of platforms used for scheduling",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  "number of untracked booking interactions|volume|increase": {
+    "attribute": "number of meetings per salesperson",
+    "dimension": "equity",
+    "direction": "change"
+  },
+  "number of email exchanges|frequency|increase": {
+    "attribute": "number of email exchanges",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  "user engagement rate|volume|decrease": {
+    "attribute": "chat conversion rate",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  "campaign conversion rate|volume|decrease": {
+    "attribute": "chat conversion rate",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  "no-show rate|frequency|increase": {
+    "attribute": "no-show rate",
+    "dimension": "frequency",
+    "direction": "increase"
+  }
 }
