@@ -96,36 +96,66 @@ def canonicalize_pain(pains: list[str]) -> dict:
 
     return canonical_map
 
-def canonicalize_pain_trigger(pain_triggers: list[str]) -> dict:
-    
-    # Step 0: Dedupes
-    pain_triggers = list(set(pain_triggers))
-    
-    if not pain_triggers:
+def canonicalize_pain_trigger(pain_triggers: list[dict]) -> dict:
+    """
+    Canonicalizes a list of pain trigger dicts (attribute/dimension/direction).
+    Returns a mapping from raw pain trigger tuple to canonical pain trigger dict.
+    """
+    # Step 0: Deduplicate and normalize
+    seen = set()
+    deduped_triggers = []
+    for pt in pain_triggers:
+        # Normalize and tuple-ize for deduplication
+        trigger_tuple = (
+            pt.get("attribute", "").strip().lower(),
+            pt.get("dimension", "").strip().lower(),
+            pt.get("direction", "").strip().lower()
+        )
+        if trigger_tuple not in seen:
+            seen.add(trigger_tuple)
+            deduped_triggers.append({
+                "attribute": trigger_tuple[0],
+                "dimension": trigger_tuple[1],
+                "direction": trigger_tuple[2]
+            })
+
+    if not deduped_triggers:
         print("⚠️ No pain triggers provided for canonicalization.")
         return {}
 
-    # Step 1: Generate embeddings
-    
-    pain_trigger_embeddings = generate_and_save_embeddings(pain_triggers, "pain_trigger")
-    
+    # Step 1: Generate embedding texts
+    trigger_texts = [
+        f"{pt['attribute']}|{pt['dimension']}|{pt['direction']}"
+        for pt in deduped_triggers
+    ]
+    pain_trigger_embeddings = generate_and_save_embeddings(trigger_texts, "pain_trigger")
+
     # Handle case with only one embedding
     if len(pain_trigger_embeddings) == 1:
         print("⚠️ Only one pain trigger provided. Skipping clustering.")
-        canonical_map = {pain_triggers[0]: pain_triggers[0]}
-        # Optionally save to a canonical map file if you want
+        canonical_map = {trigger_texts[0]: deduped_triggers[0]}
+        save_canonical_map(canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
         return canonical_map
 
     # Step 2: Cluster pain triggers
     clustered_triggers = cluster_items(pain_trigger_embeddings)
-    
 
     # Step 3: Assign canonical labels
-    canonical_map = assign_canonical_labels(clustered_triggers)
+    canonical_label_map = assign_canonical_labels(clustered_triggers)
 
-    # Step 4: Optionally save the canonical map
+    # Step 4: Map raw triggers to canonical triggers
+    canonical_map = {}
+    for pt, trigger_text in zip(deduped_triggers, trigger_texts):
+        canonical_text = canonical_label_map[trigger_text]
+        attr, dim, dirn = canonical_text.split("|")
+        canonical_map[trigger_text] = {
+            "attribute": attr,
+            "dimension": dim,
+            "direction": dirn
+        }
+
+    # Step 5: Save the canonical map
     save_canonical_map(canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
-    
 
     return canonical_map
 

@@ -21,7 +21,10 @@ For each capability, do the following:
 - Indirectly related ones (e.g. same persona, downstream workflow, or shared pain) should have scores between 0.1–0.6.
 - Only use 0.0 if the capability has no meaningful connection to the pain.
 
-3. For each pain Specify what attribute must scale for this pain to become intolerable (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
+3. For each pain Specify what attribute must scale for this pain to become intolerable in the format of:
+      - attribute: the real-world metric or variable (e.g., "Number of support tickets")
+      - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
+      - direction: one of ["Increase", "Decrease", "Change"] (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
 4. List 1–3 jobs that are directly blocked or improved when this pain is solved.
    For each job, provide a list of personas responsible for that job, each with:
       - title
@@ -37,7 +40,11 @@ Return your output in JSON format as a list of entries:
       {{
         "pain": "string",
         "relevance": [0.8, 0.5, 1.0],
-        "pain_trigger": "Increase in volume of incoming support tickets",
+        "pain_trigger": {{
+                "attribute": "string",
+                "dimension": "string",
+                "direction": "Increase" | "Decrease" | "Change"
+              }},
         "jobs": [
           {{
             "description": "Resolve incoming customer tickets in under 24 hours",

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
+from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
 from backend.utils.openai_helper import extract_summary_and_capabilities
 from backend.utils.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
@@ -298,13 +299,10 @@ async def get_personas(product_id: str, request: Request):
         print("Loading personas for product_id:", product_id)
         product_subgraph = base_graph.extract_product_subgraph(product_id)
         # Print all extracted nodes in product_subgraph
-        print("Extracted product subgraph with total nodes:", len(product_subgraph.node_registry))
-        for node_id, node_data in product_subgraph.node_registry.items():
-            print(f"Node ID: {node_id}, Data: {node_data}")
         
         aggregated_personas = get_persona_relevance(product_subgraph)
 
-        #personas = get_product_personas(base_graph, product_id)
+        final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
         
         
         # personas should be a list of persona dicts
@@ -312,7 +310,7 @@ async def get_personas(product_id: str, request: Request):
          #   print("No personas found for product_id from get_product_personas:", product_id)
          #   return {"detail": "No Summaries or Capabilities Mapped"}
         #print("Personas from get_product_personas:", personas)
-        return aggregated_personas
+        return final_personas
     except Exception as e:
         print("❌ Get personas error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve personas")

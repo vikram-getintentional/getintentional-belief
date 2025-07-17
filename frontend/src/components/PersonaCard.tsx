@@ -10,8 +10,8 @@ export type PersonaSuggestion = {
   relevance: number;
   jobs: {
     description: string;
-    pains: string[];
   }[];
+  pains: string[];
   capabilities?: string[];
 };
 
@@ -44,9 +44,10 @@ const PersonaCard = ({ persona, isSelected, onToggle }: Props) => {
         </p>
         <p className="text-xs text-indigo-600 font-medium mt-1">
           Relevance: {persona.relevance}
+          Relevance Label: {relevanceLabel(persona.relevance)}
         </p>
-        {persona.hop && (
-          <p className="text-sm text-gray-500">Hop: {persona.hop}</p>
+        {persona.persona.hop && (
+          <p className="text-sm text-gray-500">Hop: {persona.persona.hop}</p>
         )}
       </div>
 
@@ -54,14 +55,20 @@ const PersonaCard = ({ persona, isSelected, onToggle }: Props) => {
         {persona.jobs.map((job, jdx) => (
           <div key={jdx}>
             <p className="text-sm font-medium text-gray-700">🛠 {job.description}</p>
-            <ul className="list-disc list-inside ml-2 text-sm text-gray-600">
-              {job.pains.map((pain, idx) => (
-                <li key={idx}>{pain}</li>
-              ))}
-            </ul>
           </div>
         ))}
       </div>
+
+      {persona.pains && persona.pains.length > 0 && (
+        <div className="mt-3">
+          <strong>Pains:</strong>
+          <ul className="list-disc list-inside ml-4 mt-1 text-sm text-gray-600">
+            {persona.pains.map((pain, idx) => (
+              <li key={idx}>{pain}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {persona.capabilities && persona.capabilities.length > 0 && (
         <div className="mt-3 text-xs text-gray-500">

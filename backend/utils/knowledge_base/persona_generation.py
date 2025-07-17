@@ -1,6 +1,7 @@
 from typing import Dict, List, Any
 from backend.utils.graph_base.graph import Graph
 from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 
 
 # Function def get_company_products
@@ -115,24 +116,19 @@ def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, A
     print("Aggregated personas:", aggregated_personas)
     return aggregated_personas
 
-# Function to get persona relevance for all personas in a graph.
-# Input is a graph object. 
-# Logic is to traverse each persona and compute cumulative relevance downwards. 
-# Returns a list of aggregated_personas using the aggregate_persona_cards function.
+
+
 def get_persona_relevance(sub_graph: Graph) -> list[dict]:
-    print("Recalculating capability centralities")
-    sub_graph.update_capability_centralities()
-    print("Starting persona relevance computation")
+    print("Starting relevance computation - at this point centrality & cum relevance should be set")
     personas = []
     product_id = sub_graph.get_node_id("product",{})
 
     for persona_id, _ in sub_graph.get_nodes_list("persona",{}):
-        _, normalized_relevance, _ = sub_graph.compute_cumulative_relevance_from_node(
-            persona_id, product_id
-        )
-        print("Cumulative relevance for persona ID:", persona_id, "is", normalized_relevance)
+        normalized_relevance = get_cumulative_relevance_data(product_id, persona_id)
         persona_node = sub_graph.get_node_by_id(persona_id)
         jobs = []
+        pains = []
+        
         # For each job performed by this persona
         persona_jobs = sub_graph.get_source_nodes_by_target_and_type(
             persona_id, "performed_by"
@@ -142,139 +138,40 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
             if not job_node:
                 print(f"Job node not found for ID: {job_id}")
                 continue
+            jobs.append({
+                "description": job_node.get("description") or job_node.get("text") or ""
+            })
             # For each pain solved by this job
-            pain_ids = sub_graph.get_target_nodes_by_source_and_type(
-                job_id, "solves"
+            pain_ids = sub_graph.get_source_nodes_by_target_and_type(
+                job_id, "addresses"
             )
-            pains = []
             for pain_id in pain_ids:
                 pain_node = sub_graph.get_node_by_id(pain_id)
-                if pain_node:
-                    pains.append(pain_node.get("description") or pain_node.get("text") or "")
-                else:
+                if not pain_node:
                     print(f"Pain node not found for ID: {pain_id}")
-            jobs.append({
-                "description": job_node.get("description") or job_node.get("text") or "",
-                "pains": pains
-            })
+                    continue
+                pains.append(pain_node.get("description") or pain_node.get("text") or "")
+                    
 
         persona = {
+            "persona_id": persona_id,
             "persona": {
                 "title": persona_node.get("title"),
                 "department": persona_node.get("department"),
                 "seniority": persona_node.get("seniority"),
             },
             "relevance": normalized_relevance,
-            "jobs": jobs
+            "jobs": jobs,
+            "pains": pains
         }
         personas.append(persona)
-        
-
+    relevance_nodes = sub_graph.calculate_cumulative_relevance(product_id)
+    print("personas in get_persona_relevance:", personas)
+    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+    print("Cumulative relevance json updated successfully.")
+    
     
     return personas
 
 
-def rebuild_graph_with_relevance(sub_graph: Graph, capability_threshold = 0.4, relevance_threshold = 0.5) -> List[Dict[str, Any]]:
-    """
-    Goal is - to get a list of terminal nodes where cumulative relevance is above threshold so we can consider a GPT call for them. 
-    Finally this function should return an empty list indicating that there are no terminal nodes that have high relevance but haven't been processed yet.
-    Structuring relevance and graph building logic for all nodes.
-    - We want to start with the product id, and get capabilities list.
-    - set_capabilities_relevance will set the relevance for all capabilities in a product subgraph based on centrality and coreness as functional or blockers.
-    - Then we will traverse the subgraph from the given parent node and discovering source and target nodes that have useful relevance.
-    - We re-feed the output of this traversal to get the next order relevant nodes. 
-    
 
-    """
-    sub_graph.update_capability_centralities()
-    product_id = sub_graph.get_node_id("product",{})
-    print("Starting product persona discovery for product ID:", product_id)
-    capability_node_ids = sub_graph.get_target_nodes_by_source_and_type(product_id, "offered_by")
-    if not capability_node_ids:
-        print(f"No capabilities found for product ID {product_id}.")
-        return []
-    functional_cap_ids, blocker_cap_ids = set_capabilities_relevance(sub_graph, capability_threshold)
-    traversed_nodes = set()
-    traversed_nodes.add(product_id)
-    relevant_next_hop_nodes = []
-
-    if not functional_cap_ids:
-        print(f"No functional capabilities found for product ID {product_id}.")
-        return []
-    for cap_id in functional_cap_ids:
-        if cap_id in traversed_nodes:
-            continue
-        traversed_nodes.add(cap_id)
-    next_nodes = get_relevant_neighbor_nodes(sub_graph, functional_cap_ids, relevance_threshold)
-
-
-    
-    
-    # Pass the flat list of persona-job-pain-capability dicts to aggregate_persona_cards
-    aggregated_personas = aggregate_persona_cards(base_graph, persona_entries)
-    print("Aggregated personas - Product Personas:")
-    for data in aggregated_personas:
-        print(data,"\n")
-    return aggregated_personas
-
-def set_capabilities_relevance(sub_graph: Graph, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
-    """
-    Sets the relevance for all capabilities in a product subgraph based on centrality and coreness as functional or blockers.
-    """
-    # Logic to determine importance of capabilities based on centrality and coreness and add to a reduced set of "functional capabilities"
-    product_id = sub_graph.get_node_id("product",{})
-    print("Starting product persona discovery for product ID:", product_id)
-    capability_node_ids = sub_graph.get_target_nodes_by_source_and_type(product_id, "offered_by")
-    if not capability_node_ids:
-        print(f"No capabilities found for product ID {product_id}.")
-        return []
-    functional_capabilities_ids = []
-    blocker_capabilities_ids = []
-    for capability_id in capability_node_ids:
-        capability_node = sub_graph.get_node_by_id(capability_id)
-        capability_centrality = capability_node.get("centrality", 0)
-        coreness = capability_node.get("coreness", 0)
-        if capability_centrality < capability_threshold and coreness < coreness_threshold:
-            capability_node["importance"]= "blocker"
-            blocker_capabilities_ids.append(capability_id)
-            continue
-        elif capability_centrality > capability_threshold and coreness >= coreness_threshold:
-            capability_node["importance"] = "critical"
-            functional_capabilities_ids.append(capability_id)
-        else:
-            print("Detected anomaly in coreness vs cap centrality - please verify \n")
-            print(capability_node.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
-
-    return functional_capabilities_ids, blocker_capabilities_ids
-
-
-def get_relevant_neighbor_nodes(sub_graph, parent_node_ids, relevance_threshold= 0.5):
-        """
-        Traverses the subgraph from the given parent node and discovering source and target nodes (neighbors). 
-        Calculates relevance for each neighbor, and runs traversal only if relevance is above threshold.
-        Returns a list of terminal nodes where cumulative relevance is above threshold. 
-        If all terminal nodes are below threshold, it returns an empty list.
-        """
-        visited = set()
-        product_id = sub_graph.get_node_id("product",{})
-        neighbor_nodes = []
-        for parent_node_id in parent_node_ids:
-            source_node_ids = sub_graph.get_all_source_nodes(parent_node_id)
-            target_node_ids = sub_graph.get_all_target_nodes(parent_node_id)
-            for source_node_id in source_node_ids:
-                if source_node_id in visited:
-                    continue
-                visited.add(source_node_id)
-                node_relevance = sub_graph.get_cumulative_relevance(product_id, source_node_id)
-                if node_relevance < relevance_threshold:
-                    continue
-                neighbor_nodes.append(source_node_id)
-            for target_node_id in target_node_ids:
-                if target_node_id in visited:
-                    continue
-                visited.add(target_node_id)
-                node_relevance = sub_graph.get_cumulative_relevance(product_id, target_node_id)
-                if node_relevance < relevance_threshold:
-                    continue
-                neighbor_nodes.append(target_node_id)
-        return neighbor_nodes

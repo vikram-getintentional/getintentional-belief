@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from collections import defaultdict
 
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.inference.capability_to_pain_persona import infer_persona_job_pain_from_capabilities
 from backend.utils.graph_base.graph_builder import process_capability_map_to_graph
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_canonical_map
@@ -77,7 +78,10 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
             cap_id = entry.get("capability_id", "Unknown").strip()
             for pain in entry.get("pains", []):
                 pain_desc = pain.get("pain", "Unknown Pain")
-                pain_trigger = pain.get("pain_trigger", "")
+                pain_trigger = pain.get("pain_trigger", [])
+                pain_trigger_attribute = pain_trigger.get("attribute", "")
+                pain_trigger_dimension = pain_trigger.get("dimension", "")
+                pain_trigger_direction = pain_trigger.get("direction", "")
                 relevance_array = pain.get("relevance", [])
                 jobs = pain.get("jobs", [])
                 for job in jobs:
@@ -90,7 +94,11 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                         flattened_capability_map.append({
                             "capability_id": cap_id,
                             "pain": pain_desc,
-                            "pain_trigger": pain_trigger,
+                            "pain_trigger": {
+                                "attribute": pain_trigger_attribute,
+                                "dimension": pain_trigger_dimension,
+                                "direction": pain_trigger_direction
+                            },
                             "relevance": relevance_array,
                             "job": job_desc,
                             "persona": {
@@ -119,6 +127,11 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
 
         print("Calculating capability centralities")
         product_subgraph.update_capability_centralities()
+
+        print("Updating cumulative relevance")
+        relevance_nodes = product_subgraph.calculate_cumulative_relevance(product_id)
+        add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+        print("Cumulative relevance json updated successfully.")
 
         return {
                 "capability_map": capability_map,

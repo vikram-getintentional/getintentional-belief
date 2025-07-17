@@ -11,7 +11,6 @@ from backend.utils.graph_base.nodes.persona_nodes import get_or_create_persona_n
 from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
 from backend.utils.graph_base.edges.edge_manager import add_edge
-from backend.utils.knowledge_base.persona_generation import set_capabilities_relevance
 from backend.utils.knowledge_base.canonicalizer import (
         canonicalize_pain,
         canonicalize_job,
@@ -38,8 +37,7 @@ def infer_upstream_with_rules(
     gpt_triplet_cache = []
 
     #2. Get all capabilities and their IDs
-    functional_capabilities_ids, blocker_capabilities_ids = set_capabilities_relevance(
-        product_subgraph, 
+    functional_capabilities_ids, _ = product_subgraph.set_capabilities_relevance(
         capability_threshold=cap_threshold
     )   
     #5. Recurses through next highest relevance triplet from triplet_holder to find upstream triplets. 
@@ -51,7 +49,6 @@ def infer_upstream_with_rules(
         1. max_Depth is reached
         2. there are no more relevant nodes to traverse
         """
-        print("Traversing with triplet:", triplet)
         persona_id = triplet["persona_id"]
         job_id = triplet["job_id"]
         pain_id = triplet["pain_id"]
@@ -66,7 +63,6 @@ def infer_upstream_with_rules(
 
         if current_depth > max_depth or triplet_key in visited_triplets:
             return
-        print("Adding triplet to visited & removing from holder")
         visited_triplets.add(triplet_key)
         triplet_holder.remove(triplet)
 
@@ -105,12 +101,17 @@ def infer_upstream_with_rules(
             up_nodes_available = False
         if not up_nodes_available:
             gpt_triplet_cache.append(triplet)
+        process_triplet_holder(current_depth)
 
     # Only runs gpt cache when triplet holder gets empty.
     def process_gpt_cache(current_depth):
         """
         Processes the GPT triplet cache to generate upstream triplets using OpenAI.
         """
+        print("Processing GPT cache with length:", len(gpt_triplet_cache))
+        if not gpt_triplet_cache:
+            print("GPT triplet cache is empty, skipping processing.")
+            return
         gpt_results = get_hop_plus(gpt_triplet_cache, sub_graph=product_subgraph, threshold=relevance_threshold, id_to_text={})
         gpt_triplet_cache.clear()  # Clear cache after processing
         for gpt_triplet in gpt_results:
@@ -119,8 +120,10 @@ def infer_upstream_with_rules(
     
     #4. Sorts triplets and traverses the most relevant ones first. If triplet_holder is empty - runs gpt on the entire cache.
     def process_triplet_holder(current_depth=1):
+        print("processing triplet holder with length:", len(triplet_holder))
         if not triplet_holder:
-            process_gpt_cache(gpt_triplet_cache, current_depth)
+            if gpt_triplet_cache:
+                process_gpt_cache(gpt_triplet_cache, current_depth)
             return results
         sorted_triplets = sorted(
             triplet_holder,
@@ -128,6 +131,7 @@ def infer_upstream_with_rules(
             reverse=True
         )
         for triplet in sorted_triplets:
+            print("Recursing with triplet length:", len(triplet))
             recurse_from_persona(triplet, current_depth)
     
     # 3. Generate first set of Hop0 triplets and add them to triplet_holder set for processing

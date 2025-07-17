@@ -1,4 +1,5 @@
 import uuid
+import os
 import json
 from backend.utils.graph_base.graph_utils.json_store import load_json, save_json
 from datetime import datetime, timezone
@@ -17,6 +18,7 @@ def add_or_update_cumulative_relevance_data(product_id: str, cumulative_relevanc
         print("Loaded cumulative data")
     else:
         print("No existing cumulative data found, initializing new data structure.")
+        cumulative_data = {}
         save_json(CUMULATIVE_RELEVANCE_PATH, {})  # Ensure the file exists
     if product_id not in cumulative_data:
         cumulative_data[product_id] = []
@@ -40,8 +42,14 @@ def get_cumulative_relevance_data(product_id: str, node_id: str) -> dict:
     Retrieves cumulative relevance data for a specific node_id from the cumulative relevance JSON file.
     """
     cumulative_data = load_json(CUMULATIVE_RELEVANCE_PATH)
-    if product_id not in cumulative_data:
+    if not cumulative_data:
+        print("No existing cumulative data found, initializing new data structure.")
         return 0.0
+        
+    if product_id not in cumulative_data:
+        print("Product ID missing - skipping this")
+        return 0.0
+        
     for entry in cumulative_data[product_id]:
         if entry["node_id"] == node_id:
             return entry["cumulative_relevance"]

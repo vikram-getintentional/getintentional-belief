@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Dict, List, Set
 
 class Graph:
@@ -55,25 +56,7 @@ class Graph:
             self.pain_to_upstream_jobs[pain] = []
         self.pain_to_upstream_jobs[pain].append(job_info)
 
-    def get_upstream_jobs(self, pain: str) -> List[Dict]:
-        return self.pain_to_upstream_jobs.get(pain, [])
     
-    def get_upstream_jobs_by_id(self, pain_id: int) -> List[Dict]:
-        """
-        Return all jobs where pain_id is the source and edge_type is 'addresses'.
-        Output: List of dicts: {'job_id': ..., 'impact': ...}
-        """
-        results = []
-        for edge in self.graph_edges:
-            if (
-                edge.get("source_id") == pain_id
-                and edge.get("edge_type") == "addresses"
-            ):
-                results.append({
-                    "job_id": edge.get("target_id"),
-                    "impact": edge.get("weight", 1.0)
-                })
-        return results
     
     def get_source_nodes_by_target_and_type(self, target_id: str, edge_type: str) -> list:
         """
@@ -118,6 +101,7 @@ class Graph:
                 target = self.get_node_by_id(target_id)
                 target_list.append(target)
         return target_list
+    
     def get_all_source_nodes(self, node) -> Set[str]:
         """
         Returns all source nodes for a given node by traversing incoming edges.
@@ -131,67 +115,8 @@ class Graph:
                 source_list.append(source)
         return source_list
 
-    def extract_subgraph(self, start_node_id: str) -> "Graph":
-        visited = set()
-        to_visit = [start_node_id]
-        subgraph_nodes = {}
-        subgraph_edges = []
-        subgraph_weights = {}
-
-        while to_visit:
-            node_id = to_visit.pop()
-            if node_id in visited:
-                continue
-            visited.add(node_id)
-            node = self.get_node_by_id(node_id)
-            if node:
-                subgraph_nodes[node_id] = node
-
-            # Traverse outgoing edges
-            for edge in self.graph_edges:
-                if edge.get("source") == node_id:
-                    target_id = edge.get("target")
-                    if target_id not in visited:
-                        subgraph_edges.append(edge)
-                        subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(target_id)
-                elif edge.get("target") == node_id:
-                    source_id = edge.get("source")
-                    if source_id not in visited:
-                        subgraph_edges.append(edge)
-                        subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(source_id)
-
-        return Graph(
-            node_registry=subgraph_nodes,
-            graph_edges=subgraph_edges,
-            edge_weights=subgraph_weights
-        )
-    def get_all_source_nodes(self, node) -> Set[str]:
-        """
-        Returns all source nodes for a given node by traversing incoming edges.
-        """
-        source_list = []
-        node_id = node["id"]
-        for edge in self.graph_edges:
-            if edge["target"] == node_id:
-                source_id = edge["source"]
-                source = self.get_node_by_id(source_id)
-                source_list.append(source)
-        return source_list
-
-    def get_all_target_node_ids(self, node) -> Set[str]:
-        """
-        Returns all target nodes for a given node by traversing outgoing edges.
-        """
-        target_list = []
-        node_id = node["id"]
-        for edge in self.graph_edges:
-            if edge["source"] == node_id:
-                target_id = edge["target"]
-                target = self.get_node_by_id(target_id)
-                target_list.append(target)
-        return target_list
+    
+    
     def extract_product_subgraph(self, product_id: str) -> "Graph":
         """
         Extracts a subgraph containing all nodes and edges connected to the given product_id,
@@ -230,86 +155,64 @@ class Graph:
             edge_weights=subgraph_weights
         )
     
-    def get_all_pain_paths_to_base_by_id(self, pain_id, base_pain_ids, visited=None):
-        """
-        Returns all upstream paths from a pain node to any base pain node.
-        Each path is a list of (pain_id, job_id, impact) tuples.
-        """
-        if visited is None:
-            visited = set()
-        if pain_id in visited:
-            return []
-        visited.add(pain_id)
-        if pain_id in base_pain_ids:
-            return [[(pain_id, None, 1.0)]]
-        all_paths = []
-        upstream_jobs = self.get_upstream_jobs_by_id(pain_id)
-        for upstream in upstream_jobs:
-            dep_job_id = upstream["job_id"]
-            dep_pain_id = upstream["pain_id"]
-            impact = upstream.get("impact") or self.get_edge_weight(pain_id, dep_job_id) or 0.5
-            sub_paths = self.get_all_pain_paths_to_base_by_id(dep_pain_id, base_pain_ids, visited.copy())
-            for path in sub_paths:
-                all_paths.append([(pain_id, dep_job_id, impact)] + path)
-        return all_paths
     
-    def get_all_paths_between_nodes(self, start_node_id, end_node_id, path=None, visited=None, edge_types=None):
+    
+
+    def calculate_cumulative_relevance(self, product_id: str) -> dict:
         """
-        Finds all paths from start_node_id to end_node_id in a directed graph,
-        traversing both incoming and outgoing edges, but never revisiting a node in the same path.
-        Each path is a list of (source_id, target_id, weight) tuples.
-        edge_types: set of edge types to follow (if None, follow all).
+        Calculates and normalizes cumulative relevance for all nodes connected to the given product_id.
+        Returns a dict: node_id -> normalized cumulative_relevance (0-1).
         """
-        if path is None:
-            path = []
-        if visited is None:
-            visited = set()
-        if edge_types is None:
-            edge_types = set(edge["type"] for edge in self.graph_edges)
+        cumulative_relevance = defaultdict(float)
+        cumulative_irrelevance = defaultdict(float)  
+        cumulative_relevance[product_id] = 0.999
+        visited = set()
+        to_visit = [product_id]
 
-        if start_node_id == end_node_id:
-            return [path.copy()]
+        while to_visit:
+            node_id = to_visit.pop()
+            if node_id in visited:
+                continue
+            visited.add(node_id)
+            
+            if node_id not in cumulative_irrelevance:
+                if node_id in cumulative_relevance:
+                    cumulative_irrelevance[node_id] = 1 - cumulative_relevance[node_id]
+                else:
+                    cumulative_irrelevance[node_id] = 0.999
+            print(f"Visiting node {node_id}, cumulative irrelevance: {cumulative_irrelevance[node_id]}")
+            # Traverse outgoing edges
+            relevant_edge_count = 0
+            for edge in self.graph_edges:
+                if edge.get("source") == node_id:
+                    target_id = edge.get("target")
+                    if target_id not in visited:
+                        to_visit.append(target_id)
+                    weight = edge.get("weight", 1.000)
 
-        visited.add(start_node_id)
-        all_paths = []
+                    #Updated logic - using a bounded product logic with inverse relevance
+                    cumulative_irrelevance[target_id] *= (cumulative_irrelevance[node_id] * weight) 
+                    print(f"Updated cumulative irrelevance for {target_id}: {cumulative_irrelevance[target_id]}")
 
-        for edge in self.graph_edges:
-            # Outgoing edges
-            if edge["source"] == start_node_id and edge["type"] in edge_types:
-                target = edge["target"]
-                if target not in visited:
-                    new_path = path + [(start_node_id, target, self.get_edge_weight(start_node_id, target) or 1.0)]
-                    all_paths.extend(
-                        self.get_all_paths_between_nodes(target, end_node_id, new_path, visited.copy(), edge_types)
-                    )
-            # Incoming edges
-            elif edge["target"] == start_node_id and edge["type"] in edge_types:
-                source = edge["source"]
-                if source not in visited:
-                    new_path = path + [(source, start_node_id, self.get_edge_weight(source, start_node_id) or 1.0)]
-                    all_paths.extend(
-                        self.get_all_paths_between_nodes(source, end_node_id, new_path, visited.copy(), edge_types)
-                    )
-        return all_paths
+        for node_id in cumulative_irrelevance.keys():
+            cumulative_relevance[node_id] = 1 - cumulative_irrelevance[node_id]
+        """This logic calculates the cumulative irrelevance of each node as product of 1-relevance of source nodes * weight.
+        The output to file is an irrelevance score - so each time we "get relevance" we need to do 1-cumulative_irrelevance[node_id].
+        How it works: 
+        Source 1 has relevance 0.8 and weight 0.5
+        Source 2 has relevance 0.6 and weight 0.9
+        Cumulative irrelevance for target node = (1-0.8*0.5) * (1-0.6*0.9) = 0.6 * 0.46 = 0.276
+        Now at run time: Cumulative relevance = 1 - cumulative_irrelevance = 1 - 0.276 = 0.724
+        Now if a new source node source 3 has relevance 0.9 and weight 0.8:
+        Cumulative irrelevance = 0.276 * (1-0.9*0.8) = 0.276 * 0.28 = 0.07728
+        At run time - cumulative relevance = 1 - cumulative_irrelevance = 1 - 0.07728 = 0.92272
+        I know this feels cumbersome but it might just work...
 
-    def compute_cumulative_relevance_from_node(self, start_id, sink_id):
         """
-        For a given node_id, computes cumulative relevance by summing product of impacts along all downstream paths leading to the base node
-        Starting from the node_id, runs a DFS to find all paths to base_node_ids along with edge weights.
-        Cumulative relevance is calculated as the sum of (product of edge weights along each path).
 
-        """
-        
-        all_paths = self.get_all_paths_between_nodes(start_id, sink_id)
-        cumulative_relevance = 0.0
-        for path in all_paths:
-           path_impact = 1.0
-           path_length = len(path)
-           for (_, _, weight) in path:
-               path_impact *= weight
-           cumulative_relevance += path_impact
-           normalized_cumulative_relevance = cumulative_relevance / len(path) if path else 0.0
-        return cumulative_relevance, normalized_cumulative_relevance, all_paths
+
+
+        return dict(cumulative_irrelevance)
 
     def get_product_id_from_subgraph(self) -> str:
         # Assumes there is only one product node in the subgraph
@@ -343,6 +246,37 @@ class Graph:
             print(f"Normalized centrality for capability {cap_id}: {normalized_centrality}")
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
+
+    def set_capabilities_relevance(self, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
+        """
+        Sets the relevance for all capabilities in a product subgraph based on centrality and coreness as functional or blockers.
+        """
+        # Logic to determine importance of capabilities based on centrality and coreness and add to a reduced set of "functional capabilities"
+        product_id = self.get_node_id("product", {})
+        print("Starting product persona discovery for product ID:", product_id)
+        capability_node_ids = self.get_target_nodes_by_source_and_type(product_id, "offered_by")
+        if not capability_node_ids:
+            print(f"No capabilities found for product ID {product_id}.")
+            return []
+        functional_capabilities_ids = []
+        blocker_capabilities_ids = []
+        for capability_id in capability_node_ids:
+            capability_node = self.get_node_by_id(capability_id)
+            capability_centrality = capability_node.get("centrality", 0)
+            coreness = capability_node.get("coreness", 0)
+            if capability_centrality < capability_threshold and coreness < coreness_threshold:
+                capability_node["importance"]= "blocker"
+                blocker_capabilities_ids.append(capability_id)
+                continue
+            elif capability_centrality > capability_threshold and coreness >= coreness_threshold:
+                capability_node["importance"] = "critical"
+                functional_capabilities_ids.append(capability_id)
+            else:
+                print("Detected anomaly in coreness vs cap centrality - please verify \n")
+                print(capability_node.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
+
+        return functional_capabilities_ids, blocker_capabilities_ids
+
 
 
 # Example usage:
