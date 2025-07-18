@@ -18,26 +18,6 @@ def load_graph_from_folder(folder_path: str):
             with open(os.path.join(folder_path, fname), "r") as f:
                 nodes = json.load(f)
                 for node in nodes:
-                    if node_type == "persona":
-                        value = (node.get("title", "").strip().lower(),
-                                 node.get("seniority", "").strip().lower(),
-                                 node.get("department", "").strip().lower())
-                    elif node_type == "pain":
-                        value = node.get("text", "").strip().lower()
-                    elif node_type == "job":
-                        value = node.get("description", "").strip().lower()
-                    elif node_type == "capability":
-                        value = (node.get("name", "").strip().lower(),
-                                 node.get("description", "").strip().lower())
-                    elif node_type == "scaling_factor":
-                        value = node.get("description", "").strip().lower()
-                    elif node_type == "product":
-                        value = (node.get("summary", "").strip().lower(),
-                                 node.get("company_id", "").strip().lower(),
-                                 node.get("url", "").strip().lower(),
-                                 node.get("plg_flag", ""))
-                    else:
-                        value = node.get("id")
                     node["node_type"] = node_type
                     node_registry[node["id"]] = node
 
