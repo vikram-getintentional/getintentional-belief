@@ -38,21 +38,23 @@ def process_capability_map_to_graph(capabilities_list, capability_map: dict):
                 )
                 print(f"Added edge from Capability {cap_id} to Pain {pain_id} with weight {relevance}")
             # Add edge: Pain → Job
+            impact = entry.get("job_impact", 0.5)
             add_edge(
                 source_id=pain_id,
                 target_id=job_id,
                 edge_type="addresses",
-                weight=1,
+                weight=impact,
                 last_updated=now,
                 source=source
             )
 
             # Add edge: Job → Persona
+            job_importance = entry.get("job_importance", 0.5)
             add_edge(
                 source_id=job_id,
                 target_id=persona_node_id,
                 edge_type="performed_by",
-                weight=1,
+                weight=job_importance,
                 last_updated=now,
                 source=source
             )

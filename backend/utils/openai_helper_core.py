@@ -86,6 +86,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                 jobs = pain.get("jobs", [])
                 for job in jobs:
                     job_desc = job.get("description", "")
+                    job_impact = job.get("impact", 0.0)
                     personas = job.get("personas", [])
                     for persona in personas:
                         persona_title = persona.get("title", "")
@@ -101,10 +102,12 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                             },
                             "relevance": relevance_array,
                             "job": job_desc,
+                            "job_impact": job_impact,
                             "persona": {
                                 "title": persona_title,
                                 "department": persona_department,
                                 "seniority": persona_seniority,
+                                "job_importance": persona.get("job_importance", 0.0),
                             },
                             "source": "openai",
                         })
@@ -129,7 +132,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         product_subgraph.update_capability_centralities()
 
         print("Updating cumulative relevance")
-        relevance_nodes = product_subgraph.calculate_cumulative_relevance(product_id)
+        relevance_nodes = product_subgraph.calculate_cumulative_relevance()
         add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
         print("Cumulative relevance json updated successfully.")
 

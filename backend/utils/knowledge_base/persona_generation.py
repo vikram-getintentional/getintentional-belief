@@ -165,7 +165,7 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
             "pains": pains
         }
         personas.append(persona)
-    relevance_nodes = sub_graph.calculate_cumulative_relevance(product_id)
+    relevance_nodes = sub_graph.calculate_cumulative_relevance()
     print("personas in get_persona_relevance:", personas)
     add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
     print("Cumulative relevance json updated successfully.")

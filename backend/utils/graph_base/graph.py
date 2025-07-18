@@ -1,5 +1,8 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Dict, List, Set
+from math import exp
+
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 class Graph:
     def __init__(
@@ -158,62 +161,139 @@ class Graph:
     
     
 
-    def calculate_cumulative_relevance(self, product_id: str) -> dict:
+    def calculate_cumulative_relevance(self, epsilon = 1e-6) -> dict:
         """
-        Calculates and normalizes cumulative relevance for all nodes connected to the given product_id.
-        Returns a dict: node_id -> normalized cumulative_relevance (0-1).
+        Efficient change-aware cumulative relevance propagation using Noisy-OR logic.
+
+        Logic:
+        - works on a product subgraph
+        - returns a dict of cumulative relevance for each node
+        - uses a Noisy-OR model to propagate relevance
+        - starts with initial relevance values for root nodes (e.g., product node) and initializes relevance to 1.0
+        - iteratively updates relevance until convergence or max iterations reached
+        - if relevance data does not exist, initializes it to 0.0
+
+        - edge_weights: dict of {(source, target): weight in [0, 1]}
+        - initial_relevance: dict of {node: initial relevance (e.g., 1.0 for roots)}
+        - epsilon: threshold for change to trigger downstream updates
+        - max_iter: safety cap on iterations
+
+        Returns:
+        - dict {node_id: cumulative relevance in [0, 1]}
         """
+        product_id = self.get_node_id("product", {})
+        if not product_id:
+            print("No product ID found in subgraph.")
+            return {}
         cumulative_relevance = defaultdict(float)
-        cumulative_irrelevance = defaultdict(float)  
-        cumulative_relevance[product_id] = 0.999
+        cumulative_relevance[product_id] = 1.0
+        max_iter = 10
+        print("Starting cumulative relevance calculation for product ID:", product_id)
+        # Build reverse graph (downstream map)
+        node_targets = {}
+        for node in self.node_registry.values():
+            node_id = node["id"]
+            node_targets_list = self.get_all_target_nodes(node)
+            node_targets[node_id] = [n["id"] for n in node_targets_list]
+
+        # Initialize relevance values
+        relevance = {}
+        relevance = {
+            node_id: get_cumulative_relevance_data(product_id, node_id)
+            for node_id in self.node_registry.keys()
+        }
+
+        relevance[product_id] = 1.0
+
+        frontier = deque(
+            node_id for node_id, rel in relevance.items()
+            if rel > 0.0
+        )
+        print("Initial frontier:", list(frontier))
         visited = set()
-        to_visit = [product_id]
+        for _ in range(max_iter):
+            if not frontier:
+                break
 
-        while to_visit:
-            node_id = to_visit.pop()
-            if node_id in visited:
-                continue
-            visited.add(node_id)
-            
-            if node_id not in cumulative_irrelevance:
-                if node_id in cumulative_relevance:
-                    cumulative_irrelevance[node_id] = 1 - cumulative_relevance[node_id]
+            next_frontier = set()
+
+            while frontier:
+                node_id = frontier.popleft()
+                # Checks for bug testing - kill this
+                node_data = self.get_node_by_id(node_id)
+                node_type = node_data.get("node_type", "unknown")
+                if node_type == "persona":
+                    node_text = node_data.get("title")
+                elif node_type == "pain":
+                    node_text = node_data.get("text")
+                elif node_type == "job":
+                    node_text = node_data.get("description", node_data.get("text"))
+                elif node_type == "pain_trigger":
+                    node_text = node_data.get("attribute", node_data.get("text"))
                 else:
-                    cumulative_irrelevance[node_id] = 0.999
-            print(f"Visiting node {node_id}, cumulative irrelevance: {cumulative_irrelevance[node_id]}")
-            # Traverse outgoing edges
-            relevant_edge_count = 0
-            for edge in self.graph_edges:
-                if edge.get("source") == node_id:
-                    target_id = edge.get("target")
-                    if target_id not in visited:
-                        to_visit.append(target_id)
-                    weight = edge.get("weight", 1.000)
+                    node_text = "Unknown Node Type"
+                # Till this
+                print("Frontier for node:", node_id)
+                old_value = relevance.get(node_id, 0.0)
+                this_node = self.get_node_by_id(node_id)
+                sources = self.get_all_source_nodes(this_node)
+                # Check for empty sources
+                if not sources:
+                    print(f"No sources found for node {node_id}. Treating as root node.")
+                    # This is a root node (e.g., product node)
+                    # Propagate its relevance to its targets
+                    current_node = self.get_node_by_id(node_id)
+                    print("Discovered root")
+                    target_nodes = self.get_all_target_nodes(current_node)
+                    print("Discovered targets")
+                    for target in target_nodes:
+                        target_id = target.get("id")
+                        # Calculate new relevance for the target
+                        w = self.get_edge_weight(node_id, target_id) or 0.0
+                        new_value = relevance[node_id] * w
+                        print(f"Relevance math for {target_id}:\n {new_value} = {relevance[node_id]} * {w}")
+                        old_value = relevance.get(target_id, 0.0)
+                        if abs(new_value - old_value) > epsilon:
+                            print(f"Updating relevance for target {target_id} from {old_value} to {new_value}")
+                            relevance[target_id] = new_value
+                            next_frontier.add(target_id)
+                    continue
+                irrelevance = 1.0
+                for source in sources:
+                    source_id = source.get("id")
+                    w = self.get_edge_weight(source_id, node_id) or 0.0
+                    # Check for if edge_weight is None
+                    if w is None:
+                        w = 0.0
+                    source_rel = relevance.get(source_id, 0.0)
+                    print(f"Irrelevance math for {node_type} => {node_text} from source {source_id}:\n")
+                    prev_irrev = irrelevance
+                    irrelevance += (1 - source_rel * w)
+                    print( f"{irrelevance} = {prev_irrev} * (1 - {source_rel} * {w})")
+                new_value = 1 - exp(-1*irrelevance)
+                print(f"New relevance for node {node_text} is: {new_value}")
+                if abs(new_value - old_value) > epsilon or node_id not in visited:
+                    relevance[node_id] = new_value
+                    current_node = self.get_node_by_id(node_id)
+                    target_nodes = self.get_all_target_nodes(current_node)
+                    # Check for empty target nodes
+                    if not target_nodes:
+                        print(f"No target nodes found for node {node_id}. Skipping.")
+                        continue
+                    for target in target_nodes:
+                        target_id = target.get("id")
+                        next_frontier.add(target_id)
+                visited.add(node_id)
 
-                    #Updated logic - using a bounded product logic with inverse relevance
-                    cumulative_irrelevance[target_id] *= (cumulative_irrelevance[node_id] * weight) 
-                    print(f"Updated cumulative irrelevance for {target_id}: {cumulative_irrelevance[target_id]}")
+            frontier = deque(next_frontier)
+        # Ensure relevance is a dict of {node_id: cumulative relevance}
+        for node_id, rel in relevance.items():
+            if rel > 0.0:
+                cumulative_relevance[node_id] = rel
+            else:
+                cumulative_relevance[node_id] = 0.0
+        return dict(cumulative_relevance)
 
-        for node_id in cumulative_irrelevance.keys():
-            cumulative_relevance[node_id] = 1 - cumulative_irrelevance[node_id]
-        """This logic calculates the cumulative irrelevance of each node as product of 1-relevance of source nodes * weight.
-        The output to file is an irrelevance score - so each time we "get relevance" we need to do 1-cumulative_irrelevance[node_id].
-        How it works: 
-        Source 1 has relevance 0.8 and weight 0.5
-        Source 2 has relevance 0.6 and weight 0.9
-        Cumulative irrelevance for target node = (1-0.8*0.5) * (1-0.6*0.9) = 0.6 * 0.46 = 0.276
-        Now at run time: Cumulative relevance = 1 - cumulative_irrelevance = 1 - 0.276 = 0.724
-        Now if a new source node source 3 has relevance 0.9 and weight 0.8:
-        Cumulative irrelevance = 0.276 * (1-0.9*0.8) = 0.276 * 0.28 = 0.07728
-        At run time - cumulative relevance = 1 - cumulative_irrelevance = 1 - 0.07728 = 0.92272
-        I know this feels cumbersome but it might just work...
-        
-
-        """
-
-
-
-        return dict(cumulative_irrelevance)
 
     def get_product_id_from_subgraph(self) -> str:
         # Assumes there is only one product node in the subgraph
