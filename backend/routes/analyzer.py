@@ -244,7 +244,6 @@ async def get_products(company_id: str, request: Request):
         auth_header = request.headers.get("authorization")
         if not auth_header:
             raise HTTPException(status_code=401, detail="Missing Authorization header")
-
         token = auth_header.split(" ")[1]
         decoded = decode_token(token)
         company_id = decoded.get("company_id")
@@ -254,12 +253,12 @@ async def get_products(company_id: str, request: Request):
 
         # 🧠 Inference
         node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+
         base_graph = Graph(
             node_registry=node_registry,
             graph_edges=graph_edges,
             edge_weights=edge_weights
         )
-
         products = get_company_products(base_graph, company_id)
         # products should be a list of dicts: [{id, name}, ...]
         print("Products found:", products)
@@ -302,7 +301,7 @@ async def get_personas(product_id: str, request: Request):
         
         aggregated_personas = get_persona_relevance(product_subgraph)
 
-        final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
+        #final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
         
         
         # personas should be a list of persona dicts
@@ -310,7 +309,7 @@ async def get_personas(product_id: str, request: Request):
          #   print("No personas found for product_id from get_product_personas:", product_id)
          #   return {"detail": "No Summaries or Capabilities Mapped"}
         #print("Personas from get_product_personas:", personas)
-        return final_personas
+        return aggregated_personas
     except Exception as e:
         print("❌ Get personas error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve personas")

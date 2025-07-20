@@ -33,46 +33,24 @@ For each capability, do the following:
       - seniority (one of: Junior, Operator, Manager, Senior, Executive)
 7. For each persona provide a "job importance score" (0.0-1.0) indicating how critical this job is to the persona's role. 0.7-1.0 indicates this job is essential, 0.3-0.6 indicates it is important but not critical, and 0.1-0.2 indicates it is a minor task or responsibility.
 
-Return your output in JSON format as a list of entries:
-[
-  {{
-    "capability_id": "string",
-    "capability": "string",
-    "pains": [
-      {{
-        "pain": "string",
-        "relevance": [0.8, 0.5, 1.0],
-        "pain_trigger": {{
-                "attribute": "string",
-                "dimension": "string",
-                "direction": "Increase" | "Decrease" | "Change"
-              }},
-        "jobs": [
-          {{
-            "description": "Resolve incoming customer tickets in under 24 hours",
-            "impact": 0.9,
-            "personas": [
-              {{
-                "job_importance": 0.9,
-                "title": "Customer Support Executive",
-                "department": "Support",
-                "seniority": "Operator"
-              }},
-              {{
-                "job_importance": 0.8,
-                "title": "Support Team Lead",
-                "department": "Support",
-                "seniority": "Manager"
-              }}
-            ]
-          }}
-        ]
-      }}
-    ]
-  }}
-]
+Return your output as a JSON array, one entry per capability, with this structure:
+- capability_id: string
+- capability: string
+- pains: list of
+    - pain: string
+    - relevance: array of floats
+    - pain_trigger: object
+    - jobs: list of
+        - description: string
+        - impact: float
+        - personas: list of
+            - job_importance: float
+            - title: string
+            - department: string
+            - seniority: string
 
 Use only realistic, clearly defined jobs and persona roles. Do not invent exotic titles unless required by the domain. All capabilities should return at least one pain with structured jobs and personas.
+IMPORTANT: Return ONLY the JSON array, with no explanation or formatting.
 
 Summary:
 {summary}

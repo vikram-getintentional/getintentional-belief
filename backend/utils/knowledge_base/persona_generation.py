@@ -111,8 +111,8 @@ def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, A
             for job in jobs:
                 print("Traversing persona discovery for job, pain capability")
                 traverse(job, pain, capability, set())
-
-    aggregated_personas = aggregate_persona_cards(list(personas.values()))
+    aggregated_personas = list(personas.values())
+    # aggregated_personas = aggregate_persona_cards(list(personas.values()))
     print("Aggregated personas:", aggregated_personas)
     return aggregated_personas
 
@@ -123,12 +123,17 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
     personas = []
     product_id = sub_graph.get_node_id("product",{})
 
+
+    relevance_nodes = sub_graph.calculate_cumulative_relevance()
+    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+    print("Cumulative relevance json updated successfully.")
+
     for persona_id, _ in sub_graph.get_nodes_list("persona",{}):
         normalized_relevance = get_cumulative_relevance_data(product_id, persona_id)
         persona_node = sub_graph.get_node_by_id(persona_id)
         jobs = []
         pains = []
-        
+        print("Persona ID:", persona_id, "with relevance:", normalized_relevance)
         # For each job performed by this persona
         persona_jobs = sub_graph.get_source_nodes_by_target_and_type(
             persona_id, "performed_by"
@@ -165,10 +170,7 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
             "pains": pains
         }
         personas.append(persona)
-    relevance_nodes = sub_graph.calculate_cumulative_relevance()
-    print("personas in get_persona_relevance:", personas)
-    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
-    print("Cumulative relevance json updated successfully.")
+    
     
     
     return personas

@@ -14,8 +14,8 @@ def get_or_create_persona_node(title, seniority, department, return_created=Fals
     new_node = {
         "id": str(uuid.uuid4()),
         "title": title,
-        "seniority": seniority,
-        "department": department
+        "department": department,
+        "seniority": seniority
     }
     data.append(new_node)
     save_json(PERSONA_PATH, data)

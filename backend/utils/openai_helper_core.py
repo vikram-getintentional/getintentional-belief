@@ -72,6 +72,43 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         print("🧠 [GPT] Generating capability map...")
         gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities)
 
+        """
+        Output is of format:
+        {
+            "capability_id": "string",
+            "capability": "string",
+            "pains": [
+            {
+                "pain": "string",
+                "relevance": [0.8, 0.5, 1.0],
+                "pain_trigger": {
+                        "attribute": "string",
+                        "dimension": "string",
+                        "direction": "Increase" | "Decrease" | "Change"
+                    },
+                "jobs": [
+                {
+                    "description": "Resolve incoming customer tickets in under 24 hours",
+                    "impact": 0.9,
+                    "personas": [
+                    {
+                        "job_importance": 0.9,
+                        "title": "Customer Support Executive",
+                        "department": "Support",
+                        "seniority": "Operator"
+                    },
+                    {
+                        "job_importance": 0.8,
+                        "title": "Support Team Lead",
+                        "department": "Support",
+                        "seniority": "Manager"
+                    }
+                    ]
+                }
+                ]
+            }
+        """
+
         # First pass: Build flattened_capability_map
         flattened_capability_map = []
         for entry in gpt_output:
@@ -92,6 +129,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                         persona_title = persona.get("title", "")
                         persona_department = persona.get("department", "")
                         persona_seniority = persona.get("seniority", "")
+                        persona_job_importance = persona.get("job_importance", 0.0)
                         flattened_capability_map.append({
                             "capability_id": cap_id,
                             "pain": pain_desc,
@@ -106,9 +144,9 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                             "persona": {
                                 "title": persona_title,
                                 "department": persona_department,
-                                "seniority": persona_seniority,
-                                "job_importance": persona.get("job_importance", 0.0),
+                                "seniority": persona_seniority
                             },
+                            "persona_job_importance": persona.get("job_importance", 0.0),
                             "source": "openai",
                         })
         print("\n\n\Flattened capability map in Hop0 traversal")

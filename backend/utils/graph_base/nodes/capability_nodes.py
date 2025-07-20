@@ -82,14 +82,19 @@ def update_capabilities_by_node_id(capabilities):
     updated_nodes = []
     for capability in capabilities:
         node_id = capability.get("node_id")
-        name = capability.get("name", "").strip()
-        description = capability.get("description", "").strip()
+        name = capability.get("name", "")
+        description = capability.get("description", "")
+        coreness = capability.get("coreness", 0.0)
+        centrality = capability.get("centrality", 0.0)
         if not node_id:
             raise ValueError("Node ID is required for capability updates.")
         updated_node = get_or_create_capability_node(
             name=name,
             description=description,
-            node_id=node_id
+            node_id=node_id,
+            capability_coreness=coreness,
+            capability_centrality=centrality,
+            return_created=True
         )
         updated_nodes.append(updated_node)
     return updated_nodes

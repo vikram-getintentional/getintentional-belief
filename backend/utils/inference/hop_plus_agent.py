@@ -49,6 +49,7 @@ def infer_upstream_with_rules(
         1. max_Depth is reached
         2. there are no more relevant nodes to traverse
         """
+        print("Recursing triplet:", triplet)
         persona_id = triplet["persona_id"]
         job_id = triplet["job_id"]
         pain_id = triplet["pain_id"]
@@ -60,7 +61,6 @@ def infer_upstream_with_rules(
             triplet.get("cumulative_relevance", 1.0)
         )
 
-
         if current_depth > max_depth or triplet_key in visited_triplets:
             return
         visited_triplets.add(triplet_key)
@@ -71,6 +71,7 @@ def infer_upstream_with_rules(
             return
 
         results.append({"triplet": triplet})
+        print("Running before step 4")
         # Step 4: For the triplet job, get upstream pains "impacted_by" this job
         upstream_pain_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "impacts")
         if upstream_pain_ids:
@@ -101,6 +102,8 @@ def infer_upstream_with_rules(
             up_nodes_available = False
         if not up_nodes_available:
             gpt_triplet_cache.append(triplet)
+            print("GPT Cache length:", len(gpt_triplet_cache))
+        print("Process triplet holder length:", len(triplet_holder))
         process_triplet_holder(current_depth)
 
     # Only runs gpt cache when triplet holder gets empty.
@@ -116,22 +119,26 @@ def infer_upstream_with_rules(
         gpt_triplet_cache.clear()  # Clear cache after processing
         for gpt_triplet in gpt_results:
             triplet_holder.append(gpt_triplet)
-        process_triplet_holder(current_depth + 1)
+        current_depth += 1
+        process_triplet_holder(current_depth)
     
     #4. Sorts triplets and traverses the most relevant ones first. If triplet_holder is empty - runs gpt on the entire cache.
     def process_triplet_holder(current_depth=1):
         print("processing triplet holder with length:", len(triplet_holder))
+        print("Full holder contents \n")
+        for item in triplet_holder:
+            print(item, "\n")
+        print("Current depth:", current_depth)
         if not triplet_holder:
             if gpt_triplet_cache:
                 process_gpt_cache(gpt_triplet_cache, current_depth)
             return results
         sorted_triplets = sorted(
             triplet_holder,
-            key=lambda x: x.get("cumulative_relevance", 0),
+            key=lambda x: x.get("cumulative_relevance", 0.5),
             reverse=True
         )
         for triplet in sorted_triplets:
-            print("Recursing with triplet length:", len(triplet))
             recurse_from_persona(triplet, current_depth)
     
     # 3. Generate first set of Hop0 triplets and add them to triplet_holder set for processing

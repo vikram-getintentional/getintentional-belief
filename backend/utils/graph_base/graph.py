@@ -2,6 +2,7 @@ from collections import defaultdict, deque
 from typing import Dict, List, Set
 from math import exp
 
+from backend.utils.graph_base.nodes.capability_nodes import update_capabilities_by_node_id
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 class Graph:
@@ -151,7 +152,16 @@ class Graph:
                     other_id = edge.get("target") if edge.get("source") == node_id else edge.get("source")
                     if other_id not in visited and other_id not in to_visit:
                         to_visit.append(other_id)
-
+        print("Extracted subgraph info:")
+        print("Subgraph nodes:", len(subgraph_nodes))
+        print(f"Persona nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'persona'])}")
+        print(f"Pain nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'pain'])}")
+        print(f"Job nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'job'])}")
+        print(f"Capability nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'capability'])}")
+        print(f"Pain trigger nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'pain_trigger'])}")
+        print("All nodes:")
+        for node_id, node_data in subgraph_nodes.items():
+            print(f"Node ID: {node_id}, Type: {node_data.get('node_type', 'unknown')}, Data: {node_data}")
         return Graph(
             node_registry=subgraph_nodes,
             graph_edges=subgraph_edges,
@@ -163,23 +173,8 @@ class Graph:
 
     def calculate_cumulative_relevance(self, epsilon = 1e-6) -> dict:
         """
-        Efficient change-aware cumulative relevance propagation using Noisy-OR logic.
-
-        Logic:
-        - works on a product subgraph
-        - returns a dict of cumulative relevance for each node
-        - uses a Noisy-OR model to propagate relevance
-        - starts with initial relevance values for root nodes (e.g., product node) and initializes relevance to 1.0
-        - iteratively updates relevance until convergence or max iterations reached
-        - if relevance data does not exist, initializes it to 0.0
-
-        - edge_weights: dict of {(source, target): weight in [0, 1]}
-        - initial_relevance: dict of {node: initial relevance (e.g., 1.0 for roots)}
-        - epsilon: threshold for change to trigger downstream updates
-        - max_iter: safety cap on iterations
-
-        Returns:
-        - dict {node_id: cumulative relevance in [0, 1]}
+        Going back to a simpler calculation of cumulative relevance. 
+        We calculate the relevance of each node as 
         """
         product_id = self.get_node_id("product", {})
         if not product_id:
@@ -203,6 +198,8 @@ class Graph:
             for node_id in self.node_registry.keys()
         }
 
+
+        # This line seeds the prod relevance to 1.0 for when relevance data doesnt exist
         relevance[product_id] = 1.0
 
         frontier = deque(
@@ -237,7 +234,7 @@ class Graph:
                 old_value = relevance.get(node_id, 0.0)
                 this_node = self.get_node_by_id(node_id)
                 sources = self.get_all_source_nodes(this_node)
-                # Check for empty sources
+                # Check for empty sources - mainly for product node
                 if not sources:
                     print(f"No sources found for node {node_id}. Treating as root node.")
                     # This is a root node (e.g., product node)
@@ -251,10 +248,8 @@ class Graph:
                         # Calculate new relevance for the target
                         w = self.get_edge_weight(node_id, target_id) or 0.0
                         new_value = relevance[node_id] * w
-                        print(f"Relevance math for {target_id}:\n {new_value} = {relevance[node_id]} * {w}")
                         old_value = relevance.get(target_id, 0.0)
                         if abs(new_value - old_value) > epsilon:
-                            print(f"Updating relevance for target {target_id} from {old_value} to {new_value}")
                             relevance[target_id] = new_value
                             next_frontier.add(target_id)
                     continue
@@ -266,12 +261,12 @@ class Graph:
                     if w is None:
                         w = 0.0
                     source_rel = relevance.get(source_id, 0.0)
-                    print(f"Irrelevance math for {node_type} => {node_text} from source {source_id}:\n")
-                    prev_irrev = irrelevance
                     irrelevance += (1 - source_rel * w)
-                    print( f"{irrelevance} = {prev_irrev} * (1 - {source_rel} * {w})")
+                    
+                
                 new_value = 1 - exp(-1*irrelevance)
-                print(f"New relevance for node {node_text} is: {new_value}")
+                
+                
                 if abs(new_value - old_value) > epsilon or node_id not in visited:
                     relevance[node_id] = new_value
                     current_node = self.get_node_by_id(node_id)
@@ -307,6 +302,7 @@ class Graph:
         Updates each capability node in the graph with its degree centrality score.
         """
         # Assuming self.node_registry or similar holds all nodes
+        updated_caps_list = []
         capability_list = self.get_nodes_list("capability", {})
         for cap in capability_list:
             cap_node = cap[1]
@@ -327,6 +323,9 @@ class Graph:
             print(f"Normalized centrality for capability {cap_id}: {normalized_centrality}")
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
+            updated_caps_list.append(cap_node)
+        update_capabilities_by_node_id(updated_caps_list)
+
 
     def set_capabilities_relevance(self, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
         """
