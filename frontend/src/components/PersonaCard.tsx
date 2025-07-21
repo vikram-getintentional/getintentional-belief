@@ -1,18 +1,13 @@
 import React from "react";
 
 export type PersonaSuggestion = {
-  persona: {
-    title: string;
-    department: string;
-    seniority: string;
-    hop?: number; // optional for now, but available
-  };
-  relevance: number;
-  jobs: {
-    description: string;
-    pains: string[];
-  }[];
-  capabilities?: string[];
+  persona_title: string;
+  persona_departments: string[];
+  persona_seniority: string[];
+  persona_ids: string[];
+  max_relevance: number;
+  jobs: string[];
+  pains: string[];
 };
 
 
@@ -30,6 +25,7 @@ const relevanceLabel = (score: number): string => {
 };
 
 const PersonaCard = ({ persona, isSelected, onToggle }: Props) => {
+  if (!persona) return null;
   return (
     <div
       className={`border p-4 rounded-lg shadow-sm transition cursor-pointer ${
@@ -38,37 +34,33 @@ const PersonaCard = ({ persona, isSelected, onToggle }: Props) => {
       onClick={onToggle}
     >
       <div className="mb-2">
-        <h4 className="font-semibold text-indigo-700">{persona.persona.title}</h4>
+        <h4 className="font-semibold text-indigo-700">{persona.persona_title}</h4>
         <p className="text-sm text-gray-500">
-          {persona.persona.seniority} • {persona.persona.department}
+          {persona.persona_seniority.join(", ")} • {persona.persona_departments.join(", ")}
         </p>
         <p className="text-xs text-indigo-600 font-medium mt-1">
-          Relevance: {persona.relevance}
+          Relevance: {persona.max_relevance}
+          Relevance Label: {relevanceLabel(persona.max_relevance)}
         </p>
-        {persona.hop && (
-          <p className="text-sm text-gray-500">Hop: {persona.hop}</p>
-        )}
       </div>
 
-      <div className="space-y-2 mt-3">
-        {persona.jobs.map((job, jdx) => (
-          <div key={jdx}>
-            <p className="text-sm font-medium text-gray-700">🛠 {job.description}</p>
-            <ul className="list-disc list-inside ml-2 text-sm text-gray-600">
-              {job.pains.map((pain, idx) => (
-                <li key={idx}>{pain}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      {persona.jobs.length > 0 && (
+        <div className="space-y-2 mt-3">
+          <strong>Jobs:</strong>
+          <ul className="list-disc list-inside ml-4 mt-1 text-sm text-gray-700">
+            {persona.jobs.map((job, jdx) => (
+              <li key={jdx}>{job}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-      {persona.capabilities && persona.capabilities.length > 0 && (
-        <div className="mt-3 text-xs text-gray-500">
-          Capabilities matched:
-          <ul className="list-disc list-inside ml-4 mt-1">
-            {persona.capabilities.map((cap, i) => (
-              <li key={i}>{cap}</li>
+      {persona.pains.length > 0 && (
+        <div className="mt-3">
+          <strong>Pains:</strong>
+          <ul className="list-disc list-inside ml-4 mt-1 text-sm text-gray-600">
+            {persona.pains.map((pain, idx) => (
+              <li key={idx}>{pain}</li>
             ))}
           </ul>
         </div>

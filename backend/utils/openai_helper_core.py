@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from collections import defaultdict
 
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.inference.capability_to_pain_persona import infer_persona_job_pain_from_capabilities
 from backend.utils.graph_base.graph_builder import process_capability_map_to_graph
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_canonical_map
@@ -36,7 +37,7 @@ client = OpenAI(api_key=api_key)
 def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=False, retry_depth=0) -> dict:
     print("Starting inference loop: ", product_id)
     from datetime import datetime
-
+    # Updated query logic
     product_node = product_subgraph.get_node_by_id(product_id)
     if not product_node:
         raise ValueError("Product node not found.")
@@ -72,43 +73,95 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         print("🧠 [GPT] Generating capability map...")
         gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities)
 
+        """
+        Output is of format:
+        {
+            "capability_id": "string",
+            "capability": "string",
+            "pains": [
+            {
+                "pain": "string",
+                "relevance": [0.8, 0.5, 1.0],
+                "pain_trigger": {
+                        "attribute": "string",
+                        "dimension": "string",
+                        "direction": "Increase" | "Decrease" | "Change"
+                    },
+                "jobs": [
+                {
+                    "description": "Resolve incoming customer tickets in under 24 hours",
+                    "impact": 0.9,
+                    "personas": [
+                    {
+                        "job_importance": 0.9,
+                        "title": "Customer Support Executive",
+                        "department": "Support",
+                        "seniority": "Operator"
+                    },
+                    {
+                        "job_importance": 0.8,
+                        "title": "Support Team Lead",
+                        "department": "Support",
+                        "seniority": "Manager"
+                    }
+                    ]
+                }
+                ]
+            }
+        """
+
         # First pass: Build flattened_capability_map
         flattened_capability_map = []
         for entry in gpt_output:
             cap_id = entry.get("capability_id", "Unknown").strip()
             for pain in entry.get("pains", []):
                 pain_desc = pain.get("pain", "Unknown Pain")
+<<<<<<< HEAD
                 pain_trigger = pain.get("pain_trigger", {})
                 pain_trigger_attribute = pain_trigger.get("attribute", "").strip().lower()
                 pain_trigger_dimension = pain_trigger.get("dimension", "").strip().lower()
                 pain_trigger_direction = pain_trigger.get("direction", "").strip().lower()
+=======
+                pain_trigger = pain.get("pain_trigger", [])
+                pain_trigger_attribute = pain_trigger.get("attribute", "")
+                pain_trigger_dimension = pain_trigger.get("dimension", "")
+                pain_trigger_direction = pain_trigger.get("direction", "")
+>>>>>>> f660a19 (capabilty and relevance logic changes.)
                 relevance_array = pain.get("relevance", [])
                 jobs = pain.get("jobs", [])
                 for job in jobs:
                     job_desc = job.get("description", "")
+                    job_impact = job.get("impact", 0.0)
                     personas = job.get("personas", [])
                     for persona in personas:
                         persona_title = persona.get("title", "")
                         persona_department = persona.get("department", "")
                         persona_seniority = persona.get("seniority", "")
+                        persona_job_importance = persona.get("job_importance", 0.0)
                         flattened_capability_map.append({
                             "capability_id": cap_id,
                             "pain": pain_desc,
+<<<<<<< HEAD
                             "pain_trigger":{
+=======
+                            "pain_trigger": {
+>>>>>>> f660a19 (capabilty and relevance logic changes.)
                                 "attribute": pain_trigger_attribute,
                                 "dimension": pain_trigger_dimension,
                                 "direction": pain_trigger_direction
                             },
                             "relevance": relevance_array,
                             "job": job_desc,
+                            "job_impact": job_impact,
                             "persona": {
                                 "title": persona_title,
                                 "department": persona_department,
-                                "seniority": persona_seniority,
+                                "seniority": persona_seniority
                             },
+                            "persona_job_importance": persona.get("job_importance", 0.0),
                             "source": "openai",
                         })
-        print("\n\n\nFull flattened capability map: ", flattened_capability_map)
+        print("\n\nFlattened capability map in Hop0 traversal")
 
         # Step 3: Normalize and canonicalize the flattened capability map
         print("📊 [Graph] Canonicalizing capability map...")
@@ -128,10 +181,17 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         print("Calculating capability centralities")
         product_subgraph.update_capability_centralities()
 
+<<<<<<< HEAD
         print("Calculating cumulative relevance for new edges")
         cumulative_relevance = product_subgraph.calculate_cumulative_relevance(product_id)
         
         add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
+=======
+        print("Updating cumulative relevance")
+        relevance_nodes = product_subgraph.calculate_cumulative_relevance()
+        add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+        print("Cumulative relevance json updated successfully.")
+>>>>>>> f660a19 (capabilty and relevance logic changes.)
 
         return {
                 "capability_map": capability_map,

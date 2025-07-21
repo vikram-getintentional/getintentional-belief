@@ -13,15 +13,17 @@ def load_graph_from_folder(folder_path: str):
 
     for fname in os.listdir(folder_path):
         if fname.endswith("_nodes.json"):
+            print("Processing file:", fname)
             node_type = fname.replace("_nodes.json", "")
+            print("Node type:", node_type)
             
             with open(os.path.join(folder_path, fname), "r") as f:
                 nodes = json.load(f)
                 for node in nodes:
                     if node_type == "persona":
                         value = (node.get("title", "").strip().lower(),
-                                 node.get("seniority", "").strip().lower(),
-                                 node.get("department", "").strip().lower())
+                                 node.get("department", "").strip().lower(),
+                                 node.get("seniority", "").strip().lower())
                     elif node_type == "pain":
                         value = node.get("text", "").strip().lower()
                     elif node_type == "job":
@@ -29,15 +31,21 @@ def load_graph_from_folder(folder_path: str):
                     elif node_type == "capability":
                         value = (node.get("name", "").strip().lower(),
                                  node.get("description", "").strip().lower())
-                    elif node_type == "scaling_factor":
-                        value = node.get("description", "").strip().lower()
+                    elif node_type == "pain_trigger":
+                        value = (
+                            node.get("attribute", "").strip().lower(),
+                            node.get("dimension", "").strip().lower(),
+                            node.get("direction", "").strip().lower()
+                        )
                     elif node_type == "product":
                         value = (node.get("summary", "").strip().lower(),
                                  node.get("company_id", "").strip().lower(),
                                  node.get("url", "").strip().lower(),
                                  node.get("plg_flag", ""))
+                        print("Setting product node")
                     else:
                         value = node.get("id")
+                        print("Setting unknown node type:", node_type, "with value:", value)
                     node["node_type"] = node_type
                     node_registry[node["id"]] = node
 

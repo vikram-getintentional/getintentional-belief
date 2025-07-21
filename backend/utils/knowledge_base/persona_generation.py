@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 from backend.utils.graph_base.graph import Graph
 from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data, add_or_update_cumulative_relevance_data
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 
 
 # Function def get_company_products
@@ -74,53 +74,62 @@ def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, A
             jobs = base_graph.get_target_nodes_by_source_and_type(pain, "addresses")
             for job in jobs:
                 traverse(job, pain, capability, set())
-
-    # Pass the flat list of persona-job-pain-capability dicts to aggregate_persona_cards
-    aggregated_personas = aggregate_persona_cards(base_graph, persona_entries)
-    print("Aggregated personas - Product Personas:")
-    for data in aggregated_personas:
-        print(data,"\n")
+    aggregated_personas = list(personas.values())
+    # aggregated_personas = aggregate_persona_cards(list(personas.values()))
+    print("Aggregated personas:", aggregated_personas)
     return aggregated_personas
 
 
+
 def get_persona_relevance(sub_graph: Graph) -> list[dict]:
-    print("Recalculating capability centralities")
-    sub_graph.update_capability_centralities()
-    print("Starting persona relevance computation")
+    print("Starting relevance computation - at this point centrality & cum relevance should be set")
     personas = []
     product_id = sub_graph.get_node_id("product",{})
 
+
+    relevance_nodes = sub_graph.calculate_cumulative_relevance()
+    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+
     for persona_id, _ in sub_graph.get_nodes_list("persona",{}):
-        # Get cumulative_relevance value for this persona from cumulative_relevance.json
-        cumulative_relevance = get_cumulative_relevance_data(product_id, persona_id)
-        
-        print("Cumulative relevance for persona ID:", persona_id, "is", cumulative_relevance)
+        normalized_relevance = get_cumulative_relevance_data(product_id, persona_id)
+        persona_node = sub_graph.get_node_by_id(persona_id)
+        jobs = []
+        pains = []
         # For each job performed by this persona
         persona_jobs = sub_graph.get_source_nodes_by_target_and_type(
             persona_id, "performed_by"
         )
         for job_id in persona_jobs:
-            
+            job_node = sub_graph.get_node_by_id(job_id)
+            if not job_node:
+                print(f"Job node not found for ID: {job_id}")
+                continue
+            jobs.append(job_node.get("description") or job_node.get("text") or "")
             # For each pain solved by this job
             pain_ids = sub_graph.get_source_nodes_by_target_and_type(
                 job_id, "addresses"
             )
-            
             for pain_id in pain_ids:
-                
-                persona = {
-                    "persona_id": persona_id,
-                    "relevance": cumulative_relevance,
-                    "job_id": job_id,
-                    "pain_id": pain_id,
-                    "product_id": product_id,
-                }
-                print("Persona data:", persona)
-                personas.append(persona)
-                
-    aggregated_personas = aggregate_persona_cards(sub_graph, personas)
-    print("Aggregated personas - Persona Relevance:")
-    for data in aggregated_personas:
-        print(data, "\n")
+                pain_node = sub_graph.get_node_by_id(pain_id)
+                if not pain_node:
+                    print(f"Pain node not found for ID: {pain_id}")
+                    continue
+                pains.append(pain_node.get("description") or pain_node.get("text") or "")
+                    
+
+        persona = {
+            "persona_id": persona_id,
+            "persona": {
+                "title": persona_node.get("title"),
+                "department": persona_node.get("department"),
+                "seniority": persona_node.get("seniority"),
+            },
+            "relevance": normalized_relevance,
+            "jobs": jobs,
+            "pains": pains
+        }
+        personas.append(persona)
     
-    return aggregated_personas
+    
+    
+    return personas

@@ -23,3 +23,6 @@ Desktop.ini # Windows
 
 # Logs
 *.log
+
+# Emacs
+*~

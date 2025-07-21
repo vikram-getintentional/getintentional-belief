@@ -1,5 +1,9 @@
+from collections import defaultdict
+from datetime import datetime
 import json
 from typing import List, Dict, Any, Set
+from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain_trigger_node
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data 
 from backend.utils.inference.hop_plus_openai import get_upstream_triplets
 from backend.utils.graph_base.graph import Graph
 from backend.utils.knowledge_base.canonicalizer import canonicalize_job, canonicalize_pain, canonicalize_persona
@@ -7,355 +11,405 @@ from backend.utils.graph_base.nodes.persona_nodes import get_or_create_persona_n
 from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
 from backend.utils.graph_base.edges.edge_manager import add_edge
-
-
+from backend.utils.knowledge_base.canonicalizer import (
+        canonicalize_pain,
+        canonicalize_job,
+        canonicalize_persona,
+        canonicalize_pain_trigger
+    )
 
 
 def infer_upstream_with_rules(
     product_subgraph: Graph,
     cap_threshold: float = 0.1,
-    relevance_threshold: float = 0.6,
-    max_depth: int = 5
+    relevance_threshold: float = 0.5,
+    max_depth: int = 3
 ):
-    """
-    Traverse up from product_id to capabilities, pains, jobs, personas.
-    For each capability check that capability_centrality > cap_threshold (0.6)
-    For each persona, calculate normalized cumulative relevance to product.
-    If cumulative relevance > threshold, traverse jobs and upstream pains.
-    If no upstream pains, use hop_plus_one_hop (GPT fallback).
-    Recurse until cumulative relevance drops below threshold or max_depth reached.
-    """
+
+    #1. Get product ID, and initialize arrays/ sets
     product_id = product_subgraph.get_node_id("product", {})
     if not product_id:
         raise ValueError("Product ID not found in the provided subgraph.")
     product_subgraph.update_capability_centralities()
     results = []
-    visited_personas = set()
+    visited_triplets = set()
+    triplet_holder = []
+    gpt_triplet_cache = []
 
-    def recurse_from_persona(persona_id, current_depth):
-        if current_depth > max_depth or persona_id in visited_personas:
+    #2. Get all capabilities and their IDs
+    functional_capabilities_ids, _ = product_subgraph.set_capabilities_relevance(
+        capability_threshold=cap_threshold
+    )   
+    #5. Recurses through next highest relevance triplet from triplet_holder to find upstream triplets. 
+    # If no upstream exists, adds current triplet to gpt_Cache for processing. 
+    def recurse_from_persona(triplet, current_depth):
+        """
+        Adds the triplet to visited set to avoid infinite recursion, and removes from triplet_holder.
+        Need to ensure that recurse() stops when
+        1. max_Depth is reached
+        2. there are no more relevant nodes to traverse
+        """
+        print("Recursing triplet:", triplet)
+        persona_id = triplet["persona_id"]
+        job_id = triplet["job_id"]
+        pain_id = triplet["pain_id"]
+        up_nodes_available = False
+        triplet_key = (
+            persona_id,
+            job_id,
+            pain_id,
+            triplet.get("cumulative_relevance", 1.0)
+        )
+
+        if current_depth > max_depth or triplet_key in visited_triplets:
             return
-        visited_personas.add(persona_id)
-        cum_relevance, normalized_cumulative_relevance, all_paths = product_subgraph.compute_cumulative_relevance_from_node(persona_id, product_id)
-        if normalized_cumulative_relevance < relevance_threshold:
+        visited_triplets.add(triplet_key)
+        triplet_holder.remove(triplet)
+
+        cumulative_relevance = get_cumulative_relevance_data(product_id, persona_id)
+        if cumulative_relevance < relevance_threshold:
             return
 
-        persona_node = product_subgraph.get_node_by_id(persona_id)
-        results.append({
-            "persona_id": persona_id,
-            "persona": persona_node,
-            "cumulative_relevance": cum_relevance,
-            "paths": all_paths
-        })
-
-        # Step 5: Get jobs "performed_by" this persona
-        job_ids = product_subgraph.get_source_nodes_by_target_and_type(persona_id, "performed_by")
-        if not job_ids:
-            print("No jobs found for persona:", persona_id)
-            return
-        for job_id in job_ids:
-            # Step 6: For each job, get upstream pains "impacted_by" this job
-            upstream_pain_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "impacts")
-            if upstream_pain_ids:
-                for up_pain_id in upstream_pain_ids:
-                    # Step 7: For each upstream pain, get jobs and personas recursively
-                    up_job_ids = product_subgraph.get_target_nodes_by_source_and_type(up_pain_id, "addresses")
+        results.append({"triplet": triplet})
+        print("Running before step 4")
+        # Step 4: For the triplet job, get upstream pains "impacted_by" this job
+        upstream_pain_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "impacts")
+        if upstream_pain_ids:
+            for up_pain_id in upstream_pain_ids:
+                # Step 5: For each upstream pain, get jobs and personas recursively
+                up_job_ids = product_subgraph.get_target_nodes_by_source_and_type(up_pain_id, "addresses")
+                if up_job_ids:
                     for up_job_id in up_job_ids:
                         up_persona_ids = product_subgraph.get_target_nodes_by_source_and_type(up_job_id, "performed_by")
-                        for up_persona_id in up_persona_ids:
-                            recurse_from_persona(up_persona_id, current_depth + 1)
-            else:
-                # Step 7: If no impacted pains, use GPT fallback
-                print(f"No upstream pains for job {job_id}, persona {persona_id}. Using GPT fallback.")
-                gpt_results, _ = hop_plus_one_hop(
-                    lower_nodes=[{
+                        up_persona_relevance = get_cumulative_relevance_data(product_id, up_persona_ids)
+                        if up_persona_ids:
+                            for up_persona_id in up_persona_ids:
+                                up_triplet = {
+                                    "persona_id": up_persona_id,
+                                    "job_id": up_job_id,
+                                    "pain_id": up_pain_id,
+                                    "cumulative_relevance": up_persona_relevance}
+                                triplet_holder.append(up_triplet)
+                                up_nodes_available = True
+                        else:
+                            print("No personas found for job:", up_job_id)
+                            up_nodes_available = False
+                else:
+                    print("No jobs found for upstream pain:", up_pain_id)
+                    up_nodes_available = False
+        else:
+            print(f"No upstream pains for job {job_id}, persona {persona_id}. Using GPT fallback.")
+            up_nodes_available = False
+        if not up_nodes_available:
+            gpt_triplet_cache.append(triplet)
+            print("GPT Cache length:", len(gpt_triplet_cache))
+        print("Process triplet holder length:", len(triplet_holder))
+        process_triplet_holder(current_depth)
+
+    # Only runs gpt cache when triplet holder gets empty.
+    def process_gpt_cache(current_depth):
+        """
+        Processes the GPT triplet cache to generate upstream triplets using OpenAI.
+        """
+        print("Processing GPT cache with length:", len(gpt_triplet_cache))
+        if not gpt_triplet_cache:
+            print("GPT triplet cache is empty, skipping processing.")
+            return
+        gpt_results = get_hop_plus(gpt_triplet_cache, sub_graph=product_subgraph, threshold=relevance_threshold, id_to_text={})
+        gpt_triplet_cache.clear()  # Clear cache after processing
+        for gpt_triplet in gpt_results:
+            triplet_holder.append(gpt_triplet)
+        current_depth += 1
+        process_triplet_holder(current_depth)
+    
+    #4. Sorts triplets and traverses the most relevant ones first. If triplet_holder is empty - runs gpt on the entire cache.
+    def process_triplet_holder(current_depth=1):
+        print("processing triplet holder with length:", len(triplet_holder))
+        print("Full holder contents \n")
+        for item in triplet_holder:
+            print(item, "\n")
+        print("Current depth:", current_depth)
+        if not triplet_holder:
+            if gpt_triplet_cache:
+                process_gpt_cache(gpt_triplet_cache, current_depth)
+            return results
+        sorted_triplets = sorted(
+            triplet_holder,
+            key=lambda x: x.get("cumulative_relevance", 0.5),
+            reverse=True
+        )
+        for triplet in sorted_triplets:
+            recurse_from_persona(triplet, current_depth)
+    
+    # 3. Generate first set of Hop0 triplets and add them to triplet_holder set for processing
+    ## triplet_holder works to run recursion on the most relevant triplets first
+    for cap_id in functional_capabilities_ids:
+        pain_ids = product_subgraph.get_target_nodes_by_source_and_type(cap_id, "solves")
+        for pain_id in pain_ids:
+            job_ids = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "addresses")
+            for job_id in job_ids:
+                persona_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "performed_by")
+                for persona_id in persona_ids:
+                    persona_relevance = get_cumulative_relevance_data(product_id, persona_id)
+                    triplet = {
                         "persona_id": persona_id,
                         "job_id": job_id,
-                        "cumulative_criticality": cum_relevance
-                    }],
-                    graph=product_subgraph,
-                    threshold=relevance_threshold,
-                    id_to_text={}
-                )
-                for gpt_node in gpt_results:
-                    gpt_persona_id = gpt_node.get("persona_id")
-                    if gpt_persona_id:
-                        recurse_from_persona(gpt_persona_id, current_depth + 1)
-
-    # Step 2: Get capability nodes with centrality > cap_threshold
-    for node in product_subgraph.node_registry.values():
-        if node.get("type") == "capability" and node.get("capability_centrality", 0.0) >= cap_threshold:
-            cap_id = node["id"]
-            # Step 3: Traverse up to pains, jobs, personas
-            pain_ids = product_subgraph.get_target_nodes_by_source_and_type(cap_id, "solves")
-            for pain_id in pain_ids:
-                job_ids = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "addresses")
-                for job_id in job_ids:
-                    persona_ids = product_subgraph.get_target_nodes_by_source_and_type(job_id, "performed_by")
-                    for persona_id in persona_ids:
-                        recurse_from_persona(persona_id, current_depth=1)
-
+                        "pain_id": pain_id,
+                        "cumulative_relevance": persona_relevance}
+                    triplet_holder.append(triplet)
+    process_triplet_holder(current_depth=1)
+    
     return results
 
 
-
-# hop_plus_one_hop and add_hop_subgraph remain unchanged
-
-def hop_plus_one_hop(lower_nodes, graph, threshold, id_to_text):
+# get_hop_plus processes the cache and gets gpt upstream triplets as output.
+# It calls 
+def get_hop_plus(triplet_cache, sub_graph=Graph, threshold=0.5, id_to_text={}):
     """
     Processes one hop: collects upstream nodes from the graph, batches GPT requests for missing nodes.
     Returns (all_upstream_nodes, gpt_cache_for_next_hop)
     """
     all_upstream_nodes = []
     gpt_cache = []
+    
 
-    for node in lower_nodes:
-        persona_id = node["persona_id"]
-        job_id = node["job_id"]
-        pain_id = node["pain_id"]
-        cumulative_criticality = node["cumulative_criticality"]
-        capability = node.get("capability", "")
-
-        node_key = json.dumps({"persona_id": persona_id, "job_id": job_id, "pain_id": pain_id}, sort_keys=True)
-
-        # Only proceed if above threshold
-        if cumulative_criticality <= threshold:
-            print("Skipping node due to low criticality:", node_key, "with cumulative criticality:", cumulative_criticality)
-            continue
-
-        # Check if upstream jobs exist in the graph
-        upstream_jobs = graph.get_upstream_jobs_by_id(pain_id)
-
-        if upstream_jobs:
-            for upstream in upstream_jobs:
-                dep_persona_id = upstream["persona_id"]
-                dep_job_id = upstream["job_id"]
-                dep_pain_id = upstream["pain_id"]
-                impact = upstream.get("impact") or graph.get_edge_weight(pain_id, dep_job_id) or 0.5
-                all_upstream_nodes.append({
-                    "persona_id": dep_persona_id,
-                    "job_id": dep_job_id,
-                    "pain_id": dep_pain_id,
-                    "impact": float(impact),
-                    "from_pain_id": pain_id,
-                    "from_job_id": job_id,
-                    "from_persona_id": persona_id,
-                    "cumulative_criticality": cumulative_criticality * float(impact),
-                    "capability": capability
-                })
-        else:
-            # Only add to GPT cache if not in graph and above threshold
-            gpt_cache.append({
-                "persona": id_to_text.get(persona_id, {}),
-                "job": id_to_text.get(job_id, ""),
-                "pain": id_to_text.get(pain_id, ""),
-                "cumulative_criticality": cumulative_criticality,
-                "capability": capability
-            })
-
-    # Batch GPT call for all missing upstreams
-    if gpt_cache:
-        gpt_upstreams = hop_plus_gpt_lookup(gpt_cache)
-        # After canonicalization, create/get nodes and get their IDs
-        for triplet in gpt_upstreams:
-            persona = triplet["persona"]
-            job = triplet["job"]
-            pain = triplet["pain"]
-            persona_node = get_or_create_persona_node(persona.get("title"), persona.get("seniority"), persona.get("department"))
-            job_node = get_or_create_job_node(job)
-            pain_node = get_or_create_pain_node(pain)
-            id_to_text[persona_node["id"]] = persona
-            id_to_text[job_node["id"]] = job
-            id_to_text[pain_node["id"]] = pain
-            all_upstream_nodes.append({
-                "persona_id": persona_node["id"],
-                "job_id": job_node["id"],
-                "pain_id": pain_node["id"],
-                "impact": triplet.get("impact", 1.0),
-                "from_pain_id": triplet.get("from_pain_id"),
-                "from_job_id": triplet.get("from_job_id"),
-                "from_persona_id": triplet.get("from_persona_id"),
-                "cumulative_criticality": triplet.get("cumulative_criticality", 1.0),
-                "capability": triplet.get("capability", "")
-            })
-        for triplet in gpt_upstreams:
-            add_hop_subgraph(
-                gpt_upstreams=[triplet],
-                id_to_text=id_to_text,
-                from_pain_id=triplet.get("from_pain_id"),
-                source="hop_plus_gpt"
-            )
-
-    print("Total upstream nodes found in this hop:", len(all_upstream_nodes))
-    return all_upstream_nodes, gpt_cache
-
-def add_hop_subgraph(
-    gpt_upstreams: list,
-    id_to_text: dict,
-    from_pain_id: str = None,
-    from_job_id: str = None,
-    from_persona_id: str = None,
-    source: str = "hop_plus_gpt"
-):
-    """
-    Adds new upstream nodes and edges to the graph based on GPT results.
-    Optionally links them to the original pain/job/persona nodes.
-    """
-    from backend.utils.graph_base.nodes.persona_nodes import get_or_create_persona_node
-    from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
-    from backend.utils.graph_base.nodes.pain_nodes import get_or_create_pain_node
-    from backend.utils.graph_base.edges.edge_manager import add_edge
-    from datetime import datetime, timezone
-
-    results = []
-    now = datetime.now(timezone.utc).isoformat()
-
-    for triplet in gpt_upstreams:
-        persona = triplet["persona"]
-        job = triplet["job"]
-        pain = triplet["pain"]
-        impact = triplet.get("impact", 1.0)
-        pain_importance = triplet.get("pain_importance", 1.0)
-        capability = triplet.get("capability", "")
-        job_criticality = triplet.get("job_criticality", 1.0)
-
-        persona_node = get_or_create_persona_node(persona.get("title"), persona.get("seniority"), persona.get("department"))
-        job_node = get_or_create_job_node(job)
-        pain_node = get_or_create_pain_node(pain)
-
-        id_to_text[persona_node["id"]] = persona
-        id_to_text[job_node["id"]] = job
-        id_to_text[pain_node["id"]] = pain
-
-        # Add edges for the upstream subgraph
-        add_edge(
-            source_id=pain_node["id"],
-            target_id=job_node["id"],
-            edge_type="addresses",
-            weight=pain_importance,
-            last_updated=now,
-            source=source
-        )
-        add_edge(
-            source_id=job_node["id"],
-            target_id=persona_node["id"],
-            edge_type="performed_by",
-            weight=job_criticality,
-            last_updated=now,
-            source=source
-        )
-        # Optionally, link to the original nodes (if provided)
-        # Logic if given a "source job" that impacts a "target pain" in upstream traversal
-        if triplet.get("from_job_id"):
-            add_edge(
-                source_id=triplet["from_job_id"],
-                target_id=pain_node["id"],
-                edge_type="impacts",
-                weight=impact,
-                last_updated=now,
-                source=source
-            )
+    for triplet in triplet_cache:
+        persona_id = triplet["persona_id"]
+        job_id = triplet["job_id"]
+        pain_id = triplet["pain_id"]
+        relevance = triplet.get("cumulative_relevance", 1.0)
         
-        # Logic if given a "source pain" that is impacted_by a "target job" in downstream traversal
-        if from_pain_id:
-            add_edge(
-                source_id=from_pain_id,
-                target_id=job_node["id"],
-                edge_type="impacts",
-                weight=job_criticality,
-                last_updated=now,
-                source=source
-            )
-
-        results.append({
-            "persona_id": persona_node["id"],
-            "job_id": job_node["id"],
-            "pain_id": pain_node["id"],
-            "impact": impact,
-            "from_pain_id": from_pain_id,
-            "from_job_id": from_job_id,
-            "from_persona_id": from_persona_id,
-            "cumulative_criticality": triplet.get("cumulative_criticality", 1.0),
-            "capability": capability
+        persona_node = sub_graph.get_node_by_id(persona_id)
+        job_node = sub_graph.get_node_by_id(job_id)
+        pain_node = sub_graph.get_node_by_id(pain_id)
+        if not persona_node or not job_node or not pain_node:
+            print(f"Missing nodes for input triplet: {triplet}")
+            continue
+        persona = {
+            "title": persona_node.get("title", ""),
+            "department": persona_node.get("department", ""),
+            "seniority": persona_node.get("seniority", "")
+        }
+        job = job_node.get("description", "")
+        pain = pain_node.get("text", "")
+        gpt_cache.append({
+            "persona": persona,
+            "job": job,
+            "pain": pain,
+            "relevance": relevance
         })
-    return results
+    gpt_upstreams = []
+    if gpt_cache:
+        gpt_upstreams = get_upstream_triplets(gpt_cache)
+    flattened_results = []
+    for entry in gpt_upstreams:
+        original_job_id = entry.get("original_job_id")
+        upstream_pains = entry.get("upstream_pains", [])
+        for pain in upstream_pains:
+            pain_desc = pain.get("pain", "")
+            impact = pain.get("impact", 1.0)
+            pain_trigger = pain.get("pain_trigger", {})
+            upstream_jobs = pain.get("upstream_jobs", [])
+            for job in upstream_jobs:
+                job_desc = job.get("description", "")
+                personas = job.get("personas", [])
+                for persona in personas:
+                    persona_title = persona.get("title", "")
+                    persona_department = persona.get("department", "")
+                    persona_seniority = persona.get("seniority", "")
+                    # Create or get nodes for the triplet
+                    flattened_results.append({
+                        "original_job_id": original_job_id,
+                        "pain": pain_desc,
+                        "impact": impact,
+                        "pain_trigger": pain_trigger,
+                        "job": job_desc,
+                        "persona": {
+                            "title": persona_title,
+                            "department": persona_department,
+                            "seniority": persona_seniority
+                        },
+                        "source": "openAI"
+                    })
+        print("Flattened results from GPT upstreams:")
+        canonicalized_results = canonicalize_and_add_nodes(flattened_results)
+        # From canonicalized results create a set of triplets to return
+        gpt_triplets = []
+        for result in canonicalized_results:
+            triplet = {
+                "persona_id": result.get("persona_id"),
+                "job_id": result.get("job_id"),
+                "pain_id": result.get("pain_id"),
+                "cumulative_relevance": result.get("cumulative_relevance", 1.0)
+            }
+            gpt_triplets.append(triplet)
+        print("Generated GPT triplets:", gpt_triplets)
+    return gpt_triplets
 
-def hop_plus_gpt_lookup(gpt_cache: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def canonicalize_and_add_nodes(flattened_results):
     """
-    Gets higher level persona/job/pain from GPT and canonicalizes results.
+    Canonicalizes the flattened results and adds nodes to the graph.
+    Returns a list of upstream nodes with their IDs.
     """
-    print("Starting hop_plus_gpt_lookup with cache")
-    upstream_triplets = []
-    persona_cache = set()
+    print("Converting flattened results to canonicalized nodes...")
     pain_cache = set()
     job_cache = set()
+    persona_cache = set()
+    trigger_cache = set()
+    canonical_map = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
-    for entry in gpt_cache:
-        print("Processing entry in hop_plus_gpt_lookup:", entry)
-        persona = entry["persona"]
-        job = entry["job"]
-        parent_cumulative_criticality = entry.get("cumulative_criticality", 1.0)
-        capability = entry.get("capability", "")
-        gpt_results = get_upstream_triplets(persona, job)
-        print("GPT results for persona/job:", gpt_results)
-        for result in gpt_results:
-            original_job = result.get("original_job", "")
-            dependent_pains = result.get("dependent_pains", [])
-            for pain_obj in dependent_pains:
-                pain = pain_obj.get("pain", "")
-                pain_impact = float(pain_obj.get("pain_impact", 1.0))
-                pain_trigger = pain_obj.get("pain_trigger", "")
-                dependent_jobs = pain_obj.get("dependent_jobs", [])
-                for job_obj in dependent_jobs:
-                    job_desc = job_obj.get("description", "")
-                    dependent_personas = job_obj.get("dependent_personas", [])
-                    for persona_obj in dependent_personas:
-                        canonical_dep_persona = persona_obj
-                        canonical_dep_job = job_desc
-                        canonical_dep_pain = pain
-                        impact = pain_impact
+    for entry in flattened_results:
+        raw_pain = entry.get("pain", entry.get("original_pain", entry.get("canonical_pain", "Unknown Pain"))).strip().lower()
+        raw_job = entry.get("job", entry.get("original_job", entry.get("canonical_job", "Unknown Job"))).strip().lower()
+        raw_pain_trigger = entry.get("pain_trigger", {})
+        if isinstance(raw_pain_trigger, dict):
+            trigger_tuple = (
+                raw_pain_trigger.get("attribute", "").strip().lower(),
+                raw_pain_trigger.get("dimension", "").strip().lower(),
+                raw_pain_trigger.get("direction", "").strip().lower()
+            )
+            trigger_cache.add(trigger_tuple)
 
-                        # Calculate cumulative_criticality for this triplet
-                        new_cumulative_criticality = parent_cumulative_criticality * impact
+        persona = entry.get("persona", {})
+        if isinstance(persona, dict):
+            title = persona.get("title", "").strip().lower()
+            dept = persona.get("department", "Unknown").strip().lower()
+            seniority = persona.get("seniority", "Unknown").strip().lower()
+        else:
+            title = "unknown"
+            dept = "unknown"
+            seniority = "unknown"
+
+        pain_cache.add(raw_pain)
+        job_cache.add(raw_job)
+        persona_cache.add((title, dept, seniority))
+        trigger_cache.add(raw_pain_trigger)
+
+        persona_entry = {
+            "persona": {
+                "title": title,
+                "department": dept,
+                "seniority": seniority
+            }
+        }
+
+        persona_list = canonical_map[raw_pain][raw_job]
+        # Only add if not already present
+        if all(
+            p["persona"]["title"] != persona_entry["persona"]["title"] or
+            p["persona"]["department"] != persona_entry["persona"]["department"] or
+            p["persona"]["seniority"] != persona_entry["persona"]["seniority"]
+            for p in persona_list
+        ):
+            persona_list.append(persona_entry)
+
+    # Canonicalization (as before)
+    canonical_personas = canonicalize_persona(
+        [{"title": t, "department": d, "seniority": s} for t, d, s in persona_cache]
+    )
+    canonical_pains = canonicalize_pain(list(pain_cache))
+    canonical_jobs = canonicalize_job(list(job_cache))
+    trigger_dicts = [
+        {"attribute": t[0], "dimension": t[1], "direction": t[2]}
+        for t in trigger_cache
+    ]
+    canonical_pain_triggers = canonicalize_pain_trigger(trigger_dicts)
+
+    # 3. Build mapping from raw/canonical to node IDs
+    pain_id_map = {}
+    for raw, canonical in canonical_pains.items():
+        pain_node = get_or_create_pain_node(canonical)
+        pain_id_map[raw] = pain_node["id"]
+
+    job_id_map = {}
+    for raw, canonical in canonical_jobs.items():
+        job_node = get_or_create_job_node(canonical)
+        job_id_map[raw] = job_node["id"]
+
+    persona_id_map = {}
+    for raw, canonical in canonical_personas.items():
+        persona_node = get_or_create_persona_node(
+            canonical["title"], canonical["department"], canonical["seniority"]
+        )
+        persona_id_map[raw] = persona_node["id"]
+
+    pain_trigger_id_map = {}
+    for idx, (raw, canonical) in enumerate(canonical_pain_triggers.items()):
+        pain_trigger_node = get_or_create_pain_trigger_node(canonical)
+        # Use tuple as key for mapping
+        trigger_tuple = (
+            canonical.get("attribute", "").strip().lower(),
+            canonical.get("dimension", "").strip().lower(),
+            canonical.get("direction", "").strip().lower()
+        )
+        pain_trigger_id_map[trigger_tuple] = pain_trigger_node["id"]
 
 
-                        # Add caches
-                        persona_cache.add(json.dumps(canonical_dep_persona, sort_keys=True))
-                        pain_cache.add(canonical_dep_pain)
-                        job_cache.add(canonical_dep_job)
-                        upstream_triplets.append({
-                            "persona": canonical_dep_persona,
-                            "job": canonical_dep_job,
-                            "pain": canonical_dep_pain,
-                            "impact": impact,
-                            "pain_trigger": pain_trigger,
-                            "from_persona": persona,
-                            "from_job": job,
-                            "from_pain": entry.get("pain", ""),
-                            "cumulative_criticality": new_cumulative_criticality,
-                            "capability": capability
-                        })
-                        print("Added triplet:", upstream_triplets[-1])
+    
 
-    # Canonicalize caches
-    print("Canonicalizing persona, job, and pain caches")
-    persona_dict_map = {json.dumps(json.loads(p), sort_keys=True): json.loads(p) for p in persona_cache}
-    persona_cache_list = list(persona_dict_map.values())
-    pain_cache_list = list(set(pain_cache))
-    job_cache_list = list(set(job_cache))
-    canonical_dep_persona = canonicalize_persona(persona_cache_list)
-    canonical_dep_job = canonicalize_job(job_cache_list)
-    canonical_dep_pain = canonicalize_pain(pain_cache_list)
+    #Add edges for original job - upstream pain with edge weight = impact
+    for entry in flattened_results:
+        raw_pain = entry.get("pain", entry.get("original_pain", entry.get("canonical_pain", "Unknown Pain"))).strip().lower()
+        raw_job = entry.get("job", entry.get("original_job", entry.get("canonical_job", "Unknown Job"))).strip().lower()
+        persona = entry.get("persona", {})
+        title = persona.get("title", "").strip().lower()
+        dept = persona.get("department", "Unknown").strip().lower()
+        seniority = persona.get("seniority", "Unknown").strip().lower()
+        persona_key = (title, dept, seniority)
+        raw_pain_trigger = entry.get("pain_trigger", {})
+        trigger_tuple = (
+            raw_pain_trigger.get("attribute", "").strip().lower(),
+            raw_pain_trigger.get("dimension", "").strip().lower(),
+            raw_pain_trigger.get("direction", "").strip().lower()
+        )
 
-    # Build mapping
-    persona_map = {json.dumps(orig, sort_keys=True): canon for orig, canon in zip(persona_cache_list, canonical_dep_persona.values())}
-    job_map = {orig: canon for orig, canon in zip(job_cache_list, canonical_dep_job)}
-    pain_map = {orig: canon for orig, canon in zip(pain_cache_list, canonical_dep_pain)}
+        original_job_id = entry.get("original_job_id")
+        pain_id = pain_id_map.get(raw_pain)
+        job_id = job_id_map.get(raw_job)
+        persona_id = persona_id_map.get(persona_key)
+        pain_trigger_id = pain_trigger_id_map.get(trigger_tuple)
+        impact = float(entry.get("impact", 1.0))
 
-    # Update triplets with canonicalized values (robust to missing keys)
-    for triplet in upstream_triplets:
-        persona_key = json.dumps(triplet["persona"], sort_keys=True)
-        triplet["persona"] = persona_map.get(persona_key, triplet["persona"])
-        triplet["job"] = job_map.get(triplet["job"], triplet["job"])
-        triplet["pain"] = pain_map.get(triplet["pain"], triplet["pain"])
-    return upstream_triplets
+        # Optionally, add these IDs to the entry for downstream use
+        entry["pain_id"] = pain_id
+        entry["job_id"] = job_id
+        entry["persona_id"] = persona_id
+        entry["pain_trigger_id"] = pain_trigger_id
+
+        if not original_job_id or not pain_id or not job_id or not persona_id:
+            print(f"Missing IDs in entry: {entry}")
+            continue
+        now = datetime.utcnow().isoformat()
+        add_edge(
+            source_id = original_job_id, 
+            target_id = pain_id, 
+            edge_type = "impacts", 
+            weight = impact,
+            last_updated = now
+        )
+        add_edge(
+            source_id = pain_id, 
+            target_id = job_id, 
+            edge_type = "addresses",
+            weight = 1,
+            last_updated = now
+        )
+        add_edge(
+            source_id = job_id, 
+            target_id = persona_id, 
+            edge_type = "performed_by",
+            weight= 1,
+            last_updated = now
+        )
+        add_edge(
+            source_id = pain_id, 
+            target_id = pain_trigger_id, 
+            edge_type = "triggered_by",
+            weight = 1,
+            last_updated = now
+        )
+
+    print("Updated results blob:" , flattened_results)
+    return flattened_results
+
+
