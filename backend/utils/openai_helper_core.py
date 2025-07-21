@@ -149,7 +149,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                             "persona_job_importance": persona.get("job_importance", 0.0),
                             "source": "openai",
                         })
-        print("\n\n\Flattened capability map in Hop0 traversal")
+        print("\n\nFlattened capability map in Hop0 traversal")
 
         # Step 3: Normalize and canonicalize the flattened capability map
         print("📊 [Graph] Canonicalizing capability map...")
