@@ -65,6 +65,7 @@ const Personas = () => {
           }
         );
         const personaData = await personaRes.json();
+        console.log("Backend personas response:", personaData);
 
         // 5. Handle backend messages
         if (personaData?.detail === "No Summaries or Capabilities Mapped") {
@@ -74,7 +75,7 @@ const Personas = () => {
         }
 
         setStatusMsg("");
-        setPersonas(personaData);
+        setPersonas(personaData || []);
 
         // 6. If no personas, prompt to infer
         if (!personaData || personaData.length === 0) {
@@ -111,35 +112,19 @@ const Personas = () => {
 
       {/* 4. If no products, show message */}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
-
-      {personas.length > 0 && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {personas.map((p, i) => (
-          <PersonaCard
-            key={i}
-            persona={p}
-            selectedPains={p.pains || []}
-            isSelected={true}
-            onTogglePain={() => {}}
-            onTogglePersona={() => {}}
-          />
-        ))}
-      </div>
-    )}
-
     
       {/* 5. Show personas if they exist */}
       {personas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {personas.map((p, i) => (
-            <PersonaCard
-              key={i}
-              persona={p}
-              selectedPains={p.pains || []}
-              isSelected={true}
-              onTogglePain={() => {}}
-              onTogglePersona={() => {}}
-            />
+            p && p.persona_title ? (
+              <PersonaCard
+                key={i}
+                persona={p}
+                isSelected={true}
+                onToggle={() => {}}
+              />
+            ) : null
           ))}
         </div>
       )}

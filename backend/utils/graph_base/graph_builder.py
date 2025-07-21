@@ -151,7 +151,7 @@ def convert_rule_matches_to_capability_map(results):
         for (a, d, s) in trigger_cache
     ])
 
-    # Build lookup tables for node IDs using canonicalized values
+    # Lookup logic for setting right node IDs to entry list
     persona_lookup = {
         (p["title"].strip().lower(), p["department"].strip().lower(), p["seniority"].strip().lower()):
             get_or_create_persona_node(p["title"], p["department"], p["seniority"])["id"]

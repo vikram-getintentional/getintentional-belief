@@ -147,6 +147,7 @@ def canonicalize_departments(departments: list[str]) -> dict:
 
 
 def canonicalize_persona(personas: list[dict]) -> dict:
+    # Updated logic by splitting personas into title, dept, seniority for canon work
     if not personas:
         print("⚠️ No personas provided for canonicalization.")
         return {}

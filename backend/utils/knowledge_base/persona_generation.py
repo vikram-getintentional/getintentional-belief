@@ -126,14 +126,12 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
 
     relevance_nodes = sub_graph.calculate_cumulative_relevance()
     add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
-    print("Cumulative relevance json updated successfully.")
 
     for persona_id, _ in sub_graph.get_nodes_list("persona",{}):
         normalized_relevance = get_cumulative_relevance_data(product_id, persona_id)
         persona_node = sub_graph.get_node_by_id(persona_id)
         jobs = []
         pains = []
-        print("Persona ID:", persona_id, "with relevance:", normalized_relevance)
         # For each job performed by this persona
         persona_jobs = sub_graph.get_source_nodes_by_target_and_type(
             persona_id, "performed_by"
@@ -143,9 +141,7 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
             if not job_node:
                 print(f"Job node not found for ID: {job_id}")
                 continue
-            jobs.append({
-                "description": job_node.get("description") or job_node.get("text") or ""
-            })
+            jobs.append(job_node.get("description") or job_node.get("text") or "")
             # For each pain solved by this job
             pain_ids = sub_graph.get_source_nodes_by_target_and_type(
                 job_id, "addresses"

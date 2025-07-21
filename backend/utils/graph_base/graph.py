@@ -2,7 +2,8 @@ from collections import defaultdict, deque
 from typing import Dict, List, Set
 from math import exp
 
-from backend.utils.graph_base.nodes.capability_nodes import update_capabilities_by_node_id
+from backend.utils.graph_base.edges.edge_manager import add_edge
+from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 class Graph:
@@ -152,16 +153,6 @@ class Graph:
                     other_id = edge.get("target") if edge.get("source") == node_id else edge.get("source")
                     if other_id not in visited and other_id not in to_visit:
                         to_visit.append(other_id)
-        print("Extracted subgraph info:")
-        print("Subgraph nodes:", len(subgraph_nodes))
-        print(f"Persona nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'persona'])}")
-        print(f"Pain nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'pain'])}")
-        print(f"Job nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'job'])}")
-        print(f"Capability nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'capability'])}")
-        print(f"Pain trigger nodes: {len([n for n in subgraph_nodes.values() if n.get('node_type') == 'pain_trigger'])}")
-        print("All nodes:")
-        for node_id, node_data in subgraph_nodes.items():
-            print(f"Node ID: {node_id}, Type: {node_data.get('node_type', 'unknown')}, Data: {node_data}")
         return Graph(
             node_registry=subgraph_nodes,
             graph_edges=subgraph_edges,
@@ -229,8 +220,8 @@ class Graph:
                     node_text = node_data.get("attribute", node_data.get("text"))
                 else:
                     node_text = "Unknown Node Type"
-                # Till this
-                print("Frontier for node:", node_id)
+                
+                
                 old_value = relevance.get(node_id, 0.0)
                 this_node = self.get_node_by_id(node_id)
                 sources = self.get_all_source_nodes(this_node)
@@ -240,9 +231,7 @@ class Graph:
                     # This is a root node (e.g., product node)
                     # Propagate its relevance to its targets
                     current_node = self.get_node_by_id(node_id)
-                    print("Discovered root")
                     target_nodes = self.get_all_target_nodes(current_node)
-                    print("Discovered targets")
                     for target in target_nodes:
                         target_id = target.get("id")
                         # Calculate new relevance for the target
@@ -324,8 +313,33 @@ class Graph:
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
             updated_caps_list.append(cap_node)
-        update_capabilities_by_node_id(updated_caps_list)
+        self.update_capabilities_by_nodes_list(updated_caps_list)
 
+    def update_capabilities_by_nodes_list(self, capability_nodes):
+        """
+        Updates existing capabilities by node_id.
+        """
+        updated_nodes = []
+        for capability_node in capability_nodes:
+            capability_id = capability_node.get("id")
+            if not capability_id:
+                raise ValueError("Capability ID is required for capability updates.")
+            capability = self.get_node_by_id(capability_id)
+            name = capability.get("name", "")
+            description = capability.get("description", "")
+            coreness = capability.get("coreness", 0.0)
+            centrality = capability.get("centrality", 0.0)
+            
+            updated_node = get_or_create_capability_node(
+                name=name,
+                description=description,
+                node_id=capability_id,
+                capability_coreness=coreness,
+                capability_centrality=centrality,
+                return_created=True
+            )
+            updated_nodes.append(updated_node)
+        return updated_nodes
 
     def set_capabilities_relevance(self, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
         """
@@ -357,7 +371,28 @@ class Graph:
 
         return functional_capabilities_ids, blocker_capabilities_ids
 
-
+    def add_capabilities_to_product(self, capabilities):
+        """
+        Adds new capabilities to a product node and creates edges.
+        """
+        product_id = self.get_product_id_from_subgraph()
+        added_capabilities = []
+        for capability in capabilities:
+            capability_name = capability.get("name", "").strip()
+            capability_description = capability.get("description", "").strip()
+            capability_node = get_or_create_capability_node(
+                name=capability_name,
+                description=capability_description,
+                coreness=0.9
+            )
+            capability_node_id = capability_node["id"]
+            add_edge(
+                source_id=capability_node_id,
+                target_id=product_id,
+                edge_type="offered_by"
+            )
+            added_capabilities.append(capability_node)
+        return added_capabilities
 
 # Example usage:
 if __name__ == "__main__":

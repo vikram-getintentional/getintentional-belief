@@ -13,8 +13,6 @@ from backend.utils.knowledge_base.value_prop_analysis import get_product_value_p
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import (
     get_or_create_capability_node,
-    add_capabilities_to_product,
-    update_capabilities_by_node_id
 )
 from backend.utils.knowledge_base.persona_generation import (
     get_company_products,
@@ -96,7 +94,15 @@ def update_capabilities_route(payload: dict, request: Request, db: Depends = Non
         product_id = payload.get("product_id")
         if not product_id:
             raise HTTPException(status_code=400, detail="Product ID is required.")
-        updated_nodes = update_capabilities_by_node_id(capabilities)
+        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        base_graph = Graph(
+            node_registry=node_registry,
+            graph_edges=graph_edges,
+            edge_weights=edge_weights
+        )
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
+
+        updated_nodes = product_subgraph.update_capabilities_by_nodes_list(capabilities)
         return {"message": "Capabilities updated successfully.", "capabilities": [n["id"] for n in updated_nodes]}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -135,11 +141,9 @@ def add_capabilities_route(payload: dict, request: Request, db: Depends = None):
             graph_edges=graph_edges,
             edge_weights=edge_weights
         )
-        product_node = base_graph.get_node_by_id(product_id)
-        if not product_node:
-            raise HTTPException(status_code=404, detail="Product node not found.")
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
 
-        added_capabilities = add_capabilities_to_product(base_graph, product_node, capabilities)
+        added_capabilities = product_subgraph.add_capabilities_to_product(capabilities)
         return {
             "message": "New capabilities added successfully.",
             "capabilities": [
@@ -301,7 +305,7 @@ async def get_personas(product_id: str, request: Request):
         
         aggregated_personas = get_persona_relevance(product_subgraph)
 
-        #final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
+        final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
         
         
         # personas should be a list of persona dicts
@@ -309,7 +313,7 @@ async def get_personas(product_id: str, request: Request):
          #   print("No personas found for product_id from get_product_personas:", product_id)
          #   return {"detail": "No Summaries or Capabilities Mapped"}
         #print("Personas from get_product_personas:", personas)
-        return aggregated_personas
+        return final_personas
     except Exception as e:
         print("❌ Get personas error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve personas")

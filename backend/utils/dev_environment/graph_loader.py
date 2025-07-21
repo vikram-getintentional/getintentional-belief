@@ -24,24 +24,19 @@ def load_graph_from_folder(folder_path: str):
                         value = (node.get("title", "").strip().lower(),
                                  node.get("department", "").strip().lower(),
                                  node.get("seniority", "").strip().lower())
-                        print("Setting persona node")
                     elif node_type == "pain":
                         value = node.get("text", "").strip().lower()
-                        print("Setting pain node")
                     elif node_type == "job":
                         value = node.get("description", "").strip().lower()
-                        print("Setting job node")
                     elif node_type == "capability":
                         value = (node.get("name", "").strip().lower(),
                                  node.get("description", "").strip().lower())
-                        print("Setting capability node")
                     elif node_type == "pain_trigger":
                         value = (
                             node.get("attribute", "").strip().lower(),
                             node.get("dimension", "").strip().lower(),
                             node.get("direction", "").strip().lower()
                         )
-                        print("Setting pain trigger node")
                     elif node_type == "product":
                         value = (node.get("summary", "").strip().lower(),
                                  node.get("company_id", "").strip().lower(),
@@ -50,9 +45,9 @@ def load_graph_from_folder(folder_path: str):
                         print("Setting product node")
                     else:
                         value = node.get("id")
+                        print("Setting unknown node type:", node_type, "with value:", value)
                     node["node_type"] = node_type
                     node_registry[node["id"]] = node
-                    print("Setting unknown node type:", node_type, "with value:", value)
 
     # Load edges
     edges_path = os.path.join(folder_path, "graph_edges.json")

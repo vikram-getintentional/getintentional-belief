@@ -53,49 +53,4 @@ def get_or_create_capability_node(name, description=None, capability_coreness=0.
     return (new_node, True) if return_created else new_node
 
 
-def add_capabilities_to_product(base_graph, product_node, capabilities):
-    """
-    Adds new capabilities to a product node and creates edges.
-    """
-    added_capabilities = []
-    for capability in capabilities:
-        capability_name = capability.get("name", "").strip()
-        capability_description = capability.get("description", "").strip()
-        capability_node = get_or_create_capability_node(
-            name=capability_name,
-            description=capability_description
-        )
-        capability_node_id = capability_node["id"]
-        add_edge(
-            source_id=capability_node_id,
-            target_id=product_node["id"],
-            edge_type="offered_by"
-        )
-        added_capabilities.append(capability_node)
-    return added_capabilities
-
-
-def update_capabilities_by_node_id(capabilities):
-    """
-    Updates existing capabilities by node_id.
-    """
-    updated_nodes = []
-    for capability in capabilities:
-        node_id = capability.get("node_id")
-        name = capability.get("name", "")
-        description = capability.get("description", "")
-        coreness = capability.get("coreness", 0.0)
-        centrality = capability.get("centrality", 0.0)
-        if not node_id:
-            raise ValueError("Node ID is required for capability updates.")
-        updated_node = get_or_create_capability_node(
-            name=name,
-            description=description,
-            node_id=node_id,
-            capability_coreness=coreness,
-            capability_centrality=centrality,
-            return_created=True
-        )
-        updated_nodes.append(updated_node)
-    return updated_nodes
 

@@ -36,7 +36,7 @@ client = OpenAI(api_key=api_key)
 def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=False, retry_depth=0) -> dict:
     print("Starting inference loop: ", product_id)
     from datetime import datetime
-
+    # Updated query logic
     product_node = product_subgraph.get_node_by_id(product_id)
     if not product_node:
         raise ValueError("Product node not found.")
