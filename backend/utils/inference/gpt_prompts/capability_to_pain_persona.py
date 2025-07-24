@@ -1,5 +1,5 @@
 import json
-from backend.utils.inference.openai_client import client  # uses our centralized OpenAI client
+from backend.utils.inference.gpt_prompts.openai_client import client  # uses our centralized OpenAI client
 
 def infer_persona_job_pain_from_capabilities(summary, capabilities):
     """
@@ -20,18 +20,13 @@ For each capability, do the following:
 - Directly related capabilities should have scores between 0.7–1.0.
 - Indirectly related ones (e.g. same persona, downstream workflow, or shared pain) should have scores between 0.1–0.6.
 - Use 0.0 if the capability has no meaningful connection to the pain.
-
-3. For each pain Specify what attribute must scale for this pain to become intolerable in the format of:
-      - attribute: the real-world metric or variable (e.g., "Number of support tickets")
-      - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
-      - direction: one of ["Increase", "Decrease", "Change"] (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
-4. List 1–3 jobs that are directly blocked or improved when this pain is solved in the context of the capability and product summary.
-5. For each job provide a score (0.0 to 1.0) indicating how directly the job is impacted by the pain. 0.7-1.0 indicates this pain always occurs in this job, 0.3-0.6 indicates this pain is common but not always present, 0.1-0.2 indicates this pain is rarely felt in this job, and 0.0 indicates this job is not affected by this pain.
-6. For each job, provide a list of personas responsible for that job, each with:
+3. List 1–3 jobs that are directly blocked or improved when this pain is solved in the context of the capability and product summary.
+4. For each job provide a score (0.0 to 1.0) indicating how directly the job is impacted by the pain. 0.7-1.0 indicates this pain always occurs in this job, 0.3-0.6 indicates this pain is common but not always present, 0.1-0.2 indicates this pain is rarely felt in this job, and 0.0 indicates this job is not affected by this pain.
+5. For each job, provide a list of personas responsible for that job, each with:
       - title
       - department
       - seniority (one of: Junior, Operator, Manager, Senior, Executive)
-7. For each persona provide a "job importance score" (0.0-1.0) indicating how critical this job is to the persona's role. 0.7-1.0 indicates this job is essential, 0.3-0.6 indicates it is important but not critical, and 0.1-0.2 indicates it is a minor task or responsibility.
+6. For each persona provide a "job importance score" (0.0-1.0) indicating how critical this job is to the persona's role. 0.7-1.0 indicates this job is essential, 0.3-0.6 indicates it is important but not critical, and 0.1-0.2 indicates it is a minor task or responsibility.
 
 Return your output as a JSON array, one entry per capability, with this structure:
 - capability_id: string
@@ -39,7 +34,6 @@ Return your output as a JSON array, one entry per capability, with this structur
 - pains: list of
     - pain: string
     - relevance: array of floats
-    - pain_trigger: object
     - jobs: list of
         - description: string
         - impact: float
@@ -51,6 +45,7 @@ Return your output as a JSON array, one entry per capability, with this structur
 
 Use only realistic, clearly defined jobs and persona roles. Do not invent exotic titles unless required by the domain. All capabilities should return at least one pain with structured jobs and personas.
 IMPORTANT: Return ONLY the JSON array, with no explanation or formatting.
+Return a JSON entry for every capability in the list above. Do not skip any capability.
 
 Summary:
 {summary}

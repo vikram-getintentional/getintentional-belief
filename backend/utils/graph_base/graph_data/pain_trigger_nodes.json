@@ -1,284 +1,110 @@
 [
   {
-    "id": "34f2253c-03bf-44d8-aeb0-2f9043e42014",
-    "text": "need for revenue optimization"
-  },
-  {
-    "id": "bd69fb21-6884-4cf1-a8d4-9d375904ab2f",
-    "text": "increase in volume of sensitive data handled"
-  },
-  {
-    "id": "e596554c-f0a9-4539-998c-48cd03299ee2",
-    "text": "increase in volume of subscriptions"
-  },
-  {
-    "id": "8108c116-5460-4449-aaa6-ee7957f24f1a",
-    "text": "expansion to new international markets"
-  },
-  {
-    "id": "640edc9f-19c8-47ec-ab34-927abbc17021",
-    "text": "increase in frequency of customer cancellations"
-  },
-  {
-    "id": "85f4a3eb-430e-4629-826b-7d8cf3994885",
-    "text": "increase in number of platforms used in the business"
-  },
-  {
-    "id": "bb250b52-848f-447d-9c96-5405e91c4336",
-    "text": "increase in complexity of revenue streams"
-  },
-  {
-    "id": "62d32516-f0f1-4a8e-9474-c8a883296f22",
-    "text": "increase in churn rate"
-  },
-  {
-    "id": "6a3df83c-38e2-49b3-a6fb-09abee312927",
-    "text": "increase in international customers"
-  },
-  {
-    "id": "f7f594de-7256-47d4-bea4-bb6b9d27b310",
-    "text": "increase in number of platforms used within the organization"
-  },
-  {
-    "id": "51411e6c-df81-41d0-80ad-309d2b382ac7",
-    "text": "increase in number of subscriptions"
-  },
-  {
-    "id": "0b7e8bfe-56c6-402d-8023-44ae8a85f63b",
-    "text": "increase in customer complaints"
-  },
-  {
-    "id": "97d075f1-7197-410c-98bd-4922afb58012",
-    "text": "increase in business complexity"
-  },
-  {
-    "id": "1f20ebd8-3e00-46c5-ba61-ab3c14a30219",
-    "text": "decrease in profitability"
-  },
-  {
-    "id": "cef51cd4-11b0-40d6-a1fa-6a43a007d874",
-    "text": "increase in number of platforms used"
-  },
-  {
-    "id": "98538ba0-ca9d-424c-b9cc-4a214d017bf8",
-    "text": "increase in volume of sensitive data"
-  },
-  {
-    "id": "b029fda7-8e64-4570-8b7b-744601f6546a",
-    "text": "expansion into new international markets"
-  },
-  {
-    "id": "e831c3a9-572e-41d1-8194-d2e4b77dc6cc",
-    "text": "need for optimizing profitability"
-  },
-  {
-    "id": "b38dcd2b-62a2-48bc-902e-fa6d19b2b824",
-    "text": "need to increase profitability"
-  },
-  {
-    "id": "6362ab1e-3b54-4c3d-b3de-153acfc92a26",
-    "text": "increase in volume of data"
-  },
-  {
-    "id": "3f34aabf-a3f6-4ed2-a353-65abad3c60bb",
-    "text": "introduction of new platforms in the ecosystem"
-  },
-  {
-    "id": "292295c7-18ec-458d-882d-f0b03a3ac134",
-    "text": "increase in customer cancellations"
-  },
-  {
-    "id": "c63d52c8-06da-4441-b959-2d0b21970d9b",
-    "text": "introduction of new data security regulations"
-  },
-  {
-    "id": "559f8366-da4d-4444-a52b-b604dc60a13d",
-    "text": "need for data-driven decision making"
-  },
-  {
-    "id": "540d2954-3f31-4127-be32-4b20f073488d",
-    "text": "need to maximize profitability"
-  },
-  {
-    "id": "aa476c7b-82b5-42df-b6b6-13f7674fd640",
-    "text": "need for enhanced functionality"
-  },
-  {
-    "id": "729488f3-3db8-42c9-9f49-eac30d320c6a",
-    "text": "increase in frequency of cyber threats"
-  },
-  {
-    "id": "affdff38-3b5c-4d47-9b8c-be19dc929939",
-    "text": "increase in volume of valuable assets"
-  },
-  {
-    "id": "f4b0e5b2-469f-478d-95f8-e8fe153050b1",
-    "text": "increase in complexity of professional services"
-  },
-  {
-    "id": "d83fce95-e28f-4162-92a0-7d508c5f0a07",
-    "text": "increase in frequency of workplace accidents"
-  },
-  {
-    "id": "9f48661e-9bbe-496f-bd73-2b78d9d2e17f",
-    "text": "increase in complexity of insurance processes"
-  },
-  {
-    "id": "f82d44b0-83e1-4aa0-933d-d49d944ed396",
-    "text": "increase in the frequency of lawsuits against directors and officers"
-  },
-  {
-    "id": "9ded7d94-5d7e-47e3-8074-c5acaedb8b49",
-    "text": "increase in the complexity of the services provided or contracts signed"
-  },
-  {
-    "id": "dff938c8-2299-4ad2-8c90-1e2170b6ae01",
-    "text": "increase in the frequency of workplace accidents"
-  },
-  {
-    "id": "91fd81b4-161f-4411-9f58-8f02e6134c76",
-    "text": "increase in the frequency of fraudulent activities by employees"
-  },
-  {
-    "id": "2d2a969e-7bad-4a88-beb9-f1709d52a4e7",
-    "text": "increase in the volume of operations"
-  },
-  {
-    "id": "74f64dbf-98f6-4845-922f-1ff6e96d4002",
-    "text": "increase in the frequency and complexity of cyber attacks"
-  },
-  {
-    "id": "4e9c5603-58e1-40a1-bba9-bd1f6ee813f4",
-    "text": "need to make data-driven business decisions"
-  },
-  {
-    "id": "8809ce4f-43b5-4221-b6be-727cbefaccd4",
-    "text": "increase in customer churn rate"
-  },
-  {
-    "id": "d63c5e54-2c06-4880-a02a-f67666845ce1",
-    "text": "need to enhance functionality through integrations"
-  },
-  {
-    "id": "32bcb84e-5387-4ad5-ae31-809752954496",
-    "text": "decrease in profit margins"
-  },
-  {
-    "id": "483a7373-0763-4300-9c40-64b4a094d89c",
-    "text": "increase in need for diverse functionality"
-  },
-  {
-    "id": "716ef3b4-e473-4f12-910d-b8973e6c7a12",
-    "text": "increase in complexity of business operations"
-  },
-  {
-    "id": "7a7a2721-a240-4f99-a4d0-fb10d0b0b6a2",
-    "text": "increase in customer complaints or cancellation requests"
-  },
-  {
-    "id": "d0d08813-eec7-4c45-b31a-804992186e0c",
-    "text": "complexity in revenue models"
-  },
-  {
-    "id": "a5d2ac37-0f6b-4967-b579-0a95cce5aedc",
-    "text": "increase in frequency of customer churn"
-  },
-  {
-    "id": "eb5b94b5-6b77-4340-b5a3-ea405ac09c54",
-    "text": "increase in volume of international transactions"
-  },
-  {
-    "id": "a77b6fb8-f4ab-4a10-980e-fdf018ffbdb7",
-    "text": "increase in competition"
-  },
-  {
-    "id": "75ad3a42-8ab9-4a38-bf51-12789ffbdf0a",
-    "text": "increase in number of platforms to integrate with"
-  },
-  {
-    "id": "1293d00c-0381-406d-b56c-b598382a4661",
-    "text": "increase in volume of transactions and data"
-  },
-  {
-    "id": "d591a257-0d37-47a0-be91-3fe3035903fe",
-    "text": "increase in legal actions due to professional errors"
-  },
-  {
-    "id": "9f81fc8e-dc27-444a-be01-ae0d19aff0f1",
-    "text": "increase in customer complaints due to lack of support"
-  },
-  {
-    "id": "c2eee9fa-9511-4e2f-9f2d-2eab8dbafc22",
-    "text": "increase in cyber attacks or data breaches"
-  },
-  {
-    "id": "d5e8348b-5790-4b0e-a92e-b7e66b97419b",
-    "text": "increase in incidents of employee dishonesty"
-  },
-  {
-    "id": "c5bdb5ca-3ce0-459a-ab7a-02d40ba2eace",
-    "text": "increase in company's legal cases"
-  },
-  {
-    "id": "34e5942f-b88a-4f9d-898c-366aefb4cca8",
-    "text": "increase in customer expectations for digital services"
-  },
-  {
-    "id": "d2012662-1498-4cbc-9610-f2e89ab8e08e",
-    "text": "increase in volume of incoming support tickets"
-  },
-  {
-    "id": "478696a0-002d-40a5-87b0-8ac52933af22",
-    "text": "increase in frequency of natural disasters"
-  },
-  {
-    "id": "fd36e448-186e-4463-ac97-d9da486d40ba",
-    "text": "increase in frequency and complexity of cyber attacks"
-  },
-  {
-    "id": "c2360107-90a0-4e7d-9f17-da92d86bc7c4",
-    "text": "increase in workplace accidents"
-  },
-  {
-    "id": "7951d18c-3183-4abf-bb38-a12ef79a2a94",
-    "attribute": "number of meetings",
+    "id": "d9840ef2-5fcf-4cf9-afe1-73b844316699",
+    "attribute": "number of team members",
     "dimension": "volume",
     "direction": "increase"
   },
   {
-    "id": "cfa899b3-437e-4c64-814c-14d6327747f1",
-    "attribute": "number of prospects",
-    "dimension": "volume",
+    "id": "eb12fcbe-dff0-43ba-86ef-cd8ab9d165e1",
+    "attribute": "time taken to make decisions",
+    "dimension": "frequency",
     "direction": "increase"
   },
   {
-    "id": "7b540e76-23be-48f0-9502-d6d014136e80",
-    "attribute": "chat conversion rate",
-    "dimension": "volume",
-    "direction": "decrease"
-  },
-  {
-    "id": "f372fc51-05aa-4037-94d5-41c413e2a9b9",
-    "attribute": "number of meetings per salesperson",
-    "dimension": "equity",
-    "direction": "change"
-  },
-  {
-    "id": "da16cf6b-680f-485e-baf1-c0a77a5d81d7",
-    "attribute": "number of platforms used for scheduling",
+    "id": "f85f15ad-68a2-4a25-9c5f-3d1ceff936fb",
+    "attribute": "number of data sources",
     "dimension": "complexity",
     "direction": "increase"
   },
   {
-    "id": "3ccd660b-7087-4c20-ac4f-27a4e015fc2c",
-    "attribute": "number of email exchanges",
+    "id": "9f3cbea2-2082-4f90-a03b-4450b7236005",
+    "attribute": "data volume",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "278c164b-37de-4c5e-8835-2a7f2bff849e",
+    "attribute": "decision-making time",
+    "dimension": "time",
+    "direction": "increase"
+  },
+  {
+    "id": "e96dd1a8-5a82-4617-a819-b64fc7ef2ae4",
+    "attribute": "number of data teams",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "4d77eed9-6315-4895-9ddf-d2df7b25c658",
+    "attribute": "number of remote employees",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "c3df291a-f00e-4cd8-9f55-bcfd85446cdd",
+    "attribute": "amount of data",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "aa910911-4485-4c62-abcf-0cf9ed6a247c",
+    "attribute": "speed of decision-making",
     "dimension": "frequency",
     "direction": "increase"
   },
   {
-    "id": "2ef991f1-7487-4b7d-a1d4-305a5081c9f2",
-    "attribute": "no-show rate",
-    "dimension": "frequency",
+    "id": "0255f6cd-9785-4d44-be9e-440b28785dbe",
+    "attribute": "number of data team members",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "bee9a285-208c-48a1-9399-ac3a03536677",
+    "attribute": "complexity of data",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "2a544231-552e-41bb-8a30-4bdac8c4fbc3",
+    "attribute": "volume of data",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "a7d4dff0-c09c-4345-afa9-c354146b7913",
+    "attribute": "number of business metrics",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "9001820f-04d4-4a45-b212-4ce7b4d37b97",
+    "attribute": "number of checkout steps",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "0c6b649b-402d-45fc-ba8e-af2d75f1ca1e",
+    "attribute": "number of software solutions",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "38132066-0f11-48ea-a3ed-058ddc8d6a30",
+    "attribute": "number of incompatible software",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "16b856f1-7499-4c0c-94b8-d1d57e22f48e",
+    "attribute": "number of untracked business metrics",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "65f3b2d9-e2aa-4e35-a045-8c698683fbd0",
+    "attribute": "checkout process duration",
+    "dimension": "time",
     "direction": "increase"
   }
 ]

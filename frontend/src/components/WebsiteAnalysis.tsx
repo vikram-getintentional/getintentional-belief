@@ -110,10 +110,14 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
     const edited = [...editedCapabilities];
     const capNodeId = updated[index].node_id;
     const existingIdx = edited.findIndex((cap) => cap.node_id === capNodeId);
+    const capabilityWithId = {
+      ...updated[index],
+      id: updated[index].node_id || updated[index].id, // <-- ensure id is set
+    };
     if (existingIdx !== -1) {
-      edited[existingIdx] = { ...updated[index] };
+      edited[existingIdx] = capabilityWithId ;
     } else {
-      edited.push({ ...updated[index] });
+      edited.push(capabilityWithId);
     }
     setEditedCapabilities(edited);
 
@@ -167,7 +171,7 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
           company_id: companyId,
           product_id: productId,
           capabilities: editedCapabilities.map(cap => ({
-            node_id: cap.node_id, // must be present!
+            id: cap.node_id || cap.id, // must be present!
             name: cap.name,
             description: cap.description
           })),

@@ -6,7 +6,7 @@ from pathlib import Path
 from collections import defaultdict
 
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
-from backend.utils.inference.capability_to_pain_persona import infer_persona_job_pain_from_capabilities
+from backend.utils.inference.gpt_prompts.capability_to_pain_persona import infer_persona_job_pain_from_capabilities
 from backend.utils.graph_base.graph_builder import process_capability_map_to_graph
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_canonical_map
 from backend.utils.nlp.matcher import match_capabilities_to_canonical_personas
@@ -69,44 +69,25 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         print("🔁 Running GPT reasoning...")
         capability_map = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         
+        
         print("🧠 [GPT] Generating capability map...")
         gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities)
 
         """
         Output is of format:
-        {
-            "capability_id": "string",
-            "capability": "string",
-            "pains": [
-            {
-                "pain": "string",
-                "relevance": [0.8, 0.5, 1.0],
-                "pain_trigger": {
-                        "attribute": "string",
-                        "dimension": "string",
-                        "direction": "Increase" | "Decrease" | "Change"
-                    },
-                "jobs": [
-                {
-                    "description": "Resolve incoming customer tickets in under 24 hours",
-                    "impact": 0.9,
-                    "personas": [
-                    {
-                        "job_importance": 0.9,
-                        "title": "Customer Support Executive",
-                        "department": "Support",
-                        "seniority": "Operator"
-                    },
-                    {
-                        "job_importance": 0.8,
-                        "title": "Support Team Lead",
-                        "department": "Support",
-                        "seniority": "Manager"
-                    }
-                    ]
-                }
-                ]
-            }
+        - capability_id: string
+        - capability: string
+        - pains: list of
+            - pain: string
+            - relevance: array of floats
+            - jobs: list of
+                - description: string
+                - impact: float
+                - personas: list of
+                    - job_importance: float
+                    - title: string
+                    - department: string
+                    - seniority: string
         """
 
         # First pass: Build flattened_capability_map
@@ -115,10 +96,6 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
             cap_id = entry.get("capability_id", "Unknown").strip()
             for pain in entry.get("pains", []):
                 pain_desc = pain.get("pain", "Unknown Pain")
-                pain_trigger = pain.get("pain_trigger", [])
-                pain_trigger_attribute = pain_trigger.get("attribute", "")
-                pain_trigger_dimension = pain_trigger.get("dimension", "")
-                pain_trigger_direction = pain_trigger.get("direction", "")
                 relevance_array = pain.get("relevance", [])
                 jobs = pain.get("jobs", [])
                 for job in jobs:
@@ -133,11 +110,6 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                         flattened_capability_map.append({
                             "capability_id": cap_id,
                             "pain": pain_desc,
-                            "pain_trigger": {
-                                "attribute": pain_trigger_attribute,
-                                "dimension": pain_trigger_dimension,
-                                "direction": pain_trigger_direction
-                            },
                             "relevance": relevance_array,
                             "job": job_desc,
                             "job_impact": job_impact,
@@ -150,6 +122,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                             "source": "openai",
                         })
         print("\n\nFlattened capability map in Hop0 traversal")
+        print(json.dumps(flattened_capability_map, indent=2))
 
         # Step 3: Normalize and canonicalize the flattened capability map
         print("📊 [Graph] Canonicalizing capability map...")

@@ -43,6 +43,46 @@ def load_graph_from_folder(folder_path: str):
                                  node.get("url", "").strip().lower(),
                                  node.get("plg_flag", ""))
                         print("Setting product node")
+                    elif node_type == "zmot":
+                        for zmot_key in ["TriggerEvents", "ObservableMoments", "Keywords"]:
+                            for node in nodes.get(zmot_key, []):
+                                node["node_type"] = f"zmot_{zmot_key[:-1].lower()}"  # e.g. zmot_triggerevent
+                                # Need to set node values here
+                                if zmot_key == "TriggerEvents":
+                                    node["value"] = node.get("trigger_event", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                elif zmot_key == "ObservableMoments":
+                                    node["value"] = node.get("observable_moment", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                elif zmot_key == "Keywords":
+                                    node["value"] = node.get("keyword", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                            continue
+
+                    elif node_type == "company":
+                        for company_key in ["industries", "revenue", "employees", "funding_stage", "geographies"]:
+                            for node in nodes.get(company_key, []):
+                                node["node_type"] = f"icp_{company_key[:-1].lower()}"
+                                if company_key == "industries":
+                                    node["value"] = node.get("industry", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                elif company_key == "revenue":
+                                    node["value"] = node.get("revenue", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                elif company_key == "employees":
+                                    node["value"] = node.get("employees", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                elif company_key == "funding_stage":
+                                    node["value"] = node.get("funding_stage", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                elif company_key == "geographies":
+                                    node["value"] = node.get("geographies", "").strip().lower()
+                                    node_registry[node["id"]] = node
+                                else:
+                                    print("company node type not recognized:", company_key)
+                                    continue
+                            continue
+                                
                     else:
                         value = node.get("id")
                         print("Setting unknown node type:", node_type, "with value:", value)
@@ -55,6 +95,10 @@ def load_graph_from_folder(folder_path: str):
         with open(edges_path, "r") as f:
             graph_edges = json.load(f)
             for edge in graph_edges:
+                # Add a check to ensure source and target are not null, and source and target IDs exist in the node registry
+                if edge["source"] is "null" or edge["source"] is None or edge["target"] is "null" or edge["target"] is None:
+                    print(f"Edge {edge} has null source or target. Skipping this edge.")
+                    continue
                 edge_weights[(edge["source"], edge["target"])] = edge.get("weight", 1.0)
     print("Graph loaded with nodes:", len(node_registry), "and edges:", len(graph_edges))
     return node_registry, graph_edges, edge_weights

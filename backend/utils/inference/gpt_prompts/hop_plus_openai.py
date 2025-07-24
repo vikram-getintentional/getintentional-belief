@@ -1,5 +1,5 @@
 import json
-from backend.utils.inference.openai_client import client  # uses our centralized OpenAI client
+from backend.utils.inference.gpt_prompts.openai_client import client  # uses our centralized OpenAI client
 
 #Hop_plus OpenAI Prompt function to get upstream persona-job-pain triplets that are dependent on the current job being performed well
 # In the openAI output include the original job as "original_job" and original persona as "original_persona.title+department+seniority"

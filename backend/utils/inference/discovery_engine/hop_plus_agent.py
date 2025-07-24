@@ -4,7 +4,7 @@ import json
 from typing import List, Dict, Any, Set
 from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain_trigger_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data 
-from backend.utils.inference.hop_plus_openai import get_upstream_triplets
+from backend.utils.inference.gpt_prompts.hop_plus_openai import get_upstream_triplets
 from backend.utils.graph_base.graph import Graph
 from backend.utils.knowledge_base.canonicalizer import canonicalize_job, canonicalize_pain, canonicalize_persona
 from backend.utils.graph_base.nodes.persona_nodes import get_or_create_persona_node

@@ -1,4 +1,4 @@
-from backend.utils.openai_helper import extract_summary_and_capabilities
+from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
 from backend.utils.graph_base.edges.edge_manager import add_edge

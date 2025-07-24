@@ -12,6 +12,10 @@ EMBEDDING_OUTPUT_PATH = CANONICAL_MAP_PATH / "canonical_embeddings/"
 JOB_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "job_to_canonical.json"
 PAIN_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "pain_to_canonical.json"
 PERSONA_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "persona_to_canonical.json"
+PAIN_TRIGGER_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json"
+TRIGGER_EVENT_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "trigger_event_to_canonical.json"
+OBSERVABLE_MOMENT_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "observable_moment_to_canonical.json"
+
 
 # Preloaded embeddings
 try:
@@ -106,8 +110,51 @@ def canonicalize_pain_trigger(pain_triggers: list[dict]) -> dict:
         }
         pain_trigger_canonical_map[str(orig)] = canonical_trigger
 
-    save_canonical_map(pain_trigger_canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
+    save_canonical_map(pain_trigger_canonical_map, PAIN_TRIGGER_CANONICAL_MAP_PATH)
     return pain_trigger_canonical_map
+
+def canonicalize_trigger_events(trigger_events: list[str]) -> dict:
+    trigger_events = list(set(trigger_events))
+    if not trigger_events:
+        print("⚠️ No trigger events provided for canonicalization.")
+        return {}
+
+    trigger_event_embeddings = generate_and_save_embeddings(trigger_events, "trigger_event")
+
+    if len(trigger_event_embeddings) == 1:
+        print("⚠️ Only one trigger event provided. Skipping clustering.")
+        canonical_map = {trigger_events[0]: trigger_events[0]}
+        save_canonical_map(canonical_map, TRIGGER_EVENT_CANONICAL_MAP_PATH)
+        return canonical_map
+
+    clustered_trigger_events = cluster_items(trigger_event_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_trigger_events)
+    canonical_map = {trigger_event: canonical_label_map[trigger_event] for trigger_event in trigger_events}
+    print(f"Canonical map for trigger events: {canonical_map}")
+    save_canonical_map(canonical_map, TRIGGER_EVENT_CANONICAL_MAP_PATH)
+    return canonical_map
+
+def canonicalize_observable_moments(observable_moments: list[str]) -> dict:
+    observable_moments = list(set(observable_moments))
+    if not observable_moments:
+        print("⚠️ No observable moments provided for canonicalization.")
+        return {}
+
+    observable_moment_embeddings = generate_and_save_embeddings(observable_moments, "observable_moment")
+
+    if len(observable_moment_embeddings) == 1:
+        print("⚠️ Only one observable moment provided. Skipping clustering.")
+        canonical_map = {observable_moments[0]: observable_moments[0]}
+        save_canonical_map(canonical_map, OBSERVABLE_MOMENT_CANONICAL_MAP_PATH)
+        return canonical_map
+
+    clustered_observable_moments = cluster_items(observable_moment_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_observable_moments)
+    canonical_map = {observable_moment: canonical_label_map[observable_moment] for observable_moment in observable_moments}
+    print(f"Canonical map for observable moments: {canonical_map}")
+    save_canonical_map(canonical_map, OBSERVABLE_MOMENT_CANONICAL_MAP_PATH)
+    return canonical_map
+
 
 def canonicalize_titles(titles: list[str]) -> dict:
     titles = list(set(titles))

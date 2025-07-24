@@ -1,0 +1,189 @@
+import { useEffect, useState } from "react";
+import ZmotCard from "../components/ZmotCard";
+import ZmotBuilder from "../components/ZmotBuilder";
+
+const ZmotIcp = () => {
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [zmotIcp, setZmotIcp] = useState([]);
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [statusMsg, setStatusMsg] = useState("");
+  const token = localStorage.getItem("token");
+
+  // 1. Get company ID on mount
+  useEffect(() => {
+    const fetchCompanyAndProducts = async () => {
+      try {
+        const meRes = await fetch("http://localhost:8000/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const meData = await meRes.json();
+        setCompanyId(meData.company_id);
+
+        // 2. Get product IDs for this company
+        const prodRes = await fetch(
+          `http://localhost:8000/get-products/${meData.company_id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const prodData = await prodRes.json();
+        if (!prodData.products || prodData.products.length === 0) {
+          setStatusMsg("No products found. Please run Value Prop first.");
+          return;
+        }
+        console.log("✅ Product IDs set:", prodData.products.map((p: any) => p.id));
+        setProducts(prodData.products);
+
+        // 3. If only one product, select it automatically
+        if (prodData.products.length === 1) {
+          console.log("✅ Automatically selecting single product:", prodData.products[0].id);
+          setSelectedProductId(prodData.products[0].id);
+        }
+      } catch (err) {
+        setStatusMsg("Error fetching company or products.");
+      }
+    };
+    fetchCompanyAndProducts();
+  }, [token]);
+
+  // 4. When a product is selected, fetch personas
+  useEffect(() => {
+    console.log("🔄 Working with product:", selectedProductId);
+    if (!selectedProductId) {
+      console.log("❌ No product selected, skipping ZMOT fetch.");
+      return;
+    }
+    const fetchZmotsIcps = async () => {
+      try {
+        console.log("🔄 Fetching ZMOTs and ICPs for product:", selectedProductId);
+        const zmotIcpRes = await fetch(
+          `http://localhost:8000/get_zmot_icp/${selectedProductId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const zmotIcpData = await zmotIcpRes.json();
+        console.log("Backend ZMOTs and ICPs response:", zmotIcpData);
+
+        // 5. Handle backend messages
+        if (zmotIcpData?.detail === "No pains found for this product") {
+          setStatusMsg("No pains mapped yet. Please run Personas first.");
+          setZmotIcp([]);
+          return;
+        }
+
+        setStatusMsg("");
+        setZmotIcp(zmotIcpData || []);
+
+        // 6. If no ICPs, prompt to infer
+        if (!zmotIcpData || zmotIcpData.length === 0) {
+          setZmotIcp([]);
+          setStatusMsg("No ICPs or ZMOTs found. Click 'Infer ICPs' to generate.");
+        }
+      } catch (err) {
+        setStatusMsg("Error fetching ZMOTs and ICPs.");
+        console.error("Error fetching ZMOTs and ICPs:", err);
+      }
+    };
+    fetchZmotsIcps();
+  }, [selectedProductId]);
+
+  return (
+    <div className="p-8">
+      <h2 className="text-2xl font-bold mb-6">Saved Personas</h2>
+
+      {/* 3. If multiple products, let user select */}
+      {products.length > 1 && (
+        <div className="mb-4">
+          <label className="mr-2 font-semibold">Select Product:</label>
+          <select
+            value={selectedProductId || ""}
+            onChange={e => setSelectedProductId(e.target.value)}
+            className="border rounded px-2 py-1"
+          >
+            <option value="" disabled>Select a product</option>
+            {products.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* 4. If no products, show message */}
+      {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
+    
+      {/* 5. Show ZMOTs if they exist */}
+      {zmotIcp.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {zmotIcp.map((z, i) => (
+            z && z.title ? (
+              <ZmotCard
+                key={i}
+                zmot={z}
+                isSelected={true}
+                onToggle={() => {}}
+              />
+            ) : null
+          ))}
+        </div>
+      )}
+
+     {zmotIcp.length > 0 && (
+        <button
+          className="mt-6 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          onClick={async () => {
+            if (!selectedProductId) return;
+            setStatusMsg("Inferring ZMOTs and ICPs...");
+            try {
+              const res = await fetch(`http://localhost:8000/analyze/get_zmot_icp/${selectedProductId}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ product_id: selectedProductId }),
+              });
+              if (!res.ok) throw new Error("Failed to infer ZMOT and ICP Archetypes");
+              setStatusMsg("ZMOTs and ICPs inferred! Refresh to see updates.");
+              // Optionally, refresh personas here by calling fetchPersonas()
+            } catch (err) {
+              setStatusMsg("Error inferring ZMOTs and ICPs.");
+              console.error(err);
+            }
+          }}
+        >
+          Infer ZMOTs and ICPs
+        </button>
+      )}
+
+      {/* 7. Show Infer ZMOT button if no ZMOTs are available */}
+      {!showBuilder && selectedProductId && !statusMsg.includes("Inferring") && (
+        <button
+          className="mt-8 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          onClick={() => setShowBuilder(true)}
+        >
+          {zmotIcp.length === 0 ? "Infer ZMOTs" : "Re-infer ZMOTs"}
+        </button>
+      )}
+
+      {/* 8. Show ZmotBuilder when button is clicked */}
+      {showBuilder && selectedProductId && (
+        <div className="mt-8">
+          <ZmotBuilder
+            productId={selectedProductId}
+            onSave={() => {
+              setShowBuilder(false);
+              setStatusMsg("ZMOTs inferred! Refresh to see new ZMOTs.");
+            }}
+          />
+        </div>
+      )}
+
+      
+    </div>
+  );
+};
+
+export default ZmotIcp;

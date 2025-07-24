@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
-from backend.utils.openai_helper import extract_summary_and_capabilities
-from backend.utils.openai_helper_core import infer_with_rules_then_fallback
+from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
+from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
 from backend.database import SessionLocal
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from backend.database import get_db
 from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
 from backend.utils.graph_base.graph import Graph
 from backend.utils.dev_environment.graph_loader import load_graph_from_folder
+from backend.utils.inference.discovery_engine.zmot_discovery import infer_zmot_icp
 from backend.utils.knowledge_base.value_prop_analysis import get_product_value_prop, process_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import (
@@ -19,11 +20,13 @@ from backend.utils.knowledge_base.persona_generation import (
     get_persona_relevance
 )
 
-from backend.utils.inference.hop_plus_agent import infer_upstream_with_rules
+from backend.utils.inference.discovery_engine.hop_plus_agent import infer_upstream_with_rules
 
 # Hardcoded path to graph data folder - to be updated in production
 
 import os
+
+from backend.utils.knowledge_base.zmot_icp_generation import get_zmot_icp_relevance
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
@@ -88,6 +91,7 @@ def update_capabilities_route(payload: dict, request: Request, db: Depends = Non
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         capabilities = payload.get("capabilities", [])
+        print("Capabilities as recd by API:", capabilities)
         if not capabilities:
             raise HTTPException(status_code=400, detail="Capabilities are required.")
 
@@ -101,8 +105,15 @@ def update_capabilities_route(payload: dict, request: Request, db: Depends = Non
             edge_weights=edge_weights
         )
         product_subgraph = base_graph.extract_product_subgraph(product_id)
-
-        updated_nodes = product_subgraph.update_capabilities_by_nodes_list(capabilities)
+        cap_list_to_process = []
+        for cap in capabilities:
+            cap_id = cap.get("id")
+            updated_cap_name = cap.get("name", "")
+            updated_cap_description = cap.get("description", "")
+            updated_capability = { "id": cap_id, "name": updated_cap_name, "description": updated_cap_description }
+            cap_list_to_process.append(updated_capability)
+        print("Capabilities to process:", cap_list_to_process)
+        updated_nodes = product_subgraph.update_capabilities_by_nodes_list(cap_list_to_process)
         return {"message": "Capabilities updated successfully.", "capabilities": [n["id"] for n in updated_nodes]}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -365,3 +376,89 @@ async def analyze_hop_plus(payload: dict, request: Request):
     except Exception as e:
         print("❌ Hop+ analysis error:", e)
         raise HTTPException(status_code=500, detail="Could not run Hop+ analysis")
+
+
+# GET /generate_zmot_icp/{product_id}
+@router.post("/analyze/generate_zmot_icp/{product_id}")
+async def generate_zmot_icp(product_id: str, request: Request):
+    print("Generating ZMoT ICP for product_id:", product_id)
+    """
+    Returns a list of ZMOTs, ICP Archetypes (and pain triggers under the hood) for the product_id. 
+    Assumes that at least hop0 traversal exists.
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # 🧠 Inference
+        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        base_graph = Graph(
+            node_registry=node_registry,
+            graph_edges=graph_edges,
+            edge_weights=edge_weights
+        )
+        print("Loading product graph for product_id:", product_id)
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
+
+        zmot_icp_nodes = infer_zmot_icp(product_id, product_subgraph)
+        
+        print("ZMOT ICP nodes generated in analyzer:", zmot_icp_nodes)
+
+        
+        # personas should be a list of persona dicts
+        #if personas is None:
+         #   print("No personas found for product_id from get_product_personas:", product_id)
+         #   return {"detail": "No Summaries or Capabilities Mapped"}
+        #print("Personas from get_product_personas:", personas)
+        return []
+    except Exception as e:
+        print("❌ Generate ZMOT ICP error:", e)
+        raise HTTPException(status_code=500, detail="Could not generate ZMOTs and ICP Archetypes")
+    
+    
+
+# GET /get_zmot_icp/{product_id}
+@router.get("/get_zmot_icp/{product_id}")
+async def get_zmot_icp(product_id: str, request: Request):
+    print("Generating ZMoT ICP for product_id:", product_id)
+    """
+    Returns a list of ZMOTs, ICP Archetypes (and pain triggers under the hood) for the product_id. 
+    Assumes that at least hop0 traversal exists.
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # 🧠 Inference
+        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        base_graph = Graph(
+            node_registry=node_registry,
+            graph_edges=graph_edges,
+            edge_weights=edge_weights
+        )
+        print("Loading product graph for product_id:", product_id)
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
+
+        zmots = get_zmot_icp_relevance(product_subgraph)
+        return {"zmots": zmots}
+    except Exception as e:
+        print("❌ Get ZMOTs error:", e)
+        raise HTTPException(status_code=500, detail="Could not retrieve ZMOTs and ICP Archetypes")

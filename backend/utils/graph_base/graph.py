@@ -53,6 +53,16 @@ class Graph:
             if node_data.get("node_type") == node_type and all(node_data.get(k) == v for k, v in properties.items())
         ]
     
+    def get_nodes_list_ids(self, node_type: str, properties: dict) -> list:
+        """
+        Returns a list of (node_ids) for all nodes of a given type matching the provided properties.
+        """
+        return [
+            node_id
+            for node_id, node_data in self.node_registry.items()
+            if node_data.get("node_type") == node_type and all(node_data.get(k) == v for k, v in properties.items())
+        ]
+    
     def get_edge_weight(self, source_id: int, target_id: int) -> float:
         return self.edge_weights.get((source_id, target_id))
 
@@ -178,17 +188,21 @@ class Graph:
         # Build reverse graph (downstream map)
         node_targets = {}
         for node in self.node_registry.values():
+            print("Processing node:", node)
             node_id = node["id"]
             node_targets_list = self.get_all_target_nodes(node)
+            for n in node_targets_list:
+                if n is None:
+                    print(f"Warning: target node missing for edge from {node_id}")
             node_targets[node_id] = [n["id"] for n in node_targets_list]
-
+        print("Node registry completed")
         # Initialize relevance values
         relevance = {}
         relevance = {
             node_id: get_cumulative_relevance_data(product_id, node_id)
             for node_id in self.node_registry.keys()
         }
-
+        print("Relevance initialized for all nodes.")
 
         # This line seeds the prod relevance to 1.0 for when relevance data doesnt exist
         relevance[product_id] = 1.0
@@ -207,20 +221,10 @@ class Graph:
 
             while frontier:
                 node_id = frontier.popleft()
-                # Checks for bug testing - kill this
                 node_data = self.get_node_by_id(node_id)
-                node_type = node_data.get("node_type", "unknown")
-                if node_type == "persona":
-                    node_text = node_data.get("title")
-                elif node_type == "pain":
-                    node_text = node_data.get("text")
-                elif node_type == "job":
-                    node_text = node_data.get("description", node_data.get("text"))
-                elif node_type == "pain_trigger":
-                    node_text = node_data.get("attribute", node_data.get("text"))
-                else:
-                    node_text = "Unknown Node Type"
-                
+                if not node_data:
+                    print(f"Node {node_id} not found in node registry. Skipping.")
+                    continue
                 
                 old_value = relevance.get(node_id, 0.0)
                 this_node = self.get_node_by_id(node_id)
@@ -319,18 +323,27 @@ class Graph:
         """
         Updates existing capabilities by node_id.
         """
+        print("Updating capabilities by nodes list with input:", capability_nodes)
         updated_nodes = []
         for capability_node in capability_nodes:
             capability_id = capability_node.get("id")
             if not capability_id:
-                raise ValueError("Capability ID is required for capability updates.")
+                raise ValueError("Capability ID is required for capability updates.") 
             capability = self.get_node_by_id(capability_id)
-            name = capability.get("name", "")
-            description = capability.get("description", "")
-            coreness = capability.get("coreness", 0.0)
-            centrality = capability.get("centrality", 0.0)
-            
-            updated_node = get_or_create_capability_node(
+            name = capability_node.get("name")
+            if not name:
+                name = capability.get("name", "")
+            description = capability_node.get("description")
+            if not description:
+                description = capability.get("description", "")
+            coreness = capability_node.get("coreness", 0.0)
+            if not coreness:
+                coreness = capability.get("coreness", 0.0)
+            centrality = capability_node.get("centrality")
+            if not centrality:
+                centrality = capability.get("centrality", 0.0)
+
+            updated_node, _ = get_or_create_capability_node(
                 name=name,
                 description=description,
                 node_id=capability_id,
