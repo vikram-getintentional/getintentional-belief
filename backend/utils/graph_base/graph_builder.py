@@ -182,12 +182,13 @@ def canonicalize_and_create_zmot_icp_nodes(results):
 
     # Gather unique raw values for canonicalization
     for entry in results:
-        pain_trigger = entry.get("pain_trigger", {})
-        trigger_cache.add((
-            pain_trigger.get("attribute", "").strip(),
-            pain_trigger.get("dimension", "").strip(),
-            pain_trigger.get("direction", "").strip()
-        ))
+        raw_pain_trigger = entry.get("pain_trigger", {})
+        if isinstance(raw_pain_trigger, dict):
+            trigger_cache.add((
+                raw_pain_trigger.get("attribute", "").strip(),
+                raw_pain_trigger.get("dimension", "").strip(),
+                raw_pain_trigger.get("direction", "").strip()
+            ))
         zmot_event = entry.get("zmot_event", {})
         trigger_event = zmot_event.get("trigger_event", "").strip()
         observable_moments = zmot_event.get("observable_moments", [])
@@ -232,17 +233,25 @@ def canonicalize_and_create_zmot_icp_nodes(results):
     # Assign canonical values and node IDs to each entry
     for entry in results:
         # Canonicalize pain_trigger
-        pain_trigger = entry.get("pain_trigger", {})
-        pt_key = (
-            pain_trigger.get("attribute", "").strip().lower(),
-            pain_trigger.get("dimension", "").strip().lower(),
-            pain_trigger.get("direction", "").strip().lower()
-        )
-        pt_canonical = canonical_pain_triggers.get(pt_key, pain_trigger)
-        pain_trigger["canonical"] = pt_canonical
-        pain_trigger["node_id"] = pain_trigger_lookup.get(pt_key)
-        entry["pain_trigger_node_id"] = pain_trigger["node_id"]
+        raw_pain_trigger = entry.get("pain_trigger", {})
+        pt_key = str({
+            "attribute": raw_pain_trigger.get("attribute", "").strip().lower(),
+            "dimension": raw_pain_trigger.get("dimension", "").strip().lower(),
+            "direction": raw_pain_trigger.get("direction", "").strip().lower()  
+        })
+        pt_canonical = canonical_pain_triggers.get(pt_key, raw_pain_trigger)
+        entry["pain_trigger"] = pt_canonical
 
+        # Lookup node ID for pain_trigger
+        pain_trigger_lookup_key = (
+            entry["pain_trigger"]["attribute"].strip().lower(),
+            entry["pain_trigger"]["dimension"].strip().lower(),
+            entry["pain_trigger"]["direction"].strip().lower()
+        )
+        if pain_trigger_lookup_key not in pain_trigger_lookup:
+            print("❌ Pain trigger lookup failed for key:", pain_trigger_lookup_key)
+            print("Available pain trigger keys:", list(pain_trigger_lookup.keys()))
+        
         # Canonicalize and assign node IDs for zmot_event
         zmot_event = entry.get("zmot_event", {})
         zmot_trigger_event_node_ids = []
@@ -269,6 +278,7 @@ def canonicalize_and_create_zmot_icp_nodes(results):
             if keyword in zmot_keyword_lookup:
                 zmot_keyword_node_ids.append(zmot_keyword_lookup[keyword])
 
+        entry["pain_trigger_node_id"] = pain_trigger_lookup.get(pain_trigger_lookup_key)
         entry["zmot_trigger_event_node_ids"] = zmot_trigger_event_node_ids
         entry["zmot_observable_moment_node_ids"] = zmot_observable_moment_node_ids
         entry["zmot_keyword_node_ids"] = zmot_keyword_node_ids
@@ -309,7 +319,7 @@ def process_pain_triggers_zmot_icp_map_to_graph(pains_map: dict):
     print("Starting process map")
     for entry in pains_map:
             print("Processing zmot entry:", entry)
-            pain_id = entry.get("pain_node_id")
+            pain_id = entry.get("pain_id")
             pain_trigger_node_id = entry.get("pain_trigger_node_id", None)
             icp_match_score = entry.get("icp_match_score", 0.0)
             zmot_match_score = entry.get("zmot_match_score", 0.0)
@@ -318,111 +328,109 @@ def process_pain_triggers_zmot_icp_map_to_graph(pains_map: dict):
             now = datetime.utcnow().isoformat()
             
             # Add edge: Pain → Pain Trigger
-            add_edge(
-                source_id=pain_id,
-                target_id=pain_trigger_node_id,
-                edge_type="triggered_by",
-                weight=1.0,
-                last_updated=now,
-                source=source
-            )
+            if pain_id and pain_trigger_node_id:
+                add_edge(
+                    source_id=pain_id,
+                    target_id=pain_trigger_node_id,
+                    edge_type="triggered_by",
+                    weight=1.0,
+                    last_updated=now,
+                    source=source
+                )
 
             # Add edges: Pain Trigger -> Company Data
             # Already created icp_nodes list for each entry
             for icp_entry in entry.get("icp_nodes", []):
                 for industry_id in icp_entry.get("industry_nodes", []):
                     # Add edge: Pain Trigger → Industry
-                    add_edge(
-                        source_id=pain_trigger_node_id,
-                        target_id=industry_id,
-                        edge_type="experienced_in",
-                        weight=icp_match_score,
-                        last_updated=now,
-                        source=source
-                    )
+                    if pain_trigger_node_id and industry_id:
+                        add_edge(
+                            source_id=pain_trigger_node_id,
+                            target_id=industry_id,
+                            edge_type="experienced_in",
+                            weight=icp_match_score,
+                            last_updated=now,
+                            source=source
+                        )
                 for revenue_id in icp_entry.get("revenue_nodes", []):
                     # Add edge: Pain Trigger → Revenue
-                    add_edge(
-                        source_id=pain_trigger_node_id,
-                        target_id=revenue_id,
-                        edge_type="experienced_in",
-                        weight=icp_match_score,
-                        last_updated=now,
-                        source=source
-                    )
+                    if pain_trigger_node_id and revenue_id:
+                        add_edge(
+                            source_id=pain_trigger_node_id,
+                            target_id=revenue_id,
+                            edge_type="experienced_in",
+                            weight=icp_match_score,
+                            last_updated=now,
+                            source=source
+                        )
                 for employees_id in icp_entry.get("employees_nodes", []):
                     # Add edge: Pain Trigger → Employees
-                    add_edge(
-                        source_id=pain_trigger_node_id,
-                        target_id=employees_id,
-                        edge_type="experienced_in",
-                        weight=icp_match_score,
-                        last_updated=now,
-                        source=source
-                    )
+                    if pain_trigger_node_id and employees_id:
+                        add_edge(
+                            source_id=pain_trigger_node_id,
+                            target_id=employees_id,
+                            edge_type="experienced_in",
+                            weight=icp_match_score,
+                            last_updated=now,
+                            source=source
+                        )
                 for funding_stage_id in icp_entry.get("funding_stage_nodes", []):
                     # Add edge: Pain Trigger → Funding Stage
-                    add_edge(
-                        source_id=pain_trigger_node_id,
-                        target_id=funding_stage_id,
-                        edge_type="experienced_in",
-                        weight=icp_match_score,
-                        last_updated=now,
-                        source=source
-                    )
+                    if pain_trigger_node_id and funding_stage_id:
+                        add_edge(
+                            source_id=pain_trigger_node_id,
+                            target_id=funding_stage_id,
+                            edge_type="experienced_in",
+                            weight=icp_match_score,
+                            last_updated=now,
+                            source=source
+                        )
                 for geographies_id in icp_entry.get("geographies_nodes", []):
                     # Add edge: Pain Trigger → Geographies
+                    if pain_trigger_node_id and geographies_id:
+                        add_edge(
+                            source_id=pain_trigger_node_id,
+                            target_id=geographies_id,
+                            edge_type="experienced_in",
+                            weight=icp_match_score,
+                            last_updated=now,
+                            source=source
+                        )
+            # Add edges: Pain Trigger → ZMOT Trigger Events
+            for zmot_trigger_event_id in entry.get("zmot_trigger_event_node_ids", []):
+                if pain_trigger_node_id and zmot_trigger_event_id:
                     add_edge(
                         source_id=pain_trigger_node_id,
-                        target_id=geographies_id,
-                        edge_type="experienced_in",
-                        weight=icp_match_score,
+                        target_id=zmot_trigger_event_id,
+                        edge_type="zmot_trigger_event",
+                        weight=zmot_match_score,
                         last_updated=now,
                         source=source
                     )
-            # Add edges: Pain Trigger → ZMOT Trigger Events
-            for zmot_trigger_event_id in entry.get("zmot_trigger_event_node_ids", []):
-                add_edge(
-                    source_id=pain_trigger_node_id,
-                    target_id=zmot_trigger_event_id,
-                    edge_type="zmot_trigger_event",
-                    weight=zmot_match_score,
-                    last_updated=now,
-                    source=source
-                )
 
                 # Add edges: Trigger Event → ZMOT Observable Moments
                 for zmot_observable_moment_id in entry.get("zmot_observable_moment_node_ids", []):
-                    add_edge(
-                        source_id=zmot_trigger_event_id,
-                        target_id=zmot_observable_moment_id,
-                        edge_type="zmot_observable_moment",
-                        weight=1.0,
-                        last_updated=now,
-                        source=source
-                    )
+                    if zmot_trigger_event_id and zmot_observable_moment_id:
+                        add_edge(
+                            source_id=zmot_trigger_event_id,
+                            target_id=zmot_observable_moment_id,
+                            edge_type="zmot_observable_moment",
+                            weight=1.0,
+                            last_updated=now,
+                            source=source
+                        )
 
                 # Add edges: Pain Trigger → ZMOT Keywords
                 for zmot_keyword_id in entry.get("zmot_keyword_node_ids", []):
-                    add_edge(
-                        source_id=zmot_observable_moment_id,
-                        target_id=zmot_keyword_id,
-                        edge_type="zmot_keyword",
-                        weight=1.0,
-                        last_updated=now,
-                        source=source
-                    )
-
-                # Add edges: Pain Trigger → ZMOT Keywords
-                for zmot_keyword_id in entry.get("zmot_keyword_node_ids", []):
-                    add_edge(
-                        source_id=zmot_observable_moment_id,
-                        target_id=zmot_keyword_id,
-                        edge_type="zmot_keyword",
-                        weight=1.0,
-                        last_updated=now,
-                        source=source
-                    )
+                    if zmot_observable_moment_id and zmot_keyword_id:
+                        add_edge(
+                            source_id=zmot_observable_moment_id,
+                            target_id=zmot_keyword_id,
+                            edge_type="zmot_keyword",
+                            weight=1.0,
+                            last_updated=now,
+                            source=source
+                        )
             # (Optional) Add to flattened_results for downstream use
             flattened_results.append(entry)
     print("Finished edge math for zmot & ICP:", flattened_results)

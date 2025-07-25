@@ -1,123 +1,95 @@
 {
   "industry": [
     {
-      "id": "daf5abc9-2915-4cad-b2ef-610683378570",
-      "industry": "finance"
-    },
-    {
-      "id": "6e09fda9-60f6-4022-b13c-d83efe2ef33a",
-      "industry": "healthcare"
-    },
-    {
-      "id": "98162ba5-ee5a-495f-b437-9a5a84be9993",
-      "industry": "retail"
-    },
-    {
-      "id": "4f68ded0-2e12-44cc-a081-1ef5027dd7fc",
+      "id": "a33da996-9e02-4382-b4e8-9f0a2f364d77",
       "industry": "technology"
     },
     {
-      "id": "f8795ce9-3dcb-4f28-9571-4048f5f156aa",
-      "industry": "education"
+      "id": "5722bd20-8727-480e-b41c-948d983684bc",
+      "industry": "finance"
     },
     {
-      "id": "1daa8590-5389-4059-b9da-a83443b1ab84",
-      "industry": "consulting"
-    },
-    {
-      "id": "f39efe07-eb5f-4734-b27e-317bfb311d34",
+      "id": "5e55e458-58c8-454c-bb77-08e9af05f383",
       "industry": "e-commerce"
     },
     {
-      "id": "a38ed5de-5834-48c7-98eb-a9086193635a",
+      "id": "788e61c2-9e3e-4ad4-9f62-a277b758f6fa",
+      "industry": "retail"
+    },
+    {
+      "id": "5c991917-eb41-4ee1-aa3f-b76f41844573",
       "industry": "hospitality"
+    },
+    {
+      "id": "0b5b45b3-2842-46da-a384-d253e44456b4",
+      "industry": "healthcare"
     }
   ],
   "revenue": [
     {
-      "id": "199727d6-f14e-46dd-99d0-b1c9bd3036f4",
+      "id": "de6d883b-42ad-4a56-b3d8-c989bce84ad0",
       "revenue": "10-100m"
     },
     {
-      "id": "ea7de217-6d23-4eb6-9827-7f1ff81319f5",
+      "id": "a82553d4-52e4-4990-a47f-c4e99fe5479b",
       "revenue": "100m-500m"
     },
     {
-      "id": "f2f9bf80-1b7f-4d56-88cb-69620b11988a",
+      "id": "89ab7c01-7059-4543-9ce7-c0762d6fb9f4",
       "revenue": "500m - 1b"
     },
     {
-      "id": "02a49aaa-8423-41ae-9c4b-00557a20dee4",
+      "id": "8c01aed4-f874-44a2-bbe9-e92d15073769",
       "revenue": "1-10m"
-    },
-    {
-      "id": "480d168b-c370-4603-b008-5fd92787dc5b",
-      "revenue": "1b+"
     }
   ],
   "employees": [
     {
-      "id": "f9dfe3c1-4777-47bd-81ca-03f04267f092",
+      "id": "7601c9c6-8cc1-44d7-9456-8a7d431cda60",
       "employees": "51-200"
     },
     {
-      "id": "1d8d9ba7-6d44-4eba-bbc8-a46e914e55f5",
+      "id": "6538005a-9c4a-4b54-9ca0-1c1d793054ca",
       "employees": "201-500"
     },
     {
-      "id": "78c63ff0-02be-477e-99f5-7d28955a7fe0",
+      "id": "146e5bcc-a1bf-405f-8187-17450234b16d",
       "employees": "501-1000"
     },
     {
-      "id": "47932228-2459-44e1-b53d-40ebabb92c36",
-      "employees": "11-50"
-    },
-    {
-      "id": "eb492fea-d43c-4d9b-bf98-e4f5ce7ccc8d",
+      "id": "d0756847-38d7-448d-a63d-f42dbe188798",
       "employees": "1000-5000"
-    },
-    {
-      "id": "14dee22e-2c65-431d-b523-5cbe22da8868",
-      "employees": "5000-10000"
     }
   ],
   "funding_stage": [
     {
-      "id": "d3495cc0-681e-4ea7-864c-266f110752c2",
-      "funding_stage": "series b"
-    },
-    {
-      "id": "cd4ce212-1f9e-4579-9c44-ec8592b59ec0",
-      "funding_stage": "series c+"
-    },
-    {
-      "id": "0f0b2f9d-def8-419e-9130-fe0d1d33f3c1",
-      "funding_stage": "public"
-    },
-    {
-      "id": "e03079c4-5924-49f0-82f0-1b710ecc0ed8",
-      "funding_stage": "seed"
-    },
-    {
-      "id": "c735c77e-b86e-471e-bff2-20139e42c85f",
+      "id": "2ea7d6a0-ab22-46b5-bffd-48aad241b3b7",
       "funding_stage": "series a"
     },
     {
-      "id": "30bffe70-0216-4e5b-95b3-c8819c8463a1",
-      "funding_stage": "pre-seed"
+      "id": "88608cc8-bcf7-4960-b33c-964c030f438c",
+      "funding_stage": "series b"
+    },
+    {
+      "id": "6c318a46-af34-4e0c-9b36-8b2c22c52650",
+      "funding_stage": "series c+"
+    },
+    {
+      "id": "04304ae0-abfa-47b6-9d1c-772d9433978e",
+      "funding_stage": "seed"
     }
   ],
   "geography": [
     {
-      "id": "b7b958d4-8a38-4e3f-b993-e5f03de729fb",
+      "id": "ee70102f-22f7-4b92-9abe-770af55aa0f3",
       "geography": "north america"
     },
     {
-      "id": "62b39b90-9e1a-47f5-828a-a859ae8bbaaa",
+      "id": "2dd0226f-8f77-445c-b14e-b02e83ca5e2b",
       "geography": "europe"
     },
     {
-      "id": "94b5188b-846d-4461-b875-54612286e67f",
+      "id": "5740de86-6c61-474e-9a8c-2cbad76f6d08",
       "geography": "asia"
     }
   ]

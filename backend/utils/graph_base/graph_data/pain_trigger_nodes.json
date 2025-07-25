@@ -1,110 +1,38 @@
 [
   {
-    "id": "d9840ef2-5fcf-4cf9-afe1-73b844316699",
-    "attribute": "number of team members",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "eb12fcbe-dff0-43ba-86ef-cd8ab9d165e1",
-    "attribute": "time taken to make decisions",
-    "dimension": "frequency",
-    "direction": "increase"
-  },
-  {
-    "id": "f85f15ad-68a2-4a25-9c5f-3d1ceff936fb",
-    "attribute": "number of data sources",
-    "dimension": "complexity",
-    "direction": "increase"
-  },
-  {
-    "id": "9f3cbea2-2082-4f90-a03b-4450b7236005",
-    "attribute": "data volume",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "278c164b-37de-4c5e-8835-2a7f2bff849e",
-    "attribute": "decision-making time",
+    "id": "acace16b-40cb-4851-bdc0-7a3b7d75bee5",
+    "attribute": "checkout process duration",
     "dimension": "time",
     "direction": "increase"
   },
   {
-    "id": "e96dd1a8-5a82-4617-a819-b64fc7ef2ae4",
-    "attribute": "number of data teams",
+    "id": "e4887836-7cb0-4da7-9289-f7b5dd04e6f1",
+    "attribute": "number of software integrations",
     "dimension": "complexity",
     "direction": "increase"
   },
   {
-    "id": "4d77eed9-6315-4895-9ddf-d2df7b25c658",
-    "attribute": "number of remote employees",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "c3df291a-f00e-4cd8-9f55-bcfd85446cdd",
-    "attribute": "amount of data",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "aa910911-4485-4c62-abcf-0cf9ed6a247c",
-    "attribute": "speed of decision-making",
-    "dimension": "frequency",
-    "direction": "increase"
-  },
-  {
-    "id": "0255f6cd-9785-4d44-be9e-440b28785dbe",
-    "attribute": "number of data team members",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "bee9a285-208c-48a1-9399-ac3a03536677",
-    "attribute": "complexity of data",
-    "dimension": "complexity",
-    "direction": "increase"
-  },
-  {
-    "id": "2a544231-552e-41bb-8a30-4bdac8c4fbc3",
-    "attribute": "volume of data",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "a7d4dff0-c09c-4345-afa9-c354146b7913",
-    "attribute": "number of business metrics",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "9001820f-04d4-4a45-b212-4ce7b4d37b97",
-    "attribute": "number of checkout steps",
-    "dimension": "complexity",
-    "direction": "increase"
-  },
-  {
-    "id": "0c6b649b-402d-45fc-ba8e-af2d75f1ca1e",
-    "attribute": "number of software solutions",
-    "dimension": "complexity",
-    "direction": "increase"
-  },
-  {
-    "id": "38132066-0f11-48ea-a3ed-058ddc8d6a30",
-    "attribute": "number of incompatible software",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  {
-    "id": "16b856f1-7499-4c0c-94b8-d1d57e22f48e",
+    "id": "1ff8eca0-6c63-455e-abf8-712cc1a0b632",
     "attribute": "number of untracked business metrics",
     "dimension": "volume",
     "direction": "increase"
   },
   {
-    "id": "65f3b2d9-e2aa-4e35-a045-8c698683fbd0",
-    "attribute": "checkout process duration",
+    "id": "f62ef3d0-658e-4399-8021-d5b9e275b7cb",
+    "attribute": "average checkout time",
     "dimension": "time",
+    "direction": "increase"
+  },
+  {
+    "id": "47a6f4fe-74fe-4f0a-9c2c-a1a525948920",
+    "attribute": "number of untracked key performance indicators (kpis)",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "93559628-3c1a-45d3-af90-9a84ae6b6204",
+    "attribute": "number of software solutions used in the organization",
+    "dimension": "volume",
     "direction": "increase"
   }
 ]

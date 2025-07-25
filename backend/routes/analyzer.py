@@ -457,8 +457,9 @@ async def get_zmot_icp(product_id: str, request: Request):
         print("Loading product graph for product_id:", product_id)
         product_subgraph = base_graph.extract_product_subgraph(product_id)
 
-        zmots = get_zmot_icp_relevance(product_subgraph)
-        return {"zmots": zmots}
+        icp_zmot_result = get_zmot_icp_relevance(product_subgraph)
+        print("Analyzer ZMOT results:", icp_zmot_result)
+        return icp_zmot_result
     except Exception as e:
         print("❌ Get ZMOTs error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve ZMOTs and ICP Archetypes")

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 
-type ZmotBuilderProps = {
+type ZmotIcpBuilderProps = {
   productId: string;
   onSave: () => void;
 };
 
-const ZmotBuilder: React.FC<ZmotBuilderProps> = ({ productId, onSave }) => {
+const ZmotIcpBuilder: React.FC<ZmotIcpBuilderProps> = ({ productId, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState<any>(null);
 
@@ -47,4 +47,4 @@ const ZmotBuilder: React.FC<ZmotBuilderProps> = ({ productId, onSave }) => {
   );
 };
 
-export default ZmotBuilder;
+export default ZmotIcpBuilder;

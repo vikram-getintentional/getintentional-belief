@@ -184,18 +184,16 @@ class Graph:
         cumulative_relevance = defaultdict(float)
         cumulative_relevance[product_id] = 1.0
         max_iter = 10
-        print("Starting cumulative relevance calculation for product ID:", product_id)
         # Build reverse graph (downstream map)
         node_targets = {}
         for node in self.node_registry.values():
-            print("Processing node:", node)
+
             node_id = node["id"]
             node_targets_list = self.get_all_target_nodes(node)
             for n in node_targets_list:
                 if n is None:
                     print(f"Warning: target node missing for edge from {node_id}")
             node_targets[node_id] = [n["id"] for n in node_targets_list]
-        print("Node registry completed")
         # Initialize relevance values
         relevance = {}
         relevance = {
@@ -211,7 +209,7 @@ class Graph:
             node_id for node_id, rel in relevance.items()
             if rel > 0.0
         )
-        print("Initial frontier:", list(frontier))
+        
         visited = set()
         for _ in range(max_iter):
             if not frontier:
@@ -231,7 +229,6 @@ class Graph:
                 sources = self.get_all_source_nodes(this_node)
                 # Check for empty sources - mainly for product node
                 if not sources:
-                    print(f"No sources found for node {node_id}. Treating as root node.")
                     # This is a root node (e.g., product node)
                     # Propagate its relevance to its targets
                     current_node = self.get_node_by_id(node_id)
@@ -266,7 +263,6 @@ class Graph:
                     target_nodes = self.get_all_target_nodes(current_node)
                     # Check for empty target nodes
                     if not target_nodes:
-                        print(f"No target nodes found for node {node_id}. Skipping.")
                         continue
                     for target in target_nodes:
                         target_id = target.get("id")

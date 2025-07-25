@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import ZmotCard from "../components/ZmotCard";
-import ZmotBuilder from "../components/ZmotBuilder";
+import ZmotIcpBuilder from "../components/ZmotICPBuilder";
+import IcpCard from "../components/IcpCard";
 
 const ZmotIcp = () => {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [zmotIcp, setZmotIcp] = useState([]);
+  // Define a type for ZMOT ICP items (adjust fields as needed)
+  type ZmotIcpItem = {
+    icp?: any;
+    zmot?: any;
+  };
+  const [zmotIcp, setZmotIcp] = useState<ZmotIcpItem[]>([]);
   const [showBuilder, setShowBuilder] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const token = localStorage.getItem("token");
@@ -67,6 +73,14 @@ const ZmotIcp = () => {
         const zmotIcpData = await zmotIcpRes.json();
         console.log("Backend ZMOTs and ICPs response:", zmotIcpData);
 
+        // 6. If no ICPs, prompt to infer
+        console.log("zmotIcpData before empty check:", zmotIcpData);
+        if (!zmotIcpData || (Array.isArray(zmotIcpData) && zmotIcpData.length === 0)) {
+          setZmotIcp([]);
+          setStatusMsg("No ICPs or ZMOTs found. Click 'Infer ICPs' to generate.");
+          return;
+        }
+
         // 5. Handle backend messages
         if (zmotIcpData?.detail === "No pains found for this product") {
           setStatusMsg("No pains mapped yet. Please run Personas first.");
@@ -75,13 +89,19 @@ const ZmotIcp = () => {
         }
 
         setStatusMsg("");
-        setZmotIcp(zmotIcpData || []);
-
-        // 6. If no ICPs, prompt to infer
-        if (!zmotIcpData || zmotIcpData.length === 0) {
-          setZmotIcp([]);
-          setStatusMsg("No ICPs or ZMOTs found. Click 'Infer ICPs' to generate.");
+        console.log("zmotIcpData in setting block:", zmotIcpData);
+        if (Array.isArray(zmotIcpData)) {
+          setZmotIcp(zmotIcpData);
+        } else if (zmotIcpData && typeof zmotIcpData === "object") {
+          setZmotIcp([zmotIcpData]);
+        } else {
+          setZmotIcp(zmotIcpData);
         }
+        useEffect(() => {
+          console.log("ZmotIcp variable set:", zmotIcp);
+        }, [zmotIcp]);
+
+        
       } catch (err) {
         setStatusMsg("Error fetching ZMOTs and ICPs.");
         console.error("Error fetching ZMOTs and ICPs:", err);
@@ -130,32 +150,33 @@ const ZmotIcp = () => {
         </div>
       )}
 
-     {zmotIcp.length > 0 && (
-        <button
-          className="mt-6 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          onClick={async () => {
-            if (!selectedProductId) return;
-            setStatusMsg("Inferring ZMOTs and ICPs...");
-            try {
-              const res = await fetch(`http://localhost:8000/analyze/get_zmot_icp/${selectedProductId}`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ product_id: selectedProductId }),
-              });
-              if (!res.ok) throw new Error("Failed to infer ZMOT and ICP Archetypes");
-              setStatusMsg("ZMOTs and ICPs inferred! Refresh to see updates.");
-              // Optionally, refresh personas here by calling fetchPersonas()
-            } catch (err) {
-              setStatusMsg("Error inferring ZMOTs and ICPs.");
-              console.error(err);
-            }
-          }}
-        >
-          Infer ZMOTs and ICPs
-        </button>
+     {/* ICP Cards Section */}
+      {zmotIcp.length > 0 && zmotIcp[0].icp && (
+        <section className="mb-10">
+          
+            <h2 className="text-2xl font-bold mb-4">ICP Archetypes</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
+              {/* If you have multiple ICPs, map here. If only one, just render one card. */}
+              <IcpCard icp={zmotIcp[0].icp} />
+            </div>
+          
+        </section>
+      )}
+
+      {/* ZMOT Cards Section */}
+      {zmotIcp.length > 0 && zmotIcp[0].zmot && (
+        <section>
+          <h2 className="text-2xl font-bold mb-4">ZMOTs & Triggers</h2>
+          {Array.isArray(zmotIcp[0].zmot) && zmotIcp[0].zmot.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {zmotIcp[0].zmot.map((zmotItem, idx) => (
+                <ZmotCard key={idx} zmot={zmotItem} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-400">No ZMOTs found.</div>
+          )}
+        </section>
       )}
 
       {/* 7. Show Infer ZMOT button if no ZMOTs are available */}
@@ -168,10 +189,10 @@ const ZmotIcp = () => {
         </button>
       )}
 
-      {/* 8. Show ZmotBuilder when button is clicked */}
+      {/* 8. Show ZmotIcpBuilder when button is clicked */}
       {showBuilder && selectedProductId && (
         <div className="mt-8">
-          <ZmotBuilder
+          <ZmotIcpBuilder
             productId={selectedProductId}
             onSave={() => {
               setShowBuilder(false);

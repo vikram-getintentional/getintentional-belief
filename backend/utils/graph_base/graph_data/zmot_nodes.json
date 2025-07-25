@@ -1,164 +1,124 @@
 {
   "TriggerEvents": [
     {
-      "id": "96e9d02a-dc36-48a4-baa3-36a04922ba67",
-      "trigger_event": "new product launch"
-    },
-    {
-      "id": "212deaca-1082-47be-8758-656afa935bd7",
-      "trigger_event": "leadership change"
-    },
-    {
-      "id": "1a83ddd2-d18b-40de-8d79-4ba01f3127e2",
-      "trigger_event": "market expansion"
-    },
-    {
-      "id": "78941bf1-3ec8-46d8-a9cd-a712e5be9f72",
-      "trigger_event": "shift to remote work"
-    },
-    {
-      "id": "ceb1f732-c75c-4e9f-a17e-3938670185b4",
+      "id": "77a48eb9-29dd-42ff-a1ce-28455e1f7027",
       "trigger_event": "new software implementation"
     },
     {
-      "id": "37455406-b489-4f62-af91-d07bbe4c96f0",
+      "id": "0740ef59-89a2-4b9e-b844-49f931c8a7da",
       "trigger_event": "website redesign"
     },
     {
-      "id": "3ede58aa-9980-4b7c-8dc7-cf878cd6e22d",
-      "trigger_event": "business expansion"
+      "id": "6322a0f2-f775-412d-97bd-645f788ca21d",
+      "trigger_event": "leadership change"
+    },
+    {
+      "id": "b6b4c522-8ac7-401e-8c43-e96dac387685",
+      "trigger_event": "increase in customer complaints"
+    },
+    {
+      "id": "bcaff0ae-4eb3-4484-9ba2-d41238f48cc2",
+      "trigger_event": "business expansion or new product launch"
     }
   ],
   "ObservableMoments": [
     {
-      "id": "1227d47e-1a75-4055-8513-a1975b86b885",
-      "observable_moment": "social media post"
+      "id": "e24d0fbb-8bd8-4dac-9cf9-6c6b911c4a70",
+      "observable_moment": "job postings for ux designers"
     },
     {
-      "id": "08f3a1de-29b8-4c1c-af92-b509d8da37b0",
-      "observable_moment": "press release"
+      "id": "a31113c6-9623-4cea-af8b-ff38f71b2899",
+      "observable_moment": "press releases"
     },
     {
-      "id": "3c1d0b2c-42d0-4be9-a50d-1d038c55c5e2",
-      "observable_moment": "news article"
+      "id": "4fdc64fa-fe1b-4db8-b32c-39e6a0839caa",
+      "observable_moment": "g2 reviews"
     },
     {
-      "id": "401251c8-0b1c-4d82-b03f-b3e138ca70ed",
-      "observable_moment": "job posting"
+      "id": "76c9ef78-6827-4dce-aa10-696ab44ae087",
+      "observable_moment": "job postings for it professionals"
     },
     {
-      "id": "8c18ca59-c4a5-42dd-8abe-ce73dde6c7a9",
-      "observable_moment": "company announcement"
+      "id": "8284148a-18a2-4ae9-902e-9076be1f0b7b",
+      "observable_moment": "social media posts"
+    },
+    {
+      "id": "b063a597-8115-40e9-9939-719423f50f48",
+      "observable_moment": "customer reviews"
+    },
+    {
+      "id": "b6554cc5-24f3-46d1-b0f4-2d1fd82a859f",
+      "observable_moment": "customer support tickets"
     }
   ],
   "Keywords": [
     {
-      "id": "7dc43c19-7324-40bf-9115-2ef57999859c",
-      "keyword": "new product"
+      "id": "f70267a1-bd40-44dd-abc4-928a41eab885",
+      "keyword": "data-driven decision making"
     },
     {
-      "id": "557af4b6-2049-404f-8c8c-f21f7e2ba2d4",
-      "keyword": "market expansion"
-    },
-    {
-      "id": "3d25e685-ed96-4d71-91ad-fbda981d565b",
-      "keyword": "leadership change"
-    },
-    {
-      "id": "143a04e1-225f-48a8-bb49-a44520b01aa4",
-      "keyword": "product launch"
-    },
-    {
-      "id": "8439230c-5521-48e1-8d85-666516d953f0",
-      "keyword": "new markets"
-    },
-    {
-      "id": "9eb4c9a1-4283-48b6-92db-2a43addf3be5",
-      "keyword": "new leadership"
-    },
-    {
-      "id": "3b7eaeef-bd3e-4899-b6e3-df812e684441",
-      "keyword": "hiring"
-    },
-    {
-      "id": "15680598-2f39-474c-9e17-8b8743a93432",
-      "keyword": "launch"
-    },
-    {
-      "id": "efe1a167-91b6-42a8-8dea-2b76c5e181a8",
+      "id": "d3b8e555-05fd-4586-91ee-d3108a115af4",
       "keyword": "new ceo"
     },
     {
-      "id": "b68416d1-701c-47fd-b349-dd3ba8faeb82",
-      "keyword": "remote work"
-    },
-    {
-      "id": "412fb039-d8aa-4b91-9472-5a096986f0e9",
-      "keyword": "new market"
-    },
-    {
-      "id": "bf628722-4896-485e-af72-01a0e2d74895",
-      "keyword": "work from home"
-    },
-    {
-      "id": "5090c700-fdf9-4701-9e56-d059b8db03e6",
-      "keyword": "new hire"
-    },
-    {
-      "id": "936c5437-cf8b-49ea-9195-33eb9d291541",
-      "keyword": "new technology"
-    },
-    {
-      "id": "ef151a45-cb7b-4a96-95a9-b70fc2b35c87",
-      "keyword": "growth"
-    },
-    {
-      "id": "5d8923e2-ce65-4b16-89c9-1132bf411b8b",
-      "keyword": "user experience"
-    },
-    {
-      "id": "5b3dfecc-bb85-4942-ba4f-06eb43419b93",
-      "keyword": "system integration"
-    },
-    {
-      "id": "a1832891-abe2-4a22-a82b-621dead72563",
-      "keyword": "business expansion"
-    },
-    {
-      "id": "7d37e956-0307-4175-96bb-0830906f147c",
+      "id": "f5a39f56-d403-40f1-9dbd-99bc3e892ad5",
       "keyword": "software implementation"
     },
     {
-      "id": "791f6743-f385-4208-8e0d-14385727c697",
-      "keyword": "checkout optimization"
+      "id": "3198a3a3-c43a-4f8a-a56b-62757a5771ab",
+      "keyword": "software upgrade"
     },
     {
-      "id": "8d705963-05bc-4355-a695-7170b3426fb6",
+      "id": "42bede2c-8f09-4168-bc81-f26fbbe01d94",
+      "keyword": "integration"
+    },
+    {
+      "id": "c58d2f54-3054-4fbb-afed-ebd2e1cbefd8",
+      "keyword": "leadership change"
+    },
+    {
+      "id": "7e5d20a5-e7ba-46b6-92ff-ea3fdb68b084",
       "keyword": "website redesign"
     },
     {
-      "id": "8a25d46f-5374-4381-b23c-2d5a1773473c",
-      "keyword": "software"
+      "id": "548646d9-a857-42d7-83f7-874cd33d67ed",
+      "keyword": "user experience"
     },
     {
-      "id": "1a282a1d-7692-4580-a00b-ee1e683582f2",
-      "keyword": "implementation"
+      "id": "8632acb5-8900-41cd-ae4a-78f0be878d94",
+      "keyword": "checkout optimization"
     },
     {
-      "id": "98b0d7eb-4c85-4559-990b-7f1a69bbb7c9",
-      "keyword": "leadership"
+      "id": "fe927ab8-4b05-49b3-afb7-d8ca28e4ea25",
+      "keyword": "time-consuming"
     },
     {
-      "id": "776ab52a-db1c-44d8-bc65-e5e34c483a12",
-      "keyword": "redesign"
+      "id": "d61d3a41-03f9-4a8b-9934-59de710dbe67",
+      "keyword": "business expansion"
     },
     {
-      "id": "c6dea60a-320b-4781-81bb-9ff403a41374",
-      "keyword": "website"
+      "id": "fba7b222-edcf-41fc-82a7-690b4ce405af",
+      "keyword": "slow checkout"
     },
     {
-      "id": "581846ae-82ae-43ec-bcbc-9fd23dad3801",
-      "keyword": "change"
+      "id": "f3df82c7-b503-4c98-a8a5-b7dc43878595",
+      "keyword": "it hiring"
+    },
+    {
+      "id": "47ae7116-2704-4e3a-a89f-7c1605bc829d",
+      "keyword": "kpi"
+    },
+    {
+      "id": "cb06e705-938b-4c64-a910-9746f16da466",
+      "keyword": "new product"
+    },
+    {
+      "id": "54fade62-de3f-4d3f-ab34-3f153f3fc9c9",
+      "keyword": "complicated process"
+    },
+    {
+      "id": "15a82abf-84d7-43ff-8cd9-32f3aac33742",
+      "keyword": "performance tracking"
     }
   ]
 }

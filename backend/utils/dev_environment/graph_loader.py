@@ -19,8 +19,47 @@ def load_graph_from_folder(folder_path: str):
             
             with open(os.path.join(folder_path, fname), "r") as f:
                 nodes = json.load(f)
+
+                # Special handling for zmot nodes
+                if node_type == "zmot":
+                    for zmot_key in ["TriggerEvents", "ObservableMoments", "Keywords"]:
+                        for node in nodes.get(zmot_key, []):
+                            node["node_type"] = f"zmot_{zmot_key.lower()}"
+                            if zmot_key == "TriggerEvents":
+                                node["value"] = node.get("trigger_event", "").strip().lower()
+                            elif zmot_key == "ObservableMoments":
+                                node["value"] = node.get("observable_moment", "").strip().lower()
+                            elif zmot_key == "Keywords":
+                                node["value"] = node.get("keyword", "").strip().lower()
+                            node_registry[node["id"]] = node
+                    continue  # skip generic block
+
+                # Special handling for company nodes
+                if node_type == "company":
+                    for company_key in ["industry", "revenue", "employees", "funding_stage", "geography"]:
+                        for node in nodes.get(company_key, []):
+                            node["node_type"] = f"icp_{company_key.lower()}"
+                            if company_key == "industry":
+                                node["value"] = node.get("industry", "").strip().lower()
+                            elif company_key == "revenue":
+                                node["value"] = node.get("revenue", "").strip().lower()
+                            elif company_key == "employees":
+                                node["value"] = node.get("employees", "").strip().lower()
+                            elif company_key == "funding_stage":
+                                node["value"] = node.get("funding_stage", "").strip().lower()
+                            elif company_key == "geography":
+                                node["value"] = node.get("geography", "").strip().lower()
+                            node_registry[node["id"]] = node
+                    continue  # skip generic block
+
                 for node in nodes:
-                    if node_type == "persona":
+                    if node_type == "product":
+                        value = (
+                            node.get("summary", "").strip().lower(),
+                            node.get("url", "").strip().lower(),
+                            node.get("plg_flag")
+                        )
+                    elif node_type == "persona":
                         value = (node.get("title", "").strip().lower(),
                                  node.get("department", "").strip().lower(),
                                  node.get("seniority", "").strip().lower())
@@ -37,56 +76,12 @@ def load_graph_from_folder(folder_path: str):
                             node.get("dimension", "").strip().lower(),
                             node.get("direction", "").strip().lower()
                         )
-                    elif node_type == "product":
-                        value = (node.get("summary", "").strip().lower(),
-                                 node.get("company_id", "").strip().lower(),
-                                 node.get("url", "").strip().lower(),
-                                 node.get("plg_flag", ""))
-                        print("Setting product node")
-                    elif node_type == "zmot":
-                        for zmot_key in ["TriggerEvents", "ObservableMoments", "Keywords"]:
-                            for node in nodes.get(zmot_key, []):
-                                node["node_type"] = f"zmot_{zmot_key[:-1].lower()}"  # e.g. zmot_triggerevent
-                                # Need to set node values here
-                                if zmot_key == "TriggerEvents":
-                                    node["value"] = node.get("trigger_event", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                elif zmot_key == "ObservableMoments":
-                                    node["value"] = node.get("observable_moment", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                elif zmot_key == "Keywords":
-                                    node["value"] = node.get("keyword", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                            continue
-
-                    elif node_type == "company":
-                        for company_key in ["industries", "revenue", "employees", "funding_stage", "geographies"]:
-                            for node in nodes.get(company_key, []):
-                                node["node_type"] = f"icp_{company_key[:-1].lower()}"
-                                if company_key == "industries":
-                                    node["value"] = node.get("industry", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                elif company_key == "revenue":
-                                    node["value"] = node.get("revenue", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                elif company_key == "employees":
-                                    node["value"] = node.get("employees", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                elif company_key == "funding_stage":
-                                    node["value"] = node.get("funding_stage", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                elif company_key == "geographies":
-                                    node["value"] = node.get("geographies", "").strip().lower()
-                                    node_registry[node["id"]] = node
-                                else:
-                                    print("company node type not recognized:", company_key)
-                                    continue
-                            continue
                                 
                     else:
                         value = node.get("id")
                         print("Setting unknown node type:", node_type, "with value:", value)
                     node["node_type"] = node_type
+                    node["value"] = value
                     node_registry[node["id"]] = node
 
     # Load edges
