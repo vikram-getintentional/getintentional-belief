@@ -6,7 +6,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from collections import defaultdict
 
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 from backend.utils.graph_base.graph_builder import canonicalize_and_create_zmot_icp_nodes, process_pain_triggers_zmot_icp_map_to_graph
 from backend.utils.inference.gpt_prompts.zmot_icp_openai import infer_pain_triggers_zmot_icp
 
@@ -28,7 +28,7 @@ client = OpenAI(api_key=api_key)
 
 
 # 🧠 Rule-based first, fallback to 2-step OpenAI reasoning
-def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth=0) -> dict:
+def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth=0, relevance_threshold=0.5) -> dict:
     print("Starting inference loop: ", product_id)
     from datetime import datetime
     # Updated query logic
@@ -59,18 +59,20 @@ def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth
         if not existing_pain_triggers or not existing_archetypes or not existing_zmot_events:    
             # pain_jobs_dict is only populated if there are no existing pain triggers or if icp or zmot data is missing
             # That way we are not running gpt queries each time for the entire pains repo
-            pain_text = pain_node.get("text", "")
-            related_job_ids = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "addresses")
-            jobs_list = []
-            for job_id in related_job_ids:
-                job_node = product_subgraph.get_node_by_id(job_id)
-                job_description = job_node.get("description", "")
-                jobs_list.append(job_description)
-            pain_jobs_dict.append({
-                "pain_id": pain_id,
-                "pain_text": pain_text,
-                "jobs_impacted": jobs_list
-            })
+            pain_relevance = get_cumulative_relevance_data(product_id, pain_id)
+            if pain_relevance > relevance_threshold:
+                pain_text = pain_node.get("text", "")
+                related_job_ids = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "addresses")
+                jobs_list = []
+                for job_id in related_job_ids:
+                    job_node = product_subgraph.get_node_by_id(job_id)
+                    job_description = job_node.get("description", "")
+                    jobs_list.append(job_description)
+                pain_jobs_dict.append({
+                    "pain_id": pain_id,
+                    "pain_text": pain_text,
+                    "jobs_impacted": jobs_list
+                })
 
     try:
         print("🔁 Running GPT reasoning...")

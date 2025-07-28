@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
-from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
 from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
 from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
@@ -10,7 +9,7 @@ from backend.db.schema_templates.save_company_value_prop import save_company_val
 from backend.utils.graph_base.graph import Graph
 from backend.utils.dev_environment.graph_loader import load_graph_from_folder
 from backend.utils.inference.discovery_engine.zmot_discovery import infer_zmot_icp
-from backend.utils.knowledge_base.value_prop_analysis import get_product_value_prop, process_capabilities
+from backend.utils.knowledge_base.value_prop_analysis import get_product_value_prop, get_product_value_prop_capabilities, process_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import (
     get_or_create_capability_node,
@@ -282,6 +281,44 @@ async def get_products(company_id: str, request: Request):
         print("❌ Get products error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve products")
 
+# GET /get-product_capabilities/{product_id}
+@router.get("/get_product_capabilities/{product_id}")
+async def get_product_capabilities(product_id: str, request: Request):
+    print("Getting product capabilities for product_id:", product_id)
+    """
+    Returns a list of capabilities for the given product_id.
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # 🧠 Inference
+        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
+        base_graph = Graph(
+            node_registry=node_registry,
+            graph_edges=graph_edges,
+            edge_weights=edge_weights
+        )
+        print("Loading product details for product_id:", product_id)
+        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        
+        product_summary = get_product_value_prop_capabilities(product_subgraph)
+
+        return product_summary
+    except Exception as e:
+        print("❌ Get capabilities error:", e)
+        raise HTTPException(status_code=500, detail="Could not retrieve capabilities")
+
+
 # GET /get-personas/{product_id}
 @router.get("/get-personas/{product_id}")
 async def get_personas(product_id: str, request: Request):
@@ -313,10 +350,9 @@ async def get_personas(product_id: str, request: Request):
         print("Loading personas for product_id:", product_id)
         product_subgraph = base_graph.extract_product_subgraph(product_id)
         # Print all extracted nodes in product_subgraph
-        
         aggregated_personas = get_persona_relevance(product_subgraph)
 
-        final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
+        
         
         
         # personas should be a list of persona dicts
@@ -324,7 +360,7 @@ async def get_personas(product_id: str, request: Request):
          #   print("No personas found for product_id from get_product_personas:", product_id)
          #   return {"detail": "No Summaries or Capabilities Mapped"}
         #print("Personas from get_product_personas:", personas)
-        return final_personas
+        return aggregated_personas
     except Exception as e:
         print("❌ Get personas error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve personas")

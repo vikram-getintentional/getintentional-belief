@@ -152,8 +152,9 @@ class Graph:
             if node:
                 subgraph_nodes[node_id] = node
 
+            SHARED_NODE_TYPES = {"icp_industry", "icp_revenue", "icp_employees", "icp_funding_stage","icp_geography", "zmot_keywords", "zmot_observablemoments"}
+
             for edge in self.graph_edges:
-                # If this node is source or target, add the edge and the other node
                 if edge.get("source") == node_id or edge.get("target") == node_id:
                     # Add edge if not already added
                     if edge not in subgraph_edges:
@@ -161,7 +162,14 @@ class Graph:
                         subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
                     # Add the other node to to_visit if not visited
                     other_id = edge.get("target") if edge.get("source") == node_id else edge.get("source")
-                    if other_id not in visited and other_id not in to_visit:
+                    if other_id in visited or other_id in to_visit:
+                        continue
+                    other_node = self.get_node_by_id(other_id)
+                    # If the current node is a shared node type, do NOT traverse out from it
+                    this_node = self.get_node_by_id(node_id)
+                    if this_node and this_node.get("node_type") in SHARED_NODE_TYPES:
+                        continue
+                    if other_node:
                         to_visit.append(other_id)
         return Graph(
             node_registry=subgraph_nodes,
@@ -170,114 +178,51 @@ class Graph:
         )
     
     
-    
 
-    def calculate_cumulative_relevance(self, epsilon = 1e-6) -> dict:
-        """
-        Going back to a simpler calculation of cumulative relevance. 
-        We calculate the relevance of each node as 
-        """
+    def calculate_cumulative_relevance(self):
         product_id = self.get_node_id("product", {})
         if not product_id:
             print("No product ID found in subgraph.")
             return {}
-        cumulative_relevance = defaultdict(float)
+        cumulative_relevance = {}
         cumulative_relevance[product_id] = 1.0
-        max_iter = 10
-        # Build reverse graph (downstream map)
-        node_targets = {}
-        for node in self.node_registry.values():
 
-            node_id = node["id"]
-            node_targets_list = self.get_all_target_nodes(node)
-            for n in node_targets_list:
-                if n is None:
-                    print(f"Warning: target node missing for edge from {node_id}")
-            node_targets[node_id] = [n["id"] for n in node_targets_list]
-        # Initialize relevance values
-        relevance = {}
-        relevance = {
-            node_id: get_cumulative_relevance_data(product_id, node_id)
-            for node_id in self.node_registry.keys()
-        }
-        print("Relevance initialized for all nodes.")
+        stack = []
+        # Add all direct targets of the product node to the stack
+        for edge in self.graph_edges:
+            if edge["source"] == product_id:
+                stack.append(edge["target"])
 
-        # This line seeds the prod relevance to 1.0 for when relevance data doesnt exist
-        relevance[product_id] = 1.0
+        while stack:
+            node_id = stack.pop()
+            if node_id in cumulative_relevance:
+                continue  # Already calculated
 
-        frontier = deque(
-            node_id for node_id, rel in relevance.items()
-            if rel > 0.0
-        )
-        
-        visited = set()
-        for _ in range(max_iter):
-            if not frontier:
-                break
-
-            next_frontier = set()
-
-            while frontier:
-                node_id = frontier.popleft()
-                node_data = self.get_node_by_id(node_id)
-                if not node_data:
-                    print(f"Node {node_id} not found in node registry. Skipping.")
-                    continue
-                
-                old_value = relevance.get(node_id, 0.0)
-                this_node = self.get_node_by_id(node_id)
-                sources = self.get_all_source_nodes(this_node)
-                # Check for empty sources - mainly for product node
-                if not sources:
-                    # This is a root node (e.g., product node)
-                    # Propagate its relevance to its targets
-                    current_node = self.get_node_by_id(node_id)
-                    target_nodes = self.get_all_target_nodes(current_node)
-                    for target in target_nodes:
-                        target_id = target.get("id")
-                        # Calculate new relevance for the target
-                        w = self.get_edge_weight(node_id, target_id) or 0.0
-                        new_value = relevance[node_id] * w
-                        old_value = relevance.get(target_id, 0.0)
-                        if abs(new_value - old_value) > epsilon:
-                            relevance[target_id] = new_value
-                            next_frontier.add(target_id)
-                    continue
-                irrelevance = 1.0
+            # Get all source nodes for this node
+            sources = [edge["source"] for edge in self.graph_edges if edge["target"] == node_id]
+            # Only proceed if all sources have their cumulative relevance set
+            if all(source in cumulative_relevance for source in sources):
+                total = 0.0
                 for source in sources:
-                    source_id = source.get("id")
-                    w = self.get_edge_weight(source_id, node_id) or 0.0
-                    # Check for if edge_weight is None
-                    if w is None:
-                        w = 0.0
-                    source_rel = relevance.get(source_id, 0.0)
-                    irrelevance += (1 - source_rel * w)
-                    
-                
-                new_value = 1 - exp(-1*irrelevance)
-                
-                
-                if abs(new_value - old_value) > epsilon or node_id not in visited:
-                    relevance[node_id] = new_value
-                    current_node = self.get_node_by_id(node_id)
-                    target_nodes = self.get_all_target_nodes(current_node)
-                    # Check for empty target nodes
-                    if not target_nodes:
-                        continue
-                    for target in target_nodes:
-                        target_id = target.get("id")
-                        next_frontier.add(target_id)
-                visited.add(node_id)
-
-            frontier = deque(next_frontier)
-        # Ensure relevance is a dict of {node_id: cumulative relevance}
-        for node_id, rel in relevance.items():
-            if rel > 0.0:
-                cumulative_relevance[node_id] = rel
+                    weight = self.get_edge_weight(source, node_id) or 1.0
+                    total += cumulative_relevance[source] * weight
+                # Normalize by in-degree (number of sources)
+                if sources:
+                    cumulative_relevance[node_id] = total / len(sources)
+                else:
+                    cumulative_relevance[node_id] = total
+                # Push all target nodes of this node to the stack for further processing
+                for edge in self.graph_edges:
+                    if edge["source"] == node_id and edge["target"] not in cumulative_relevance:
+                        stack.append(edge["target"])
             else:
-                cumulative_relevance[node_id] = 0.0
-        return dict(cumulative_relevance)
+                # Not all sources are ready, push this node back and push missing sources
+                stack.append(node_id)
+                for source in sources:
+                    if source not in cumulative_relevance:
+                        stack.append(source)
 
+        return cumulative_relevance
 
     def get_product_id_from_subgraph(self) -> str:
         # Assumes there is only one product node in the subgraph

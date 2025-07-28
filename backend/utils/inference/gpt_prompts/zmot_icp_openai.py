@@ -1,5 +1,13 @@
 import json
 from backend.utils.inference.gpt_prompts.openai_client import client  # uses our centralized OpenAI client
+import re
+
+def extract_json(text):
+    # Extract the first JSON array or object from the text
+    match = re.search(r'(\[.*\]|\{.*\})', text, re.DOTALL)
+    if match:
+        return match.group(1)
+    return text  # fallback
 
 def infer_pain_triggers_zmot_icp(summary, jobs_pains):
     """
@@ -137,6 +145,7 @@ Return your output as a JSON array, one entry per pain, with this structure:
 
 Use only realistic, clearly defined jobs and persona roles. Do not invent exotic titles unless required by the domain. All capabilities should return at least one pain with structured jobs and personas.
 IMPORTANT: Return ONLY the JSON array, with no explanation or formatting.
+IMPORTANT: For each list (pain_triggers, icp_archetypes, zmot_events), you MUST provide at least 3-5 items. Do not return only one item for any list. If you cannot find 3 strong matches, look for slightly poorer matches.
 
 
 Summary:
@@ -154,12 +163,14 @@ Jobs and Pains::
                 {"role": "system", "content": "You create detailed business impact mappings from Jobs to Be Done."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.5,
+            temperature=0.7,
         )
         content = response.choices[0].message.content
         print("🧠 OpenAI raw response:", response.choices[0].message.content)
         # Parse and return the JSON output from OpenAI
-        return json.loads(content)
+        json_str = extract_json(content)
+        print("🧠 OpenAI parsed JSON:", json_str)
+        return json.loads(json_str)
     except Exception as e:
         print("❌ infer_pain_triggers_zmot_icp:", e)
         return []

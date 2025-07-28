@@ -91,8 +91,7 @@ const Personas = () => {
 
   return (
     <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Saved Personas</h2>
-
+      
       {/* 3. If multiple products, let user select */}
       {products.length > 1 && (
         <div className="mb-4">

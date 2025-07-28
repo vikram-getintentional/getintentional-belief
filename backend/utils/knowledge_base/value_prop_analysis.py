@@ -1,3 +1,4 @@
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
@@ -137,3 +138,60 @@ def process_capabilities(base_graph, product_node_id: str, capabilities: list):
         })
 
     return processed_capabilities
+
+
+def get_product_value_prop_capabilities(sub_graph: Graph):
+    """
+    Retrieves the product value proposition and capabilities for a given company ID.
+    If no product node or capabilities exist, it extracts the summary and capabilities.
+
+    Args:
+        company_id (str): The unique ID of the company.
+        base_graph (Graph): The graph object containing nodes and edges.
+        url (str): The URL associated with the product.
+        text (str): The text input for extracting summary and capabilities.
+        plg_cta (bool): Whether the product has PLG (Product-Led Growth) enabled.
+        footer_features (list): Additional features extracted from the footer.
+
+    Returns:
+        dict: A dictionary containing the value proposition summary and capabilities.
+    """
+    # Discover Product Node
+    product_id = sub_graph.get_node_id("product", {})
+    print("Discovering Product Node with ID:", product_id)
+    if not product_id:
+        print("No Product node found for the given criteria.")
+        return None
+    product_node = sub_graph.get_node_by_id(product_id)
+    if not product_node:
+        print("No Product node found with ID:", product_id)
+        return None
+    product_summary = product_node.get("summary", "")
+    product_plg_flag = product_node.get("plg_flag", False)
+
+    capabilities_list = sub_graph.get_target_nodes_by_source_and_type(product_id, "offered_by")
+    print("Discovered Capabilities list size:", len(capabilities_list))
+    capabilities = []
+    for cap_id in capabilities_list:
+        capability_node = sub_graph.get_node_by_id(cap_id)
+        if capability_node:
+            relevance = get_cumulative_relevance_data(product_id, cap_id)
+            capabilities.append({
+                "name": capability_node.get("name", ""),
+                "description": capability_node.get("description", ""),
+                "coreness": capability_node.get("coreness", 0.0),
+                "centrality": capability_node.get("centrality", 0.0),
+                "relevance": relevance
+            })
+        else:
+            print("Capability node not found:", cap_id)
+    
+    product_data = {
+        "product_node_id": product_id,
+        "summary": product_summary,
+        "plg_flag": product_plg_flag,
+        "capabilities": capabilities
+    }
+        
+    return product_data
+

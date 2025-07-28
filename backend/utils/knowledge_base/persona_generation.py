@@ -1,6 +1,7 @@
 from typing import Dict, List, Any
+import json
+from collections import defaultdict
 from backend.utils.graph_base.graph import Graph
-from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 
 
@@ -112,7 +113,6 @@ def get_product_personas(base_graph: Graph, product_id: str) -> List[Dict[str, A
                 print("Traversing persona discovery for job, pain capability")
                 traverse(job, pain, capability, set())
     aggregated_personas = list(personas.values())
-    # aggregated_personas = aggregate_persona_cards(list(personas.values()))
     print("Aggregated personas:", aggregated_personas)
     return aggregated_personas
 
@@ -126,6 +126,7 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
 
     relevance_nodes = sub_graph.calculate_cumulative_relevance()
     add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+    print("Cumulative relevance data updated for product ID:", product_id)
 
     for persona_id, _ in sub_graph.get_nodes_list("persona",{}):
         normalized_relevance = get_cumulative_relevance_data(product_id, persona_id)
@@ -137,11 +138,16 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
             persona_id, "performed_by"
         )
         for job_id in persona_jobs:
+
             job_node = sub_graph.get_node_by_id(job_id)
             if not job_node:
                 print(f"Job node not found for ID: {job_id}")
                 continue
-            jobs.append(job_node.get("description") or job_node.get("text") or "")
+            job_relevance = get_cumulative_relevance_data(product_id, job_id)
+            jobs.append({
+                "description": job_node.get("description") or job_node.get("text") or "",
+                "relevance": job_relevance
+            })
             # For each pain solved by this job
             pain_ids = sub_graph.get_source_nodes_by_target_and_type(
                 job_id, "addresses"
@@ -151,8 +157,11 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
                 if not pain_node:
                     print(f"Pain node not found for ID: {pain_id}")
                     continue
-                pains.append(pain_node.get("description") or pain_node.get("text") or "")
-                    
+                pain_relevance = get_cumulative_relevance_data(product_id, pain_id)
+                pains.append({
+                    "description": pain_node.get("description") or pain_node.get("text") or "",
+                    "relevance": pain_relevance
+                })
 
         persona = {
             "persona_id": persona_id,
@@ -167,9 +176,64 @@ def get_persona_relevance(sub_graph: Graph) -> list[dict]:
         }
         personas.append(persona)
     
-    
-    
-    return personas
+    print("Persona relevance computed, total personas found:", personas)
+    aggregated_personas = aggregated_personas_map(sub_graph, personas, threshold=0.2)
 
+    return aggregated_personas
+
+
+def aggregated_personas_map(sub_graph:Graph, match_results: list[dict], threshold: float = 0.0) -> list[dict]:
+    final = []
+    if not match_results:
+        print("No match results found, returning empty list.")
+        return final
+    persona_map = defaultdict(lambda: {
+        "persona_title": "",
+        "persona_departments": set(),
+        "persona_seniority": set(),
+        "persona_ids": set(),
+        "max_relevance": 0.0,
+        "jobs": set(),
+        "pains": set()
+    })
+
+    for entry in match_results:
+        persona = entry.get("persona", {})
+        relevance = entry.get("relevance", 0.0)
+        if relevance < threshold:
+            continue
+
+        title = persona.get("title", "")
+        department = persona.get("department", "")
+        seniority = persona.get("seniority", "")
+        persona_id = entry.get("persona_id", "")
+
+        persona_map[title]["persona_title"] = title
+        persona_map[title]["persona_departments"].add(department)
+        persona_map[title]["persona_seniority"].add(seniority)
+        persona_map[title]["persona_ids"].add(persona_id)
+        persona_map[title]["max_relevance"] = max(persona_map[title]["max_relevance"], relevance)
+
+        # Aggregate jobs and pains
+        jobs = entry.get("jobs", [])
+        pains = entry.get("pains", [])
+        for job in jobs:
+            persona_map[title]["jobs"].add(json.dumps(job))
+        for pain in pains:
+            persona_map[title]["pains"].add(json.dumps(pain))
+
+    # Convert sets to lists for output
+    for card in persona_map.values():
+        card["persona_departments"] = list(card["persona_departments"])
+        card["persona_seniority"] = list(card["persona_seniority"])
+        card["persona_ids"] = list(card["persona_ids"])
+        #Sort each job and pain in card by relevance
+        card["jobs"] = sorted(list(card["jobs"]), key=lambda x: json.loads(x)["relevance"], reverse=True)
+        card["pains"] = sorted(list(card["pains"]), key=lambda x: json.loads(x)["relevance"], reverse=True)
+        final.append(card)
+    # Sort the final list by max_relevance in descending order
+    final.sort(key=lambda x: x["max_relevance"], reverse=True)
+    print("Aggregate - final output:", final)
+    return final
 
 

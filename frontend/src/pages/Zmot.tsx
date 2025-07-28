@@ -74,7 +74,6 @@ const ZmotIcp = () => {
         console.log("Backend ZMOTs and ICPs response:", zmotIcpData);
 
         // 6. If no ICPs, prompt to infer
-        console.log("zmotIcpData before empty check:", zmotIcpData);
         if (!zmotIcpData || (Array.isArray(zmotIcpData) && zmotIcpData.length === 0)) {
           setZmotIcp([]);
           setStatusMsg("No ICPs or ZMOTs found. Click 'Infer ICPs' to generate.");
@@ -97,10 +96,7 @@ const ZmotIcp = () => {
         } else {
           setZmotIcp(zmotIcpData);
         }
-        useEffect(() => {
-          console.log("ZmotIcp variable set:", zmotIcp);
-        }, [zmotIcp]);
-
+        
         
       } catch (err) {
         setStatusMsg("Error fetching ZMOTs and ICPs.");

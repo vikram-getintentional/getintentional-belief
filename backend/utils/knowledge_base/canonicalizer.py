@@ -103,12 +103,16 @@ def canonicalize_pain_trigger(pain_triggers: list[dict]) -> dict:
     # Build 1:1 mapping for each pain trigger in input
     pain_trigger_canonical_map = {}
     for orig in pain_triggers:
+        orig_attr = orig["attribute"].strip().lower()
+        canonical_attr = canonical_attributes.get(orig_attr, orig["attribute"].strip())
         canonical_trigger = {
-            "attribute": canonical_attributes.get(orig["attribute"].strip().lower(), orig["attribute"]),
+            "attribute": canonical_attr,
             "dimension": orig.get("dimension", "").strip().lower(),
             "direction": orig.get("direction", "").strip().lower()
         }
-        pain_trigger_canonical_map[str(orig)] = canonical_trigger
+        # Use a tuple key for lookups
+        key = f"{canonical_attr.lower()}|{canonical_trigger['dimension']}|{canonical_trigger['direction']}"
+        pain_trigger_canonical_map[key] = canonical_trigger
 
     save_canonical_map(pain_trigger_canonical_map, PAIN_TRIGGER_CANONICAL_MAP_PATH)
     return pain_trigger_canonical_map

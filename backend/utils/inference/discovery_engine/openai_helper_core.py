@@ -12,7 +12,6 @@ from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_ca
 from backend.utils.nlp.matcher import match_capabilities_to_canonical_personas
 from backend.utils.nlp.scorer import persona_relevance_score
 from backend.utils.graph_base.graph_builder import convert_rule_matches_to_capability_map, process_capability_map_to_graph
-from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
 from backend.utils.graph_base.graph import Graph
 
 

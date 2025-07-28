@@ -10,6 +10,7 @@ import Onboarding from './pages/Onboarding';
 import AppLayout from './layout/AppLayout';
 import Personas from './pages/Personas'; 
 import Zmot from './pages/Zmot'; 
+import ValueProp from './pages/ValueProposition';
 import './output.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/value-prop" element={<ValueProp />} />
           <Route path="/personas" element={<Personas />} />
           <Route path="/zmot" element={<Zmot />} />
           {/* Add other routes here */}

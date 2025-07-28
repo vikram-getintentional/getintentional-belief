@@ -19,6 +19,30 @@ from backend.utils.knowledge_base.canonicalizer import (
     )
 
 
+def infer_upstream_with_rules(product_subgraph: Graph, cap_threshold: float = 0.1, relevance_threshold: float = 0.5, max_depth: int = 3) -> List[Dict[str, Any]]:
+   #1. Get product ID, and initialize arrays/ sets
+    product_id = product_subgraph.get_node_id("product", {})
+    if not product_id:
+        raise ValueError("Product ID not found in the provided subgraph.")
+    
+    #2. Get all capabilities and their IDs
+    functional_capabilities_ids, _ = product_subgraph.set_capabilities_relevance(
+        capability_threshold=cap_threshold
+    )  
+
+    """
+    for each functional capability - get upstream triplets. 
+    for each job in upstream - get upstream triplets
+
+    get_upstream_triplets(job_id, product_subgraph)
+    - should return 
+    [pains:
+        pain_node
+        jobs:
+            personas:]
+    
+    """
+
 def infer_upstream_with_rules(
     product_subgraph: Graph,
     cap_threshold: float = 0.1,

@@ -213,7 +213,7 @@ def canonicalize_and_create_zmot_icp_nodes(results):
 
     # Lookup logic for setting right node IDs to entry list
     pain_trigger_lookup = {
-        (pt["attribute"].strip().lower(), pt["dimension"].strip().lower(), pt["direction"].strip().lower()):
+        f"{pt['attribute'].strip().lower()}|{pt['dimension'].strip().lower()}|{pt['direction'].strip().lower()}":
             get_or_create_pain_trigger_node(pt["attribute"], pt["dimension"], pt["direction"])["id"]
         for pt in canonical_pain_triggers.values()
     }
@@ -234,20 +234,12 @@ def canonicalize_and_create_zmot_icp_nodes(results):
     for entry in results:
         # Canonicalize pain_trigger
         raw_pain_trigger = entry.get("pain_trigger", {})
-        pt_key = str({
-            "attribute": raw_pain_trigger.get("attribute", "").strip().lower(),
-            "dimension": raw_pain_trigger.get("dimension", "").strip().lower(),
-            "direction": raw_pain_trigger.get("direction", "").strip().lower()  
-        })
+        pt_key = f"{raw_pain_trigger.get('attribute', '').strip().lower()}|{raw_pain_trigger.get('dimension', '').strip().lower()}|{raw_pain_trigger.get('direction', '').strip().lower()}"
         pt_canonical = canonical_pain_triggers.get(pt_key, raw_pain_trigger)
         entry["pain_trigger"] = pt_canonical
 
         # Lookup node ID for pain_trigger
-        pain_trigger_lookup_key = (
-            entry["pain_trigger"]["attribute"].strip().lower(),
-            entry["pain_trigger"]["dimension"].strip().lower(),
-            entry["pain_trigger"]["direction"].strip().lower()
-        )
+        pain_trigger_lookup_key = f"{pt_canonical['attribute'].strip().lower()}|{pt_canonical['dimension'].strip().lower()}|{pt_canonical['direction'].strip().lower()}"
         if pain_trigger_lookup_key not in pain_trigger_lookup:
             print("❌ Pain trigger lookup failed for key:", pain_trigger_lookup_key)
             print("Available pain trigger keys:", list(pain_trigger_lookup.keys()))
@@ -258,9 +250,14 @@ def canonicalize_and_create_zmot_icp_nodes(results):
         zmot_observable_moment_node_ids = []
         zmot_keyword_node_ids = []
 
-        trigger_event = zmot_event.get("trigger_event", "").strip().lower()
-        if trigger_event in zmot_trigger_event_lookup:
-            zmot_trigger_event_node_ids.append(zmot_trigger_event_lookup[trigger_event])
+        trigger_event_raw = zmot_event.get("trigger_event", "").strip()
+        trigger_event_canonical = canonical_zmot_trigger_events.get(trigger_event_raw, trigger_event_raw)
+        trigger_event_key = trigger_event_canonical.strip().lower()
+        if trigger_event_key in zmot_trigger_event_lookup:
+            zmot_trigger_event_node_ids.append(zmot_trigger_event_lookup[trigger_event_key])
+        else:
+            print("❌ ZMOT trigger event lookup failed for key:", trigger_event_key)
+            print("Available trigger event keys:", list(zmot_trigger_event_lookup.keys()))
 
         observable_moments = zmot_event.get("observable_moments", [])
         if isinstance(observable_moments, str):
@@ -321,8 +318,11 @@ def process_pain_triggers_zmot_icp_map_to_graph(pains_map: dict):
             print("Processing zmot entry:", entry)
             pain_id = entry.get("pain_id")
             pain_trigger_node_id = entry.get("pain_trigger_node_id", None)
-            icp_match_score = entry.get("icp_match_score", 0.0)
-            zmot_match_score = entry.get("zmot_match_score", 0.0)
+            icp_archetype = entry.get("icp_archetype", {})
+            icp_match_score = icp_archetype.get("icp_match_score", 0.0)
+
+            zmot_event = entry.get("zmot_event", {})
+            zmot_match_score = zmot_event.get("zmot_match_score", 0.0)
             
             source = entry.get("source", "unknown")
             now = datetime.utcnow().isoformat()
@@ -422,9 +422,9 @@ def process_pain_triggers_zmot_icp_map_to_graph(pains_map: dict):
 
                 # Add edges: Pain Trigger → ZMOT Keywords
                 for zmot_keyword_id in entry.get("zmot_keyword_node_ids", []):
-                    if zmot_observable_moment_id and zmot_keyword_id:
+                    if zmot_trigger_event_id and zmot_keyword_id:
                         add_edge(
-                            source_id=zmot_observable_moment_id,
+                            source_id=zmot_trigger_event_id,
                             target_id=zmot_keyword_id,
                             edge_type="zmot_keyword",
                             weight=1.0,

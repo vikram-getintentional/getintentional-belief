@@ -1,15 +1,14 @@
 from typing import Dict, List, Any
 from backend.utils.graph_base.graph import Graph
-from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 
 
-def get_zmot_icp_relevance(sub_graph: Graph, threshold = 0.3) -> list[dict]:
+def get_zmot_icp_relevance(sub_graph: Graph, threshold = 0.0) -> list[dict]:
     print("Starting relevance computation - at this point centrality & cum relevance should be set")
     personas = []
     product_id = sub_graph.get_node_id("product",{})
     relevance_nodes = sub_graph.calculate_cumulative_relevance()
-    #add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
 
     # Do looping for ICP Mapping first
 
@@ -70,19 +69,20 @@ def get_zmot_icp_relevance(sub_graph: Graph, threshold = 0.3) -> list[dict]:
             for zmot_observablemoment in zmot_observable_moments:
                 obs_relevance = get_cumulative_relevance_data(product_id, zmot_observablemoment)
                 obs_label = sub_graph.get_node_by_id(zmot_observablemoment).get("observable_moment", "").strip().lower()
-                zmot_trigger_keywords = sub_graph.get_target_nodes_by_source_and_type(
-                    zmot_observablemoment, "zmot_keyword")
-                for zmot_trigger_keyword in zmot_trigger_keywords:
-                    kw_relevance = get_cumulative_relevance_data(product_id, zmot_trigger_keyword)
-                    kw_label = sub_graph.get_node_by_id(zmot_trigger_keyword).get("keyword", "").strip().lower()
-                    trigger_keywords.append((kw_label, kw_relevance))
-                    print("ZMOT trigger keyword data:", trigger_keywords)
-                observable_moments.append((obs_label, obs_relevance, trigger_keywords))
+                observable_moments.append((obs_label, obs_relevance))
+            zmot_trigger_keywords = sub_graph.get_target_nodes_by_source_and_type(
+                    zmot_triggerevent, "zmot_keyword")
+            for zmot_trigger_keyword in zmot_trigger_keywords:
+                kw_relevance = get_cumulative_relevance_data(product_id, zmot_trigger_keyword)
+                kw_label = sub_graph.get_node_by_id(zmot_trigger_keyword).get("keyword", "").strip().lower()
+                trigger_keywords.append((kw_label, kw_relevance))
+                
 
             zmot.append({
                 "trigger_event": trigger_label,
                 "trigger_event_relevance": trigger_relevance,
                 "observable_moments": list(observable_moments),
+                "trigger_keywords": list(trigger_keywords)
 
             })
 
