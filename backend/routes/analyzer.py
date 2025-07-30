@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
+<<<<<<< Updated upstream
 from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
 from backend.utils.openai_helper import extract_summary_and_capabilities
 from backend.utils.openai_helper_core import infer_with_rules_then_fallback
+=======
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
+from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
+from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
+>>>>>>> Stashed changes
 from backend.auth.jwt_handler import decode_token
 from backend.database import SessionLocal
 from sqlalchemy.orm import Session
@@ -305,8 +311,12 @@ async def get_personas(product_id: str, request: Request):
         
         aggregated_personas = get_persona_relevance(product_subgraph)
 
+<<<<<<< Updated upstream
         final_personas = aggregate_persona_cards(product_subgraph, aggregated_personas)
         
+=======
+                        
+>>>>>>> Stashed changes
         
         # personas should be a list of persona dicts
         #if personas is None:
@@ -351,7 +361,7 @@ async def analyze_hop_plus(payload: dict, request: Request):
         )
 
         product_subgraph = base_graph.extract_product_subgraph(product_id)
-        
+
         hop_plus_results = infer_upstream_with_rules(
             product_subgraph=product_subgraph,
             cap_threshold = 0.3,
