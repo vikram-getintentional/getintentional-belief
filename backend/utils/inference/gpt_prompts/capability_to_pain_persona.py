@@ -13,8 +13,8 @@ Given:
 - A product summary
 - A list of product capabilities
 For each capability, do the following:
-1. List 1–3 business pains this capability directly solves. These should be specific workflow inefficiencies or failure modes.
-2. For each pain, assign a relevance score to every capability in the list, even if that capability is only indirectly related or shares an overlapping job or data dependency.
+1. List 1–3 business pains this capability directly solves. These should be specific workflow inefficiencies or failure modes in the context of the product summary.
+2. For each pain, assign a relevance score to every capability in the list in the context of this product summary, even if that capability is only indirectly related or shares an overlapping job or data dependency.
 - The relevance score must be a float between 0.0 and 1.0.
 - The array must be the same length as the list of capabilities, aligned by order.
 - Directly related capabilities should have scores between 0.7–1.0.

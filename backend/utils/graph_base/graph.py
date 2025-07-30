@@ -143,8 +143,12 @@ class Graph:
                 subgraph_nodes[node_id] = node
 
             for edge in self.graph_edges:
+<<<<<<< Updated upstream
                 # If this node is source or target, add the edge and the other node
                 if edge.get("source") == node_id or edge.get("target") == node_id:
+=======
+                if edge.get("source") == node_id:
+>>>>>>> Stashed changes
                     # Add edge if not already added
                     if edge not in subgraph_edges:
                         subgraph_edges.append(edge)
@@ -366,8 +370,9 @@ class Graph:
                 capability_node["importance"] = "critical"
                 functional_capabilities_ids.append(capability_id)
             else:
-                print("Detected anomaly in coreness vs cap centrality - please verify \n")
-                print(capability_node.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
+                print("anamoly>>", capability_node.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
+                capability_node["importance"] = "critical"
+                functional_capabilities_ids.append(capability_id)
 
         return functional_capabilities_ids, blocker_capabilities_ids
 
