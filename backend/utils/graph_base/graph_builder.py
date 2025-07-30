@@ -255,7 +255,6 @@ def convert_rule_matches_to_capability_map(results):
         if job_lookup_key not in job_lookup:
             print("❌ Job lookup failed for key:", job_lookup_key)
             print("Available job keys:", list(job_lookup.keys()))
-
 <<<<<<< Updated upstream
         pain_trigger_lookup_key = (
             entry["pain_trigger"].get("attribute", "").strip().lower(),
@@ -274,9 +273,7 @@ def convert_rule_matches_to_capability_map(results):
     print("Updated results blob:", results)
     return results
 =======
-    print("Updated results blob:", results)
-    return results
-
+   
 
 def canonicalize_and_create_zmot_icp_nodes(gpt_results):
     print("Starting node creation & processing for zmot & ICP")
@@ -709,8 +706,4 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
 
     return results_job_ids
         
-
-
-
-
 >>>>>>> Stashed changes
