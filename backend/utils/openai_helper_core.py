@@ -6,6 +6,7 @@ from pathlib import Path
 from collections import defaultdict
 
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.inference.capability_to_pain_persona import infer_persona_job_pain_from_capabilities
 from backend.utils.graph_base.graph_builder import process_capability_map_to_graph
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_canonical_map
@@ -13,6 +14,7 @@ from backend.utils.nlp.matcher import match_capabilities_to_canonical_personas
 from backend.utils.nlp.scorer import persona_relevance_score
 from backend.utils.graph_base.graph_builder import convert_rule_matches_to_capability_map, process_capability_map_to_graph
 from backend.utils.graph_base.graph_utils.aggregate_persona_cards import aggregate_persona_cards
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.graph_base.graph import Graph
 
 
@@ -129,6 +131,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                         persona_title = persona.get("title", "")
                         persona_department = persona.get("department", "")
                         persona_seniority = persona.get("seniority", "")
+                        persona_job_importance = persona.get("job_importance", 0.0)
                         persona_job_importance = persona.get("job_importance", 0.0)
                         flattened_capability_map.append({
                             "capability_id": cap_id,

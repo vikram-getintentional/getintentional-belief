@@ -17,6 +17,8 @@ You're a neutral technology analyst. Based on this website content:
 
 1. Summarize a concise 2–3 sentence value proposition.
 2. List 5–8 key capabilities. For each, include a short, human-readable description.
+- Capabilities should be clearly defined in the context of the product as understood by a target user.
+- Avoid product-specific jargon or vague brand terms that don't convey clear functionality.
 3. For each capability score its relevance to the product's value proposition on a scale of 0.0 to 1.0.
 
 Use all available context, including main site content and footer feature hints.

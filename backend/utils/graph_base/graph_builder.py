@@ -5,6 +5,7 @@ from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain
 from backend.utils.graph_base.edges.edge_manager import add_edge
 from collections import defaultdict
 from datetime import datetime
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
 <<<<<<< Updated upstream
 =======
@@ -23,6 +24,32 @@ def process_capability_map_to_graph(capabilities_list, capability_map: dict):
     flattened_results = []
     print("Starting process map")
     for entry in capability_map:
+            """
+            Canonicalized entry structure:
+            {
+                "capability_id": cap_id,
+                "pain": pain_desc,
+                "pain_trigger": {
+                    "attribute": pain_trigger_attribute,
+                    "dimension": pain_trigger_dimension,
+                    "direction": pain_trigger_direction
+                },
+                "relevance": relevance_array,
+                "job": job_desc,
+                "job_impact": job_impact,
+                "persona": {
+                    "title": persona_title,
+                    "department": persona_department,
+                    "seniority": persona_seniority
+                },
+                "persona_job_importance": persona.get("job_importance", 0.0),
+                "source": "openai",
+                "pain_node_id": pain_id,
+                "job_node_id": job_id,
+                "persona_node_id": persona_id,
+                "pain_trigger_node_id": pain_trigger_id
+            }
+            """
             """
             Canonicalized entry structure:
             {
@@ -110,6 +137,7 @@ def process_capability_map_to_graph(capabilities_list, capability_map: dict):
             # (Optional) Add to flattened_results for downstream use
             flattened_results.append(entry)
     print("Finished final flattened results:", flattened_results)
+    
     return flattened_results
 
 

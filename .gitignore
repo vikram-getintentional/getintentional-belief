@@ -1,2 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environment
+.venv/
+
+# Environment variables
+.env
+
+# IDE specific files
+.vscode/ # VS Code (excluding settings.json handled above)
+
+# Operating System specific files
+.DS_Store # macOS
+.Trashes # macOS
+Desktop.ini # Windows
+
+# Logs
+*.log
+
+# Emacs
+*~
+
 # Emacs
 *~

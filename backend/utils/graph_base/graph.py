@@ -1,4 +1,5 @@
 from collections import defaultdict, deque
+from collections import defaultdict, deque
 from typing import Dict, List, Set
 from math import exp
 
@@ -126,13 +127,35 @@ class Graph:
         """
         Extracts a subgraph containing all nodes and edges connected to the given product_id,
         by traversing both incoming and outgoing edges (undirected traversal).
+        Additionally, it collects the weights of edges and calculates cumulative_relevance.
+        It then checks cumulative_relevance.json. If product_id exists, and node_id exists, it updates the cumulative_relevance value. 
+        If product_id exists and node_id does not exist, it appends the node_id and cumulative relevance inside product_id.
+        If product_id does not exist it creates product_id and node_id & cumulative_relevance in the json.
+        cumulative_relevance.json is structured as follows:
+        [product_id: {
+            {
+            "node_id": node_id,
+            "cumulative_relevance": node_cumulative_relevance
+            },
+            {
+            "node_id": node_id,
+            "cumulative_relevance": node_cumulative_relevance
+            }...
+        }]
         """
+        # Initialize the subgraph
+        if not product_id:
+            raise ValueError("Product ID cannot be empty.")
+        if product_id not in self.node_registry:
+            raise ValueError(f"Product ID {product_id} does not exist in the graph.")
+        # Initialize visited set and queue for BFS
         visited = set()
         to_visit = [product_id]
         subgraph_nodes = {}
         subgraph_edges = []
         subgraph_weights = {}
-
+    
+        # Now we have the subgraph with all nodes and edges connected to the product_id
         while to_visit:
             node_id = to_visit.pop()
             if node_id in visited:
@@ -142,6 +165,7 @@ class Graph:
             if node:
                 subgraph_nodes[node_id] = node
 
+            # Traverse outgoing edges
             for edge in self.graph_edges:
 <<<<<<< Updated upstream
                 # If this node is source or target, add the edge and the other node
@@ -300,20 +324,20 @@ class Graph:
         for cap in capability_list:
             cap_node = cap[1]
             cap_id = cap_node["id"]
-            print("Starting update centrality for capability:", cap_id, "name:", cap_node["name"])
+            
             connected_pains = self.get_target_nodes_by_source_and_type(cap_id, "solves")
-            print(f"Capability {cap_id} is connected to {len(connected_pains)} pains.")
+            
             cap_centrality = 0.0
             for pain_id in connected_pains:
-                print("Pulling centrality for pain:", pain_id)
+                
                 edge_weight = self.get_edge_weight(cap_id, pain_id)
-                print(f"Edge from {cap_id} to {pain_id} has weight {edge_weight}")
+                
                 cap_centrality += edge_weight
-                print(f"Current centrality for capability: {cap_centrality}")
-            print(f"Calculated total centrality for capability {cap_id}: {cap_centrality}")
+                
+            
             # Normalize the centrality score
             normalized_centrality = cap_centrality/len(connected_pains) if connected_pains else 0.0
-            print(f"Normalized centrality for capability {cap_id}: {normalized_centrality}")
+            
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
             updated_caps_list.append(cap_node)

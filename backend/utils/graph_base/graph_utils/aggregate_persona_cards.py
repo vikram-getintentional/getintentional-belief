@@ -1,7 +1,56 @@
 from collections import defaultdict
 from backend.utils.graph_base.graph import Graph
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
+from backend.utils.graph_base.graph import Graph
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
+def aggregate_persona_cards(sub_graph: Graph, match_results: list[dict], threshold: float = 0.0):
+    final = []
+    """
+    Input is a list of match results - as a list of personas of the format:
+    persona = {
+            "persona_id": persona_id,
+            "persona": {
+                "title": persona_node.get("title"),
+                "department": persona_node.get("department"),
+                "seniority": persona_node.get("seniority"),
+            },
+            "relevance": normalized_relevance,
+            "jobs": jobs,
+            "pains": pains
+        }
+    
+    This function will do - for each persona in entry - check if relevance is above threshold. 
+    Only add to personaCard if relevance is above threshold.
+    It will aggregate all personas with the same title into one bundle with the list of departments, seniorities, jobs, pains.
+    It will output the max relevance of all persona_ids as the aggregated relevance. 
+    The expected output will be of the format:
+    personaCard = {
+            "persona_title": persona title,
+            "persona_departments": [departments],
+            "persona_seniority": [seniority],
+            "persona_ids": [persona_ids],
+            "max_relevance": max_relevance(relevance(personas)),
+            "jobs": jobs,
+            "pains": pains
+        }
+    """
+    product_id = sub_graph.get_node_id("product", {})
+    print("Starting aggregation of persona cards")
+    if not match_results:
+        print("No match results found, returning empty list.")
+        return final
+    persona_map = defaultdict(lambda: {
+        "persona_title": "",
+        "persona_departments": set(),
+        "persona_seniority": set(),
+        "persona_ids": set(),
+        "max_relevance": 0.0,
+        "jobs": set(),
+        "pains": set()
+    })
+
+    print("Input match results:", match_results)
 def aggregate_persona_cards(sub_graph: Graph, match_results: list[dict], threshold: float = 0.0):
     final = []
     """

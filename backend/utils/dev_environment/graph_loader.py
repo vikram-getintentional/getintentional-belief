@@ -56,5 +56,16 @@ def load_graph_from_folder(folder_path: str):
             graph_edges = json.load(f)
             for edge in graph_edges:
                 edge_weights[(edge["source"], edge["target"])] = edge.get("weight", 1.0)
+
+    # Load cumulative relevance if present
+    cumulative_relevance_path = os.path.join(folder_path, "cumulative_relevance.json")
+    if os.path.exists(cumulative_relevance_path):
+        with open(cumulative_relevance_path, "r") as f:
+            cumulative_relevance = json.load(f)
+    else:
+        cumulative_relevance = {}
     print("Graph loaded with nodes:", len(node_registry), "and edges:", len(graph_edges))
-    return node_registry, graph_edges, edge_weights
+    return node_registry, graph_edges, edge_weights, cumulative_relevance
+
+
+

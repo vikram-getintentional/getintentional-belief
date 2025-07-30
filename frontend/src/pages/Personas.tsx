@@ -56,6 +56,8 @@ const Personas = () => {
       return;
     }
     const fetchPersonas = async () => {
+      setPersonas([]); // Clear old data immediately
+      setStatusMsg("Fetching personas...");
       try {
         console.log("🔄 Fetching personas for product:", selectedProductId);
         const personaRes = await fetch(
@@ -65,6 +67,7 @@ const Personas = () => {
           }
         );
         const personaData = await personaRes.json();
+        console.log("Backend personas response:", personaData);
         console.log("Backend personas response:", personaData);
 
         // 5. Handle backend messages
@@ -117,6 +120,14 @@ const Personas = () => {
       {personas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {personas.map((p, i) => (
+            p && p.persona_title ? (
+              <PersonaCard
+                key={i}
+                persona={p}
+                isSelected={true}
+                onToggle={() => {}}
+              />
+            ) : null
             p && p.persona_title ? (
               <PersonaCard
                 key={i}
