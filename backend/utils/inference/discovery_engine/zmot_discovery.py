@@ -6,8 +6,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from collections import defaultdict
 
+from backend.utils.graph_base.nodes.company_nodes import get_or_create_employees_node, get_or_create_funding_stage_node, get_or_create_geographies_node, get_or_create_industry_node, get_or_create_revenue_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
-from backend.utils.graph_base.graph_builder import canonicalize_and_create_zmot_icp_nodes, process_pain_triggers_zmot_icp_map_to_graph
+from backend.utils.graph_base.graph_builder import canonicalize_and_create_zmot_icp_nodes
 from backend.utils.inference.gpt_prompts.zmot_icp_openai import infer_pain_triggers_zmot_icp
 
 
@@ -96,106 +97,86 @@ def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth
         # ---- End batching logic ----
 
         """
-        Output is of format:
-        - pain_id: string
-        - pain_triggers:
-            pain_trigger: object of
-                - attribute: string
-                - dimension: string
-                - direction: string
-                - icp_archetypes: list of objects
-                    - industry: list of strings
-                    - revenue: list of strings
-                    - employees: list of strings
-                    - funding_stage: list of strings
-                    - geographies: list of strings
-                    - match_score: float
-                - zmot_events: list of objects
-                    - trigger_event: string
-                    - observable_moment: string
-                    - trigger_keywords: list of strings
-                        - match_score: float
+        pain_id: string
+        pain_triggers: [
+            "attribute": "string",
+            "dimension": "string",
+            "direction": "string",
+            "icp_archetypes": 
+            [
+                "industries": 
+                [
+                {"industry": "Healthcare", "match_score": 0.85},
+                {"industry": "Finance", "match_score": 0.72},
+                ...
+                ],  
+                "revenues": [
+                {"revenue": "1-10M", "match_score": 0.9},
+                {"revenue": "10-100M", "match_score": 0.6},
+                ...
+                ],
+                "employees": [
+                {"employees": "1-10", "match_score": 0.9},
+                {"employees": "11-50", "match_score": 0.6},
+                ...
+                ],
+                "funding_stages": [
+                {"funding_stage": "Pre-Seed", "match_score": 0.8},
+                {"funding_stage": "Seed", "match_score": 0.6},
+                ...
+                ],
+                "geographies": [
+                {"geography": "North America", "match_score": 0.9},
+                {"geography": "Europe", "match_score": 0.6},
+                ...
+                ]
+            }}
+            ],
+            "zmot_events": [
+            {{
+                "trigger_event": "string",
+                "trigger_event_match_score": 0.8,
+                "observable_moments": [
+                {"observable_moment": "string", "match_score": 0.8}
+                ...
+                ],
+                "trigger_keywords": [
+                {"trigger_keyword": "string", "match_score": 0.8},
+                ...
+                ]
+            }},
+            {{
+                "trigger_event": "string",
+                "trigger_event_match_score": 0.8,
+                "observable_moments": [
+                {"observable_moment": "string", "match_score": 0.8}
+                ...
+                ],
+                "trigger_keywords": [
+                {"trigger_keyword": "string", "match_score": 0.8},
+                ...
+                ]
+            }},
+            ...
+            ]
+        }},
         """
 
-        # First pass: Build flattened_capability_map
-        flattened_pains_map = []
-        for entry in gpt_output:
-            pain_id = entry.get("pain_id", "Unknown").strip()
-            pain_triggers = entry.get("pain_triggers", [])
-            for pain_trigger in pain_triggers:
-                pain_trigger_attribute = pain_trigger.get("attribute", "")
-                pain_trigger_dimension = pain_trigger.get("dimension", "")
-                pain_trigger_direction = pain_trigger.get("direction", "")
-                icp_archetypes = pain_trigger.get("icp_archetypes", [])
-                if isinstance(icp_archetypes, dict):
-                    icp_archetypes = [icp_archetypes]
-                elif not isinstance(icp_archetypes, list):
-                    icp_archetypes = []
-
-                zmot_events = pain_trigger.get("zmot_events", [])
-                if isinstance(zmot_events, dict):
-                    zmot_events = [zmot_events]
-                elif not isinstance(zmot_events, list):
-                    zmot_events = []
-
-                # If either is empty, still append at least one entry
-                if not icp_archetypes:
-                    icp_archetypes = [{}]
-                if not zmot_events:
-                    zmot_events = [{}]
-
-                for icp_archetype in icp_archetypes:
-                    industries = icp_archetype.get("industries", [])
-                    revenue_ranges = icp_archetype.get("revenues", [])
-                    employee_ranges = icp_archetype.get("employees", [])
-                    funding_stages = icp_archetype.get("funding_stages", [])
-                    geographies = icp_archetype.get("geographies", [])
-                    icp_match_score = icp_archetype.get("icp_match_score", 0.0)
-                    for zmot_event in zmot_events:
-                        trigger_event = zmot_event.get("trigger_event", "")
-                        observable_moments = zmot_event.get("observable_moments", [])
-                        trigger_keywords = zmot_event.get("trigger_keywords", [])
-                        zmot_match_score = zmot_event.get("zmot_match_score", 0.0)
-
-                        flattened_pains_map.append({
-                            "pain_id": pain_id,
-                            "pain_trigger": {
-                                "attribute": pain_trigger_attribute,
-                                "dimension": pain_trigger_dimension,
-                                "direction": pain_trigger_direction
-                            },
-                            "icp_archetype": {
-                                "industries": industries,
-                                "Revenues": revenue_ranges,
-                                "Employees": employee_ranges,
-                                "Funding Stages": funding_stages,
-                                "Geographies": geographies,
-                                "icp_match_score": icp_match_score
-                            },
-                            "zmot_event": {
-                                "trigger_event": trigger_event,
-                                "observable_moments": observable_moments,
-                                "trigger_keywords": trigger_keywords,
-                                "zmot_match_score": zmot_match_score
-                            },
-                            "source": "openai",
-                        })
-        print("\n\nFlattened pains map in ZMOT discovery")
-        print(json.dumps(flattened_pains_map, indent=2))
+        print("\n\nUpdated entries map in ZMOT discovery")
+        print(json.dumps(gpt_output, indent=2))
 
         # Step 3: Normalize and canonicalize the flattened capability map
-        print("📊 [Graph] Canonicalizing capability map...")
-        if not flattened_pains_map:
+        print("📊 [Graph] Canonicalizing ZMOT map...")
+        if not gpt_output:
             print("⚠️ No valid data found in OpenAI output. Cannot proceed.")
             return {
                 "pains_map": [],
                 "source": "empty",
                 "error": "No valid data found in OpenAI output."
             }
-        pains_map = canonicalize_and_create_zmot_icp_nodes(flattened_pains_map)
+        zmot_map = canonicalize_and_create_zmot_icp_nodes(gpt_output)
 
-        flattened_results = process_pain_triggers_zmot_icp_map_to_graph(pains_map)
-        print("ICP & ZMOT Graph processed. Results follow:", flattened_results)
+        print("ICP & ZMOT Graph processed. Results follow:", zmot_map)
 
         print("Updating cumulative relevance")
         relevance_nodes = product_subgraph.calculate_cumulative_relevance()
@@ -203,8 +184,8 @@ def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth
         print("Cumulative relevance json updated successfully.")
 
         return {
-                "pains_map": pains_map,
-                "ZMOT_ICP_Nodes": flattened_results
+                "pains_map": zmot_map,
+                "ZMOT_ICP_Nodes": zmot_map
         }
 
     except Exception as e:
@@ -216,5 +197,3 @@ def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth
             "personas": [],
             "error": str(e)
         }
-
-

@@ -181,6 +181,7 @@ class Graph:
 
     def calculate_cumulative_relevance(self):
         product_id = self.get_node_id("product", {})
+        print("Starting cum relevance calc for product ID:", product_id)
         if not product_id:
             print("No product ID found in subgraph.")
             return {}
@@ -192,6 +193,7 @@ class Graph:
         for edge in self.graph_edges:
             if edge["source"] == product_id:
                 stack.append(edge["target"])
+        print("Filled stack - Current stack length:", len(stack))
 
         while stack:
             node_id = stack.pop()
@@ -202,6 +204,7 @@ class Graph:
             sources = [edge["source"] for edge in self.graph_edges if edge["target"] == node_id]
             # Only proceed if all sources have their cumulative relevance set
             if all(source in cumulative_relevance for source in sources):
+                print(f"Calculating cumulative relevance for node {node_id} with sources {sources}")
                 total = 0.0
                 for source in sources:
                     weight = self.get_edge_weight(source, node_id) or 1.0
@@ -217,6 +220,7 @@ class Graph:
                         stack.append(edge["target"])
             else:
                 # Not all sources are ready, push this node back and push missing sources
+                print(f"Source nodes for node {node_id} not yet calculated. Adding back to stack")
                 stack.append(node_id)
                 for source in sources:
                     if source not in cumulative_relevance:
