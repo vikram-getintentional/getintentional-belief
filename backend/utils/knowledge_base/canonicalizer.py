@@ -30,140 +30,136 @@ def generate_new_id(prefix="pain"):
     return f"{prefix}_{uuid.uuid4().hex[:8]}"
 
 def canonicalize_job(jobs: list[str]) -> dict:
-    
-    # Step 0: Dedupes
     jobs = list(set(jobs))
     if not jobs:
         print("⚠️ No jobs provided for canonicalization.")
         return {}
 
-    # Step 1: Generate embeddings
-    
     job_embeddings = generate_and_save_embeddings(jobs, "job")
 
-    # Handle case with only one embedding
     if len(job_embeddings) == 1:
         print("⚠️ Only one job provided. Skipping clustering.")
         canonical_map = {jobs[0]: jobs[0]}
         save_canonical_map(canonical_map, JOB_CANONICAL_MAP_PATH)
-    
         return canonical_map
 
-    # Step 2: Cluster jobs
     clustered_jobs = cluster_items(job_embeddings)
-    
-
-    # Step 3: Assign canonical labels
-    canonical_map = assign_canonical_labels(clustered_jobs)
-
-    # Step 4: Save the canonical map
+    canonical_label_map = assign_canonical_labels(clustered_jobs)
+    canonical_map = {job: canonical_label_map[job] for job in jobs}
     save_canonical_map(canonical_map, JOB_CANONICAL_MAP_PATH)
-    
-
     return canonical_map
 
 def canonicalize_pain(pains: list[str]) -> dict:
-    
-    # Step 0: Dedupes
     pains = list(set(pains))
-    
     if not pains:
         print("⚠️ No pains provided for canonicalization.")
         return {}
 
-    # Step 1: Generate embeddings
-    
     pain_embeddings = generate_and_save_embeddings(pains, "pain")
-    
-    # Handle case with only one embedding
+
     if len(pain_embeddings) == 1:
         print("⚠️ Only one pain provided. Skipping clustering.")
         canonical_map = {pains[0]: pains[0]}
         save_canonical_map(canonical_map, PAIN_CANONICAL_MAP_PATH)
-        
         return canonical_map
 
-    # Step 2: Cluster pains
     clustered_pains = cluster_items(pain_embeddings)
-    
-
-    # Step 3: Assign canonical labels
-    canonical_map = assign_canonical_labels(clustered_pains)
-
-    # Step 4: Save the canonical map
+    canonical_label_map = assign_canonical_labels(clustered_pains)
+    canonical_map = {pain: canonical_label_map[pain] for pain in pains}
     save_canonical_map(canonical_map, PAIN_CANONICAL_MAP_PATH)
-    
+    return canonical_map
 
+def canonicalize_attributes(attributes: list[str]) -> dict:
+    attributes = list(set(attributes))
+    if not attributes:
+        print("⚠️ No attributes provided for canonicalization.")
+        return {}
+
+    attribute_embeddings = generate_and_save_embeddings(attributes, "attribute")
+
+    if len(attribute_embeddings) == 1:
+        print("⚠️ Only one attribute provided. Skipping clustering.")
+        canonical_map = {attributes[0]: attributes[0]}
+        return canonical_map
+
+    clustered_attributes = cluster_items(attribute_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_attributes)
+    canonical_map = {attribute: canonical_label_map[attribute] for attribute in attributes}
     return canonical_map
 
 def canonicalize_pain_trigger(pain_triggers: list[dict]) -> dict:
-    
-    # Step 0: Dedupes
-    seen = set()
-    deduplicated_triggers = []
+    if not pain_triggers:
+        print("⚠️ No pain triggers provided for canonicalization.")
+        return {}
+    attribute_cache = set()
     for trigger in pain_triggers:
-    
-        trigger_tuple = tuple(sorted(trigger.items()))  # Convert dict to a sorted tuple of key-value pairs
-        if trigger_tuple not in seen:
-            seen.add(trigger_tuple)
-            deduplicated_triggers.append(trigger)
-    pain_triggers = deduplicated_triggers
+        attribute_cache.add(trigger['attribute'].strip().lower())
+    canonical_attributes = canonicalize_attributes(list(attribute_cache))
 
+    # Build 1:1 mapping for each pain trigger in input
+    pain_trigger_canonical_map = {}
+    for orig in pain_triggers:
+        canonical_trigger = {
+            "attribute": canonical_attributes.get(orig["attribute"].strip().lower(), orig["attribute"]),
+            "dimension": orig.get("dimension", "").strip().lower(),
+            "direction": orig.get("direction", "").strip().lower()
+        }
+        pain_trigger_canonical_map[str(orig)] = canonical_trigger
 
-    # Step 1: Generate embeddings for pain triggers
+    save_canonical_map(pain_trigger_canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
+    return pain_trigger_canonical_map
 
-    trigger_texts = [f"{t['attribute']}|{t['dimension']}|{t['direction']}" for t in pain_triggers]
-    trigger_embeddings = generate_and_save_embeddings(trigger_texts, "pain_trigger")
+def canonicalize_titles(titles: list[str]) -> dict:
+    titles = list(set(titles))
+    if not titles:
+        print("⚠️ No titles provided for canonicalization.")
+        return {}
 
-    # Handle case with only one embedding
-    if len(trigger_embeddings) == 1:
-        print("⚠️ Only one pain trigger provided. Skipping clustering.")
-        canonical_map = {trigger_texts[0]: trigger_texts[0]}  # Map the raw trigger text to itself
-        save_canonical_map(canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
+    title_embeddings = generate_and_save_embeddings(titles, "title")
 
+    if len(title_embeddings) == 1:
+        print("⚠️ Only one title provided. Skipping clustering.")
+        canonical_map = {titles[0]: titles[0]}
         return canonical_map
 
-    # Step 2: Cluster pain triggers
-    clustered_triggers = cluster_items(trigger_embeddings)
+    clustered_titles = cluster_items(title_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_titles)
+    canonical_map = {title: canonical_label_map[title] for title in titles}
+    return canonical_map
 
+def canonicalize_departments(departments: list[str]) -> dict:
+    departments = list(set(departments))
+    if not departments:
+        print("⚠️ No departments provided for canonicalization.")
+        return {}
 
-    # Step 3: Assign canonical labels
-    canonical_map = assign_canonical_labels(clustered_triggers)
+    department_embeddings = generate_and_save_embeddings(departments, "department")
 
-    # Step 4: Map raw personas to canonical personas
-    trigger_texts = [f"{t['attribute']}|{t['dimension']}|{t['direction']}" for t in pain_triggers]
-    trigger_canonical_map = {}
-    for trigger, trigger_text in zip(pain_triggers, trigger_texts):
-        canonical_trigger_text = canonical_map[trigger_text]
-        canonical_trigger_parts = canonical_trigger_text.split("|")
-        canonical_trigger = {
-            "attribute": canonical_trigger_parts[0],
-            "dimension": canonical_trigger_parts[1],
-            "direction": canonical_trigger_parts[2],
-        }
-        # Use the stringified trigger dictionary as the key
-        trigger_canonical_map[str(trigger)] = canonical_trigger
-    # Step 5: Save the canonical map
-    save_canonical_map(trigger_canonical_map, CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json")
+    if len(department_embeddings) == 1:
+        print("⚠️ Only one department provided. Skipping clustering.")
+        canonical_map = {departments[0]: departments[0]}
+        return canonical_map
 
-    return trigger_canonical_map
+    clustered_departments = cluster_items(department_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_departments)
+    canonical_map = {department: canonical_label_map[department] for department in departments}
+    return canonical_map
+
 
 def canonicalize_persona(personas: list[dict]) -> dict:
+    # Updated logic by splitting personas into title, dept, seniority for canon work
+    if not personas:
+        print("⚠️ No personas provided for canonicalization.")
+        return {}
+    title_cache = set()
+    dept_cache = set()
+    for p in personas:
+        title_cache.add(p['title'].strip().lower())
+        dept_cache.add(p['department'].strip().lower())
+    canonical_titles = canonicalize_titles(list(title_cache))
+    canonical_depts = canonicalize_departments(list(dept_cache))
     
 
-    # Step 0: Dedupes
-    seen = set()
-    deduplicated_personas = []
-    for persona in personas:
-    
-        persona_tuple = tuple(sorted(persona.items()))  # Convert dict to a sorted tuple of key-value pairs
-        if persona_tuple not in seen:
-            seen.add(persona_tuple)
-            deduplicated_personas.append(persona)
-    personas = deduplicated_personas
-    
-
-    # Step 0.5: Merge by title+department, keep lowest seniority
     SENIORITY_NORMALIZATION = {
         "intern": "Junior",
         "junior": "Junior",
@@ -175,69 +171,24 @@ def canonicalize_persona(personas: list[dict]) -> dict:
         "director": "Executive",
         "vp": "Executive",
         "c-level": "Executive",
-        # fallback for unknowns
     }
-    NORMALIZED_ORDER = ["Junior", "Operator", "Manager", "Senior", "Executive"]
-    NORMALIZED_RANK = {s: i for i, s in enumerate(NORMALIZED_ORDER)}
-
+    
     def normalize_seniority(seniority: str) -> str:
         if not seniority:
             return "Operator"
         return SENIORITY_NORMALIZATION.get(seniority.strip().lower(), "Operator")
 
-    merged = {}
-    for p in personas:
-        norm_seniority = normalize_seniority(p.get("seniority", ""))
-        key = (p["title"].strip().lower(), p["department"].strip().lower())
-        current = merged.get(key)
-        current_rank = NORMALIZED_RANK.get(normalize_seniority(current["seniority"])) if current else None
-        this_rank = NORMALIZED_RANK.get(norm_seniority, 1)  # Default to "Operator"
-        if not current or this_rank < current_rank:
-            merged[key] = {**p, "seniority": norm_seniority}
-    personas = list(merged.values())
-    
-
-
-    if not personas:
-        print("⚠️ No personas provided for canonicalization.")
-        return {}
-
-    # Step 1: Generate embeddings for persona titles
-    
-    persona_texts = [f"{p['title']}|{p['department']}|{p['seniority']}" for p in personas]
-    persona_embeddings = generate_and_save_embeddings(persona_texts, "persona")
-
-    # Handle case with only one embedding
-    if len(persona_embeddings) == 1:
-        print("⚠️ Only one persona provided. Skipping clustering.")
-        canonical_map = {persona_texts[0]: persona_texts[0]}  # Map the raw persona text to itself
-        save_canonical_map(canonical_map, PERSONA_CANONICAL_MAP_PATH)
-    
-        return canonical_map
-
-    # Step 2: Cluster personas
-    clustered_personas = cluster_items(persona_embeddings)
-    
-
-    # Step 3: Assign canonical labels
-    canonical_map = assign_canonical_labels(clustered_personas)
-
-    # Step 4: Map raw personas to canonical personas
+    # Build 1:1 mapping for each persona in input
     persona_canonical_map = {}
-    for persona, persona_text in zip(personas, persona_texts):
-        canonical_persona_text = canonical_map[persona_text]
-        canonical_persona_parts = canonical_persona_text.split("|")
+    for orig in personas:
         canonical_persona = {
-            "title": canonical_persona_parts[0],
-            "department": canonical_persona_parts[1],
-            "seniority": canonical_persona_parts[2],
+            "title": canonical_titles.get(orig["title"].strip().lower(), orig["title"]),
+            "department": canonical_depts.get(orig["department"].strip().lower(), orig["department"]),
+            "seniority": normalize_seniority(orig.get("seniority", "")),
         }
-        # Use the stringified persona dictionary as the key
-        persona_canonical_map[str(persona)] = canonical_persona
-    # Step 5: Save the canonical map
+        persona_canonical_map[str(orig)] = canonical_persona
+ 
     save_canonical_map(persona_canonical_map, PERSONA_CANONICAL_MAP_PATH)
-    
-
     return persona_canonical_map
 
 if __name__ == "__main__":

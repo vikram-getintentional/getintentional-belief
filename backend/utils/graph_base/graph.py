@@ -1,8 +1,11 @@
 from collections import defaultdict, deque
+from collections import defaultdict, deque
 from typing import Dict, List, Set
+from math import exp
 
+from backend.utils.graph_base.edges.edge_manager import add_edge
 from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 class Graph:
     def __init__(
@@ -59,25 +62,7 @@ class Graph:
             self.pain_to_upstream_jobs[pain] = []
         self.pain_to_upstream_jobs[pain].append(job_info)
 
-    def get_upstream_jobs(self, pain: str) -> List[Dict]:
-        return self.pain_to_upstream_jobs.get(pain, [])
     
-    def get_upstream_jobs_by_id(self, pain_id: int) -> List[Dict]:
-        """
-        Return all jobs where pain_id is the source and edge_type is 'addresses'.
-        Output: List of dicts: {'job_id': ..., 'impact': ...}
-        """
-        results = []
-        for edge in self.graph_edges:
-            if (
-                edge.get("source_id") == pain_id
-                and edge.get("edge_type") == "addresses"
-            ):
-                results.append({
-                    "job_id": edge.get("target_id"),
-                    "impact": edge.get("weight", 1.0)
-                })
-        return results
     
     def get_source_nodes_by_target_and_type(self, target_id: str, edge_type: str) -> list:
         """
@@ -110,42 +95,19 @@ class Graph:
             if edge["source"] == source_id and edge["type"] == edge_type
         ]
     
-    def extract_subgraph(self, start_node_id: str) -> "Graph":
-        visited = set()
-        to_visit = [start_node_id]
-        subgraph_nodes = {}
-        subgraph_edges = []
-        subgraph_weights = {}
-
-        while to_visit:
-            node_id = to_visit.pop()
-            if node_id in visited:
-                continue
-            visited.add(node_id)
-            node = self.get_node_by_id(node_id)
-            if node:
-                subgraph_nodes[node_id] = node
-
-            # Traverse outgoing edges
-            for edge in self.graph_edges:
-                if edge.get("source") == node_id:
-                    target_id = edge.get("target")
-                    if target_id not in visited:
-                        subgraph_edges.append(edge)
-                        subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(target_id)
-                elif edge.get("target") == node_id:
-                    source_id = edge.get("source")
-                    if source_id not in visited:
-                        subgraph_edges.append(edge)
-                        subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(source_id)
-
-        return Graph(
-            node_registry=subgraph_nodes,
-            graph_edges=subgraph_edges,
-            edge_weights=subgraph_weights
-        )
+    def get_all_target_nodes(self, node) -> Set[str]:
+        """
+        Returns all target nodes for a given node by traversing outgoing edges.
+        """
+        target_list = []
+        node_id = node["id"]
+        for edge in self.graph_edges:
+            if edge["source"] == node_id:
+                target_id = edge["target"]
+                target = self.get_node_by_id(target_id)
+                target_list.append(target)
+        return target_list
+    
     def get_all_source_nodes(self, node) -> Set[str]:
         """
         Returns all source nodes for a given node by traversing incoming edges.
@@ -159,18 +121,8 @@ class Graph:
                 source_list.append(source)
         return source_list
 
-    def get_all_target_node_ids(self, node) -> Set[str]:
-        """
-        Returns all target nodes for a given node by traversing outgoing edges.
-        """
-        target_list = []
-        node_id = node["id"]
-        for edge in self.graph_edges:
-            if edge["source"] == node_id:
-                target_id = edge["target"]
-                target = self.get_node_by_id(target_id)
-                target_list.append(target)
-        return target_list
+    
+    
     def extract_product_subgraph(self, product_id: str) -> "Graph":
         """
         Extracts a subgraph containing all nodes and edges connected to the given product_id,
@@ -215,106 +167,145 @@ class Graph:
 
             # Traverse outgoing edges
             for edge in self.graph_edges:
+<<<<<<< Updated upstream
+                # If this node is source or target, add the edge and the other node
+                if edge.get("source") == node_id or edge.get("target") == node_id:
+=======
                 if edge.get("source") == node_id:
-                    target_id = edge.get("target")
-                    if target_id not in visited:
+>>>>>>> Stashed changes
+                    # Add edge if not already added
+                    if edge not in subgraph_edges:
                         subgraph_edges.append(edge)
                         subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(target_id)
-                elif edge.get("target") == node_id:
-                    source_id = edge.get("source")
-                    if source_id not in visited:
-                        subgraph_edges.append(edge)
-                        subgraph_weights[(edge.get("source"), edge.get("target"))] = self.get_edge_weight(edge.get("source"), edge.get("target"))
-                        to_visit.append(source_id)
-        # Calculate cumulative relevance for all nodes in the subgraph
-        cumulative_relevance = self.calculate_cumulative_relevance(product_id)
-        if not cumulative_relevance:
-            raise ValueError(f"No cumulative relevance calculated for product ID {product_id}.")
-        print("Cumulative relevance calculated for graph")
-        add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
-
+                    # Add the other node to to_visit if not visited
+                    other_id = edge.get("target") if edge.get("source") == node_id else edge.get("source")
+                    if other_id not in visited and other_id not in to_visit:
+                        to_visit.append(other_id)
         return Graph(
             node_registry=subgraph_nodes,
             graph_edges=subgraph_edges,
             edge_weights=subgraph_weights
         )
-        
+    
+    
+    
 
-    def calculate_cumulative_relevance(self, product_id: str) -> dict:
+    def calculate_cumulative_relevance(self, epsilon = 1e-6) -> dict:
         """
-        Calculates and normalizes cumulative relevance for all nodes connected to the given product_id.
-        Returns a dict: node_id -> normalized cumulative_relevance (0-1).
+        Going back to a simpler calculation of cumulative relevance. 
+        We calculate the relevance of each node as 
         """
-        print("Starting cumulative relevance calculation")
+        product_id = self.get_node_id("product", {})
+        if not product_id:
+            print("No product ID found in subgraph.")
+            return {}
         cumulative_relevance = defaultdict(float)
         cumulative_relevance[product_id] = 1.0
+        max_iter = 10
+        print("Starting cumulative relevance calculation for product ID:", product_id)
+        # Build reverse graph (downstream map)
+        node_targets = {}
+        for node in self.node_registry.values():
+            node_id = node["id"]
+            node_targets_list = self.get_all_target_nodes(node)
+            node_targets[node_id] = [n["id"] for n in node_targets_list]
+
+        # Initialize relevance values
+        relevance = {}
+        relevance = {
+            node_id: get_cumulative_relevance_data(product_id, node_id)
+            for node_id in self.node_registry.keys()
+        }
+
+
+        # This line seeds the prod relevance to 1.0 for when relevance data doesnt exist
+        relevance[product_id] = 1.0
+
+        frontier = deque(
+            node_id for node_id, rel in relevance.items()
+            if rel > 0.0
+        )
+        print("Initial frontier:", list(frontier))
         visited = set()
-        to_visit = [product_id]
+        for _ in range(max_iter):
+            if not frontier:
+                break
 
-        while to_visit:
-            node_id = to_visit.pop()
-            if node_id in visited:
-                continue
-            visited.add(node_id)
-            
+            next_frontier = set()
 
-            # Traverse outgoing edges
-            for edge in self.graph_edges:
-                if edge.get("source") == node_id:
-                    target_id = edge.get("target")
-                    if target_id not in visited:
-                        to_visit.append(target_id)
-                    weight = edge.get("weight", 1.0)
-                    cumulative_relevance[target_id] += cumulative_relevance[node_id] * weight
+            while frontier:
+                node_id = frontier.popleft()
+                # Checks for bug testing - kill this
+                node_data = self.get_node_by_id(node_id)
+                node_type = node_data.get("node_type", "unknown")
+                if node_type == "persona":
+                    node_text = node_data.get("title")
+                elif node_type == "pain":
+                    node_text = node_data.get("text")
+                elif node_type == "job":
+                    node_text = node_data.get("description", node_data.get("text"))
+                elif node_type == "pain_trigger":
+                    node_text = node_data.get("attribute", node_data.get("text"))
+                else:
+                    node_text = "Unknown Node Type"
+                
+                
+                old_value = relevance.get(node_id, 0.0)
+                this_node = self.get_node_by_id(node_id)
+                sources = self.get_all_source_nodes(this_node)
+                # Check for empty sources - mainly for product node
+                if not sources:
+                    print(f"No sources found for node {node_id}. Treating as root node.")
+                    # This is a root node (e.g., product node)
+                    # Propagate its relevance to its targets
+                    current_node = self.get_node_by_id(node_id)
+                    target_nodes = self.get_all_target_nodes(current_node)
+                    for target in target_nodes:
+                        target_id = target.get("id")
+                        # Calculate new relevance for the target
+                        w = self.get_edge_weight(node_id, target_id) or 0.0
+                        new_value = relevance[node_id] * w
+                        old_value = relevance.get(target_id, 0.0)
+                        if abs(new_value - old_value) > epsilon:
+                            relevance[target_id] = new_value
+                            next_frontier.add(target_id)
+                    continue
+                irrelevance = 1.0
+                for source in sources:
+                    source_id = source.get("id")
+                    w = self.get_edge_weight(source_id, node_id) or 0.0
+                    # Check for if edge_weight is None
+                    if w is None:
+                        w = 0.0
+                    source_rel = relevance.get(source_id, 0.0)
+                    irrelevance += (1 - source_rel * w)
+                    
+                
+                new_value = 1 - exp(-1*irrelevance)
+                
+                
+                if abs(new_value - old_value) > epsilon or node_id not in visited:
+                    relevance[node_id] = new_value
+                    current_node = self.get_node_by_id(node_id)
+                    target_nodes = self.get_all_target_nodes(current_node)
+                    # Check for empty target nodes
+                    if not target_nodes:
+                        print(f"No target nodes found for node {node_id}. Skipping.")
+                        continue
+                    for target in target_nodes:
+                        target_id = target.get("id")
+                        next_frontier.add(target_id)
+                visited.add(node_id)
 
-            # Traverse incoming edges
-            for edge in self.graph_edges:
-                if edge.get("target") == node_id:
-                    source_id = edge.get("source")
-                    if source_id not in visited:
-                        to_visit.append(source_id)
-                    weight = edge.get("weight", 1.0)
-                    cumulative_relevance[source_id] += cumulative_relevance[node_id] * weight
-        print("Cumulative relevance calculation complete. Now normalizing")
-        # Normalize all scores to 0-1
-        if cumulative_relevance:
-            max_relevance = max(cumulative_relevance.values())
-            if max_relevance > 0:
-                cumulative_relevance = {
-                    node_id: score / max_relevance
-                    for node_id, score in cumulative_relevance.items()
-                }
+            frontier = deque(next_frontier)
+        # Ensure relevance is a dict of {node_id: cumulative relevance}
+        for node_id, rel in relevance.items():
+            if rel > 0.0:
+                cumulative_relevance[node_id] = rel
             else:
-                cumulative_relevance = dict(cumulative_relevance)
-        else:
-            cumulative_relevance = {}
-
+                cumulative_relevance[node_id] = 0.0
         return dict(cumulative_relevance)
-    
-    def get_all_pain_paths_to_base_by_id(self, pain_id, base_pain_ids, visited=None):
-        """
-        Returns all upstream paths from a pain node to any base pain node.
-        Each path is a list of (pain_id, job_id, impact) tuples.
-        """
-        if visited is None:
-            visited = set()
-        if pain_id in visited:
-            return []
-        visited.add(pain_id)
-        if pain_id in base_pain_ids:
-            return [[(pain_id, None, 1.0)]]
-        all_paths = []
-        upstream_jobs = self.get_upstream_jobs_by_id(pain_id)
-        for upstream in upstream_jobs:
-            dep_job_id = upstream["job_id"]
-            dep_pain_id = upstream["pain_id"]
-            impact = upstream.get("impact") or self.get_edge_weight(pain_id, dep_job_id) or 0.5
-            sub_paths = self.get_all_pain_paths_to_base_by_id(dep_pain_id, base_pain_ids, visited.copy())
-            for path in sub_paths:
-                all_paths.append([(pain_id, dep_job_id, impact)] + path)
-        return all_paths
-        
+
 
     def get_product_id_from_subgraph(self) -> str:
         # Assumes there is only one product node in the subgraph
@@ -328,6 +319,7 @@ class Graph:
         Updates each capability node in the graph with its degree centrality score.
         """
         # Assuming self.node_registry or similar holds all nodes
+        updated_caps_list = []
         capability_list = self.get_nodes_list("capability", {})
         for cap in capability_list:
             cap_node = cap[1]
@@ -348,16 +340,88 @@ class Graph:
             
             # Update the node's centrality
             cap_node["centrality"] = normalized_centrality
-            # Persist the update to capability_nodes.json
-            get_or_create_capability_node(
-                name=cap_node["name"],
-                description=cap_node.get("description", ""),
-                capability_coreness=cap_node.get("coreness", 0.0),
-                capability_centrality=normalized_centrality,
-                node_id=cap_id
+            updated_caps_list.append(cap_node)
+        self.update_capabilities_by_nodes_list(updated_caps_list)
+
+    def update_capabilities_by_nodes_list(self, capability_nodes):
+        """
+        Updates existing capabilities by node_id.
+        """
+        updated_nodes = []
+        for capability_node in capability_nodes:
+            capability_id = capability_node.get("id")
+            if not capability_id:
+                raise ValueError("Capability ID is required for capability updates.")
+            capability = self.get_node_by_id(capability_id)
+            name = capability.get("name", "")
+            description = capability.get("description", "")
+            coreness = capability.get("coreness", 0.0)
+            centrality = capability.get("centrality", 0.0)
+            
+            updated_node = get_or_create_capability_node(
+                name=name,
+                description=description,
+                node_id=capability_id,
+                capability_coreness=coreness,
+                capability_centrality=centrality,
+                return_created=True
             )
-        
-        
+            updated_nodes.append(updated_node)
+        return updated_nodes
+
+    def set_capabilities_relevance(self, capability_threshold = 0.5, coreness_threshold = 0.4) -> None:
+        """
+        Sets the relevance for all capabilities in a product subgraph based on centrality and coreness as functional or blockers.
+        """
+        # Logic to determine importance of capabilities based on centrality and coreness and add to a reduced set of "functional capabilities"
+        product_id = self.get_node_id("product", {})
+        print("Starting product persona discovery for product ID:", product_id)
+        capability_node_ids = self.get_target_nodes_by_source_and_type(product_id, "offered_by")
+        if not capability_node_ids:
+            print(f"No capabilities found for product ID {product_id}.")
+            return []
+        functional_capabilities_ids = []
+        blocker_capabilities_ids = []
+        for capability_id in capability_node_ids:
+            capability_node = self.get_node_by_id(capability_id)
+            capability_centrality = capability_node.get("centrality", 0)
+            coreness = capability_node.get("coreness", 0)
+            if capability_centrality < capability_threshold and coreness < coreness_threshold:
+                capability_node["importance"]= "blocker"
+                blocker_capabilities_ids.append(capability_id)
+                continue
+            elif capability_centrality > capability_threshold and coreness >= coreness_threshold:
+                capability_node["importance"] = "critical"
+                functional_capabilities_ids.append(capability_id)
+            else:
+                print("anamoly>>", capability_node.get("name"), "has coreness", coreness, "and centrality", capability_centrality)
+                capability_node["importance"] = "critical"
+                functional_capabilities_ids.append(capability_id)
+
+        return functional_capabilities_ids, blocker_capabilities_ids
+
+    def add_capabilities_to_product(self, capabilities):
+        """
+        Adds new capabilities to a product node and creates edges.
+        """
+        product_id = self.get_product_id_from_subgraph()
+        added_capabilities = []
+        for capability in capabilities:
+            capability_name = capability.get("name", "").strip()
+            capability_description = capability.get("description", "").strip()
+            capability_node = get_or_create_capability_node(
+                name=capability_name,
+                description=capability_description,
+                coreness=0.9
+            )
+            capability_node_id = capability_node["id"]
+            add_edge(
+                source_id=capability_node_id,
+                target_id=product_id,
+                edge_type="offered_by"
+            )
+            added_capabilities.append(capability_node)
+        return added_capabilities
 
 # Example usage:
 if __name__ == "__main__":

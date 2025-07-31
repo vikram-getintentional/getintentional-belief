@@ -1,0 +1,382 @@
+[
+  {
+    "id": "410f5903-9954-4d16-ba82-3af1165013e5",
+    "description": "generate insights from business data"
+  },
+  {
+    "id": "c1e60645-9e24-4901-aff8-6a7563a5494f",
+    "description": "determine and implement the most profitable pricing model"
+  },
+  {
+    "id": "910c01ae-5b7e-42ca-a741-12d14e5ccadb",
+    "description": "handle international transactions and payments"
+  },
+  {
+    "id": "0f9deda3-62dc-423a-9654-f4ee0a6cfcb0",
+    "description": "manage and monitor all business subscriptions"
+  },
+  {
+    "id": "57cbac07-c7f7-4ff4-be80-384e1bde459c",
+    "description": "accurate recognition and reporting of revenue"
+  },
+  {
+    "id": "c2716867-c230-4cab-859d-b8766378f5b3",
+    "description": "ensure seamless integration with various platforms"
+  },
+  {
+    "id": "955130d8-23ec-497c-a600-f0e946ab31a4",
+    "description": "retain customers and reduce churn rate"
+  },
+  {
+    "id": "5a788bc8-347a-4cea-8970-fcb36c76c2db",
+    "description": "ensure compliance with data security regulations"
+  },
+  {
+    "id": "8dad48e0-854b-4b8f-856d-cb989cf9c44d",
+    "description": "improve customer retention and reduce churn"
+  },
+  {
+    "id": "3e3fb274-0686-4ae7-85ae-5534c0be6e98",
+    "description": "ensure seamless data flow and functionality across various platforms"
+  },
+  {
+    "id": "b930d7fe-8714-4085-8ad6-684510b4eb66",
+    "description": "expand business operations globally"
+  },
+  {
+    "id": "3ca571df-f0c6-408e-adce-0efdd7345be0",
+    "description": "provide actionable insights for business decision making"
+  },
+  {
+    "id": "eaa233da-42bd-444e-ac6a-0f90b5952fef",
+    "description": "accurately recognize and report revenue"
+  },
+  {
+    "id": "9e213243-2797-480c-9ebb-43b32e95ce4b",
+    "description": "ensure data security and regulatory compliance"
+  },
+  {
+    "id": "b84224ad-3c1e-486d-ae97-fc1087f4ea4e",
+    "description": "develop and implement optimal pricing strategies"
+  },
+  {
+    "id": "9a5697d7-7abd-4405-9e60-238768601237",
+    "description": "reduce customer churn and improve customer satisfaction"
+  },
+  {
+    "id": "aeff6e08-d498-467d-9f94-a61f3477bcd5",
+    "description": "ensure data security and compliance with regulations"
+  },
+  {
+    "id": "c5c02b60-61c2-43ed-bb37-4bd8447b1cae",
+    "description": "find the most profitable pricing model"
+  },
+  {
+    "id": "917cc1c6-4581-41ae-a3e4-cc75f8526fef",
+    "description": "provide insights into business performance and customer behavior"
+  },
+  {
+    "id": "07924514-0149-41db-a078-b3d0421d3be4",
+    "description": "ensure accurate and compliant revenue recognition"
+  },
+  {
+    "id": "08301e51-c223-4f84-94a4-78b12ee875cb",
+    "description": "manage international transactions smoothly"
+  },
+  {
+    "id": "461ca523-6a1a-47ab-b4f6-c4bfe499341e",
+    "description": "ensure seamless integration with other platforms"
+  },
+  {
+    "id": "392e578a-80e2-48fc-8789-cb9f0048af99",
+    "description": "manage and track all subscriptions effectively"
+  },
+  {
+    "id": "a8fd930a-a87f-4c56-9709-6be1178f2403",
+    "description": "improve customer retention and reduce churn rate"
+  },
+  {
+    "id": "9489025e-327c-4f3a-937d-96adfe9f495f",
+    "description": "experiment with and find the most profitable pricing model"
+  },
+  {
+    "id": "2c697da5-b646-4b53-bed9-face8603ed45",
+    "description": "generate insights into business performance and customer behavior"
+  },
+  {
+    "id": "1f781312-5f89-44df-84a4-7fa9ff24ade8",
+    "description": "ensure smooth international transactions and payments"
+  },
+  {
+    "id": "b9382d6a-7334-451b-930f-c06bc81c5148",
+    "description": "manage and track all subscriptions efficiently"
+  },
+  {
+    "id": "13b5bea6-93f0-4e1b-bf9a-84f5ecc82dfb",
+    "description": "manage and monitor subscriptions"
+  },
+  {
+    "id": "141e660e-d3c7-430f-b2ce-fc1fb0f4fdd1",
+    "description": "generate insights from data"
+  },
+  {
+    "id": "757fa56f-f27c-40ff-b2fd-d84ea2171331",
+    "description": "reduce customer churn"
+  },
+  {
+    "id": "e95c0f49-b259-42dc-964b-c08e8f74d6b9",
+    "description": "optimize pricing models"
+  },
+  {
+    "id": "83bb3c14-71fb-434a-8bf3-a2d714c25dda",
+    "description": "ensure accurate revenue recognition"
+  },
+  {
+    "id": "60b9e8a9-07dd-4066-b3b3-329c47ffc35e",
+    "description": "manage international transactions"
+  },
+  {
+    "id": "81bcc83d-984f-4ea2-ba6c-70f964f32083",
+    "description": "manage international transactions and currency conversions"
+  },
+  {
+    "id": "63490a7b-0699-4090-bc82-46d0e514fe46",
+    "description": "ensure data security and compliance with relevant regulations"
+  },
+  {
+    "id": "0b49bfeb-d824-430a-8f17-43d79b545c46",
+    "description": "ensure accurate and gaap-compliant revenue recognition"
+  },
+  {
+    "id": "fc36f9de-022d-4a34-ac44-42ab3ad9a64b",
+    "description": "experiment and implement profitable pricing models"
+  },
+  {
+    "id": "6c1b9502-ea7e-419e-b2e0-496a805f0ece",
+    "description": "analyze and report on business performance"
+  },
+  {
+    "id": "63d87819-bb4a-46d1-a47c-468c11f57262",
+    "description": "manage customer relationships and reduce churn"
+  },
+  {
+    "id": "95119724-c160-47f4-abb7-0d563789ec8a",
+    "description": "track and manage customer subscriptions"
+  },
+  {
+    "id": "091fe972-5396-4777-8606-4b5e9ae1c78e",
+    "description": "manage and protect company assets"
+  },
+  {
+    "id": "1b39e736-798e-4053-bf86-77fef5781526",
+    "description": "maintain workplace safety and prevent accidents"
+  },
+  {
+    "id": "0a0332ba-1e99-4d3e-a614-68ce43f21f21",
+    "description": "monitor employee behavior and prevent dishonesty"
+  },
+  {
+    "id": "5c72db0e-7a77-4c32-8fa6-a3af3149365e",
+    "description": "ensure company compliance with legal and regulatory requirements"
+  },
+  {
+    "id": "68151f6c-f4fd-4cb3-aaa3-4baa955b1290",
+    "description": "resolve insurance-related queries and claims"
+  },
+  {
+    "id": "24612600-e68a-4cb1-8e51-fde032316246",
+    "description": "ensure quality of professional services"
+  },
+  {
+    "id": "72274715-2347-464d-8105-32cdc8cf9157",
+    "description": "ensure it security and mitigate potential financial risks"
+  },
+  {
+    "id": "0d2011c0-860f-4428-a90d-2da49036553a",
+    "description": "ensure quick resolution of customer queries and claims"
+  },
+  {
+    "id": "aee684b2-6058-4260-91a8-5aefc6d451d0",
+    "description": "ensure seamless and efficient operations"
+  },
+  {
+    "id": "95f36af4-ff3c-4a1e-a315-dab931587ae5",
+    "description": "analyze business performance and customer behavior to drive growth"
+  },
+  {
+    "id": "0ab1b18a-5346-4e72-ab76-261c9ce60b14",
+    "description": "manage and monitor all customer subscriptions"
+  },
+  {
+    "id": "c4cab619-d663-4a54-9238-73d10e757379",
+    "description": "manage international payments and currencies"
+  },
+  {
+    "id": "36fc4cc3-d974-420c-a532-550952c258d9",
+    "description": "experiment with different pricing models to maximize profitability"
+  },
+  {
+    "id": "388ae4a6-8292-42a6-938d-2cc47b16dfc5",
+    "description": "recognize revenue accurately and be audit ready"
+  },
+  {
+    "id": "4c51d414-5485-4386-9001-ac5e0b0b53d6",
+    "description": "integrate with various other platforms for enhanced functionality"
+  },
+  {
+    "id": "11b58ce0-006f-403c-8395-3e6c2410ed65",
+    "description": "ensure compliance with all relevant data security regulations"
+  },
+  {
+    "id": "d8f4aa8b-fbe5-442a-9989-4ee3d1161841",
+    "description": "retain customers and increase customer lifetime value"
+  },
+  {
+    "id": "72857844-1624-4ccf-ad20-690d30414aac",
+    "description": "experiment and optimize pricing models for profitability"
+  },
+  {
+    "id": "1dfa6935-6edc-49bf-bc89-034486c0e604",
+    "description": "ensure security and compliance of all transactions and data handling"
+  },
+  {
+    "id": "730c54ff-673d-4020-90aa-e95c4ec5534a",
+    "description": "reduce customer churn and increase customer lifetime value"
+  },
+  {
+    "id": "d0ba5b2a-aedf-4e07-8e0f-8313bd38f461",
+    "description": "enable smooth financial transactions in international markets"
+  },
+  {
+    "id": "596b24f3-b4dd-4998-aa15-364a90afd58a",
+    "description": "ensure accurate tracking and management of all subscriptions"
+  },
+  {
+    "id": "ebd14f30-d49e-4c08-bca0-2515c807d7c3",
+    "description": "manage international transactions and payment gateways"
+  },
+  {
+    "id": "8ea749d4-6df8-4f0c-8774-7a7032ae9cf9",
+    "description": "generate and analyze business performance reports"
+  },
+  {
+    "id": "9b387df6-f854-4bb7-b81b-a6f992d5c2c1",
+    "description": "improve customer retention and lifetime value"
+  },
+  {
+    "id": "397562c1-6d58-4c62-a5c0-d81bae3b1d80",
+    "description": "ensure data security and compliance"
+  },
+  {
+    "id": "577a099e-946d-429f-b233-978afa387d7f",
+    "description": "experiment and determine profitable pricing models"
+  },
+  {
+    "id": "ef7cb15a-7dd7-4229-b092-3e7f060d3fa2",
+    "description": "manage and monitor customer subscriptions"
+  },
+  {
+    "id": "f9c24816-e7d3-4b7c-b42b-25d616410c89",
+    "description": "reduce customer churn rate"
+  },
+  {
+    "id": "3fdad26c-7d53-4b29-b485-252fb4f89863",
+    "description": "ensure transactions and data handling are secure and compliant"
+  },
+  {
+    "id": "9237f390-58ce-4367-8f44-2c380d6f7818",
+    "description": "integrate with various other platforms"
+  },
+  {
+    "id": "2555b08c-8ddb-48a9-b474-65f3a9ba75fa",
+    "description": "gain insights into business performance and customer behavior"
+  },
+  {
+    "id": "26a98896-03d6-427c-84f1-703dce8e0a59",
+    "description": "recognize revenue accurately"
+  },
+  {
+    "id": "cf34266f-dcdc-4492-a374-0cecc56af00e",
+    "description": "manage and mitigate it risks"
+  },
+  {
+    "id": "e2e2bc21-ad84-441d-84ed-eadfad8e5aeb",
+    "description": "leverage technology to deliver efficient services"
+  },
+  {
+    "id": "a7ff894d-ffed-4fba-85ca-2b2a9b04183c",
+    "description": "provide round-the-clock customer support"
+  },
+  {
+    "id": "2b0becfe-36aa-42dd-a230-e8161556b1f9",
+    "description": "implementing technology to meet customer needs and improve service delivery"
+  },
+  {
+    "id": "8e56caa9-aad9-47bb-be14-eef73b4a5e6c",
+    "description": "ensuring professional conduct and adherence to contract terms"
+  },
+  {
+    "id": "3d405c4d-5221-4c7a-bd97-9542687104b2",
+    "description": "preventing and dealing with employee fraud"
+  },
+  {
+    "id": "4bc0c426-ff2e-4759-b59b-e9ee3fc13e8f",
+    "description": "resolve incoming customer tickets in under 24 hours"
+  },
+  {
+    "id": "85be6e40-353e-449e-b395-912d8172f205",
+    "description": "managing workplace safety and accident prevention"
+  },
+  {
+    "id": "5c228003-72bc-46e2-934f-6ba8683aa75f",
+    "description": "protecting directors and officers from personal liabilities"
+  },
+  {
+    "id": "92e8a4c9-ee49-4e1f-adc4-08bf583d812b",
+    "description": "protecting company's it infrastructure and data"
+  },
+  {
+    "id": "659fd71d-9fee-4b69-b7cd-c6f7da20ae35",
+    "description": "managing company's physical assets"
+  },
+  {
+    "id": "92e54830-6f26-49b1-8c65-1a7fa612383c",
+    "description": "convert active users into demo, success, or upsell calls"
+  },
+  {
+    "id": "420d4744-319c-4fbd-b23a-08018c6e9f14",
+    "description": "qualify and schedule meetings with prospects"
+  },
+  {
+    "id": "50a14219-47c6-4528-89b8-16bdb8928ccc",
+    "description": "track meetings and follow-ups in crm"
+  },
+  {
+    "id": "a43bc9fd-c342-42fe-a394-fdbf503e3509",
+    "description": "plan and execute marketing campaigns"
+  },
+  {
+    "id": "8813e8ff-4309-4622-8b5d-42aadc4c6ac7",
+    "description": "track and understand booking behaviors"
+  },
+  {
+    "id": "010911c6-23ab-4ccf-8fe3-c2ce04e9c81b",
+    "description": "distribute meetings equally among sales team"
+  },
+  {
+    "id": "60e60274-4603-43f7-8c47-d1ab3555e03e",
+    "description": "convert chat conversations into scheduled meetings"
+  },
+  {
+    "id": "60b881fd-f3a9-4512-9945-1a58e78ed461",
+    "description": "improve meeting attendance rates"
+  },
+  {
+    "id": "8df477db-be10-4d0b-809a-df8a42150759",
+    "description": "improve conversion rates in chat"
+  },
+  {
+    "id": "a97f6a0e-b200-463c-bac2-1df9bb9b7b1a",
+    "description": "improve user engagement in the app"
+  }
+]

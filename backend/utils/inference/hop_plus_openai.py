@@ -5,62 +5,78 @@ from backend.utils.inference.openai_client import client  # uses our centralized
 # In the openAI output include the original job as "original_job" and original persona as "original_persona.title+department+seniority"
 
 
-def get_upstream_triplets(persona: dict,job: str) -> list[dict[str, any]]:
+def get_upstream_triplets(triplet: dict) -> list[dict[str, any]]:
     """
-    Given a persona, job description, pain description, department, and job title, this function queries OpenAI to produce a mapping in the following structure:
-
-    [
-      {
-        "persona": {
-          "title": "...",
-          "department": "...",
-          "seniority": "..."
-        },
-        "job": "...",
-        "impact":0.5,
-        "pain": "...",
-        "pain_trigger": "Volume of incoming leads"
-      },
-      ...
-    ]
+    Given a set of triplets of persona, job description, pain description, department, and job title, this function queries OpenAI to produce a mapping of upstream pains, jobs and personas tied to each original job id.
     """
-
+    job_list_json = json.dumps(triplet, indent=2)
     prompt = f"""
-      You are a {persona['title']} in the {persona['department']} team at {persona['seniority']} level with an original job – {job}.
-      If you fail to do this job well, what upstream pain does it create, for whom, when performing what job?
 
-      Provide a structured upstream impact mapping that shows:
-      - For each original job, list the upstream business pain experienced by the failure of this job
-      - For each upstream pain, include how much does failing this job impact this upstream pain (Scale: 0.0 to 1.0)
-      - For each pain what attribute must scale in volume, frequency or complexity for this pain to become intolerable.
-      - For each upstream pain list the upstream jobs that are blocked by this pain, or directly improved if this pain is alleviated.
-      - For each upstream job, list the persona responsible for that job (include title, department, and seniority).
-      
+    You are given a list of persona-job-pain triplets, each with a relevance score.
 
-      Return your output in JSON format as a list of entries:
-      [
+    For each triplet, do the following:
+    1. Treat the persona as the actor, performing the specified job, and experiencing the specified pain (with the given relevance).
+    2. Identify 1–3 **upstream business pains** directly resulting from the failure of this persona to perform their job well.
+      - Each pain must describe a **workflow bottleneck**, **data unavailability**, or **preceding task failure** that prevents this job from being done well.
+      - The pain must be **causally upstream** — i.e., if this pain exists, the current job is essential.
+      - The pain should not be a vague concern — it must be a **specific, operational dependency**.
+    3. For each upstream pain, provide:
+      - **impact**: A float between 0.0 and 1.0 indicating the degree to which the original job's failure drives this pain.
+      - an impact score of 0.7-1.0 indicates not performing this job well causes debilitating pain upstream, 0.3-0.6 indicates partial pain that can be mitigated with workarounds, and 0.1-0.2 indicates weak or non-critical pains that can be lived with.
+      - **pain_trigger**: An object with:
+        - attribute: the real-world metric or variable (e.g., "Number of support tickets")
+        - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
+        - direction: one of ["Increase", "Decrease", "Change"]
+    4. For each upstream pain, list 1–2 **upstream jobs to be done** where this pain is typically experienced.
+        - Each job should be a **specific task or responsibility** in a business process that describes a "job to be done".
+        - Avoid abstract statements. Use job phrases like “Prepare monthly financial reports” or “Maintain lead scoring logic”.
+
+    5. For each job, list 1–2 responsible personas with:
+        - title
+        - department
+        - seniority (one of: Junior, Operator, Manager, Senior, Executive)
+          
+      ---
+
+      Input Jobs:
       {{
-          "original_job": "{job}",
-          "dependent_pains": [{{
-              "pain": "...",
-              "pain_impact": "0.5",
-              "pain_trigger": "Volume of incoming leads",
-              "dependent_jobs": [{{
-                  "description": "Job description that is blocked or affected",
-                  "dependent_personas": [
-                      {{
-                          "title": "Job holder title",
-                          "department": "Department",
-                          "seniority": "Seniority level (must be one of: Junior, Operator, Manager, Senior, Executive)"
-                      }},
-                      ...
+      {job_list_json}
+      }}
+
+      ---
+
+      Return the result in the following JSON format:
+      [
+        {{
+          "original_job_id": "string",
+          "upstream_pains": [
+            {{
+              "pain": "string",
+              "impact": float,
+              "pain_trigger": {{
+                "attribute": "string",
+                "dimension": "string",
+                "direction": "Increase" | "Decrease" | "Change"
+              }},
+              "upstream_jobs": [
+                {{
+                  "description": "string",
+                  "personas": [
+                    {{
+                      "title": "string",
+                      "department": "string",
+                      "seniority": "Junior" | "Operator" | "Manager" | "Senior" | "Executive"
+                    }}
                   ]
-              }}],
-          }}]
-      }},
-      ...
+                }}
+              ]
+            }}
+          ]
+        }}
       ]
-  """
+
+      All output must be realistic, based on actual workflows and organizational roles. Do not invent exotic personas or vague responsibilities.
+    """
 
     try:
         response = client.chat.completions.create(
