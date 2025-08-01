@@ -7,13 +7,12 @@ from collections import defaultdict
 
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 from backend.utils.inference.gpt_prompts.capability_to_pain_persona import infer_persona_job_pain_from_capabilities
-from backend.utils.graph_base.graph_builder import process_capability_map_to_graph
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_canonical_map
-from backend.utils.nlp.matcher import match_capabilities_to_canonical_personas
 from backend.utils.nlp.scorer import persona_relevance_score
-from backend.utils.graph_base.graph_builder import convert_rule_matches_to_capability_map, process_capability_map_to_graph
-from backend.utils.graph_base.graph import Graph
+from backend.utils.graph_base.graph_builder import convert_rule_matches_to_capability_map
+from backend.utils.graph_base.network_graph import build_product_graph, get_node_by_id, get_target_nodes_by_source_and_type, update_capability_centralities
 
+import networkx as nx
 
 
 
@@ -32,19 +31,19 @@ client = OpenAI(api_key=api_key)
 
 
 # 🧠 Rule-based first, fallback to 2-step OpenAI reasoning
-def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=False, retry_depth=0) -> dict:
+def infer_with_rules_then_fallback(product_id, product_subgraph: nx.DiGraph, force_openai=False, retry_depth=0) -> dict:
     print("Starting inference loop: ", product_id)
     from datetime import datetime
     # Updated query logic
-    product_node = product_subgraph.get_node_by_id(product_id)
+    product_node = get_node_by_id(product_subgraph, product_id)
     if not product_node:
         raise ValueError("Product node not found.")
     summary = product_node.get("summary")
-    capability_ids = product_subgraph.get_target_nodes_by_source_and_type(product_id, "offered_by")
+    capability_ids = get_target_nodes_by_source_and_type(product_subgraph, product_id, "offered_by")
     capabilities = [
-        product_subgraph.get_node_by_id(cid)
+        get_node_by_id(product_subgraph, cid)
         for cid in capability_ids
-        if product_subgraph.get_node_by_id(cid)
+        if get_node_by_id(product_subgraph, cid)
     ]
 
     # Add a rule here to check if summary and capabilities are empty. If empty we will prompt the frontend for the user to run value prop again.
@@ -59,10 +58,20 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         } 
 
     # Filter valid capabilities
-    capabilities = [c for c in capabilities if c.get("name") and c.get("description")]
-    print("Filtered capabilities in infer:" , capabilities)
+    filtered_capabilities = []
+    for c in capabilities:
+        if c.get("name") and c.get("description"):
+            filtered_capabilities.append({
+                "id": c.get("id"), 
+                "name": c.get("name"), 
+                "description": c.get("description")
+                })
+            
+    print("Filtered capabilities in infer:" , filtered_capabilities)
 
-    print("Loaded graph with nodes:", len(product_subgraph.node_registry), "edges:", len(product_subgraph.graph_edges))
+    capability_ids_list = [cap.get("id") for cap in filtered_capabilities]
+
+    print("Loaded graph with nodes:", len(product_subgraph.nodes), "edges:", len(product_subgraph.edges))
 
     try:
         print("🔁 Running GPT reasoning...")
@@ -70,7 +79,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
         
         
         print("🧠 [GPT] Generating capability map...")
-        gpt_output = infer_persona_job_pain_from_capabilities(summary, capabilities)
+        gpt_output = infer_persona_job_pain_from_capabilities(summary, filtered_capabilities)
 
         """
         Output is of format:
@@ -89,43 +98,24 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                     - seniority: string
         """
 
-        # First pass: Build flattened_capability_map
-        flattened_capability_map = []
-        for entry in gpt_output:
-            cap_id = entry.get("capability_id", "Unknown").strip()
-            for pain in entry.get("pains", []):
-                pain_desc = pain.get("pain", "Unknown Pain")
-                relevance_array = pain.get("relevance", [])
-                jobs = pain.get("jobs", [])
-                for job in jobs:
-                    job_desc = job.get("description", "")
-                    job_impact = job.get("impact", 0.0)
-                    personas = job.get("personas", [])
-                    for persona in personas:
-                        persona_title = persona.get("title", "")
-                        persona_department = persona.get("department", "")
-                        persona_seniority = persona.get("seniority", "")
-                        persona_job_importance = persona.get("job_importance", 0.0)
-                        flattened_capability_map.append({
-                            "capability_id": cap_id,
-                            "pain": pain_desc,
-                            "relevance": relevance_array,
-                            "job": job_desc,
-                            "job_impact": job_impact,
-                            "persona": {
-                                "title": persona_title,
-                                "department": persona_department,
-                                "seniority": persona_seniority
-                            },
-                            "persona_job_importance": persona.get("job_importance", 0.0),
-                            "source": "openai",
-                        })
+        if not gpt_output:
+            print("⚠️ No valid data found in OpenAI output. Cannot proceed.")
+            return {
+                "capability_map": [],
+                "personas": [],
+                "aggregated_personas": [],
+                "source": "empty",
+                "error": "No valid data found in OpenAI output."
+            }
+        print("GPT output:", gpt_output)
+        capability_map = convert_rule_matches_to_capability_map(gpt_output, capability_ids_list, product_id)
+
         print("\n\nFlattened capability map in Hop0 traversal")
-        print(json.dumps(flattened_capability_map, indent=2))
+        print(json.dumps(capability_map, indent=2))
 
         # Step 3: Normalize and canonicalize the flattened capability map
         print("📊 [Graph] Canonicalizing capability map...")
-        if not flattened_capability_map:
+        if not capability_map:
             print("⚠️ No valid capability data found in OpenAI output. Cannot proceed.")
             return {
                 "capability_map": [],
@@ -134,21 +124,18 @@ def infer_with_rules_then_fallback(product_id, product_subgraph, force_openai=Fa
                 "source": "empty",
                 "error": "No valid capability data found."
             }
-        capability_map = convert_rule_matches_to_capability_map(flattened_capability_map)
         
-        flattened_results = process_capability_map_to_graph(capabilities, capability_map)
-
         print("Calculating capability centralities")
-        product_subgraph.update_capability_centralities()
+        update_capability_centralities(product_subgraph)
 
-        print("Updating cumulative relevance")
-        relevance_nodes = product_subgraph.calculate_cumulative_relevance()
-        add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
-        print("Cumulative relevance json updated successfully.")
+        #print("Updating cumulative relevance")
+        #relevance_nodes = calculate_cumulative_relevance(product_subgraph)
+        #add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+        #print("Cumulative relevance json updated successfully.")
 
         return {
                 "capability_map": capability_map,
-                "personas": flattened_results
+                "personas": capability_map
                 
             }
 

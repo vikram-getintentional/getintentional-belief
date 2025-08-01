@@ -8,29 +8,51 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  e.preventDefault();
+  setError('');
 
-    try {
-      const res = await fetch('http://localhost:8000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const res = await fetch('http://localhost:8000/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (!res.ok) {
-        throw new Error('Invalid email or password');
-      }
-
-      const data = await res.json();
-      localStorage.setItem('token', data.access_token);
-      navigate('/onboarding');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+    if (!res.ok) {
+      throw new Error('Invalid email or password');
     }
-  };
+
+    const data = await res.json();
+    localStorage.setItem('token', data.access_token);
+
+    // Assume company_id is returned in login response
+    const companyId = data.company_id;
+
+    // Check if product subgraph exists for this company
+    const subgraphRes = await fetch(`http://localhost:8000/company/${companyId}/product-subgraph`, {
+      headers: {
+        'Authorization': `Bearer ${data.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!subgraphRes.ok) {
+      throw new Error('Failed to check product subgraph');
+    }
+
+    const subgraphData = await subgraphRes.json();
+    // subgraphData should have { exists: boolean, capabilities: [...] }
+    if (subgraphData.exists && Array.isArray(subgraphData.capabilities) && subgraphData.capabilities.length > 0) {
+      navigate('/valueproposition');
+    } else {
+      navigate('/onboarding');
+    }
+  } catch (err: any) {
+    setError(err.message || 'Login failed');
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
+from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_node_by_id, update_capabilities_by_nodes_list
 from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
 from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
@@ -6,10 +7,9 @@ from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
-from backend.utils.graph_base.graph import Graph
-from backend.utils.dev_environment.graph_loader import load_graph_from_folder
+from backend.utils.dev_environment.graph_loader import load_graph_from_folder, load_product_graph_from_folder
 from backend.utils.inference.discovery_engine.zmot_discovery import infer_zmot_icp
-from backend.utils.knowledge_base.value_prop_analysis import get_product_value_prop, get_product_value_prop_capabilities, process_capabilities
+from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities, process_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import (
     get_or_create_capability_node,
@@ -20,6 +20,7 @@ from backend.utils.knowledge_base.persona_generation import (
 )
 
 from backend.utils.inference.discovery_engine.hop_plus_agent import infer_upstream_with_rules
+import networkx as nx
 
 # Hardcoded path to graph data folder - to be updated in production
 
@@ -31,6 +32,28 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
 
 router = APIRouter()
+
+# 
+@router.get("/company/{company_id}/product-subgraph")
+def get_product_subgraph(company_id: str):
+    # Try to load the product subgraph for this company
+    product_id = get_product_id_from_company_id(company_id)
+    if product_id is None:
+        return {"exists": False}
+
+    # Get product value prop and capabilities
+    product_subgraph = build_product_graph(product_id)
+    product_data = get_product_value_prop_capabilities(product_subgraph)
+    if not product_data or not product_data.get("capabilities"):
+        return {"exists": False, "capabilities": []}
+
+    return {
+        "exists": True,
+        "capabilities": product_data["capabilities"],
+        "summary": product_data.get("summary", ""),
+        "product_node_id": product_data.get("product_node_id", ""),
+        "plg_flag": product_data.get("plg_flag", False)
+    }
 
 # 🔎 Basic scraper-based analysis
 @router.post("/analyze")
@@ -53,17 +76,9 @@ def analyze(payload: dict, request: Request, db: Session = Depends(get_db)):
     if not url:
         return {"error": "URL required."}
 
-    # 🧠 Load graph
-    node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-    base_graph = Graph(
-        node_registry=node_registry,
-        graph_edges=graph_edges,
-        edge_weights=edge_weights
-    )
-
     # Call the core logic function
     try:
-        result = get_product_value_prop(company_id, base_graph, url, text, plg_cta, footer_features)
+        result = generate_product_value_prop(company_id, url, text, plg_cta, footer_features)
         print("Dict output summary:", result["summary"]," \n Dict output capabilitites: ", result["capabilities"])
         return result
     except Exception as e:
@@ -97,13 +112,8 @@ def update_capabilities_route(payload: dict, request: Request, db: Depends = Non
         product_id = payload.get("product_id")
         if not product_id:
             raise HTTPException(status_code=400, detail="Product ID is required.")
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+
+        product_subgraph = build_product_graph(product_id)
         cap_list_to_process = []
         for cap in capabilities:
             cap_id = cap.get("id")
@@ -112,7 +122,7 @@ def update_capabilities_route(payload: dict, request: Request, db: Depends = Non
             updated_capability = { "id": cap_id, "name": updated_cap_name, "description": updated_cap_description }
             cap_list_to_process.append(updated_capability)
         print("Capabilities to process:", cap_list_to_process)
-        updated_nodes = product_subgraph.update_capabilities_by_nodes_list(cap_list_to_process)
+        updated_nodes = update_capabilities_by_nodes_list(product_subgraph,cap_list_to_process)
         return {"message": "Capabilities updated successfully.", "capabilities": [n["id"] for n in updated_nodes]}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -145,15 +155,9 @@ def add_capabilities_route(payload: dict, request: Request, db: Depends = None):
         if not product_id or not capabilities:
             raise HTTPException(status_code=400, detail="Product ID and capabilities are required.")
 
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        product_subgraph = build_product_graph(product_id)
 
-        added_capabilities = product_subgraph.add_capabilities_to_product(capabilities)
+        added_capabilities = add_capabilities_to_product(product_subgraph, capabilities)
         return {
             "message": "New capabilities added successfully.",
             "capabilities": [
@@ -227,16 +231,8 @@ async def analyze_deep(payload: dict, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-
-        # Extract the product subgraph
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
-        print("Extracted product subgraph with total nodes:", len(product_subgraph.node_registry))
+        product_subgraph = build_product_graph(product_id)
+        print("Extracted product subgraph with total nodes:", len(product_subgraph.nodes))
         print("Starting hop0 inference")
         hop_0_results = infer_with_rules_then_fallback(product_id, product_subgraph)
         # Run Hop+ upstream inference
@@ -266,15 +262,18 @@ async def get_products(company_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        products = get_company_products(base_graph, company_id)
-        # products should be a list of dicts: [{id, name}, ...]
+        product_id = get_product_id_from_company_id(company_id)
+        if product_id:
+            product_subgraph = build_product_graph(product_id)
+            product_node = get_node_by_id(product_subgraph, product_id)
+            products = [{
+                "id": product_node.get("id"),
+                "name": product_node.get("name", ""),
+                "summary": product_node.get("summary", ""),
+                "url": product_node.get("url", ""),
+            }]
+        else: products = []
+        
         print("Products found:", products)
         return {"products": products}
     except Exception as e:
@@ -302,14 +301,7 @@ async def get_product_capabilities(product_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        print("Loading product details for product_id:", product_id)
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        product_subgraph = build_product_graph(product_id)
         
         product_summary = get_product_value_prop_capabilities(product_subgraph)
 
@@ -340,26 +332,11 @@ async def get_personas(product_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        aggregated_personas = []
         print("Loading personas for product_id:", product_id)
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        product_subgraph = build_product_graph(product_id)
         # Print all extracted nodes in product_subgraph
+        aggregated_personas = []
         aggregated_personas = get_persona_relevance(product_subgraph)
-
-        
-        
-        
-        # personas should be a list of persona dicts
-        #if personas is None:
-         #   print("No personas found for product_id from get_product_personas:", product_id)
-         #   return {"detail": "No Summaries or Capabilities Mapped"}
-        #print("Personas from get_product_personas:", personas)
         return aggregated_personas
     except Exception as e:
         print("❌ Get personas error:", e)
@@ -389,20 +366,12 @@ async def analyze_hop_plus(payload: dict, request: Request):
         if not product_id:
             raise HTTPException(status_code=400, detail="Product ID required.")
         print("Starting Hop0 graph load")
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        product_subgraph = build_product_graph(product_id)
         
         hop_plus_results = infer_upstream_with_rules(
             product_subgraph=product_subgraph,
-            cap_threshold = 0.3,
-            relevance_threshold = 0.6,
+            cap_threshold=0.3,
+            relevance_threshold=0.6,
             max_depth=3
         )
 
@@ -436,25 +405,12 @@ async def generate_zmot_icp(product_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        print("Loading product graph for product_id:", product_id)
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        product_subgraph = build_product_graph(product_id)
 
         zmot_icp_nodes = infer_zmot_icp(product_id, product_subgraph)
         
         print("ZMOT ICP nodes generated in analyzer:", zmot_icp_nodes)
 
-        
-        # personas should be a list of persona dicts
-        #if personas is None:
-         #   print("No personas found for product_id from get_product_personas:", product_id)
-         #   return {"detail": "No Summaries or Capabilities Mapped"}
-        #print("Personas from get_product_personas:", personas)
         return []
     except Exception as e:
         print("❌ Generate ZMOT ICP error:", e)
@@ -484,14 +440,7 @@ async def get_zmot_icp(product_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        node_registry, graph_edges, edge_weights = load_graph_from_folder(GRAPH_DATA_PATH)
-        base_graph = Graph(
-            node_registry=node_registry,
-            graph_edges=graph_edges,
-            edge_weights=edge_weights
-        )
-        print("Loading product graph for product_id:", product_id)
-        product_subgraph = base_graph.extract_product_subgraph(product_id)
+        product_subgraph = build_product_graph(product_id)
 
         icp_zmot_result = get_zmot_icp_relevance(product_subgraph)
         print("Analyzer ZMOT results:", icp_zmot_result)

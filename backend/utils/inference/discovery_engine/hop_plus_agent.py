@@ -1,22 +1,21 @@
 import json
 from typing import List, Dict, Any, Set
+from backend.utils.graph_base.network_graph import get_cumulative_relevance, get_node_by_id, get_node_id, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain_trigger_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data 
-
-from backend.utils.graph_base.graph import Graph
 from backend.utils.graph_base.graph_builder import canonicalize_and_create_hop_plus_nodes
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 from backend.utils.inference.gpt_prompts.hop_plus_openai import get_upstream_triplets
-
+import networkx as nx
 
 def infer_upstream_with_rules(
-    product_subgraph: Graph,
+    product_subgraph: nx.DiGraph,
     cap_threshold: float = 0.1,
     relevance_threshold: float = 0.5,
     max_depth: int = 3
 ):
     #1. Get product ID, and initialize arrays/ sets
-    product_id = product_subgraph.get_node_id("product", {})
+    product_id = get_node_id(product_subgraph, "product", {})
     if not product_id:
         raise ValueError("Product ID not found in the provided subgraph.")
 
@@ -28,12 +27,12 @@ def infer_upstream_with_rules(
 
 
     #2. Get all Jobs in subgraph and add them to jobs holder
-    jobs_list = product_subgraph.get_nodes_list_ids("job", {})
+    jobs_list = get_nodes_list_ids(product_subgraph, "job", {})
     if not jobs_list:
         raise ValueError("No jobs found in the provided subgraph.")
     jobs_ids = set(jobs_list)
     for job_id in jobs_ids:
-        job_node = product_subgraph.get_node_by_id(job_id)
+        job_node = get_node_by_id(product_subgraph, job_id)
         if job_node and job_id not in jobs_holder:
             print("Adding job id to jobs holder: ", job_id)
             jobs_holder.append(job_id)
@@ -45,7 +44,7 @@ def infer_upstream_with_rules(
 #3 core traversal logic to get upstream jobs:
 # Sets next most relevant job from process holder - then gets upstream jobs for that job. If upstream exists - adds them to the holder for sorting, if upstream doesn't exist - adds current to gpt_cache for future processing.
 def traverse_upstream_jobs(jobs_holder, product_subgraph, gpt_jobs_cache, visited_jobs, current_depth=0):
-    product_id = product_subgraph.get_node_id("product", {})
+    product_id = get_node_id(product_subgraph, "product", {})
     print("Starting traverse while loop")
     i = 0
     while jobs_holder:
@@ -54,7 +53,7 @@ def traverse_upstream_jobs(jobs_holder, product_subgraph, gpt_jobs_cache, visite
 
         current_job_id = process_jobs_holder(jobs_holder, product_subgraph)
         print("Current job id: ", current_job_id)
-        current_job = product_subgraph.get_node_by_id(current_job_id)
+        current_job = get_node_by_id(product_subgraph, current_job_id)
         if current_job:
             if current_job_id in visited_jobs:
                 jobs_holder.remove(current_job_id)
@@ -83,7 +82,7 @@ def traverse_upstream_jobs(jobs_holder, product_subgraph, gpt_jobs_cache, visite
 # if jobs_holder has any data - returns next highest relevance job, else []
 def process_jobs_holder(jobs_holder, product_subgraph):
     print("Processing jobs holder")
-    product_id = product_subgraph.get_node_id("product", {})
+    product_id = get_node_id(product_subgraph, "product", {})
     if not jobs_holder:
         return []
     if len(jobs_holder) < 1:
@@ -91,7 +90,7 @@ def process_jobs_holder(jobs_holder, product_subgraph):
     job_relevance_list = []
     for job_id in jobs_holder:
         print("figuring relevance")
-        job = product_subgraph.get_node_by_id(job_id)
+        job = get_node_by_id(product_subgraph, job_id)
         relevance = get_cumulative_relevance_data(product_id, job.get("id"))
         job_relevance_list.append({
             "id": job_id,
@@ -111,11 +110,11 @@ def get_upstream_job_ids(next_job_id, product_subgraph):
     if not next_job_id:
         print("No next job provided.")
         return []
-    upstream_pain_ids = product_subgraph.get_target_nodes_by_source_and_type(next_job_id, "impacts")
+    upstream_pain_ids = get_target_nodes_by_source_and_type(product_subgraph, next_job_id, "impacts")
     if not upstream_pain_ids:
         return []
     for upstream_pain_id in upstream_pain_ids:
-        upstream_job_ids = product_subgraph.get_target_nodes_by_source_and_type(upstream_pain_id, "addresses")
+        upstream_job_ids = get_target_nodes_by_source_and_type(product_subgraph, upstream_pain_id, "addresses")
         if not upstream_job_ids:
             print(f"No upstream jobs found for pain ID: {upstream_pain_id}")
             continue
@@ -129,8 +128,8 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
         print("Max depth reached, stopping further processing.")
         return []
     print("Processing GPT cache at depth: ", current_depth)
-    product_id = product_subgraph.get_node_id("product", {})
-    product_node = product_subgraph.get_node_by_id(product_id)
+    product_id = get_node_id(product_subgraph, "product",{})
+    product_node = get_node_by_id(product_subgraph, product_id)
     summary = product_node.get("summary", "")
     if not gpt_jobs_cache:
         print("No jobs in GPT cache to process.")
@@ -143,14 +142,14 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
     for job_id in gpt_jobs_cache:
         personas_list = []
         pains_list = []
-        job = product_subgraph.get_node_by_id(job_id)
-        linked_personas = product_subgraph.get_target_nodes_by_source_and_type(job_id, "performed_by")
-        linked_pains = product_subgraph.get_source_nodes_by_target_and_type(job_id, "addresses")
+        job = get_node_by_id(product_subgraph, job_id)
+        linked_personas = get_target_nodes_by_source_and_type(product_subgraph, job_id, "performed_by")
+        linked_pains = get_source_nodes_by_target_and_type(product_subgraph, job_id, "addresses")
         if not linked_personas or not linked_pains:
             print(f"Something is wrong - {job_id} has no linked pains/ jobs.")
             continue
         for persona in linked_personas:
-            persona_node = product_subgraph.get_node_by_id(persona)
+            persona_node = get_node_by_id(product_subgraph, persona)
             persona_title = persona_node.get("title")
             persona_department = persona_node.get("department")
             persona_seniority = persona_node.get("seniority")
@@ -160,7 +159,7 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
                 "seniority": persona_seniority
             })
         for pain in linked_pains:
-            pain_node = product_subgraph.get_node_by_id(pain)
+            pain_node = get_node_by_id(product_subgraph, pain)
             pain_text = pain_node.get("text")
             pains_list.append({
                 "pain": pain_text
@@ -199,14 +198,14 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
             "source": "empty",
             "error": "No valid data found in OpenAI output."
         }
-    hop_plus_new_job_ids = canonicalize_and_create_hop_plus_nodes(gpt_outputs)
+    hop_plus_new_job_ids = canonicalize_and_create_hop_plus_nodes(gpt_outputs, product_id)
     # Clear the cache after processing
     gpt_jobs_cache.clear()
 
     print("ICP & ZMOT Graph processed. Results follow:", hop_plus_new_job_ids)
 
     print("Updating cumulative relevance")
-    relevance_nodes = product_subgraph.calculate_cumulative_relevance()
+    relevance_nodes = get_cumulative_relevance(product_subgraph)
     add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
     print("Cumulative relevance json updated successfully.")
 

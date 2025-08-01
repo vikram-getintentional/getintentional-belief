@@ -6,10 +6,12 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from collections import defaultdict
 
+from backend.utils.graph_base.network_graph import get_cumulative_relevance, get_node_by_id, get_nodes_list, get_target_nodes_by_source_and_type
 from backend.utils.graph_base.nodes.company_nodes import get_or_create_employees_node, get_or_create_funding_stage_node, get_or_create_geographies_node, get_or_create_industry_node, get_or_create_revenue_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 from backend.utils.graph_base.graph_builder import canonicalize_and_create_zmot_icp_nodes
 from backend.utils.inference.gpt_prompts.zmot_icp_openai import infer_pain_triggers_zmot_icp
+import networkx as nx
 
 
 
@@ -29,15 +31,15 @@ client = OpenAI(api_key=api_key)
 
 
 # 🧠 Rule-based first, fallback to 2-step OpenAI reasoning
-def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth=0, relevance_threshold=0.5) -> dict:
+def infer_zmot_icp(product_id, product_subgraph: nx.DiGraph, force_openai=False, retry_depth=0, relevance_threshold=0.5) -> dict:
     print("Starting inference loop: ", product_id)
     from datetime import datetime
     # Updated query logic
-    product_node = product_subgraph.get_node_by_id(product_id)
+    product_node = get_node_by_id(product_subgraph, product_id)
     if not product_node:
         raise ValueError("Product node not found.")
     summary = product_node.get("summary")
-    pains_list = product_subgraph.get_nodes_list("pain",{})
+    pains_list = get_nodes_list(product_subgraph, "pain", {})
     if not pains_list:
         print("No pain nodes yet. Do persona inference first...")
         return {
@@ -50,23 +52,23 @@ def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth
     pain_ids = [node_id for node_id, _ in pains_list]
     pain_jobs_dict = []
     for pain_id in pain_ids:
-        pain_node = product_subgraph.get_node_by_id(pain_id)
+        pain_node = get_node_by_id(product_subgraph, pain_id)
         if not pain_node:
             continue
-        existing_pain_triggers = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "triggered_by")
+        existing_pain_triggers = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "triggered_by")
         if existing_pain_triggers:
-            existing_archetypes = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "experienced_in")
-            existing_zmot_events = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "zmot_trigger_event")
-        if not existing_pain_triggers or not existing_archetypes or not existing_zmot_events:    
+            existing_archetypes = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "experienced_in")
+            existing_zmot_events = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "zmot_trigger_event")
+        if not existing_pain_triggers or not existing_archetypes or not existing_zmot_events:
             # pain_jobs_dict is only populated if there are no existing pain triggers or if icp or zmot data is missing
             # That way we are not running gpt queries each time for the entire pains repo
             pain_relevance = get_cumulative_relevance_data(product_id, pain_id)
             if pain_relevance > relevance_threshold:
                 pain_text = pain_node.get("text", "")
-                related_job_ids = product_subgraph.get_target_nodes_by_source_and_type(pain_id, "addresses")
+                related_job_ids = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "addresses")
                 jobs_list = []
                 for job_id in related_job_ids:
-                    job_node = product_subgraph.get_node_by_id(job_id)
+                    job_node = get_node_by_id(product_subgraph, job_id)
                     job_description = job_node.get("description", "")
                     jobs_list.append(job_description)
                 pain_jobs_dict.append({
@@ -174,12 +176,12 @@ def infer_zmot_icp(product_id, product_subgraph, force_openai=False, retry_depth
                 "source": "empty",
                 "error": "No valid data found in OpenAI output."
             }
-        zmot_map = canonicalize_and_create_zmot_icp_nodes(gpt_output)
+        zmot_map = canonicalize_and_create_zmot_icp_nodes(gpt_output, product_id)
 
         print("ICP & ZMOT Graph processed. Results follow:", zmot_map)
 
         print("Updating cumulative relevance")
-        relevance_nodes = product_subgraph.calculate_cumulative_relevance()
+        relevance_nodes = get_cumulative_relevance(product_subgraph)
         add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
         print("Cumulative relevance json updated successfully.")
 

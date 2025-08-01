@@ -17,7 +17,7 @@ def get_upstream_triplets(summary, job_sets: list[dict[str, any]]) -> list[dict[
 
     For each job, treat the personas as actors performing the specified job, and experiencing the specified pains.
     Then do the following:
-    1. List 1–3 upstream business pains internal to the organization resulting from the failure of this persona to perform their job well. These should be specific workflow inefficiencies or failure modes experienced by a persona while performing a job within the organization.
+    1. List 1–3 upstream business pains internal to the organization faced by any persona (including the current persona) while performing another job that the current job exists to solve.
     2. For each pain, assign a Severity Score as a float between 0.0 and 1.0 that reflects how much it is impacted by the job's failure.
     - Severity scores of 0.7-1.0 indicate that the pain is a direct and complete result of this job's failure.
     - Scores of 0.3–0.6 indicate that the pain is only partially caused by this job's failure (e.g. same persona, downstream workflow, or shared pain).

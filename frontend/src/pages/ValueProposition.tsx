@@ -39,15 +39,19 @@ const ValueProposition = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const prodData = await prodRes.json();
+        console.log("Backend Products data:", prodData);
         if (!prodData.products || prodData.products.length === 0) {
           setStatusMsg("No products found. Please run Value Prop first.");
           return;
         }
         setProducts(prodData.products);
 
+        console.log("Products fetched length:", prodData.products.length);
+
         // Auto-select if only one product
         if (prodData.products.length === 1) {
           setSelectedProductId(prodData.products[0].id);
+          console.log("Auto selection of product ID")
         }
       } catch (err) {
         setStatusMsg("Error fetching company or products.");

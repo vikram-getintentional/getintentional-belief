@@ -16,115 +16,78 @@ from backend.utils.knowledge_base.canonicalizer import (
         canonicalize_pain_trigger
     )
 
-# This function creates edges for the node IDs in the flattened list
-def process_capability_map_to_graph(capabilities_list, capability_map: dict):
-    flattened_results = []
-    print("Starting process map")
-    for entry in capability_map:
-            """
-            Canonicalized entry structure:
-            {
-                "capability_id": cap_id,
-                "pain": pain_desc,
-                "pain_trigger": {
-                    "attribute": pain_trigger_attribute,
-                    "dimension": pain_trigger_dimension,
-                    "direction": pain_trigger_direction
-                },
-                "relevance": relevance_array,
-                "job": job_desc,
-                "job_impact": job_impact,
-                "persona": {
-                    "title": persona_title,
-                    "department": persona_department,
-                    "seniority": persona_seniority
-                },
-                "persona_job_importance": persona.get("job_importance", 0.0),
-                "source": "openai",
-                "pain_node_id": pain_id,
-                "job_node_id": job_id,
-                "persona_node_id": persona_id,
-                "pain_trigger_node_id": pain_trigger_id
-            }
-            """
-            print("Processing entry:", entry)
-            capability_id = entry.get("capability_id")
-            pain_id = entry.get("pain_node_id")
-            relevance_array = entry.get("relevance", [])
-            job_id = entry.get("job_node_id")
-            persona_node_id = entry.get("persona_node_id")
-            pain_trigger_node_id = entry.get("pain_trigger_node_id", None)
-            job_impact = entry.get("job_impact", 0.5)
-            persona_job_importance = entry.get("persona_job_importance", 0.5)
-            source = entry.get("source", "unknown")
-            now = datetime.utcnow().isoformat()
-            
-
-            
-            # Looks through cap_list array and sets an edge for each cap to this pain combo with weight = relevance_array[i]
-            for i, cap in enumerate(capabilities_list):
-                cap_id = cap["id"]
-                relevance = relevance_array[i] if i < len(relevance_array) else 0
-                # Add edge: Capability → Pain
-                add_edge(
-                    source_id=cap_id,
-                    target_id=pain_id,
-                    edge_type="solves",
-                    weight=relevance,
-                    last_updated=now,
-                    source=source
-                )
-                print(f"Added edge from Capability {cap_id} to Pain {pain_id} with weight {relevance}")
-            # Add edge: Pain → Job
-            add_edge(
-                source_id=pain_id,
-                target_id=job_id,
-                edge_type="addresses",
-                weight=job_impact,
-                last_updated=now,
-                source=source
-            )
-
-            # Add edge: Job → Persona
-            add_edge(
-                source_id=job_id,
-                target_id=persona_node_id,
-                edge_type="performed_by",
-                weight=persona_job_importance,
-                last_updated=now,
-                source=source
-            )
-
-            # (Optional) Add to flattened_results for downstream use
-            flattened_results.append(entry)
-    print("Finished final flattened results:", flattened_results)
-    return flattened_results
-
-
 # This function gets flattened gpt results and creates canonicalized nodes. Return is the flattened map with node IDs.
-def convert_rule_matches_to_capability_map(results):
+def convert_rule_matches_to_capability_map(results, capability_ids_list, product_id):
     print("Converting rule matches to capability map...")
     pain_cache = set()
     job_cache = set()
     persona_cache = set()
     capability_map = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-
+    """
+    results is like:
+    - cap_id:
+    - capability:
+    - "pains": [
+        pain: text
+        relevance: array
+        jobs:[
+            description
+            impact
+            personas:[
+                job_importance
+                title
+                department
+                seniority
+            ]
+        ]]
+    """
     # Gather unique raw values for canonicalization
     for entry in results:
-        raw_pain = entry.get("pain", "").strip()
-        raw_job = entry.get("job", "").strip()
-        raw_persona = entry.get("persona", {})
+        pains = entry.get("pains", [])
+        if not isinstance(pains, list):
+            print("❌ Invalid pains format in entry:", entry)
+            continue
+        for pain in pains:
+            raw_pain = pain.get("pain", "").strip()
+            if raw_pain:
+                pain_cache.add(raw_pain)
+            else:
+                print("❌ Pain text is empty in entry:", entry)
+            jobs = pain.get("jobs", [])
+            if not isinstance(jobs, list):
+                print("❌ Invalid jobs format in entry:", entry)
+                continue
+            for job in jobs:
+                raw_job = job.get("description", "").strip()
+                if raw_job:
+                    job_cache.add(raw_job)
+                else:
+                    print("❌ Job description is empty in entry:", entry)
+                personas = job.get("personas", [])
+                if not isinstance(personas, list):
+                    print("❌ Invalid personas format in entry:", entry)
+                    continue
+                for persona in personas:
+                    raw_persona = {
+                        "title": persona.get("title", "").strip(),
+                        "department": persona.get("department", "").strip(),
+                        "seniority": persona.get("seniority", "").strip()
+                    }
+                    if raw_persona.get("title") or raw_persona.get("department") or raw_persona.get("seniority"):
+                        persona_cache.add((
+                            raw_persona.get("title"),
+                            raw_persona.get("department"),
+                            raw_persona.get("seniority")
+                        ))
+                    else:
+                        print("❌ Persona fields are empty in entry:", entry)
 
-        pain_cache.add(raw_pain)
-        job_cache.add(raw_job)
-        if isinstance(raw_persona, dict):
-            persona_cache.add((
-                raw_persona.get("title", "").strip(),
-                raw_persona.get("department", "").strip(),
-                raw_persona.get("seniority", "").strip()
-            ))
-        
-
+    print("Raw caches collected. Now canonicalizing...")
+    print("Processed Gpt Results:")
+    for entry in results:
+        print(entry)
+        print("--------------------------------------------------")
+    # At this point we have: (1) The exact structure of gpt output, (2) Raw values added to each cache
     # Canonicalize
     canonical_personas = canonicalize_persona([
         {"title": t, "department": d, "seniority": s}
@@ -135,8 +98,11 @@ def convert_rule_matches_to_capability_map(results):
 
     # Lookup logic for setting right node IDs to entry list
     persona_lookup = {
-        (p["title"].strip().lower(), p["department"].strip().lower(), p["seniority"].strip().lower()):
-            get_or_create_persona_node(p["title"], p["department"], p["seniority"])["id"]
+        str({
+            "title": p["title"].strip(),
+            "department": p["department"].strip(),
+            "seniority": p["seniority"].strip()
+        }): get_or_create_persona_node(p["title"], p["department"], p["seniority"])["id"]
         for p in canonical_personas.values()
     }
     pain_lookup = {
@@ -149,51 +115,114 @@ def convert_rule_matches_to_capability_map(results):
     }
 
     # Assign canonical values and node IDs to each entry
+    print("Final Lookup dictionaries created with sizes. Starting Hop0 node and edge processing")
     for entry in results:
-        # Canonicalize pain
-        raw_pain = entry.get("pain", "").strip()
-        pain_canonical = canonical_pains.get(raw_pain, raw_pain)
-        entry["pain"] = pain_canonical
+        source = entry.get("source", "openai")
+        now = datetime.utcnow().isoformat()
+        capability_id = entry.get("capability_id", "").strip()
+        pains = entry.get("pains", [])
+        for pain in pains:
+            # Canonicalize pain
+            raw_pain = pain.get("pain", "").strip()
+            pain_canonical = canonical_pains.get(raw_pain, raw_pain)
+            pain["pain"] = pain_canonical
+            pain_lookup_key = pain["pain"].strip().lower()
+            if pain_lookup_key not in pain_lookup:
+                print("❌ Pain lookup failed for key:", pain_lookup_key)
+                print("Available pain keys:", list(pain_lookup.keys()))
+            pain_node_id = pain_lookup.get(pain_lookup_key)
+            relevance_array = pain.get("relevance", [])
+            for i, cap_id in enumerate(capability_ids_list):
+                relevance = relevance_array[i] if i < len(relevance_array) else 0
+                # Add edge: Capability → Pain
+                add_edge(
+                    product_id=product_id,
+                    source_id=cap_id,
+                    target_id=pain_node_id,
+                    edge_type="solves",
+                    weight=relevance,
+                    last_updated=now,
+                    source=source
+                )
+                print(f"Added edge from Capability {cap_id} to Pain {pain_node_id} with weight {relevance}")
+            print("All pains processed - moving to jobs")
+            for job in pain.get("jobs", []):
+                # Canonicalize job
+                raw_job = job.get("description", "").strip()
+                job_canonical = canonical_jobs.get(raw_job, raw_job)
+                job["description"] = job_canonical
 
-        # Canonicalize job
-        raw_job = entry.get("job", "").strip()
-        job_canonical = canonical_jobs.get(raw_job, raw_job)
-        entry["job"] = job_canonical
+                job_lookup_key = job_canonical.strip().lower()
+                if job_lookup_key not in job_lookup:
+                    print("❌ Job lookup failed for key:", job_lookup_key)
+                    print("Available job keys:", list(job_lookup.keys()))
+                job_node_id = job_lookup.get(job_lookup_key)
+                job_impact = job.get("impact", 0.5)  # Default to 0.5 if not specified
 
-        # Canonicalize persona
-        raw_persona = entry.get("persona", {})
-        persona_key = str({
-            "title": raw_persona.get("title", "").strip(),
-            "department": raw_persona.get("department", "").strip(),
-            "seniority": raw_persona.get("seniority", "").strip()
-        })
-        persona_canonical = canonical_personas.get(persona_key, raw_persona)
-        entry["persona"] = persona_canonical
+                # Add edge: Pain → Job
+                add_edge(
+                    product_id=product_id,
+                    source_id=pain_node_id,
+                    target_id=job_node_id,
+                    edge_type="addresses",
+                    weight=job_impact,
+                    last_updated=now,
+                    source=source
+                )
+                print(f"Added edge from Pain {pain_node_id} to Job {job_node_id} with weight {job_impact}")
 
-        # Lookup node IDs using canonicalized values
-        persona_lookup_key = (
-            entry["persona"]["title"].strip().lower(),
-            entry["persona"]["department"].strip().lower(),
-            entry["persona"]["seniority"].strip().lower()
-        )
-        if persona_lookup_key not in persona_lookup:
-            print("❌ Persona lookup failed for key:", persona_lookup_key)
-            print("Available persona keys:", list(persona_lookup.keys()))
+                for raw_persona in job.get("personas", []):
+                    # Canonicalize persona
+                    print("Raw persona in lookup:", raw_persona)
 
-        pain_lookup_key = entry["pain"].strip().lower()
-        if pain_lookup_key not in pain_lookup:
-            print("❌ Pain lookup failed for key:", pain_lookup_key)
-            print("Available pain keys:", list(pain_lookup.keys()))
+                    persona_key = str({
+                        "title": raw_persona.get("title", "").strip(),
+                        "department": raw_persona.get("department", "").strip(),
+                        "seniority": raw_persona.get("seniority", "").strip()
+                    })
+                    persona_canonical = canonical_personas.get(persona_key, raw_persona)
+                    persona = persona_canonical
+                    persona_title = persona.get("title", "").strip()
+                    persona_department = persona.get("department", "").strip()
+                    persona_seniority = persona.get("seniority", "").strip()
+                    
+                    if persona_title == "" or persona_department == "" or persona_seniority == "":
+                        print("❌ Persona fields are empty in lookup:", entry)
+                        continue
+                    print("Persona canonicalization complete - moving to lookup")
+                    # Lookup node IDs using canonicalized values
+                    persona_lookup_key = str({
+                        "title": persona_title.strip(),
+                        "department": persona_department.strip(),
+                        "seniority": persona_seniority.strip()
+                    })
+                    print("Persona lookup key:", persona_lookup_key)
+                    if persona_lookup_key not in persona_lookup:
+                        print("❌ Persona lookup failed for key:", persona_lookup_key)
+                        print("Available persona keys:", list(persona_lookup.keys()))
+                    
+                    persona_node_id = persona_lookup.get(persona_lookup_key)
+                    persona_job_importance = persona.get("job_importance", 0.5)  # Default to 0.5 if not specified
 
-        job_lookup_key = entry["job"].strip().lower()
-        if job_lookup_key not in job_lookup:
-            print("❌ Job lookup failed for key:", job_lookup_key)
-            print("Available job keys:", list(job_lookup.keys()))
+                    # Add edge: Job → Persona
+                    add_edge(
+                        product_id=product_id,
+                        source_id=job_node_id,
+                        target_id=persona_node_id,
+                        edge_type="performed_by",
+                        weight=persona_job_importance,
+                        last_updated=now,
+                        source=source
+                    )
+                    print("Added edge from Job", job_node_id, "to Persona", persona_node_id, "with weight", persona_job_importance)
+
+        
+        
     print("Updated results blob:", results)
     return results
 
 
-def canonicalize_and_create_zmot_icp_nodes(gpt_results):
+def canonicalize_and_create_zmot_icp_nodes(gpt_results, product_id):
     print("Starting node creation & processing for zmot & ICP")
     trigger_cache = set()
     trigger_event_cache = set()
@@ -299,6 +328,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                 # Add edge: Pain → Pain Trigger
                 if pain_id and pain_trigger_node_id:
                     add_edge(
+                        product_id=product_id,
                         source_id=pain_id,
                         target_id=pain_trigger_node_id,
                         edge_type="scales_with",
@@ -318,6 +348,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: Pain Trigger → Industry
                             if pain_trigger_node_id and industry_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=pain_trigger_node_id,
                                     target_id=industry_id,
                                     edge_type="experienced_in",
@@ -334,6 +365,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: Pain Trigger → Revenue
                             if pain_trigger_node_id and revenue_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=pain_trigger_node_id,
                                     target_id=revenue_id,
                                     edge_type="experienced_in",
@@ -350,6 +382,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: Pain Trigger → Employees
                             if pain_trigger_node_id and employees_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=pain_trigger_node_id,
                                     target_id=employees_id,
                                     edge_type="experienced_in",
@@ -366,6 +399,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: Pain Trigger → Funding Stage
                             if pain_trigger_node_id and funding_stage_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=pain_trigger_node_id,
                                     target_id=funding_stage_id,
                                     edge_type="experienced_in",
@@ -382,6 +416,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: Pain Trigger → Geography
                             if pain_trigger_node_id and geography_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=pain_trigger_node_id,
                                     target_id=geography_id,
                                     edge_type="experienced_in",
@@ -405,6 +440,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                     # Add edge: Pain Trigger → ZMOT Trigger Event
                     if pain_trigger_node_id and zmot_trigger_event_node_id:
                         add_edge(
+                            product_id=product_id,
                             source_id=pain_trigger_node_id,
                             target_id=zmot_trigger_event_node_id,
                             edge_type="triggered_by",
@@ -425,6 +461,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: ZMOT Trigger Event → Observable Moment
                             if zmot_trigger_event_node_id and zmot_observable_moment_node_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=zmot_trigger_event_node_id,
                                     target_id=zmot_observable_moment_node_id,
                                     edge_type="observed_in",
@@ -443,6 +480,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
                             # Add edge: ZMOT Trigger Event → Keyword
                             if zmot_trigger_event_node_id and zmot_keyword_node_id:
                                 add_edge(
+                                    product_id=product_id,
                                     source_id=zmot_trigger_event_node_id,
                                     target_id=zmot_keyword_node_id,
                                     edge_type="associated_with",
@@ -456,7 +494,7 @@ def canonicalize_and_create_zmot_icp_nodes(gpt_results):
     return gpt_results
 
 
-def canonicalize_and_create_hop_plus_nodes(gpt_results):
+def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
     print("Starting node creation & processing for zmot & ICP")
     jobs_cache = set()
     pains_cache = set()
@@ -482,28 +520,32 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
                     pains_cache.add(raw_pain_text)
                 else:
                     print("❌ Pain text is missing in entry:", pain)
-                jobs = entry.get("jobs", [])
+                jobs = pain.get("jobs", [])
                 if isinstance(jobs, list):
                     for job in jobs:
-                        raw_job_description = job.get("job", "").strip()
+                        raw_job_description = job.get("description", "").strip()
                         if raw_job_description:
                             jobs_cache.add(raw_job_description)
                         else:
                             print("❌ Job text is missing in entry:", job)
                         personas = job.get("personas", [])
-                        if isinstance(personas, list):
-                            for persona in personas:
-                                raw_persona = persona.get("persona", {})
-                                if isinstance(raw_persona, dict):
-                                    title = raw_persona.get("title", "").strip()
-                                    department = raw_persona.get("department", "").strip()
-                                    seniority = raw_persona.get("seniority", "").strip()
-                                    if title and department and seniority:
-                                        personas_cache.add((title, department, seniority))
-                                    else:
-                                        print("❌ Persona details are missing in entry:", raw_persona)
-                                else:
-                                    print("❌ Persona is not a dictionary in entry:", persona)
+                        if not isinstance(personas, list):
+                            print("❌ Invalid personas format in entry:", entry)
+                            continue
+                        for persona in personas:
+                            raw_persona = {
+                                "title": persona.get("title", "").strip(),
+                                "department": persona.get("department", "").strip(),
+                                "seniority": persona.get("seniority", "").strip()
+                            }
+                            if raw_persona.get("title") or raw_persona.get("department") or raw_persona.get("seniority"):
+                                personas_cache.add((
+                                    raw_persona.get("title"),
+                                    raw_persona.get("department"),
+                                    raw_persona.get("seniority")
+                                ))
+                            else:
+                                print("❌ Persona fields are empty in entry:", entry)
     
     # At this point we have: (1) The exact structure of gpt output, (2) Raw values added to each cache
     print(" Gathered raw caches with sizes:")
@@ -521,8 +563,11 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
 
     # Lookup logic for setting right node IDs to entry list
     persona_lookup = {
-        (p["title"].strip().lower(), p["department"].strip().lower(), p["seniority"].strip().lower()):
-            get_or_create_persona_node(p["title"], p["department"], p["seniority"])["id"]
+        str({
+            "title": p["title"].strip(),
+            "department": p["department"].strip(),
+            "seniority": p["seniority"].strip()
+        }): get_or_create_persona_node(p["title"], p["department"], p["seniority"])["id"]
         for p in canonical_personas.values()
     }
     pain_lookup = {
@@ -535,16 +580,15 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
     }
     print("Lookup dictionaries created with sizes. Starting final node and edge processing")
     for entry in gpt_results:
-        source = entry.get("source", "unknown")
+        source = entry.get("source", "openai")
         now = datetime.utcnow().isoformat()
         original_job_id = entry.get("original_job_id").strip()
         pains = entry.get("pains", [])
         for pain in pains:
             raw_pain_text = pain.get("pain", "").strip()
             pain_canonical = canonical_pains.get(raw_pain_text, raw_pain_text)
-            entry["pain"] = pain_canonical
 
-            pain_lookup_key = entry["pain"].strip().lower()
+            pain_lookup_key = pain_canonical.strip().lower()
             if pain_lookup_key not in pain_lookup:
                 print("❌ Pain lookup failed for key:", pain_lookup_key)
                 print("Available pain keys:", list(pain_lookup.keys()))
@@ -554,9 +598,10 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
 
             # Add original job - pain entry
             add_edge(
+                product_id=product_id,
                 source_id=original_job_id,
                 target_id=pain_node_id,
-                edge_type="impacts",
+                edge_type="solves",
                 weight=severity,
                 last_updated=now,
                 source=source
@@ -564,19 +609,19 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
                 
             jobs = entry.get("jobs", [])
             for job in jobs:
-                raw_job = job.get("job", "").strip()
+                raw_job = job.get("description", "").strip()
                 job_canonical = canonical_jobs.get(raw_job, raw_job)
-                entry["job"] = job_canonical
 
-                job_lookup_key = entry["job"].strip().lower()
+                job_lookup_key = job_canonical.strip().lower()
                 if job_lookup_key not in job_lookup:
                     print("❌ Job lookup failed for key:", job_lookup_key)
                     print("Available job keys:", list(job_lookup.keys()))
                 job_node_id = job_lookup.get(job_lookup_key)
-                impact = job.get("job_impact", 0.5)
+                impact = job.get("impact", 0.5)
 
                 # Add Pain -> Job edge
                 add_edge(
+                    product_id=product_id,
                     source_id=pain_node_id,
                     target_id=job_node_id,
                     edge_type="addresses",
@@ -590,34 +635,45 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results):
                     results_job_ids.append(job_node_id)
 
                 personas = job.get("personas", [])
-                for persona in personas:
-                    raw_persona = persona.get("persona", {})
+                for raw_persona in personas:
                     persona_key = str({
                         "title": raw_persona.get("title", "").strip(),
                         "department": raw_persona.get("department", "").strip(),
                         "seniority": raw_persona.get("seniority", "").strip()
                     })
                     persona_canonical = canonical_personas.get(persona_key, raw_persona)
-                    entry["persona"] = persona_canonical
-                    persona_lookup_key = (
-                        entry["persona"]["title"].strip().lower(),
-                        entry["persona"]["department"].strip().lower(),
-                        entry["persona"]["seniority"].strip().lower()
-                    )
+                    persona = persona_canonical
+                    persona_title = persona.get("title", "").strip()
+                    persona_department = persona.get("department", "").strip()
+                    persona_seniority = persona.get("seniority", "").strip()
+                    
+                    if persona_title == "" or persona_department == "" or persona_seniority == "":
+                        print("❌ Persona fields are empty in lookup:", entry)
+                        continue
+                    print("Persona canonicalization complete - moving to lookup")
+                    # Lookup node IDs using canonicalized values
+                    persona_lookup_key = str({
+                        "title": persona_title.strip(),
+                        "department": persona_department.strip(),
+                        "seniority": persona_seniority.strip()
+                    })
+                    print("Persona lookup key:", persona_lookup_key)
                     if persona_lookup_key not in persona_lookup:
                         print("❌ Persona lookup failed for key:", persona_lookup_key)
                         print("Available persona keys:", list(persona_lookup.keys()))
-                        persona_node_id = persona_lookup.get(persona_lookup_key)
-                        job_importance = persona.get("job_importance", 0.5)
-                        #Add edge: Job → Persona
-                        add_edge(
-                            source_id=job_node_id,
-                            target_id=persona_node_id,
-                            edge_type="performed_by",
-                            weight=job_importance,
-                            last_updated=now,
-                            source=source
-                        )
+                    
+                    persona_node_id = persona_lookup.get(persona_lookup_key)
+                    persona_job_importance = persona.get("job_importance", 0.5)  # Default to 0.5 if not specified
+                    #Add edge: Job → Persona
+                    add_edge(
+                        product_id=product_id,
+                        source_id=job_node_id,
+                        target_id=persona_node_id,
+                        edge_type="performed_by",
+                        weight=job_importance,
+                        last_updated=now,
+                        source=source
+                    )
 
         print("Updated entry:", entry)
     print("Finished Graph and Edge math for Hop++:", gpt_results)
