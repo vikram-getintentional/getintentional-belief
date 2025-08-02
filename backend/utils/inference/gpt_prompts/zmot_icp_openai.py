@@ -23,7 +23,7 @@ Given:
 - A list of jobs to be done by various personas in an organization where these pains are experienced,
 
 For each pain, do the following:
-1. Specify at least 3-5 pain triggers as the attribute that must scale for this pain to become intolerable in the format of:
+1. Specify at least 3-5 pain triggers as the attribute that must scale in the context of this product's domain for this pain to become intolerable in the format of:
       - attribute: the real-world metric or variable (e.g., "Number of support tickets")
       - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
       - direction: one of ["Increase", "Decrease", "Change"] (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
@@ -45,8 +45,8 @@ For each pain, do the following:
         - observable_moment: At least 3 Specific externally observable data points or event sources for each ZMOT trigger event that indicate the event such as News articles; press releases; social media post/ discussions; job postings; interviews in podcasts, webinars, etc.; Status pages; G2 reviews; glassdoor reviews; SEC filings; and any other pertinent publicly available data that might indicate this.
         - For each observable moment provide a match_score as a float (0.0-1.0) indicating how likely this observable moment is to indicate the trigger_event.
         - trigger_keywords: Specific keywords or short phrases in the observable moment that indicates the event such as "funding", "DDoS attack", "Local sales team hiring", "leadership change", etc.
+          Use terms and phrases specific to the product context or industry. Avoid generic business jargon unless absolutely necessary.
         - For each trigger_keywords provide a match_score as a float (0.0-1.0) indicating how likely this keyword is to appear when the trigger_event occurs.
-        
 
 The input is a list of jobs and pains in the following format:
 {{
@@ -132,6 +132,7 @@ Return your output as a JSON array, one entry per pain, with this structure:
 Use only realistic, clearly defined pain triggers, events, observable moments and keywords. 
 IMPORTANT: Return ONLY the JSON array, with no explanation or formatting.
 IMPORTANT: For each list (pain_triggers, icp_archetypes, zmot_events), you MUST provide at least 3-5 items. Do not return only one item for any list. If you cannot find 3 strong matches, look for slightly poorer matches.
+IMPORTANT: Each ICP Archetype, pain trigger, ZMOT event, and keyword must be tightly linked to the context of the product’s value proposition. Do not generalize — reference domain-specific signals wherever possible.
 
 
 Summary:

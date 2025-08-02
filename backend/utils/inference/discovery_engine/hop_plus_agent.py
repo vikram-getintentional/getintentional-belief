@@ -1,6 +1,6 @@
 import json
 from typing import List, Dict, Any, Set
-from backend.utils.graph_base.network_graph import get_cumulative_relevance, get_node_by_id, get_node_id, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list_ids, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain_trigger_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data 
 from backend.utils.graph_base.graph_builder import canonicalize_and_create_hop_plus_nodes
@@ -204,10 +204,11 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
 
     print("ICP & ZMOT Graph processed. Results follow:", hop_plus_new_job_ids)
 
-    print("Updating cumulative relevance")
-    relevance_nodes = get_cumulative_relevance(product_subgraph)
-    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
-    print("Cumulative relevance json updated successfully.")
+    #print("Updating cumulative relevance")
+    #relevance_nodes = calculate_soft_or_relevance(product_subgraph)
+    #cumulative_relevance = {item["node_id"]: item["relevance"] for item in relevance_nodes}
+    #add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
+    #print("Cumulative relevance json updated successfully.")
 
     for job_id in hop_plus_new_job_ids:
         if job_id not in visited_jobs:

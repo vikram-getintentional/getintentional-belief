@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 import json
 from collections import defaultdict
-from backend.utils.graph_base.network_graph import calculate_eigenvector_centrality, calculate_pagerank_centrality, calculate_personalized_pagerank_centrality, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list, get_source_nodes_by_target_and_type, update_capability_centralities
+from backend.utils.graph_base.network_graph import calculate_eigenvector_centrality, calculate_pagerank_centrality, calculate_personalized_pagerank_centrality, calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list, get_source_nodes_by_target_and_type, max_flow, relevance, reverse_belief_weight, update_capability_centralities
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 
 import networkx as nx
@@ -26,9 +26,25 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
     product_id = get_node_id(sub_graph, "product",{})
 
 
-    relevance_nodes = get_cumulative_relevance(sub_graph)
-    #add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
-    #print("Cumulative relevance data updated for product ID:", product_id)
+    relevance_nodes = calculate_soft_or_relevance(sub_graph)
+    cumulative_relevance = {item["node_id"]: item["relevance"] for item in relevance_nodes}
+    for node_id, relevance in cumulative_relevance.items():
+        node_data = get_node_by_id(sub_graph, node_id)
+        if node_data and node_data.get("node_type") == "persona":
+            text = node_data.get("title", "")
+        elif node_data and node_data.get("node_type") == "job":
+            text = node_data.get("description", "") or node_data.get("text", "")
+        elif node_data and node_data.get("node_type") == "pain":
+            text = node_data.get("description", "") or node_data.get("text", "")
+        elif node_data and node_data.get("node_type") == "capability":
+            text = node_data.get("name", "") or node_data.get("description", "")
+        elif node_data and node_data.get("node_type") == "product":
+            text = node_data.get("url", "")
+        else:
+            text = node_data.get("name", "") or node_data.get("description", "") or node_data.get("text", "") or "XXXX"
+        print(f"Node ID: {node_id}, Node Type: {node_data.get('node_type')}, Text: {text}, Relevance: {relevance}, ")
+
+    add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
 
     print("Starting persona traversal")
     for persona_id, _ in get_nodes_list(sub_graph, "persona",{}):
@@ -77,44 +93,12 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
         }
         personas.append(persona)
     
+    
     print("Persona relevance computed, total personas found:", personas)
 
 
-    pagerank = calculate_pagerank_centrality(sub_graph)
-    
-    print("Generic Page Rank Relevance")
-    for node_id, score in pagerank.items():
-        node_data = sub_graph.nodes[node_id]
-        if node_data.get("node_type") == "pain":
-            text = node_data.get("description") or node_data.get("text") or ""
-        elif node_data.get("node_type") == "job":
-            text = node_data.get("description") or node_data.get("text") or ""
-        elif node_data.get("node_type") == "capability":
-            text = node_data.get("name") or node_data.get("description") or ""
-        else:
-            text = node_data.get("id")
 
-        print(f"Content: {text} | Type: {node_data.get('node_type')} | Score: {score:.4f} ")
-
-    print("-------------------------------")
-
-    pagerank = calculate_personalized_pagerank_centrality(sub_graph, input_node=product_id)
-
-    print("Personalized Page Rank Relevance")
-    for node_id, score in pagerank.items():
-        node_data = sub_graph.nodes[node_id]
-        if node_data.get("node_type") == "pain":
-            text = node_data.get("description") or node_data.get("text") or ""
-        elif node_data.get("node_type") == "job":
-            text = node_data.get("description") or node_data.get("text") or ""
-        elif node_data.get("node_type") == "capability":
-            text = node_data.get("name") or node_data.get("description") or ""
-        else:
-            text = node_data.get("id")
-
-        print(f"Content: {text} | Type: {node_data.get('node_type')} | Score: {score:.4f} ")
     aggregated_personas = aggregated_personas_map(sub_graph, personas, threshold=0.2)
-
     return aggregated_personas
 
 

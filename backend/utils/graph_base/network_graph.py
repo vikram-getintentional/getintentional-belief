@@ -1,6 +1,7 @@
+import math
 import networkx as nx
 import os
-
+from collections import defaultdict, deque
 from backend.utils.dev_environment.graph_loader import load_product_graph_from_folder
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -107,8 +108,8 @@ def update_capability_centralities(G):
     updated_caps_list = []
     for node_id, data in G.nodes(data=True):
         if data.get("node_type") == "capability":
-            pains = G.get_target_nodes_by_source_and_type(G, node_id, "solves")
-            centrality = sum(G.get_edge_weight(G, node_id, pain_id) or 0 for pain_id in pains)
+            pains = get_target_nodes_by_source_and_type(G, node_id, "solves")
+            centrality = sum(get_edge_weight(G, node_id, pain_id) or 0 for pain_id in pains)
             normalized = centrality / len(pains) if pains else 0.0
             G.nodes[node_id]["centrality"] = normalized
             updated_caps_list.append(G.nodes[node_id])
@@ -206,3 +207,155 @@ def calculate_personalized_pagerank_centrality(G, input_node, alpha=0.85):
     personalization[input_node] = 1
 
     return nx.pagerank(G, alpha=alpha, personalization=personalization)
+
+def relevance(G, start_node, root_node, visited=None):
+    """
+    Calculate relevance of a node based on its connections to the root node,
+    using edge weights.
+    """
+    if visited is None:
+        visited = set()
+    if start_node in visited:
+        return 0.0  # Already visited, avoid cycle
+    visited.add(start_node)
+
+    if start_node not in G.nodes:
+        return 0.0
+    if start_node == root_node:
+        return 1.0
+
+    total_relevance = 0.0
+    predecessors = list(G.predecessors(start_node))
+    for predecessor in predecessors:
+        # Get the edge weight (default to 1.0 if not set)
+        weight = G.get_edge_data(predecessor, start_node).get("weight", 1.0)
+        total_relevance += weight * relevance(G, predecessor, root_node, visited)
+
+    return total_relevance / len(predecessors) if predecessors else 0.0
+
+
+def reverse_belief_weight(G, start_node, visited=None):
+    """
+    For a given start_node, returns the likelihood of reaching product_node,
+    using edge weights as transition probabilities.
+    """
+    product_node = get_node_by_id(G, "product", {})
+    if visited is None:
+        visited = set()
+    if start_node == product_node:
+        return 1.0
+    if start_node in visited:
+        return 0.0  # Avoid cycles
+    visited.add(start_node)
+
+    neighbors = list(G.neighbors(start_node))
+    if not neighbors:
+        return 0.0
+
+    total_weight = sum(G.get_edge_data(start_node, neighbor).get("weight", 1.0) for neighbor in neighbors)
+    likelihood = 0.0
+    for neighbor in neighbors:
+        edge_weight = G.get_edge_data(start_node, neighbor).get("weight", 1.0)
+        transition_prob = edge_weight / total_weight if total_weight > 0 else 0
+        likelihood += transition_prob * reverse_belief_weight(G, neighbor, visited.copy())
+
+    return likelihood
+
+def max_flow(G):
+    """
+    Calculate the maximum flow in the graph using the Edmonds-Karp algorithm.
+    Calculates the maximum flow for every node in the graph assuming the source is the  product node.
+
+    """
+    product_id = get_node_id(G, "product", {})
+    flow_results = {}
+    print("Starting max flow")
+    for node_id, _ in G.nodes(data=True):
+        print("Processing node:", node_id)
+        if node_id == product_id:
+            continue
+        flow_value, flow_dict = nx.maximum_flow(G, product_id, node_id, capacity='weight')
+        print("Flow value for node: ", flow_value)
+        total_inbound_weight = sum(G.get_edge_weight(G, n, node_id) for n in G.predecessors(node_id))
+        if total_inbound_weight > 0:
+            normalized_flow_value = flow_value / total_inbound_weight
+        flow_results[node_id] = {"flow_value": flow_value, "normalized_flow_value": normalized_flow_value}
+
+    return flow_results
+
+def v1_calculate_soft_or_relevance(G, max_path_length=15):
+    """
+    Calculates soft-or relevance from observed_node to product_node.
+    """
+    net_relevance = []
+    product_node = get_node_id(G, "product", {})
+    for observed_node, _ in G.nodes(data=True):
+        if observed_node == product_node:
+            continue
+        paths = nx.all_simple_paths(G, product_node, observed_node, cutoff=max_path_length)
+        path_scores = []
+        for path in paths:
+            score = 1.0
+            for i in range(len(path) - 1):
+                edge_data = G.get_edge_data(path[i], path[i+1])
+                score *= edge_data.get("weight", 1.0)
+            path_scores.append(score)
+        if not path_scores:
+            node_relevance = 0.0
+        node_relevance = 1 - math.prod(1 - p for p in path_scores)
+        net_relevance.append({
+            "node_id": observed_node,
+            "relevance": node_relevance
+        })
+    return net_relevance
+
+
+def calculate_soft_or_relevance(G, damping=0.85, max_iter=50, tol=1e-5):
+    """
+    This is an iterative logic with damping. Just using same fn names because Im lazy
+    """
+    # Initialize all node relevance
+    product_node = get_node_id(G, "product", {})
+    relevance = {node: 0.0 for node in G.nodes()}
+    relevance[product_node] = 1.0  # Product node is the source of relevance
+
+    for iteration in range(max_iter):
+        delta = 0
+        new_relevance = {}
+
+        for node in G.nodes():
+            if node == product_node:
+                new_relevance[node] = 1.0
+                continue
+
+            incoming = G.in_edges(node, data='weight')
+            belief_inputs = [relevance[u] * w for u, _, w in incoming]
+            updated_value = 1 - product(1 - b for b in belief_inputs)
+
+            # Apply damping
+            damped_value = damping * updated_value + (1 - damping) * relevance[node]
+
+            # Track max change for convergence
+            delta = max(delta, abs(damped_value - relevance[node]))
+            new_relevance[node] = damped_value
+
+
+        relevance = new_relevance
+
+        if delta < tol:
+            print(f"Converged in {iteration+1} iterations.")
+            break
+
+    # Convert to desired output format
+    net_relevance = [
+        {"node_id": node, "relevance": rel}
+        for node, rel in relevance.items()
+        if node != product_node  # optionally exclude product node
+    ]
+    return net_relevance
+
+from functools import reduce
+def product(lst):
+    return reduce(lambda x, y: x * y, lst, 1) if lst else 1
+
+

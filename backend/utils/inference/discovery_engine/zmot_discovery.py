@@ -95,7 +95,7 @@ def infer_zmot_icp(product_id, product_subgraph: nx.DiGraph, force_openai=False,
             if isinstance(batch_output, str):
                 batch_output = json.loads(batch_output)
             gpt_output.extend(batch_output)
-            break  # For testing, we break after the first batch
+            
         # ---- End batching logic ----
 
         """
@@ -180,9 +180,9 @@ def infer_zmot_icp(product_id, product_subgraph: nx.DiGraph, force_openai=False,
 
         print("ICP & ZMOT Graph processed. Results follow:", zmot_map)
 
-        print("Updating cumulative relevance")
-        relevance_nodes = get_cumulative_relevance(product_subgraph)
-        add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+        #print("Updating cumulative relevance")
+        #relevance_nodes = get_cumulative_relevance(product_subgraph)
+        #add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
         print("Cumulative relevance json updated successfully.")
 
         return {

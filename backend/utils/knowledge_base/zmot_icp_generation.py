@@ -1,5 +1,5 @@
 from typing import Dict, List, Any
-from backend.utils.graph_base.network_graph import calculate_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list_ids, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import calculate_cumulative_relevance, calculate_soft_or_relevance, get_node_by_id, get_node_id, get_nodes_list_ids, get_target_nodes_by_source_and_type
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 import networkx as nx
 
@@ -8,8 +8,9 @@ def get_zmot_icp_relevance(sub_graph: nx.DiGraph, threshold = 0.0) -> list[dict]
     print("Starting relevance computation - at this point centrality & cum relevance should be set")
     personas = []
     product_id = get_node_id(sub_graph, "product", {})
-    relevance_nodes = calculate_cumulative_relevance(sub_graph)
-    add_or_update_cumulative_relevance_data(product_id, relevance_nodes)
+    relevance_nodes = calculate_soft_or_relevance(sub_graph)
+    cumulative_relevance = {item["node_id"]: item["relevance"] for item in relevance_nodes}
+    add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
 
     # Do looping for ICP Mapping first
 
