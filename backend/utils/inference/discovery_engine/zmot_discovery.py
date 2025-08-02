@@ -39,6 +39,9 @@ def infer_zmot_icp(product_id, product_subgraph: nx.DiGraph, force_openai=False,
     if not product_node:
         raise ValueError("Product node not found.")
     summary = product_node.get("summary")
+    domain = product_node.get("domain")
+    industry = product_node.get("industry")
+    
     pains_list = get_nodes_list(product_subgraph, "pain", {})
     if not pains_list:
         print("No pain nodes yet. Do persona inference first...")
@@ -91,7 +94,7 @@ def infer_zmot_icp(product_id, product_subgraph: nx.DiGraph, force_openai=False,
         batch_size = 3  # You can tune this for your token limits
         for batch in batch_list(pain_jobs_dict, batch_size):
             print("🧠 [GPT] Generating ZMOTs map for batch...")
-            batch_output = infer_pain_triggers_zmot_icp(summary, batch)
+            batch_output = infer_pain_triggers_zmot_icp(summary, industry, domain, batch)
             if isinstance(batch_output, str):
                 batch_output = json.loads(batch_output)
             gpt_output.extend(batch_output)

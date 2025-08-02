@@ -61,14 +61,22 @@ def generate_product_value_prop(company_id: str, url: str, text: str, plg_cta: b
         print("Starting site extraction for ", company_id,"..")
         result = []
         result = extract_summary_and_capabilities(text, plg_cta, footer_features)
+        print("Result from OpenAI:", result)
         
         if "summary" in result:
             summary = result["summary"]
+            if "domain" in result:
+                domain = result["domain"]
+            if "industry" in result:
+                industry = result["industry"]
+                
             capabilities = result.get("capabilities", [])
 
             # Create Product node
             product_node = get_or_create_product_node(
                 summary=summary,
+                domain=domain,
+                industry=industry,
                 company_id=company_id,
                 url=url,
                 plg_flag=plg_cta
@@ -203,6 +211,8 @@ def get_product_value_prop_capabilities(sub_graph: nx.DiGraph):
         print("No Product node found with ID:", product_id)
         return None
     product_summary = product_node.get("summary", "")
+    product_domain = product_node.get("domain", "")
+    product_industry = product_node.get("industry", "")
     product_plg_flag = product_node.get("plg_flag", False)
 
     capabilities_list = get_target_nodes_by_source_and_type(sub_graph, product_id, "offered_by")
@@ -225,6 +235,8 @@ def get_product_value_prop_capabilities(sub_graph: nx.DiGraph):
     product_data = {
         "product_node_id": product_id,
         "summary": product_summary,
+        "domain": product_domain,
+        "industry": product_industry,
         "plg_flag": product_plg_flag,
         "capabilities": capabilities
     }

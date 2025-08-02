@@ -5,7 +5,7 @@ from backend.utils.inference.gpt_prompts.openai_client import client  # uses our
 # In the openAI output include the original job as "original_job" and original persona as "original_persona.title+department+seniority"
 
 
-def get_upstream_triplets(summary, job_sets: list[dict[str, any]]) -> list[dict[str, any]]:
+def get_upstream_triplets(summary, domain, industry, job_sets: list[dict[str, any]]) -> list[dict[str, any]]:
     """
     Given a set of triplets of persona, job description, pain description, department, and job title, this function queries OpenAI to produce a mapping of upstream pains, jobs and personas tied to each original job id.
     """
@@ -13,7 +13,8 @@ def get_upstream_triplets(summary, job_sets: list[dict[str, any]]) -> list[dict[
     prompt = f"""
 
     You are given a list of Jobs to be done in an organization along with the personas typically doing them, and the pains faced while performing this job. 
-    Now answer the following in the context of the product summary provided below:
+    Now answer the following in the context of the product summary provided below.
+    Ensure that all answers are relevant and in context to the product's domain and industry.
 
     For each job, treat the personas as actors performing the specified job, and experiencing the specified pains.
     Then do the following:

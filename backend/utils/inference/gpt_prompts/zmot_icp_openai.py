@@ -9,7 +9,7 @@ def extract_json(text):
         return match.group(1)
     return text  # fallback
 
-def infer_pain_triggers_zmot_icp(summary, jobs_pains):
+def infer_pain_triggers_zmot_icp(summary, domain, industry, jobs_pains):
     """
     Given a list of pains and jobs to be done that they are experienced in, this function queries OpenAI to produce a mapping of pain triggers, ideal customer profile (ICP) archetypes, and relevant external events (ZMOTs).
     """
@@ -18,12 +18,12 @@ def infer_pain_triggers_zmot_icp(summary, jobs_pains):
     prompt = f"""
 You are an expert in business design and job architecture. You are tasked with identifiying the ideal target customers for a product and the specific trigger events that drive these customers.
 Given:
-- A summary value proposition of the product or service,
+- A summary value proposition of the product or service, its domain and industry,
 - A list of pains that are solved by the capabilities of this product,
 - A list of jobs to be done by various personas in an organization where these pains are experienced,
 
 For each pain, do the following:
-1. Specify at least 3-5 pain triggers as the attribute that must scale in the context of this product's domain for this pain to become intolerable in the format of:
+1. Specify at least 3-5 pain triggers in the context of the product domain and industry as the attribute that must scale in the context of this product's domain for this pain to become intolerable in the format of:
       - attribute: the real-world metric or variable (e.g., "Number of support tickets")
       - dimension: one of ["volume", "complexity", "frequency", "compliance", etc.]
       - direction: one of ["Increase", "Decrease", "Change"] (choose from: volume, frequency, complexity, or describe the trigger in plain terms).
@@ -38,7 +38,7 @@ For each pain, do the following:
         A match score of 0.7-1 indicates very likely, 0.3-0.6 indicates a moderate likelihood, and 0.0-0.2 indicates it is unlikely to experience this pain trigger.
         Return each value in the ICP archetype as list of all possible values.
         For example, if both "healthcare" and "finance" are valid industries, return them as ["Healthcare", "Finance"].
-    - A list of at least 3-5 external events (ZMOTs) that likely caused or accelerated these internal conditions in these organizations as:
+    - A list of at least 3-5 external events (ZMOTs) that likely caused or accelerated these internal conditions in these organizations in the context of the product's domain and industy as:
         - trigger_event: The Event such as Recent funding round, market expansion, new product launch, leadership change, security breach, compliance failure, etc.
         - match_score: float (0.0-1.0) indicating how likely this event is to trigger the pain in the ICP archetype.
           A match score of 0.7-1 indicates very likely, 0.3-0.6 indicates a moderate likelihood, and 0.0-0.2 indicates it is unlikely to trigger this pain.
@@ -137,6 +137,8 @@ IMPORTANT: Each ICP Archetype, pain trigger, ZMOT event, and keyword must be tig
 
 Summary:
 {summary}
+Domain: {domain}
+Industry: {industry}
 Jobs and Pains::
 {jobs_pains_json}
 """

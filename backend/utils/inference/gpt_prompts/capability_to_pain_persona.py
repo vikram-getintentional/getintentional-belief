@@ -1,18 +1,18 @@
 import json
 from backend.utils.inference.gpt_prompts.openai_client import client  # uses our centralized OpenAI client
 
-def infer_persona_job_pain_from_capabilities(summary, capabilities):
+def infer_persona_job_pain_from_capabilities(summary, domain, industry, capabilities):
     """
-    Given a product summary and its capabilities, this function queries OpenAI to produce a mapping of pains, jobs and personas, and specific relevance scores corresponding to this pain-capability.
+    Given a product's details and its capabilities, this function queries OpenAI to produce a mapping of pains, jobs and personas, and specific relevance scores corresponding to this pain-capability.
     """
     capabilities_json = json.dumps(capabilities, indent=2)
 
     prompt = f"""
 You are an expert in business design and job architecture.
 Given:
-- A product summary
+- A product summary, its domain and industry,
 - A list of product capabilities
-For each capability, do the following:
+For each capability, do the following in the context of the product, its domain and industry:
 1. List 1–3 business pains this capability directly solves. These should be specific workflow inefficiencies or failure modes.
 2. For each pain, assign a relevance score to every capability in the list, even if that capability is only indirectly related or shares an overlapping job or data dependency.
 - The relevance score must be a float between 0.0 and 1.0.
@@ -49,6 +49,8 @@ Return a JSON entry for every capability in the list above. Do not skip any capa
 
 Summary:
 {summary}
+Domain: {domain}
+Industry: {industry}
 
 Capabilities:
 {capabilities_json}

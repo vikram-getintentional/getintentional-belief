@@ -68,8 +68,13 @@ def get_nodes_list_ids(G, node_type: str, properties: dict) -> list:
         if node_data.get("node_type") == node_type and all(node_data.get(k) == v for k, v in properties.items())
     ]
 
-def get_edge_weight(G, source_id, target_id) -> float:
-    return G.edge_weights.get((source_id, target_id), 0.0)
+def get_edge_weight(G, source_id, target_id):
+    """
+    Returns the 'weight' attribute of the edge from source_id to target_id, or 0.0 if not present.
+    """
+    if G.has_edge(source_id, target_id):
+        return G.get_edge_data(source_id, target_id).get("weight", 0.0)
+    return 0.0
 
 def get_source_nodes_by_target_and_type(G, target_id: str, edge_type: str) -> list:
     """

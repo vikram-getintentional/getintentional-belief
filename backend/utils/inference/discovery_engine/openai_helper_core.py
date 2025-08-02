@@ -39,6 +39,8 @@ def infer_with_rules_then_fallback(product_id, product_subgraph: nx.DiGraph, for
     if not product_node:
         raise ValueError("Product node not found.")
     summary = product_node.get("summary")
+    domain = product_node.get("domain", "")
+    industry = product_node.get("industry", "")
     capability_ids = get_target_nodes_by_source_and_type(product_subgraph, product_id, "offered_by")
     capabilities = [
         get_node_by_id(product_subgraph, cid)
@@ -79,7 +81,7 @@ def infer_with_rules_then_fallback(product_id, product_subgraph: nx.DiGraph, for
         
         
         print("🧠 [GPT] Generating capability map...")
-        gpt_output = infer_persona_job_pain_from_capabilities(summary, filtered_capabilities)
+        gpt_output = infer_persona_job_pain_from_capabilities(summary, domain, industry, filtered_capabilities)
 
         """
         Output is of format:

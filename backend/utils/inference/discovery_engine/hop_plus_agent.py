@@ -131,6 +131,8 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
     product_id = get_node_id(product_subgraph, "product",{})
     product_node = get_node_by_id(product_subgraph, product_id)
     summary = product_node.get("summary", "")
+    domain = product_node.get("domain", "")
+    industry = product_node.get("industry", "")
     if not gpt_jobs_cache:
         print("No jobs in GPT cache to process.")
         return []
@@ -183,7 +185,7 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
     for i in range(0, len(final_gpt_buffer), batch_size):
         batch = final_gpt_buffer[i:i+batch_size]
         print(f"Running GPT query for batch {i//batch_size + 1}: {batch}")
-        gpt_output = get_upstream_triplets(summary, batch)
+        gpt_output = get_upstream_triplets(summary, domain, industry, batch)
         print("GPT results for batch:", gpt_output)
         if gpt_output:
             gpt_outputs.extend(gpt_output)

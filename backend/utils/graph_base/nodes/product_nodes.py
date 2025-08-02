@@ -10,7 +10,7 @@ from backend.utils.graph_base.graph_utils.json_store import load_json, save_json
 
 PRODUCT_PATH = "backend/utils/graph_base/graph_data/product_nodes.json"
 
-def get_or_create_product_node(summary=None, company_id=None, url=None, product_id=None, plg_flag=None, return_created=False):
+def get_or_create_product_node(summary=None, domain=None, industry=None, company_id=None, url=None, product_id=None, plg_flag=None, return_created=False):
     """
     Retrieves a Product node if it exists, otherwise creates a new one.
 
@@ -32,6 +32,10 @@ def get_or_create_product_node(summary=None, company_id=None, url=None, product_
             # Update the existing node with new values if provided
             if summary:
                 node["summary"] = summary
+            if domain:
+                node["domain"] = domain
+            if industry:
+                node["industry"] = industry
             if plg_flag is not None:
                 node["plg_flag"] = plg_flag
             save_json(PRODUCT_PATH, data)  # Save updated data
@@ -41,6 +45,8 @@ def get_or_create_product_node(summary=None, company_id=None, url=None, product_
     new_node = {
         "id": str(uuid.uuid4()),
         "summary": summary,
+        "domain": domain,
+        "industry": industry,
         "company_id": company_id,
         "url": url,
         "plg_flag": plg_flag

@@ -16,14 +16,17 @@ def extract_summary_and_capabilities(text: str, plg_cta_found: bool = False, foo
 You're a neutral technology analyst. Based on this website content:
 
 1. Summarize a concise 2–3 sentence value proposition.
-2. List 5–8 key capabilities. For each, include a short, human-readable description.
-3. For each capability score its relevance to the product's value proposition on a scale of 0.0 to 1.0.
+2. Identify the domain and industry of the product.
+3. List 5–8 key capabilities. For each, include a short, human-readable description.
+4. For each capability score its relevance to the product's value proposition on a scale of 0.0 to 1.0.
 
 Use all available context, including main site content and footer feature hints.
 
 Respond ONLY in this JSON format:
 {{
   "summary": "...",
+  "domain": "string",  # e.g., "B2B SaaS", "E-commerce", etc.
+  "industry": "string",  # e.g., "Healthcare", "Finance", etc.
   "capabilities": [
     {{
       "name": "...",
