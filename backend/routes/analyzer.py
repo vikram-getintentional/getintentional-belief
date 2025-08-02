@@ -3,6 +3,8 @@ from backend.utils.graph_base.network_graph import add_capabilities_to_product, 
 from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
 from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
+from backend.tasks.graph_generation import generate_hop0_graph, generate_hop_plus_graph, get_task_status
+from backend.celery_app import celery_app
 from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
@@ -21,8 +23,44 @@ from backend.utils.knowledge_base.persona_generation import (
 
 from backend.utils.inference.discovery_engine.hop_plus_agent import infer_upstream_with_rules
 import networkx as nx
+import traceback
+from backend.utils.websocket_manager import websocket_manager
 
 # Hardcoded path to graph data folder - to be updated in production
+
+async def _send_completion_notification(company_id: str, product_id: str, results: dict):
+    """Send WebSocket notification when task completes successfully."""    
+    await websocket_manager.send_personal_message({
+        "type": "task_completed",
+        "event": "hop0_generation_complete",
+        "product_id": product_id,
+        "company_id": company_id,
+        "message": "Hop0 graph generation completed successfully",
+        "data": results
+    }, company_id)
+
+async def _send_progress_notification(company_id: str, product_id: str, progress: int):
+    await websocket_manager.send_personal_message({
+        "type": "task_progress",
+        "event": "hop0_generation_progress", 
+        "product_id": product_id,
+        "company_id": company_id,
+        "message": "10", 
+    }, company_id)
+    
+async def _send_failure_notification(company_id: str, product_id: str, error_message: str):
+    """Send WebSocket notification when task fails."""
+    from backend.utils.websocket_manager import websocket_manager
+    
+    await websocket_manager.send_personal_message({
+        "type": "task_failed",
+        "event": "hop0_generation_failed", 
+        "product_id": product_id,
+        "company_id": company_id,
+        "message": "Hop0 graph generation failed", 
+        "error": error_message
+    }, company_id)
+
 
 import os
 
@@ -33,7 +71,7 @@ GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph
 
 router = APIRouter()
 
-# 
+# await _send_progress_notification(company_id, product_id, 30)
 @router.get("/company/{company_id}/product-subgraph")
 def get_product_subgraph(company_id: str):
     # Try to load the product subgraph for this company
@@ -82,6 +120,7 @@ def analyze(payload: dict, request: Request, db: Session = Depends(get_db)):
         print("Dict output summary:", result["summary"]," \n Dict output capabilitites: ", result["capabilities"])
         return result
     except Exception as e:
+        traceback.print_exc()
         print("❌ Analyze error:", e)
         raise HTTPException(status_code=500, detail="Could not run analysis")
 
@@ -209,7 +248,7 @@ def save_summary(payload: dict, request: Request, db: Depends = None):
         print("❌ Save summary error:", e)
         raise HTTPException(status_code=500, detail="Could not save summary")
 
-# 🔬 Deep persona + pain inference
+# 🔬 Deep persona + pain inference (async with Celery)
 @router.post("/analyze/deep")
 async def analyze_deep(payload: dict, request: Request):
     product_id = payload.get("product_id")
@@ -230,19 +269,90 @@ async def analyze_deep(payload: dict, request: Request):
         if not company_id:
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
-        # 🧠 Inference
-        product_subgraph = build_product_graph(product_id)
-        print("Extracted product subgraph with total nodes:", len(product_subgraph.nodes))
-        print("Starting hop0 inference")
-        hop_0_results = infer_with_rules_then_fallback(product_id, product_subgraph)
-        # Run Hop+ upstream inference
-        #hop_plus_results = infer_upstream_with_rules(product_subgraph)
-        return {"hop_0_results": hop_0_results}
+        # 🧠 Start async Celery task for inference
+        print(f"Starting async Hop0 inference for product_id: {product_id}")
+        task = generate_hop0_graph.delay(product_id, company_id)
+        
+        return {
+            "task_id": task.id,
+            "status": "PROCESSING",
+            "message": "Hop0 graph generation started. Use the task_id to check status.",
+            "product_id": product_id
+        }
 
     except Exception as e:
         print("❌ Deep inference error:", e)
-        raise HTTPException(status_code=500, detail="Could not run deep analysis")
-    
+        raise HTTPException(status_code=500, detail="Could not start deep analysis")
+
+
+# 📊 Get task status for async operations
+@router.get("/tasks/{task_id}/status")
+async def get_task_status_endpoint(task_id: str, request: Request):
+    """
+    Get the status of a running Celery task.
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # Get task status from Celery
+        task_result = celery_app.AsyncResult(task_id)
+        
+        if task_result.state == "PENDING":
+            response = {
+                "task_id": task_id,
+                "state": "PENDING",
+                "message": "Task is waiting to be processed",
+                "progress": 0
+            }
+        elif task_result.state == "PROCESSING":
+            response = {
+                "task_id": task_id,
+                "state": "PROCESSING",
+                "message": task_result.info.get("message", "Processing..."),
+                "progress": task_result.info.get("progress", 0),
+                "product_id": task_result.info.get("product_id")
+            }
+        elif task_result.state == "SUCCESS":
+            response = {
+                "task_id": task_id,
+                "state": "SUCCESS",
+                "message": "Task completed successfully",
+                "progress": 100,
+                "result": task_result.result
+            }
+        elif task_result.state == "FAILURE":
+            response = {
+                "task_id": task_id,
+                "state": "FAILURE", 
+                "message": task_result.info.get("message", "Task failed"),
+                "error": task_result.info.get("error", str(task_result.info)),
+                "progress": 0
+            }
+        else:
+            response = {
+                "task_id": task_id,
+                "state": task_result.state,
+                "message": "Unknown task state",
+                "progress": 0
+            }
+        
+        return response
+
+    except Exception as e:
+        print(f"❌ Task status error: {e}")
+        raise HTTPException(status_code=500, detail="Could not retrieve task status")
+
+
 # GET-Products to get a list of Product Nodes for a company_id
 @router.get("/get-products/{company_id}")
 async def get_products(company_id: str, request: Request):
@@ -365,18 +475,29 @@ async def analyze_hop_plus(payload: dict, request: Request):
         product_id = payload.get("product_id")
         if not product_id:
             raise HTTPException(status_code=400, detail="Product ID required.")
-        print("Starting Hop0 graph load")
-        product_subgraph = build_product_graph(product_id)
         
-        hop_plus_results = infer_upstream_with_rules(
-            product_subgraph=product_subgraph,
+        # hop_plus_results = infer_upstream_with_rules(
+        #     product_subgraph=product_subgraph,
+        #     cap_threshold=0.3,
+        #     relevance_threshold=0.6,
+        #     max_depth=3
+        # )
+
+        # print("results in analyze_hop_plus:", hop_plus_results)
+        # return {"hop_plus_results": hop_plus_results}
+        task = generate_hop_plus_graph.delay(
+            product_id,
             cap_threshold=0.3,
             relevance_threshold=0.6,
             max_depth=3
         )
-
-        print("results in analyze_hop_plus:", hop_plus_results)
-        return {"hop_plus_results": hop_plus_results}
+        
+        return {
+            "task_id": task.id,
+            "status": "PROCESSING",
+            "message": "Hop+ graph generation started. Use the task_id to check status.",
+            "product_id": product_id
+        }
 
     except Exception as e:
         print("❌ Hop+ analysis error:", e)

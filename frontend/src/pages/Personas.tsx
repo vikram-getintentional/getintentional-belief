@@ -1,92 +1,80 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Dispatch, SetStateAction } from "react";
+import { useNavigate } from 'react-router-dom';
 import PersonaCard from "../components/PersonaCard";
 import PersonaBuilder from "../components/PersonaBuilder";
+import * as Api from "../api";
+import SpinnerIcon from "../utils/SpinnerIcon";
 
-const Personas = () => {
-  const [companyId, setCompanyId] = useState<string | null>(null);
+type Props = { token: string | undefined, progress: number, setPersonaTaskID: Dispatch<SetStateAction<string | null>>, suggestedPersonas: any[] }
+const Personas = ({ token, progress, setPersonaTaskID, suggestedPersonas }: Props) => {
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [personas, setPersonas] = useState([]);
-  const [showBuilder, setShowBuilder] = useState(false);
+  const [personas, setPersonas] = useState<any[]>([]);
+  const [showBuilder, setShowBuilder] = useState(progress < 100 && progress > 0);
   const [statusMsg, setStatusMsg] = useState("");
-  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
-  // 1. Get company ID on mount
   useEffect(() => {
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     const fetchCompanyAndProducts = async () => {
       try {
-        const meRes = await fetch("http://localhost:8000/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const meData = await meRes.json();
-        setCompanyId(meData.company_id);
+        // 1. Get company ID on mount
+	const { companyID } = await Api.me(token);
 
         // 2. Get product IDs for this company
-        const prodRes = await fetch(
-          `http://localhost:8000/get-products/${meData.company_id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const prodData = await prodRes.json();
-        if (!prodData.products || prodData.products.length === 0) {
+	const { products } = await Api.products(token, companyID);
+        if (products.length === 0) {
           setStatusMsg("No products found. Please run Value Prop first.");
           return;
         }
-        console.log("✅ Product IDs set:", prodData.products.map((p: any) => p.id));
-        setProducts(prodData.products);
+        console.log("✅ Product IDs set:", products.map((p: any) => p.id));
+        setProducts(products);
 
         // 3. If only one product, select it automatically
-        if (prodData.products.length === 1) {
-          console.log("✅ Automatically selecting single product:", prodData.products[0].id);
-          setSelectedProductId(prodData.products[0].id);
+        if (products.length === 1) {
+          console.log("✅ Automatically selecting single product:", products[0].id);
+          setSelectedProductId(products[0].id);
         }
-      } catch (err) {
-        setStatusMsg("Error fetching company or products.");
+
+	console.log("🔄 Working with product:", selectedProductId);
+	if (!selectedProductId) {
+	  console.log("❌ No product selected, skipping persona fetch.");
+	  return;
+	}
+
+        console.log("🔄 Fetching personas for product:", selectedProductId);
+	let personas;
+	try {
+	  personas = await Api.personas(token, selectedProductId);
+          // 6. If no personas, prompt to infer
+          if (personas.length === 0 && progress === 0) {
+            setStatusMsg("No personas found. Click 'Infer Personas' to generate.");
+          } else {
+            setStatusMsg("");
+            setPersonas(personas);
+	  }
+
+	} catch(e: any) {
+	  if (e.message === "No Summaries or Capabilities Mapped") {
+            setStatusMsg("No summaries or capabilities mapped. Please run Value Prop first.");
+            setPersonas([]);
+            return;
+	  } else {
+            setStatusMsg("Error fetching personas.");
+            console.error("Error fetching personas:", e);
+	  }
+	}
+        console.log("Backend personas response:", personas);
+      } catch (e: any) {
+        setStatusMsg(`Error: ${e.message}`);
       }
     };
     fetchCompanyAndProducts();
-  }, [token]);
-
-  // 4. When a product is selected, fetch personas
-  useEffect(() => {
-    console.log("🔄 Working with product:", selectedProductId);
-    if (!selectedProductId) {
-      console.log("❌ No product selected, skipping persona fetch.");
-      return;
-    }
-    const fetchPersonas = async () => {
-      try {
-        console.log("🔄 Fetching personas for product:", selectedProductId);
-        const personaRes = await fetch(
-          `http://localhost:8000/get-personas/${selectedProductId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const personaData = await personaRes.json();
-        console.log("Backend personas response:", personaData);
-
-        // 5. Handle backend messages
-        if (personaData?.detail === "No Summaries or Capabilities Mapped") {
-          setStatusMsg("No summaries or capabilities mapped. Please run Value Prop first.");
-          setPersonas([]);
-          return;
-        }
-
-        setStatusMsg("");
-        setPersonas(personaData || []);
-
-        // 6. If no personas, prompt to infer
-        if (!personaData || personaData.length === 0) {
-          setStatusMsg("No personas found. Click 'Infer Personas' to generate.");
-        }
-      } catch (err) {
-        setStatusMsg("Error fetching personas.");
-        console.error("Error fetching personas:", err);
-      }
-    };
-    fetchPersonas();
   }, [selectedProductId]);
 
   return (
@@ -112,6 +100,51 @@ const Personas = () => {
       {/* 4. If no products, show message */}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
     
+      {!showBuilder && selectedProductId && !statusMsg.includes("Value Prop") && (
+        <button
+          className="my-8 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          onClick={() => setShowBuilder(true)}
+        >
+          {personas.length === 0 ? "Infer Personas" : "Re-infer Personas"}
+        </button>
+      )}
+
+      {progress > 0 && progress < 100 && (
+        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <SpinnerIcon />
+            <div className="flex-1">
+              <p className="text-blue-800 font-medium">Analyzing personas...</p>
+              {progress > 0 && (
+                <div className="mt-2">
+                  <div className="bg-blue-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-blue-600 text-xs mt-1">{progress}% complete</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBuilder && selectedProductId && (
+        <div className="mt-8">
+          <PersonaBuilder
+            product_id={selectedProductId}
+	    token={token!!}
+	    progress={progress}
+	    setTaskID={setPersonaTaskID}
+            onSave={() => {
+              setShowBuilder(false);
+              setStatusMsg("Personas inferred! Refresh to see new personas.");
+            }}
+          />
+        </div>
+      )}
       {/* 5. Show personas if they exist */}
       {personas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -144,7 +177,8 @@ const Personas = () => {
                 body: JSON.stringify({ product_id: selectedProductId }),
               });
               if (!res.ok) throw new Error("Failed to infer Hop+ personas");
-              setStatusMsg("Hop+ Personas inferred! Refresh to see updates.");
+	      const json = await res.json();
+	      setPersonaTaskID(json.task_id);
               // Optionally, refresh personas here by calling fetchPersonas()
             } catch (err) {
               setStatusMsg("Error inferring Hop+ personas.");
@@ -156,29 +190,6 @@ const Personas = () => {
         </button>
       )}
 
-      {/* 7. Show Infer Personas button if no personas and product is selected */}
-      {!showBuilder && selectedProductId && !statusMsg.includes("Value Prop") && (
-        <button
-          className="mt-8 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-          onClick={() => setShowBuilder(true)}
-        >
-          {personas.length === 0 ? "Infer Personas" : "Re-infer Personas"}
-        </button>
-      )}
-      
-
-      {/* 8. Show PersonaBuilder when button is clicked */}
-      {showBuilder && selectedProductId && (
-        <div className="mt-8">
-          <PersonaBuilder
-            product_id={selectedProductId}
-            onSave={() => {
-              setShowBuilder(false);
-              setStatusMsg("Personas inferred! Refresh to see new personas.");
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 };

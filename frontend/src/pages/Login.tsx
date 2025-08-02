@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+type Props = {
+  setSession: Dispatch<SetStateAction<{ token: string } | null>>
+};
+
+const Login = ({ setSession }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,6 +31,7 @@ const Login = () => {
     const data = await res.json();
     localStorage.setItem('token', data.access_token);
 
+
     // Assume company_id is returned in login response
     const companyId = data.company_id;
 
@@ -44,6 +49,7 @@ const Login = () => {
 
     const subgraphData = await subgraphRes.json();
     // subgraphData should have { exists: boolean, capabilities: [...] }
+    setSession({ token: data.access_token });
     if (subgraphData.exists && Array.isArray(subgraphData.capabilities) && subgraphData.capabilities.length > 0) {
       navigate('/valueproposition');
     } else {

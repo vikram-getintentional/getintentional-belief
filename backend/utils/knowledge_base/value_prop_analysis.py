@@ -65,6 +65,8 @@ def generate_product_value_prop(company_id: str, url: str, text: str, plg_cta: b
         
         if "summary" in result:
             summary = result["summary"]
+            domain = ""
+            industry = ""
             if "domain" in result:
                 domain = result["domain"]
             if "industry" in result:

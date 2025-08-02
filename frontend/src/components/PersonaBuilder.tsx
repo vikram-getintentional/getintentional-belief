@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import PersonaCard from "./PersonaCard";
-import SpinnerIcon from "../utils/SpinnerIcon";
+import { taskService, TaskStatus } from "../services/taskService";
 
 // Types
 export type PersonaSuggestion = {
@@ -20,50 +20,58 @@ export type PersonaSuggestion = {
 
 type Props = {
   product_id: string;
+  token: string;
+  progress: number,
+  setTaskID: Dispatch<SetStateAction<string | null>>,
   onSave: (confirmed: PersonaSuggestion[]) => void;
 };
 
-const PersonaBuilder = ({ product_id, onSave }: Props) => {
+const PersonaBuilder = ({ token, progress, setTaskID, product_id, onSave }: Props) => {
   const [personaSuggestions, setPersonaSuggestions] = useState<PersonaSuggestion[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
-    if (!product_id) return;
-    const token = localStorage.getItem("token");
-    setLoading(true);
-
-    fetch("http://localhost:8000/analyze/deep", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ product_id }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Raw API response in PersonaBuilder:", data);
-        const aggregated = Array.isArray(data.hop_0_results?.aggregated_personas) ? data.hop_0_results.aggregated_personas : [];
-        console.log("✅ Loaded aggregated persona cards:", aggregated);
-
-        setPersonaSuggestions(aggregated);
-
-        const toggles: Record<string, boolean> = {};
-        aggregated.forEach((p) => {
-          const key = `${p.persona.title}__${p.persona.department}__${p.persona.seniority}`;
-          toggles[key] = true;
-        });
-        setSelected(toggles);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch error:", err);
-        setFetchError("Could not load personas.");
-        setLoading(false);
-      });
+    (async function () {
+      if (!product_id) return;
+      await startDeepAnalysis(product_id);
+    }());
   }, [product_id]);
+
+  const startDeepAnalysis = async (product_id: string) => {
+    setFetchError("");
+    setStatusMessage("Starting Hop0 graph generation...");
+
+    try {
+      // Start the async task
+      const response = await taskService.startDeepAnalysis(product_id, token);
+      console.log("✅ Task started:", response);
+      setStatusMessage(response.message);
+      setTaskID(response.task_id)
+    } catch (startError: any) { // Add explicit type for startError
+      console.error("❌ Failed to start deep analysis:", startError);
+      setFetchError("Could not start analysis.");
+      setStatusMessage("");
+    }
+  };
+
+  const handleTaskSuccess = (result: any) => {
+    console.log("Raw task result:", result);
+    const aggregated = Array.isArray(result.hop_0_results?.personas) ? result.hop_0_results.personas : [];
+    console.log("✅ Loaded aggregated persona cards:", aggregated);
+
+    setPersonaSuggestions(aggregated);
+
+    const toggles: Record<string, boolean> = {};
+    aggregated.forEach((p) => {
+      const key = `${p.persona.title}__${p.persona.department}__${p.persona.seniority}`;
+      toggles[key] = true;
+    });
+    setSelected(toggles);
+    setStatusMessage("Analysis completed successfully!");
+    // setProgress(100);
+  };
 
   const togglePersona = (key: string) => {
     setSelected((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -91,8 +99,6 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
       )
     );
 
-    const token = localStorage.getItem("token");
-    setLoading(true);
     setFetchError("");
 
     try {
@@ -109,7 +115,6 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
       });
 
       const data = await response.json();
-      setLoading(false);
 
       // You can now use data.hop_results to display Hop+ results to the user
       // For example, you might want to call a prop like onHopResults(data.hop_results)
@@ -119,7 +124,6 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
       onSave(final);
 
     } catch (err) {
-      setLoading(false);
       setFetchError("Could not analyze dependencies.");
       console.error("Hop+ fetch error:", err);
     }
@@ -127,11 +131,20 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
 
   return (
     <div className="space-y-4">
-      {loading && <p className="text-blue-600">Analyzing personas...</p>}
-      {fetchError && <p className="text-red-600">{fetchError}</p>}
+      {fetchError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{fetchError}</p>
+          <button 
+            onClick={startDeepAnalysis}
+            className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
+          >
+            Try again
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {!loading &&
+        {progress === 0 &&
           personaSuggestions.map((p, idx) => {
             const key = `${p.persona.title}__${p.persona.department}__${p.persona.seniority}`;
             return (
@@ -143,16 +156,6 @@ const PersonaBuilder = ({ product_id, onSave }: Props) => {
               />
             );
           })}
-      </div>
-
-      <div className="flex gap-4 mt-6">
-        <button
-          onClick={handleSave}
-          disabled={Object.values(selected).every((v) => !v)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          ✅ Infer Hop+ Dependencies
-        </button>
       </div>
     </div>
   );

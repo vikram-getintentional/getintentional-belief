@@ -145,10 +145,11 @@ def infer_with_rules_then_fallback(product_id, product_subgraph: nx.DiGraph, for
         import traceback
         print("❌ Error in run_two_step_reasoning:", e)
         traceback.print_exc()
-        return {
-            "capability_map": [],
-            "personas": [],
-            "error": str(e)
-        }
+        # return {
+        #     "capability_map": [],
+        #     "personas": [],
+        #     "error": str(e)
+        # }
+        raise
 
 

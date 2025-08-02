@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ZmotCard from "../components/ZmotCard";
-import ZmotIcpBuilder from "../components/ZmotICPBuilder";
+import ZmotIcpBuilder from "../components/ZmotIcpBuilder";
 import IcpCard from "../components/IcpCard";
 
 const ZmotIcp = () => {
