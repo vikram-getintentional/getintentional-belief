@@ -1,0 +1,10 @@
+name: getintentional
+root: . 
+
+windows:
+  - main:
+      layout: tiled # Or 'even-horizontal' for side-by-side panes
+      panes:
+        - cd frontend && npm run dev
+        - source ./.venv/bin/activate && fastapi dev backend/main.py
+        - source ./.venv/bin/activate && celery -A backend.celery_app worker --loglevel=debug --queues=graph_generation --pool=threads
