@@ -20,7 +20,8 @@ For each capability, do the following in the context of the product, its domain 
 - Directly related capabilities should have scores between 0.7–1.0.
 - Indirectly related ones (e.g. same persona, downstream workflow, or shared pain) should have scores between 0.1–0.6.
 - Use 0.0 if the capability has no meaningful connection to the pain.
-3. List 1–3 jobs that are directly blocked or improved when this pain is solved in the context of the capability and product summary.
+3. For each pain, List 1–3 upstream jobs during which this pain is typically experienced. 
+   You may infer that these jobs as a Job to Be Done in the context of the product, that is directly blocked by this pain, and improved when this pain is solved.
 4. For each job provide a score (0.0 to 1.0) indicating how directly the job is impacted by the pain. 0.7-1.0 indicates this pain always occurs in this job, 0.3-0.6 indicates this pain is common but not always present, 0.1-0.2 indicates this pain is rarely felt in this job, and 0.0 indicates this job is not affected by this pain.
 5. For each job, provide a list of personas responsible for that job, each with:
       - title

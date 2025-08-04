@@ -97,91 +97,24 @@ def infer_zmot_icp(product_id, product_subgraph: nx.DiGraph, force_openai=False,
             batch_output = infer_pain_triggers_zmot_icp(summary, industry, domain, batch)
             if isinstance(batch_output, str):
                 batch_output = json.loads(batch_output)
-            gpt_output.extend(batch_output)
-            
-        # ---- End batching logic ----
+            gpt_output = batch_output
 
-        """
-        pain_id: string
-        pain_triggers: [
-            "attribute": "string",
-            "dimension": "string",
-            "direction": "string",
-            "icp_archetypes": 
-            [
-                "industries": 
-                [
-                {"industry": "Healthcare", "match_score": 0.85},
-                {"industry": "Finance", "match_score": 0.72},
-                ...
-                ],  
-                "revenues": [
-                {"revenue": "1-10M", "match_score": 0.9},
-                {"revenue": "10-100M", "match_score": 0.6},
-                ...
-                ],
-                "employees": [
-                {"employees": "1-10", "match_score": 0.9},
-                {"employees": "11-50", "match_score": 0.6},
-                ...
-                ],
-                "funding_stages": [
-                {"funding_stage": "Pre-Seed", "match_score": 0.8},
-                {"funding_stage": "Seed", "match_score": 0.6},
-                ...
-                ],
-                "geographies": [
-                {"geography": "North America", "match_score": 0.9},
-                {"geography": "Europe", "match_score": 0.6},
-                ...
-                ]
-            }}
-            ],
-            "zmot_events": [
-            {{
-                "trigger_event": "string",
-                "trigger_event_match_score": 0.8,
-                "observable_moments": [
-                {"observable_moment": "string", "match_score": 0.8}
-                ...
-                ],
-                "trigger_keywords": [
-                {"trigger_keyword": "string", "match_score": 0.8},
-                ...
-                ]
-            }},
-            {{
-                "trigger_event": "string",
-                "trigger_event_match_score": 0.8,
-                "observable_moments": [
-                {"observable_moment": "string", "match_score": 0.8}
-                ...
-                ],
-                "trigger_keywords": [
-                {"trigger_keyword": "string", "match_score": 0.8},
-                ...
-                ]
-            }},
-            ...
-            ]
-        }},
-        """
+            print("\n\nCurrent Batch of entries map in ZMOT discovery")
+            print(json.dumps(gpt_output, indent=2))
 
-        print("\n\nUpdated entries map in ZMOT discovery")
-        print(json.dumps(gpt_output, indent=2))
+            # Step 3: Normalize and canonicalize the flattened capability map
+            print("📊 [Graph] Canonicalizing ZMOT map...")
+            if not gpt_output:
+                print("⚠️ No valid data found in OpenAI output. Cannot proceed.")
+                return {
+                    "pains_map": [],
+                    "source": "empty",
+                    "error": "No valid data found in OpenAI output."
+                }
+            zmot_map = canonicalize_and_create_zmot_icp_nodes(gpt_output, product_id)
 
-        # Step 3: Normalize and canonicalize the flattened capability map
-        print("📊 [Graph] Canonicalizing ZMOT map...")
-        if not gpt_output:
-            print("⚠️ No valid data found in OpenAI output. Cannot proceed.")
-            return {
-                "pains_map": [],
-                "source": "empty",
-                "error": "No valid data found in OpenAI output."
-            }
-        zmot_map = canonicalize_and_create_zmot_icp_nodes(gpt_output, product_id)
-
-        print("ICP & ZMOT Graph processed. Results follow:", zmot_map)
+            print("ICP & ZMOT Graph processed for batch. Results follow:", zmot_map)
+        print("All ZMOT processing complete.")
 
         #print("Updating cumulative relevance")
         #relevance_nodes = get_cumulative_relevance(product_subgraph)

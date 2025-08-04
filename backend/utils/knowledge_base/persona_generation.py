@@ -23,6 +23,7 @@ def get_company_products(base_graph: nx.DiGraph, company_id: str) -> List[Dict[s
 def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
     print("Starting relevance computation - at this point centrality & cum relevance should be set")
     personas = []
+
     product_id = get_node_id(sub_graph, "product",{})
 
 
@@ -47,8 +48,10 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
     add_or_update_cumulative_relevance_data(product_id, cumulative_relevance)
 
     print("Starting persona traversal")
+    print("----------------------------------")
     for persona_id, _ in get_nodes_list(sub_graph, "persona",{}):
-        print("Processing persona ID:", persona_id)
+        persona_node = get_node_by_id(sub_graph, persona_id)
+        print("Processing persona:", persona_id, "with title:", persona_node.get("title", "Unknown"))
         normalized_relevance = get_cumulative_relevance_data(product_id, persona_id)
         persona_node = get_node_by_id(sub_graph, persona_id)
         print("Persona node data:", persona_node)
@@ -91,6 +94,8 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
             "jobs": jobs,
             "pains": pains
         }
+        print("Persona:", persona)
+        print("-----------------------------------")
         personas.append(persona)
     
     

@@ -1,6 +1,6 @@
 import json
 from typing import List, Dict, Any, Set
-from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list_ids, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list_ids, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type, update_graph
 from backend.utils.graph_base.nodes.pain_trigger_nodes import get_or_create_pain_trigger_node
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data 
 from backend.utils.graph_base.graph_builder import canonicalize_and_create_hop_plus_nodes
@@ -64,11 +64,15 @@ def traverse_upstream_jobs(jobs_holder, product_subgraph, gpt_jobs_cache, visite
             print("Before processing upstream for this node")
             next_job_ids = get_upstream_job_ids(current_job_id, product_subgraph)
             if next_job_ids and len(next_job_ids) > 0:
-                print("Next job IDs found: ", next_job_ids," ... processing into jobs_holder...")
-                for next_job_id in next_job_ids:
-                    if next_job_id not in jobs_holder and next_job_id not in visited_jobs:
+                unvisited_next_jobs = [jid for jid in next_job_ids if jid not in jobs_holder and jid not in visited_jobs]
+                if unvisited_next_jobs:
+                    print("Next job IDs found: ", unvisited_next_jobs, " ... processing into jobs_holder...")
+                    for next_job_id in unvisited_next_jobs:
                         print("Adding next job to jobs holder: ", next_job_id)
                         jobs_holder.append(next_job_id)
+                else:
+                    print("All upstream jobs already visited (cycle detected). Adding to GPT Cache")
+                    gpt_jobs_cache.append(current_job_id)
             else:
                 print("No upstream jobs found. Adding to GPT Cache")
                 gpt_jobs_cache.append(current_job_id)
@@ -110,7 +114,7 @@ def get_upstream_job_ids(next_job_id, product_subgraph):
     if not next_job_id:
         print("No next job provided.")
         return []
-    upstream_pain_ids = get_target_nodes_by_source_and_type(product_subgraph, next_job_id, "impacts")
+    upstream_pain_ids = get_target_nodes_by_source_and_type(product_subgraph, next_job_id, "solves")
     if not upstream_pain_ids:
         return []
     for upstream_pain_id in upstream_pain_ids:
@@ -169,7 +173,7 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
             
         final_gpt_buffer.append({
             "job_id": job_id,
-            "description": job.get("description"),
+            "job_to_be_done": job.get("description"),
             "personas": personas_list,
             "pains": pains_list
         })
@@ -189,7 +193,6 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
         print("GPT results for batch:", gpt_output)
         if gpt_output:
             gpt_outputs.extend(gpt_output)
-    print("GPT results: ", gpt_outputs)
 
     # Canonicalize & Process
     print("📊 [Graph] Canonicalizing Hop++ map...")
@@ -200,11 +203,12 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
             "source": "empty",
             "error": "No valid data found in OpenAI output."
         }
+    print(json.dumps(gpt_outputs, indent=2))
     hop_plus_new_job_ids = canonicalize_and_create_hop_plus_nodes(gpt_outputs, product_id)
     # Clear the cache after processing
     gpt_jobs_cache.clear()
 
-    print("ICP & ZMOT Graph processed. Results follow:", hop_plus_new_job_ids)
+    print("Hop+ Graph Created. Results follow:", hop_plus_new_job_ids)
 
     #print("Updating cumulative relevance")
     #relevance_nodes = calculate_soft_or_relevance(product_subgraph)
@@ -217,6 +221,8 @@ def process_gpt_cache(gpt_jobs_cache, product_subgraph, jobs_holder, visited_job
             if job_id not in jobs_holder:
                 print("Adding new job id to jobs holder: ", job_id)
                 jobs_holder.append(job_id)
+    
+    product_subgraph = update_graph(product_subgraph)
 
     traverse_upstream_jobs(jobs_holder, product_subgraph, gpt_jobs_cache, visited_jobs, current_depth+1)
 

@@ -1,124 +1,4340 @@
 {
   "TriggerEvents": [
     {
-      "id": "77a48eb9-29dd-42ff-a1ce-28455e1f7027",
-      "trigger_event": "new software implementation"
+      "id": "88299cea-bf5b-4934-bf3f-d79e5edbb83e",
+      "trigger_event": "compliance failure"
     },
     {
-      "id": "0740ef59-89a2-4b9e-b844-49f931c8a7da",
-      "trigger_event": "website redesign"
+      "id": "72da35f6-233e-4839-8715-593efaba7250",
+      "trigger_event": "multiple commission disputes"
     },
     {
-      "id": "6322a0f2-f775-412d-97bd-645f788ca21d",
+      "id": "0abe67b0-3e0b-46ee-938d-d12187fbcead",
+      "trigger_event": "new product launch"
+    },
+    {
+      "id": "fb4883b3-bbf2-4d24-bc29-7f116a74b360",
       "trigger_event": "leadership change"
     },
     {
-      "id": "b6b4c522-8ac7-401e-8c43-e96dac387685",
-      "trigger_event": "increase in customer complaints"
+      "id": "4f73f990-1207-4ed7-a714-5c2030623f17",
+      "trigger_event": "acquisition"
     },
     {
-      "id": "bcaff0ae-4eb3-4484-9ba2-d41238f48cc2",
-      "trigger_event": "business expansion or new product launch"
+      "id": "a81ed27c-9bb7-49e1-a230-df87e834a182",
+      "trigger_event": "new sales strategy"
+    },
+    {
+      "id": "dd64608a-2f0c-4db1-a52c-e77540c7bd42",
+      "trigger_event": "inaccurate financial forecasting"
+    },
+    {
+      "id": "2bee3b30-0cb7-4175-9277-e2ecac1bffe5",
+      "trigger_event": "legal reforms"
+    },
+    {
+      "id": "dd3c7f37-792d-4e8d-8cf5-c6479ce1e4d7",
+      "trigger_event": "sales target failure"
+    },
+    {
+      "id": "2d826f93-5650-4d29-9297-55147d0e1920",
+      "trigger_event": "change in customer behavior"
+    },
+    {
+      "id": "df7c9ac9-035e-470f-9485-c4ea1b4a2447",
+      "trigger_event": "market volatility"
+    },
+    {
+      "id": "5c7c1334-414e-4b4d-bf96-9292a11f53aa",
+      "trigger_event": "audit failure"
+    },
+    {
+      "id": "16704220-2fcc-4950-9236-c998c2ed85c0",
+      "trigger_event": "rapid growth"
+    },
+    {
+      "id": "97f125af-d55b-4260-a765-6016f370ceff",
+      "trigger_event": "lack of automation in data management"
+    },
+    {
+      "id": "1143ff54-06d1-4ef1-b261-fff50ebd40b8",
+      "trigger_event": "data system upgrade"
+    },
+    {
+      "id": "d8784179-2f56-4e2a-ad19-a81aba5df95d",
+      "trigger_event": "hiring spree"
+    },
+    {
+      "id": "421199ed-6681-44b5-8cc3-5f2b0554ff2a",
+      "trigger_event": "loss of key sales personnel"
+    },
+    {
+      "id": "6e8dff60-5a28-4a2c-b824-26522f8b01fa",
+      "trigger_event": "increase in data volume"
+    },
+    {
+      "id": "84f90ae1-27d8-4a50-a924-aabdeae32a36",
+      "trigger_event": "new market entry"
+    },
+    {
+      "id": "477758e9-ceb5-49e8-94f5-d921ba0f3490",
+      "trigger_event": "introduction of new products"
+    },
+    {
+      "id": "30c5bb8c-aa22-49ee-8e41-aa84d0d0e6b9",
+      "trigger_event": "seasonal sales events"
+    },
+    {
+      "id": "454f1aef-a71a-4ad8-b0ef-f4987b0e43c9",
+      "trigger_event": "data breach"
+    },
+    {
+      "id": "84c09fc7-624f-4401-b958-7a460f33a240",
+      "trigger_event": "financial year-end closing"
+    },
+    {
+      "id": "cb18dd97-0a1c-4197-962a-09f32bc15e45",
+      "trigger_event": "recent funding round"
+    },
+    {
+      "id": "506b1737-a190-4d98-8fc9-0bbd0db19c7e",
+      "trigger_event": "increased competition"
+    },
+    {
+      "id": "49b7e43e-9536-4f04-801e-64c38aaa05d4",
+      "trigger_event": "product expansion"
+    },
+    {
+      "id": "2d8d187f-2570-47b1-b63a-2d9b8237ff94",
+      "trigger_event": "legal penalties"
+    },
+    {
+      "id": "f02ca3d2-fcec-4d19-bdd3-bf18e66a3379",
+      "trigger_event": "introduction of new data sources"
+    },
+    {
+      "id": "c8f0077b-8fa1-43b6-ac82-6fb51f07dc91",
+      "trigger_event": "economic downturn"
+    },
+    {
+      "id": "00333ab5-daff-4393-a783-108015e5ce04",
+      "trigger_event": "hiring a new vp of sales"
+    },
+    {
+      "id": "d4442b20-e739-4d1f-b0c9-d7ef43d8b2e0",
+      "trigger_event": "scaling pains"
+    },
+    {
+      "id": "3ffa1257-ae3e-4701-8fad-311d46a6305f",
+      "trigger_event": "audit"
+    },
+    {
+      "id": "7869bbff-cbc3-4776-a077-8863cc660cf4",
+      "trigger_event": "market expansion"
+    },
+    {
+      "id": "48318559-fde9-4109-83b4-6828eac3cedd",
+      "trigger_event": "reduction in sales"
+    },
+    {
+      "id": "c34864db-9c85-47d0-9453-4de403bc1727",
+      "trigger_event": "merger or acquisition"
+    },
+    {
+      "id": "8f3c76e4-3aba-4402-9e90-5656f0ef85da",
+      "trigger_event": "legal dispute"
+    },
+    {
+      "id": "c13e2eed-8be0-42a4-ba33-12d9f2a50400",
+      "trigger_event": "sales team turnover"
+    },
+    {
+      "id": "ecbcbf9f-18e0-4edd-92f0-5815f15d0c12",
+      "trigger_event": "penalty payment"
+    },
+    {
+      "id": "22708e0d-b6a2-40ea-ad07-f2add30209b9",
+      "trigger_event": "regulatory changes"
+    },
+    {
+      "id": "5b1f5131-5ec3-4ac4-8987-67b5f837d33e",
+      "trigger_event": "economic instability"
+    },
+    {
+      "id": "e3c7cb89-7795-4975-b61b-42799c67345e",
+      "trigger_event": "operational inefficiencies"
+    },
+    {
+      "id": "a184c06a-e140-46c4-b973-a93613b97274",
+      "trigger_event": "incorrect sales forecasting"
+    },
+    {
+      "id": "17e3bf74-19e1-4cb4-ade0-2109d33006f1",
+      "trigger_event": "adoption of new crm or erp systems"
+    },
+    {
+      "id": "cc91a74c-e724-4d02-8312-4bb186e7ceda",
+      "trigger_event": "change in commission structure"
+    },
+    {
+      "id": "610ecb08-d95f-4950-b3b2-29fc1a6ad397",
+      "trigger_event": "revenue growth"
+    },
+    {
+      "id": "e646bbc1-cf17-4361-b92b-fc7f01a19044",
+      "trigger_event": "financial restructuring"
+    },
+    {
+      "id": "06c29403-c2ec-43c9-a639-3193b9cf7571",
+      "trigger_event": "employee layoffs"
+    },
+    {
+      "id": "32868f75-48eb-478b-9e36-77f8f2bcbd57",
+      "trigger_event": "sales target increase"
+    },
+    {
+      "id": "3cfcb7ce-e477-4113-9ac8-0d2c362eb642",
+      "trigger_event": "asc606 regulation introduction"
+    },
+    {
+      "id": "97075f95-63e0-4bf2-a153-cb7727a3532b",
+      "trigger_event": "sales growth"
+    },
+    {
+      "id": "d39b1e92-45ae-467b-ab2b-eb992d8a47cb",
+      "trigger_event": "new regulation"
+    },
+    {
+      "id": "be44297c-b321-4957-a358-f525e0c7f760",
+      "trigger_event": "lack of sales performance recognition"
+    },
+    {
+      "id": "3f3fd145-0b33-4465-88ba-7e0cc8b08966",
+      "trigger_event": "system upgrade"
+    },
+    {
+      "id": "58b32a7f-ea12-461e-bc81-aa519cbbf55b",
+      "trigger_event": "rapid expansion of data sources"
+    },
+    {
+      "id": "e5cd999c-e3e7-4b12-b02b-6e1ff21a4b0d",
+      "trigger_event": "product launch"
+    },
+    {
+      "id": "9e047d2f-ab91-4ec4-a596-1080d45196fd",
+      "trigger_event": "corporate restructuring"
+    },
+    {
+      "id": "b84a3e4c-db12-455f-ac63-d03d6ce33fb6",
+      "trigger_event": "legal action"
+    },
+    {
+      "id": "547d6a33-158a-43c0-a876-a0511866991a",
+      "trigger_event": "new financial year"
+    },
+    {
+      "id": "a54339fe-5505-4ed3-93ae-47607cab9a9e",
+      "trigger_event": "major market fluctuation"
+    },
+    {
+      "id": "3fd6de60-eb03-4d04-87ca-f3ee5a0130dc",
+      "trigger_event": "new competitor entry"
+    },
+    {
+      "id": "1372bd5b-05ce-49ef-b773-c73e2acd3ab4",
+      "trigger_event": "sales compensation plan change"
+    },
+    {
+      "id": "4b77b0e3-f6e0-4387-aff2-4e6687c57eee",
+      "trigger_event": "recent financial misestimation"
+    },
+    {
+      "id": "f1106289-4a22-44a2-a1eb-00c8e913999c",
+      "trigger_event": "rapid expansion"
+    },
+    {
+      "id": "b13927ab-6a9d-4244-a558-bb2793e41df0",
+      "trigger_event": "data migration"
+    },
+    {
+      "id": "f32a0c53-1c25-4201-85e5-89e5c0c3a975",
+      "trigger_event": "introduction of new technology"
+    },
+    {
+      "id": "c431fbe0-cfc9-4917-8472-68e46a3a4685",
+      "trigger_event": "product redevelopment"
+    },
+    {
+      "id": "c841b16e-0eb1-4f2d-9148-a661e575a9b1",
+      "trigger_event": "lawsuit or legal action"
+    },
+    {
+      "id": "26bfe5b9-d447-44b8-9247-ddce71ffe9ae",
+      "trigger_event": "audit failures"
+    },
+    {
+      "id": "80af7363-d6e6-4fcb-a150-69b5e62d6d4a",
+      "trigger_event": "acquisition or merger"
+    },
+    {
+      "id": "7bc32ec4-dc8d-4722-9d01-b616eb493a29",
+      "trigger_event": "upgrading to a more complex sales process"
+    },
+    {
+      "id": "b641da8d-b539-46fa-94a5-bad28eced1b4",
+      "trigger_event": "expansion into new markets"
+    },
+    {
+      "id": "27e92a50-3f8b-4558-b3ba-3584cf04b444",
+      "trigger_event": "company restructuring"
+    },
+    {
+      "id": "97163c25-c432-498a-8845-c8dc4015268b",
+      "trigger_event": "company cash flow problem"
+    },
+    {
+      "id": "6af048d7-4486-4aac-ac3e-29b47e4359d6",
+      "trigger_event": "new regulatory compliance requirements"
+    },
+    {
+      "id": "7bb285d9-7f4e-4b8d-85a0-03767dfef666",
+      "trigger_event": "increased sales targets"
+    },
+    {
+      "id": "a11e8a2e-fc55-4a91-968a-97f485f329d8",
+      "trigger_event": "leadership change in sales department"
+    },
+    {
+      "id": "e2844f2a-319c-43d6-8af9-6d0b029a3e9e",
+      "trigger_event": "new business strategy implementation"
+    },
+    {
+      "id": "692c6507-48cc-439f-9ef5-07f73415410d",
+      "trigger_event": "acquisition of a competitor"
+    },
+    {
+      "id": "22ba7e3c-7624-43ad-83f3-9400bb94eab4",
+      "trigger_event": "new sales targets"
+    },
+    {
+      "id": "aea06c04-e5e4-4f12-a058-64d02826f1e1",
+      "trigger_event": "new regulatory changes"
+    },
+    {
+      "id": "a7c1a79e-2242-4ba2-8bac-7425c79e991c",
+      "trigger_event": "new financial regulation introduced"
+    },
+    {
+      "id": "489b379f-c6fe-4000-a275-7da2412b7c4b",
+      "trigger_event": "internal audit failure"
+    },
+    {
+      "id": "fcf3ee88-fb4d-4e6a-acd7-ec5e40dfa1b0",
+      "trigger_event": "increase in product or service complexity"
+    },
+    {
+      "id": "930139db-0d9b-4823-8e10-5750815a4d5c",
+      "trigger_event": "company growth or expansion"
+    },
+    {
+      "id": "fdd3c0d7-bed8-4065-aa9e-89bf9773796e",
+      "trigger_event": "new product or service launch"
+    },
+    {
+      "id": "d8089667-e381-45e7-a0fb-772992052821",
+      "trigger_event": "new regulatory laws"
+    },
+    {
+      "id": "1764d871-2344-486f-89a0-3bf8e98d3618",
+      "trigger_event": "new sales leadership"
+    },
+    {
+      "id": "d416274f-2ae1-4a03-a384-430e6916c6ec",
+      "trigger_event": "change in company's top management"
+    },
+    {
+      "id": "3fee829c-29b7-4267-941c-0ec580217436",
+      "trigger_event": "mergers and acquisitions"
+    },
+    {
+      "id": "f9c3bf16-03dd-4519-a955-2ca005e0ca93",
+      "trigger_event": "change in sales targets"
+    },
+    {
+      "id": "3d0402c5-040d-4379-8e2d-c76c924953fa",
+      "trigger_event": "new regulatory standards"
+    },
+    {
+      "id": "5a037cc3-47c5-4ccb-b3c1-438c6c08fdbf",
+      "trigger_event": "increase in sales transactions"
+    },
+    {
+      "id": "f2229ede-4c07-4297-b701-fdaeb5305489",
+      "trigger_event": "internal audit"
+    },
+    {
+      "id": "3c28933d-9bcf-40ad-87f9-ddfbbe7028c7",
+      "trigger_event": "security breach"
+    },
+    {
+      "id": "55660943-6f97-4c66-bc7b-d6cef53c96ac",
+      "trigger_event": "sales team restructuring"
+    },
+    {
+      "id": "094418ce-35e0-4492-80f4-6544914ab3ee",
+      "trigger_event": "product line expansion"
+    },
+    {
+      "id": "0af336b5-b704-48e6-965a-8d7947ad776e",
+      "trigger_event": "new regulation or compliance requirement"
+    },
+    {
+      "id": "ae009c4b-7e78-4e1a-8c51-ca0445d69293",
+      "trigger_event": "financial year end"
+    },
+    {
+      "id": "357f8a91-df82-41ed-af39-79173639cf83",
+      "trigger_event": "rebranding or change in company strategy"
+    },
+    {
+      "id": "40c6621c-9a2d-4201-9725-0f3101e6ced4",
+      "trigger_event": "business expansion into new markets"
+    },
+    {
+      "id": "9cd76111-fca3-4541-aa61-a098e9a16985",
+      "trigger_event": "regulatory changes in industry"
+    },
+    {
+      "id": "514521d7-43fb-490e-a493-beb7b17d8ac4",
+      "trigger_event": "introduction of new sales channels"
+    },
+    {
+      "id": "4385178b-d14a-4f3f-bd34-4e3e7b3f0b23",
+      "trigger_event": "new leadership"
+    },
+    {
+      "id": "7523ad7f-cea7-4df8-b1ef-0d2ac4c844c9",
+      "trigger_event": "increase in sales volume"
+    },
+    {
+      "id": "0642862d-bf49-4f38-8a49-bdeaf9f7740b",
+      "trigger_event": "digitization of business processes"
+    },
+    {
+      "id": "bf495414-e1cd-4d0d-9c43-2fc5b20aca47",
+      "trigger_event": "fines for non-compliance"
+    },
+    {
+      "id": "880592aa-26ec-4cee-b823-52ced68e72fe",
+      "trigger_event": "lack of data-driven culture"
+    },
+    {
+      "id": "8c58df8a-c387-4a36-bd25-4bf89ffd241b",
+      "trigger_event": "change in data management tools"
+    },
+    {
+      "id": "0e464e38-c4ab-46df-9859-638b80c8f009",
+      "trigger_event": "change in customer demands"
+    },
+    {
+      "id": "c44db5f8-4f91-447a-885c-97f05e4dd741",
+      "trigger_event": "shift to remote work"
+    },
+    {
+      "id": "c07362b3-2ccd-41e2-82de-e2b4171851d7",
+      "trigger_event": "new competitive entrants"
+    },
+    {
+      "id": "66bc0928-6a7c-420f-b381-78e86807160b",
+      "trigger_event": "new legislation"
+    },
+    {
+      "id": "a1f68acc-0923-4a23-b8e7-f90002a2af97",
+      "trigger_event": "implementation of a new crm system"
+    },
+    {
+      "id": "7f8817df-81e6-479d-9c74-4be66903206f",
+      "trigger_event": "market downturn"
+    },
+    {
+      "id": "ef3f2c25-e9b2-41cb-a60a-86d4b38298f2",
+      "trigger_event": "introduction of new competition"
+    },
+    {
+      "id": "799d3580-a22e-448d-be3f-c41b7daf20b5",
+      "trigger_event": "loss of a major customer"
+    },
+    {
+      "id": "0e0971bb-4fef-48e9-b58c-815c07641810",
+      "trigger_event": "acquisition of another company"
+    },
+    {
+      "id": "96636485-177c-4e02-84e6-a357ed9b6f93",
+      "trigger_event": "recent product launch"
+    },
+    {
+      "id": "801fc61e-2ab3-4f62-b392-984996f44a26",
+      "trigger_event": "change in market conditions"
+    },
+    {
+      "id": "b1ab8d57-76b1-49e9-acd5-7c95d326428d",
+      "trigger_event": "financial reporting period"
+    },
+    {
+      "id": "27b0d6c0-0a33-4a11-9c7a-21e6b214f847",
+      "trigger_event": "holiday season or peak sale periods"
+    },
+    {
+      "id": "158d6add-d104-4419-be0c-a06381e36c5f",
+      "trigger_event": "entering new markets"
+    },
+    {
+      "id": "96ffafd0-f9af-48fe-8979-5e8916c67a66",
+      "trigger_event": "new product launches"
+    },
+    {
+      "id": "6c0938ee-624d-4182-ba4e-e39282a3ca7a",
+      "trigger_event": "company audit"
+    },
+    {
+      "id": "ddcc92b0-9c9c-4e4c-995e-14629899a442",
+      "trigger_event": "change in sales strategy"
+    },
+    {
+      "id": "24841d1e-8305-4066-a2ab-c239ff8706ee",
+      "trigger_event": "business expansion"
+    },
+    {
+      "id": "b30ac2b9-bfb7-4e8d-9baf-6b2f49d9b047",
+      "trigger_event": "new cfo appointment"
+    },
+    {
+      "id": "42902fd5-69c6-4933-ad12-062b7b037c4a",
+      "trigger_event": "financial audit"
+    },
+    {
+      "id": "f5e2ffef-b61b-4f85-b8dd-cd41d1564b1f",
+      "trigger_event": "high employee turnover"
+    },
+    {
+      "id": "84b5ee68-ca8d-464c-b0b3-91e04f809188",
+      "trigger_event": "auditing process"
+    },
+    {
+      "id": "04f2b02f-8311-464d-9104-7976c3ba9d10",
+      "trigger_event": "new compliance regulations"
+    },
+    {
+      "id": "05b38fc4-18ce-4f80-b7ae-bf64d519e902",
+      "trigger_event": "sales team restructure"
+    },
+    {
+      "id": "9dc3b3d2-9d11-4721-a9e1-9ff1d53e27c3",
+      "trigger_event": "regulatory audit"
+    },
+    {
+      "id": "e514179a-26b0-43ec-a582-46fe92b4f5f1",
+      "trigger_event": "change in company culture"
+    },
+    {
+      "id": "adbab3ab-6b47-449d-8ffe-82b6150f63d8",
+      "trigger_event": "lay-offs"
+    },
+    {
+      "id": "e4784424-2492-4544-84a0-757f8b9bfe1a",
+      "trigger_event": "change in sales team structure"
+    },
+    {
+      "id": "fbfa3cf4-b36e-41a9-8151-abbab149a0e9",
+      "trigger_event": "data breach or security incident"
+    },
+    {
+      "id": "d8affbe3-c8bd-4d64-bbe3-a7ce1ebfda26",
+      "trigger_event": "recent acquisition"
+    },
+    {
+      "id": "1c0d1a4d-32ae-4e0b-87c9-b520d02d50be",
+      "trigger_event": "new regulations or compliance requirements"
+    },
+    {
+      "id": "594a6cd3-dba5-4a12-bcd1-9848567852ee",
+      "trigger_event": "major organizational restructuring"
+    },
+    {
+      "id": "6b64bdb5-97bc-4a55-92a4-a42ca5a3fd5b",
+      "trigger_event": "new compliance regulation"
+    },
+    {
+      "id": "30cabdf5-66ec-43e2-8131-5961a1dcd07d",
+      "trigger_event": "shift in sales strategy"
+    },
+    {
+      "id": "f4a46bb5-8698-43e9-b177-9c7b29cdaf9b",
+      "trigger_event": "increase in product portfolio"
+    },
+    {
+      "id": "b7f5ecb9-6a00-417c-bb53-2220ca835639",
+      "trigger_event": "loss of major client"
+    },
+    {
+      "id": "cda76a60-498b-4d47-92ce-7af901e629c8",
+      "trigger_event": "change in legal regulations"
+    },
+    {
+      "id": "389b92e8-633b-4aaa-8ae2-aeeea7324d82",
+      "trigger_event": "regulatory change announcement"
+    },
+    {
+      "id": "11b577e7-77c5-46a3-8bba-440dde6d638f",
+      "trigger_event": "seasonal sales spike"
+    },
+    {
+      "id": "5f291ee3-d426-4991-b25a-362457d60336",
+      "trigger_event": "major data migration"
+    },
+    {
+      "id": "4bf49004-be04-4d10-8086-bf3da3d56dfa",
+      "trigger_event": "sales team reorganization"
+    },
+    {
+      "id": "608f8952-efec-4c25-bd13-dd5885c82add",
+      "trigger_event": "sales performance decline"
+    },
+    {
+      "id": "d5cf47d0-466c-4e2e-a065-af45da484bd4",
+      "trigger_event": "new regulatory law"
+    },
+    {
+      "id": "7eaf8851-191e-4580-88d0-2ec343988578",
+      "trigger_event": "legal disputes"
+    },
+    {
+      "id": "d84dcda7-c9d3-4379-b986-6307b1026931",
+      "trigger_event": "new data sources"
+    },
+    {
+      "id": "f5795a3e-f4da-4a6f-94ae-3912b9785dd1",
+      "trigger_event": "acquisition of competitor"
     }
   ],
   "ObservableMoments": [
     {
-      "id": "e24d0fbb-8bd8-4dac-9cf9-6c6b911c4a70",
-      "observable_moment": "job postings for ux designers"
+      "id": "c592be27-760b-402e-9eea-2525d4421cee",
+      "observable_moment": "company blog post about compliance"
     },
     {
-      "id": "a31113c6-9623-4cea-af8b-ff38f71b2899",
-      "observable_moment": "press releases"
+      "id": "73e1be38-821b-4af3-b8a9-3095de061758",
+      "observable_moment": "news articles about hiring"
     },
     {
-      "id": "4fdc64fa-fe1b-4db8-b32c-39e6a0839caa",
-      "observable_moment": "g2 reviews"
+      "id": "52ac9a2d-4ffc-4826-8016-645ad433cf4b",
+      "observable_moment": "company blog posts"
     },
     {
-      "id": "76c9ef78-6827-4dce-aa10-696ab44ae087",
-      "observable_moment": "job postings for it professionals"
+      "id": "73525129-652d-4bfc-a8dd-94d011de617a",
+      "observable_moment": "job postings"
     },
     {
-      "id": "8284148a-18a2-4ae9-902e-9076be1f0b7b",
+      "id": "db3c2b1c-8bb9-432b-8883-8759872aa492",
+      "observable_moment": "news articles"
+    },
+    {
+      "id": "3919a9fb-1165-443b-8dff-54bf91658b76",
+      "observable_moment": "news articles about expansion"
+    },
+    {
+      "id": "379ecf6e-5992-4b6c-8ecd-dc435a9ed62a",
+      "observable_moment": "tech announcements"
+    },
+    {
+      "id": "84691457-dd33-4d8b-a0f3-e8a471f1bebb",
       "observable_moment": "social media posts"
     },
     {
-      "id": "b063a597-8115-40e9-9939-719423f50f48",
+      "id": "f5a19117-4066-435a-a748-d9236bc94930",
+      "observable_moment": "news articles about acquisition"
+    },
+    {
+      "id": "b9b1bc09-8cdf-4283-9df5-afa5264a49b1",
+      "observable_moment": "news articles on leadership changes"
+    },
+    {
+      "id": "7fceaf87-b569-439b-ba20-d9176e42b60a",
+      "observable_moment": "audit reports"
+    },
+    {
+      "id": "9e2d362f-135a-48da-994e-f8bb36e6bb28",
+      "observable_moment": "press releases"
+    },
+    {
+      "id": "ad3cfef6-463a-428d-a37b-65ab6f9fad7e",
+      "observable_moment": "sec filings"
+    },
+    {
+      "id": "9be3b636-202b-4564-88bd-dfc7ad846379",
+      "observable_moment": "news article about the breach"
+    },
+    {
+      "id": "9eaa2e85-29a7-42c3-bcec-60d52a44d872",
+      "observable_moment": "company-wide meetings about year-end finances"
+    },
+    {
+      "id": "a8ceeb7d-8b62-47db-bb43-6b5656421edb",
+      "observable_moment": "product launch event"
+    },
+    {
+      "id": "8017d622-2db2-4189-827c-4354f04d6395",
+      "observable_moment": "system upgrade announcements"
+    },
+    {
+      "id": "3a4c9be3-166d-4bed-b422-a85081f5a451",
+      "observable_moment": "company statements"
+    },
+    {
+      "id": "578fa32f-0785-4caf-828d-0afd689f2a25",
+      "observable_moment": "regulatory announcements"
+    },
+    {
+      "id": "08111b30-4ccf-4083-a933-ad321392b56c",
+      "observable_moment": "industry reports"
+    },
+    {
+      "id": "c4da5fe9-de61-4c79-9e90-8ec9a8415386",
+      "observable_moment": "migration announcements"
+    },
+    {
+      "id": "ecdfc66f-e9bd-48fc-9958-da0d317b9ca4",
+      "observable_moment": "news articles on penalties"
+    },
+    {
+      "id": "e7d1a452-2bee-4ebf-85e2-9d54a4a702b9",
+      "observable_moment": "social media discussions about lack of automation"
+    },
+    {
+      "id": "89a08566-36b4-4d25-a47a-37844de6cf15",
+      "observable_moment": "glassdoor reviews"
+    },
+    {
+      "id": "eea3f3c6-3f6f-4a83-9886-f21836b7ed13",
+      "observable_moment": "product listing updates"
+    },
+    {
+      "id": "06f00e04-a416-4ef0-995c-bfb920a4278a",
+      "observable_moment": "ceo interviews"
+    },
+    {
+      "id": "86f38e78-7428-4167-b876-b02211b5498c",
+      "observable_moment": "press release about the strategy"
+    },
+    {
+      "id": "94806582-5a8e-4fb0-8b94-cac50ea5dec8",
+      "observable_moment": "news articles discussing the funding"
+    },
+    {
+      "id": "6d612f6b-3e99-4800-9f57-a5d3c1c23635",
+      "observable_moment": "company internal communications"
+    },
+    {
+      "id": "ce6ac785-4d58-4b6f-9ca4-59156c19a2d2",
+      "observable_moment": "customer testimonials"
+    },
+    {
+      "id": "9b4b614e-fb09-4888-b857-3cacfa6e13ff",
+      "observable_moment": "court documents"
+    },
+    {
+      "id": "a365a3e2-5911-4765-b4f0-0d230a193d00",
+      "observable_moment": "leadership interviews discussing targets"
+    },
+    {
+      "id": "ea12130f-a9a2-4baa-aa6e-212b011526f4",
+      "observable_moment": "hr complaints"
+    },
+    {
+      "id": "ca70ca86-f710-4ddb-9178-4b90a76c53d9",
+      "observable_moment": "social media posts about financial closing"
+    },
+    {
+      "id": "1952e58e-e350-4784-82c3-74c9afb30b7b",
+      "observable_moment": "job postings mentioning new commission structure"
+    },
+    {
+      "id": "bc0fdc86-4647-4e91-bb5e-739ef53ded0d",
+      "observable_moment": "employee surveys"
+    },
+    {
+      "id": "0fecdca6-053c-44b8-877f-30b326428f22",
+      "observable_moment": "government publications"
+    },
+    {
+      "id": "4c764ed7-ca9b-49ba-9368-2a693404ef46",
+      "observable_moment": "social media posts about target achievement"
+    },
+    {
+      "id": "ca695019-80f1-4acc-be79-234b783c44de",
+      "observable_moment": "news articles about the breach"
+    },
+    {
+      "id": "f876da84-f3f9-4ac2-8dd0-cf83c26eec86",
+      "observable_moment": "news articles reporting layoffs"
+    },
+    {
+      "id": "5c2eee93-5eee-4b1a-9492-cbae24d0ff41",
+      "observable_moment": "news articles about the failure"
+    },
+    {
+      "id": "c7d8672a-c73a-4e73-b31b-f834ebfd1bce",
+      "observable_moment": "news articles on new law"
+    },
+    {
+      "id": "690166a8-9a4c-479e-a17c-6c505d2beee5",
+      "observable_moment": "public audit reports"
+    },
+    {
+      "id": "14b2ea30-87a9-465b-bbd0-0fe62fa570bf",
+      "observable_moment": "announcement of new sales strategy"
+    },
+    {
+      "id": "40a36184-fc88-4329-93aa-3f04134c2b72",
+      "observable_moment": "news articles on market expansion"
+    },
+    {
+      "id": "0b5dbabe-bd67-4376-a31f-ca600131d849",
+      "observable_moment": "press release about acquisition"
+    },
+    {
+      "id": "3a435946-e34c-45b4-9662-f44061f8ba41",
+      "observable_moment": "social media discussions"
+    },
+    {
+      "id": "7f7ddd94-c6b9-4bbf-98da-eafdc9949c82",
+      "observable_moment": "economic reports"
+    },
+    {
+      "id": "f8fa6481-b7f6-416b-807b-1fb485c25f9f",
+      "observable_moment": "employee reviews about commission changes"
+    },
+    {
+      "id": "112daf76-a1ac-417c-b962-940fb674aa62",
+      "observable_moment": "changes in sales leadership"
+    },
+    {
+      "id": "b88e3456-f2e0-4b41-b24c-dab41a4f37ef",
+      "observable_moment": "employee reviews on glassdoor"
+    },
+    {
+      "id": "3355f91f-fd25-47e3-9920-1c94620a794f",
+      "observable_moment": "news articles on legal dispute"
+    },
+    {
+      "id": "97a3698c-ce4c-4c64-9350-c06ef778b3a6",
+      "observable_moment": "product reviews on g2"
+    },
+    {
+      "id": "009ddc96-e566-4c5d-ac26-2cb5523b03c9",
+      "observable_moment": "news articles about fines"
+    },
+    {
+      "id": "53fc77ca-fcb9-4229-b39d-8228428422a3",
+      "observable_moment": "new leadership profiles on company website"
+    },
+    {
+      "id": "ab96af7a-ce36-481c-a45d-3270c8e08a50",
+      "observable_moment": "news article about revenue growth"
+    },
+    {
+      "id": "26084e53-17ca-448c-93c7-6c58e646268e",
+      "observable_moment": "leadership interviews in podcasts, webinars, etc."
+    },
+    {
+      "id": "8689450f-157b-4fab-afc5-af4bcd9eddd8",
+      "observable_moment": "company's internal communication"
+    },
+    {
+      "id": "1d21da2a-a532-4acc-a418-3c2abf552551",
+      "observable_moment": "company announcement about scaling issues"
+    },
+    {
+      "id": "229aac5c-deca-4f39-a19a-64b02b608583",
+      "observable_moment": "discussions on employee forums"
+    },
+    {
+      "id": "7c0b0ec0-c187-4703-8ab4-73df7923c7ca",
+      "observable_moment": "news article about operational issues"
+    },
+    {
+      "id": "a4b897d3-cf3c-4fbc-9d75-e2e3e4255dd2",
+      "observable_moment": "changes in sales compensation packages"
+    },
+    {
+      "id": "211a3d2b-cde6-4b1a-b9c5-f8b715501080",
+      "observable_moment": "internal memos"
+    },
+    {
+      "id": "033627aa-f19a-41f0-925f-e5f1ea9bce0c",
+      "observable_moment": "policy updates on government websites"
+    },
+    {
+      "id": "a9fb59c7-a070-4bd7-bb82-7e3e679211c9",
+      "observable_moment": "news about financial irregularities"
+    },
+    {
+      "id": "02ced5b4-51a8-4cee-a9d5-abb475c296d6",
+      "observable_moment": "job posting for financial auditor"
+    },
+    {
+      "id": "46791623-bb41-419c-803a-baf9b52f8d81",
+      "observable_moment": "linkedin updates from sales team"
+    },
+    {
+      "id": "ea20f9db-47ca-4cb6-ae40-2b83be3a3682",
+      "observable_moment": "company announcements"
+    },
+    {
+      "id": "91a13628-dcb8-42d3-8f3e-4e8609186b15",
+      "observable_moment": "product listings on website"
+    },
+    {
+      "id": "90da8a4e-300c-45a5-b1bc-be941f4fa452",
+      "observable_moment": "news of compliance failure"
+    },
+    {
+      "id": "13ff2ee9-4c29-4e88-a1e7-29567e5d520b",
+      "observable_moment": "competitor product launch"
+    },
+    {
+      "id": "656afcb8-99e1-4030-bbba-14eb1af844a1",
+      "observable_moment": "market analysis"
+    },
+    {
+      "id": "6ac6af28-509d-4dba-b775-0a80f4f3fef1",
+      "observable_moment": "linkedin updates"
+    },
+    {
+      "id": "3831dec5-ebe2-4da8-9bd5-1d78ab58fed2",
+      "observable_moment": "company announces sales growth"
+    },
+    {
+      "id": "45c24801-c556-4520-8a85-3523bd39eba8",
+      "observable_moment": "news about market fluctuations"
+    },
+    {
+      "id": "45cce69f-f54a-44c1-8687-3be877717193",
+      "observable_moment": "social media buzz about regulation"
+    },
+    {
+      "id": "8f340306-2c1a-4d71-9ce9-389289ec43d8",
+      "observable_moment": "news of ceo change"
+    },
+    {
+      "id": "0f178350-854a-4b65-8c24-c4047309fc6a",
+      "observable_moment": "press release about team growth"
+    },
+    {
+      "id": "a708a3c8-f318-4a29-bfb0-ed1775fa7b30",
+      "observable_moment": "news of acquisition"
+    },
+    {
+      "id": "7353cbe0-5b6e-4d95-887a-8a4312262d67",
+      "observable_moment": "news article on data breach"
+    },
+    {
+      "id": "f93921d2-cbbc-4660-88fa-42e2b29ae7d0",
+      "observable_moment": "discussion about turnover in industry forums"
+    },
+    {
+      "id": "01228e82-de76-4c76-bd78-e5eeb1db4b55",
+      "observable_moment": "press releases about system upgrades"
+    },
+    {
+      "id": "b695e0ba-1100-4571-b413-2bee89c12a02",
+      "observable_moment": "funding announcement"
+    },
+    {
+      "id": "4a21d76f-812b-42b9-bf93-b4acb3a6e404",
+      "observable_moment": "social media posts about system downtime"
+    },
+    {
+      "id": "ef91ba28-000a-458b-8fc6-ff686c2d31ca",
+      "observable_moment": "internal memo leak about commission changes"
+    },
+    {
+      "id": "53fb32d6-09ce-4241-8844-255a84c65f67",
+      "observable_moment": "company announcement of new branch opening"
+    },
+    {
+      "id": "5986e988-bbac-473f-996b-f06aa40c571c",
+      "observable_moment": "glassdoor reviews about lack of recognition"
+    },
+    {
+      "id": "96ea1ce8-47bf-4632-92b1-dbb5bd2a43ab",
+      "observable_moment": "new ceo interview"
+    },
+    {
+      "id": "461d316d-cb1e-4d36-954c-17040c3aa33a",
+      "observable_moment": "product review sites"
+    },
+    {
+      "id": "e5c12ea7-f239-405d-a466-56f5a474706d",
+      "observable_moment": "company's public acknowledgment about improving recognition"
+    },
+    {
+      "id": "075868bd-a5bd-4b04-b42b-9c74c7ac8c6b",
+      "observable_moment": "penalty announcement"
+    },
+    {
+      "id": "0cc2f7ad-a777-4d35-8eeb-2cc65fbc566c",
+      "observable_moment": "job posting mentioning high targets"
+    },
+    {
+      "id": "b9d1ce7f-8e16-4c29-b0e4-80564b66301c",
+      "observable_moment": "company announcement of new fiscal year"
+    },
+    {
+      "id": "10de383e-e7c0-4e3f-9fdc-38b997da0fd7",
+      "observable_moment": "news about high turnover rates"
+    },
+    {
+      "id": "d747667b-cc29-4a4c-8c8f-a70494330ae1",
+      "observable_moment": "government reports on economic downturn"
+    },
+    {
+      "id": "aac88f73-e825-4cab-82b4-da4034082413",
+      "observable_moment": "discussion about penalty in industry forums"
+    },
+    {
+      "id": "f9f6c168-d91f-4c0d-96f1-6dc0b06e9a65",
+      "observable_moment": "internal memo about compensation plan change"
+    },
+    {
+      "id": "ba219c63-51a0-4b4a-b611-27bafe5ad109",
+      "observable_moment": "increased marketing efforts"
+    },
+    {
+      "id": "c8136985-d3b0-43ce-89c9-5ac18d275118",
+      "observable_moment": "webinars or podcasts discussing the new product"
+    },
+    {
+      "id": "a142f306-8d0f-484b-a308-e8a3d0ed9b15",
+      "observable_moment": "news article about new sales leadership"
+    },
+    {
+      "id": "70c06365-071f-441d-b094-5dfd70712339",
+      "observable_moment": "job posting for sales roles"
+    },
+    {
+      "id": "f3d63a3d-b03d-4063-a74b-838fc7d9ae7f",
+      "observable_moment": "press release about new product launch"
+    },
+    {
+      "id": "a60a842d-7ac8-4f3e-8ece-2e0d42e69573",
+      "observable_moment": "social media discussion about new product"
+    },
+    {
+      "id": "8c0073ac-3494-4a62-9dfe-63db8151ecd5",
+      "observable_moment": "company announcement of leadership change"
+    },
+    {
+      "id": "88a35886-ccf5-4da7-80f6-364cb93338a6",
+      "observable_moment": "press release about lawsuit"
+    },
+    {
+      "id": "472c235e-1745-42a7-809b-3621e31b3604",
+      "observable_moment": "job postings for sales roles"
+    },
+    {
+      "id": "feda736f-9d63-41c8-bfe6-33e2a49e45e3",
+      "observable_moment": "press release about new product"
+    },
+    {
+      "id": "79911519-a31c-437d-acca-96889765d408",
+      "observable_moment": "press release about process upgrade"
+    },
+    {
+      "id": "dd6c67cb-4551-4ab7-b490-c37ec3c82a29",
+      "observable_moment": "news articles about audit failures"
+    },
+    {
+      "id": "e13d88c2-0b98-4ea1-8fd4-94a2759476fb",
+      "observable_moment": "news articles about the merger"
+    },
+    {
+      "id": "be30e018-b763-40b9-841c-bc710f1fdddc",
+      "observable_moment": "press release on new product launch"
+    },
+    {
+      "id": "7ffbe413-c6bd-4dc2-af91-4e79e3a0bf4c",
+      "observable_moment": "news articles on leadership change"
+    },
+    {
+      "id": "1c9e9bd5-f20d-435a-95da-3594d3cf1261",
+      "observable_moment": "news articles on company\u2019s financial difficulties"
+    },
+    {
+      "id": "e42b586f-86fe-4518-a0e2-e7d8c3e8b20f",
+      "observable_moment": "increased social media activity"
+    },
+    {
+      "id": "58d0af0c-258c-4879-9a35-2e0219f7355d",
+      "observable_moment": "company-wide email about restructuring"
+    },
+    {
+      "id": "7157ed06-81d3-4479-b413-3042b62f0df7",
+      "observable_moment": "new leader's interview or webinar"
+    },
+    {
+      "id": "d21f080a-a01a-4a4b-b9d4-fca7ae2b8398",
+      "observable_moment": "press release about market expansion"
+    },
+    {
+      "id": "b924aa36-a9cb-4044-bf57-180515d73fff",
+      "observable_moment": "news report on audit failure"
+    },
+    {
+      "id": "88bd649b-eeb3-4d75-b14f-26aec80159ca",
+      "observable_moment": "press release about product launch"
+    },
+    {
+      "id": "61dcec89-dd14-4219-acf1-94e33940aa20",
+      "observable_moment": "social media discussions on new regulations"
+    },
+    {
+      "id": "26adb25c-1b2e-4243-a544-a12e4d711176",
+      "observable_moment": "regulatory announcements or news"
+    },
+    {
+      "id": "1cb6c378-1143-4317-9be9-43a86ed43f7c",
+      "observable_moment": "news articles about the launch"
+    },
+    {
+      "id": "339cb65a-3a43-42f8-a7b5-745d5cc9e441",
+      "observable_moment": "news articles about the audit"
+    },
+    {
+      "id": "a818235b-1875-4bd5-8bde-f064e7dc63dd",
+      "observable_moment": "company announcement"
+    },
+    {
+      "id": "2a026ce9-cc35-41af-a28b-4b3ca5a6c8b2",
+      "observable_moment": "financial reports"
+    },
+    {
+      "id": "535b9003-2aab-463b-babd-16f3a12c692c",
+      "observable_moment": "press releases about the leadership change"
+    },
+    {
+      "id": "3a2133c5-6a34-4fec-b2e4-33baf85f5112",
+      "observable_moment": "press releases about the new targets"
+    },
+    {
+      "id": "61eebc37-9810-42da-92d4-4eccfbc5fcb9",
+      "observable_moment": "press releases about the compliance failure"
+    },
+    {
+      "id": "fe38db2d-ad85-49b6-aa12-59cdc2509dee",
+      "observable_moment": "job postings for sales positions"
+    },
+    {
+      "id": "98dedbbb-8026-4083-b038-94be735896e1",
+      "observable_moment": "press releases about the audit"
+    },
+    {
+      "id": "55376d6d-7e69-47af-9567-a89dd515594c",
+      "observable_moment": "news articles discussing the failure"
+    },
+    {
+      "id": "5b146052-f005-447d-b3cf-686281eae8e8",
+      "observable_moment": "press releases about the acquisition"
+    },
+    {
+      "id": "7892e036-db9f-4f0e-8b2f-570c02e8cf72",
+      "observable_moment": "news articles about new regulations"
+    },
+    {
+      "id": "1532d783-d4a1-4b7f-b05d-9cf3a66d1c6e",
+      "observable_moment": "social media posts about hiring"
+    },
+    {
+      "id": "f7d51e4c-afc8-4ba3-a838-0dcf35e7c405",
+      "observable_moment": "social media discussions about compliance"
+    },
+    {
+      "id": "20ea2245-d312-4fe4-8e5c-d7784a7f730c",
+      "observable_moment": "g2 reviews about global presence"
+    },
+    {
+      "id": "f71ff0f3-a47d-4a0b-b018-673f7f4f5c49",
+      "observable_moment": "news articles about the company's growth"
+    },
+    {
+      "id": "163c8f27-75ff-4841-b131-154ac2654b74",
+      "observable_moment": "company announcements about audit failure"
+    },
+    {
+      "id": "c6026b7c-5936-4063-be88-a34cb2c27dda",
+      "observable_moment": "news report about new sales leader"
+    },
+    {
+      "id": "013a55f0-5da6-4bff-b6d0-da6c86b5f974",
+      "observable_moment": "news report about new product"
+    },
+    {
+      "id": "bc6485b5-ed7d-4475-a0a4-c846f4541409",
+      "observable_moment": "social media discussions about compliance issue"
+    },
+    {
+      "id": "4c2855e5-780f-4e34-b22b-f542442239fe",
+      "observable_moment": "company's statement about market expansion"
+    },
+    {
+      "id": "02ef02fc-6fe1-4d9d-81fc-958a024e5459",
+      "observable_moment": "company's statement about turnover"
+    },
+    {
+      "id": "8e3e96b9-5447-403f-ace4-b9703a5e0bdd",
+      "observable_moment": "company statement about compliance failure"
+    },
+    {
+      "id": "d640808e-996d-4fc4-bbb7-78c8278ab8d0",
+      "observable_moment": "news articles about the merger/acquisition"
+    },
+    {
+      "id": "ea1e0df0-e5f2-47fb-8798-4af1d2ee2c9f",
+      "observable_moment": "news articles about the company's change in commission structure"
+    },
+    {
+      "id": "edf31981-5c0a-4bf2-b69c-eaf47228eaa1",
+      "observable_moment": "social media announcements"
+    },
+    {
+      "id": "b34c98bb-2748-4ff0-9431-c50d86b4f798",
+      "observable_moment": "news articles on security breach"
+    },
+    {
+      "id": "8376c152-c10f-45ed-8cc3-0f3b544e6e88",
+      "observable_moment": "news articles on regulatory changes"
+    },
+    {
+      "id": "67242a07-e941-4af3-b5a3-fc788db85426",
+      "observable_moment": "news articles on company audits"
+    },
+    {
+      "id": "693a9855-0aeb-487b-82ac-eb299e21b155",
+      "observable_moment": "company statement on internal audit"
+    },
+    {
+      "id": "b9088d53-0877-4902-bf6f-05160ba8f7ec",
+      "observable_moment": "news articles on m&a"
+    },
+    {
+      "id": "06184900-6e1b-49b8-b84f-a3a8ba5042c1",
+      "observable_moment": "industry news"
+    },
+    {
+      "id": "3461c5f2-e9bf-4e87-94bc-da845d969b1f",
+      "observable_moment": "annual general meeting"
+    },
+    {
+      "id": "15210701-06ae-44bd-a39d-7f69785dadb1",
+      "observable_moment": "court announcement"
+    },
+    {
+      "id": "c86bc567-95c3-4880-bbb2-afcca144da78",
+      "observable_moment": "job postings for new regions"
+    },
+    {
+      "id": "6bd6933e-b6d6-4622-84fd-d0d325471636",
+      "observable_moment": "product listing on company website"
+    },
+    {
+      "id": "86b7f142-34ef-4cb3-95ef-b03f8808b381",
+      "observable_moment": "legal documentation"
+    },
+    {
+      "id": "d15e62da-2278-437e-9111-dcc780217032",
+      "observable_moment": "press release"
+    },
+    {
+      "id": "b45e1175-60fe-4efa-a2f0-ff24a3e7fd38",
+      "observable_moment": "social media posts about new leadership"
+    },
+    {
+      "id": "8bb8c5a6-b568-4516-89e7-8246b5411246",
+      "observable_moment": "sales job postings"
+    },
+    {
+      "id": "f8a13095-0875-430f-9d8f-38712420b24e",
+      "observable_moment": "corporate filings"
+    },
+    {
+      "id": "6ca67e52-380f-4613-b029-6f33f308c74a",
+      "observable_moment": "regulatory body announcements"
+    },
+    {
+      "id": "54108a66-4b33-4aed-b1da-881f5d990dbd",
+      "observable_moment": "company press releases"
+    },
+    {
+      "id": "c5914a68-b1b7-4b3b-922d-1178e59d0e61",
+      "observable_moment": "press releases about mergers"
+    },
+    {
+      "id": "8055a77e-4389-4666-82e0-18692a2ce845",
+      "observable_moment": "news articles about digitization"
+    },
+    {
+      "id": "b4b03a0c-20f1-4a57-9a0e-2beaec50e27c",
+      "observable_moment": "government policy updates"
+    },
+    {
+      "id": "5297bbdb-acb6-493a-b6dc-f4275339c0c3",
+      "observable_moment": "product launch events"
+    },
+    {
+      "id": "777df8a4-3630-4f10-9e56-f547c1d12c30",
+      "observable_moment": "company press release"
+    },
+    {
+      "id": "9e2c2137-67d7-43b6-8d23-6b86a9e268b0",
+      "observable_moment": "legal filings"
+    },
+    {
+      "id": "da21a151-2cf8-4710-9c91-6ba7ec4308d0",
       "observable_moment": "customer reviews"
     },
     {
-      "id": "b6554cc5-24f3-46d1-b0f4-2d1fd82a859f",
-      "observable_moment": "customer support tickets"
+      "id": "ceb26bb2-e54b-4eff-b95b-a695590a9924",
+      "observable_moment": "market research reports"
+    },
+    {
+      "id": "7cd57dbc-d015-4406-93d3-2cbcc3fab550",
+      "observable_moment": "company financial statements"
+    },
+    {
+      "id": "c270c8d6-e91e-4438-ad41-a56b88b9827a",
+      "observable_moment": "news articles about data breaches"
+    },
+    {
+      "id": "882d32e9-adca-44cf-8e84-865f148dc2c7",
+      "observable_moment": "job postings for it roles"
+    },
+    {
+      "id": "ec12076b-74e1-4e25-a508-39466ff01d80",
+      "observable_moment": "press releases about lawsuits"
+    },
+    {
+      "id": "b2740c00-ba8f-4735-88ab-92ffda702ff1",
+      "observable_moment": "press releases from regulatory bodies"
+    },
+    {
+      "id": "c303a77a-bffb-46d5-a8f1-c7098925ffd6",
+      "observable_moment": "social media discussions about new laws"
+    },
+    {
+      "id": "8ce7841d-a3d1-4913-8ac3-d18aed7c3b08",
+      "observable_moment": "news articles about company expansion"
+    },
+    {
+      "id": "af0f1c01-5ea1-43b2-8efe-2c2a78386d97",
+      "observable_moment": "news articles about compliance issues"
+    },
+    {
+      "id": "242601ad-c986-4366-bc8b-cebe11d6dba3",
+      "observable_moment": "press release about leadership change"
+    },
+    {
+      "id": "2bccfd55-50b5-4aae-a501-a076fe69ab0b",
+      "observable_moment": "job postings for crm specialists"
+    },
+    {
+      "id": "af01dced-7ccb-40c9-849d-cf1b94d579e0",
+      "observable_moment": "news articles about market downturn"
+    },
+    {
+      "id": "d36346be-2899-4278-846b-11f241a3c416",
+      "observable_moment": "news articles about customer loss"
+    },
+    {
+      "id": "38a40f8d-8796-4117-9aef-b3065674aeeb",
+      "observable_moment": "news articles about new competitor"
+    },
+    {
+      "id": "92cccbb3-1c55-4a4d-88fa-c14ba0dd1d38",
+      "observable_moment": "social media posts about new sales leadership"
+    },
+    {
+      "id": "93d28def-781d-4651-9f9b-854fe5c954f0",
+      "observable_moment": "economic reports showing decline"
+    },
+    {
+      "id": "15215217-79d6-4d70-b655-6fd79d8c5af0",
+      "observable_moment": "new leadership profile on company website"
+    },
+    {
+      "id": "e378e3a0-9b3e-4bf9-b4d7-65e10ceaef5e",
+      "observable_moment": "social media post about new product"
+    },
+    {
+      "id": "5b29f5c7-930a-4260-88b9-6a464898fc99",
+      "observable_moment": "press releases about new crm system"
+    },
+    {
+      "id": "30acc313-00a4-4569-b3ea-b18295ca08e3",
+      "observable_moment": "news articles about company growth"
+    },
+    {
+      "id": "58824475-dfed-4813-beba-7964ff5abb7a",
+      "observable_moment": "social media posts about product launch"
+    },
+    {
+      "id": "3bf4e74d-3d8e-45f6-9809-a09d2b49b1b1",
+      "observable_moment": "news articles about holiday sales"
+    },
+    {
+      "id": "559172d8-e34f-4d2d-b7c7-f1a67a0c92b3",
+      "observable_moment": "financial reports announcements"
+    },
+    {
+      "id": "0667d2cf-2bbe-4161-9087-3980618c55d7",
+      "observable_moment": "news articles about regulatory changes"
+    },
+    {
+      "id": "4f71b352-f8f3-4aab-b9d8-8200547dcacb",
+      "observable_moment": "hiring in the new market location"
+    },
+    {
+      "id": "2c786192-4190-4821-8db1-c405bd0873ed",
+      "observable_moment": "increase in job postings for sales roles"
+    },
+    {
+      "id": "8b574a60-25da-47d6-9e0c-a0c0bbf63b64",
+      "observable_moment": "social media promotion for new product"
+    },
+    {
+      "id": "eba3fe6b-e32b-48e7-ad54-8ab8283fa3ae",
+      "observable_moment": "job posting for sales positions"
+    },
+    {
+      "id": "4812040a-559c-46ba-a703-cb7f6532f95a",
+      "observable_moment": "news article about data breach"
+    },
+    {
+      "id": "d1809810-7a15-4cb8-a520-735f794e6f4b",
+      "observable_moment": "news article about new cfo"
+    },
+    {
+      "id": "a6bf05ed-f4da-4902-b930-c78d7c62e35f",
+      "observable_moment": "social media post about hiring"
+    },
+    {
+      "id": "5acaa5f9-2f5f-47fa-9867-19b63a536e0c",
+      "observable_moment": "press release about new leadership"
+    },
+    {
+      "id": "4dd2297f-4470-46a9-87a0-dde5a9423b45",
+      "observable_moment": "podcast interview with sales leadership"
+    },
+    {
+      "id": "93efb09f-007a-4fc9-a601-3af0313b2c99",
+      "observable_moment": "news article about acquisition"
+    },
+    {
+      "id": "0bdbe50b-ddc7-4fd8-aaf1-919a2e552e1a",
+      "observable_moment": "job postings related to m&a"
+    },
+    {
+      "id": "a7760f2f-4a8f-483d-b5dc-ee3227108305",
+      "observable_moment": "social media posts about new product"
+    },
+    {
+      "id": "d53f7024-6078-4216-a16b-f3062f11c4da",
+      "observable_moment": "company statement on audit"
+    },
+    {
+      "id": "7f9fd98c-13a7-4628-ba42-1a7450cbe346",
+      "observable_moment": "news articles about m&a"
+    },
+    {
+      "id": "19ea4f9a-6a65-4833-94b8-4d18e439421b",
+      "observable_moment": "news articles reporting audit"
+    },
+    {
+      "id": "fccf6fe3-4637-428f-b699-c446c4acee8e",
+      "observable_moment": "sales strategy presentation on company website"
+    },
+    {
+      "id": "6897e4b5-2916-471e-b75a-9929e30cc57a",
+      "observable_moment": "news articles about compliance failure"
+    },
+    {
+      "id": "4420cf7e-0ad7-4220-8015-eab60b937769",
+      "observable_moment": "news articles about financial audit"
+    },
+    {
+      "id": "d9902e00-7249-411f-bd0a-4d4dcdfe8ce3",
+      "observable_moment": "news articles about new cfo appointment"
+    },
+    {
+      "id": "c6f74f8d-9c34-4d53-99b2-268e0deb929f",
+      "observable_moment": "news articles about data breach"
+    },
+    {
+      "id": "45be0af7-899c-4b23-9a2d-548d51566676",
+      "observable_moment": "company's official announcement"
+    },
+    {
+      "id": "ecb9101b-a9a9-481a-a0ea-40126d83ef13",
+      "observable_moment": "press release on product launch"
+    },
+    {
+      "id": "80832e45-6da5-4824-abe7-fe100f2cf445",
+      "observable_moment": "news article on leadership change"
+    },
+    {
+      "id": "8068fcac-68c2-4805-8993-f4aa08f05a80",
+      "observable_moment": "job postings for new market"
+    },
+    {
+      "id": "976c2679-20dc-446c-81e4-9049c4b1378c",
+      "observable_moment": "news article on acquisition"
+    },
+    {
+      "id": "07e9d673-16c3-4d9a-9d51-d8e1304e842c",
+      "observable_moment": "social media updates"
+    },
+    {
+      "id": "034355a7-68d5-4bb9-9552-0fc2c5cdbb04",
+      "observable_moment": "news article on compliance failure"
+    },
+    {
+      "id": "6ebefddc-e6bc-48dd-a9d1-50ecb475a901",
+      "observable_moment": "company quarterly report"
+    },
+    {
+      "id": "687c3a7b-8e84-40b1-a0c4-503ea47f5fea",
+      "observable_moment": "company blog post"
+    },
+    {
+      "id": "fbe1a6aa-3fe3-40f8-9d50-c09da3e5d79f",
+      "observable_moment": "ceo interview"
+    },
+    {
+      "id": "4f801794-47a6-4c72-8b1e-c65129277b2f",
+      "observable_moment": "job postings for auditors"
+    },
+    {
+      "id": "894b1fb2-a9a8-4d09-af24-723f314283de",
+      "observable_moment": "news about high employee turnover"
+    },
+    {
+      "id": "51a256d3-e1a1-43a5-b6a1-246646232e37",
+      "observable_moment": "news about market expansion"
+    },
+    {
+      "id": "be28dcad-29d4-4613-8c1f-4aa60e19368b",
+      "observable_moment": "news about data migration"
+    },
+    {
+      "id": "b673a187-b1d1-4fbd-bd63-d5493adc9b69",
+      "observable_moment": "news about financial reporting period"
+    },
+    {
+      "id": "2733d5e0-9fc5-43d8-bd66-81785bf6dded",
+      "observable_moment": "news about upcoming audits"
+    },
+    {
+      "id": "c45dd214-e581-4358-b6ec-a400887f8c64",
+      "observable_moment": "social media discussions about new markets"
+    },
+    {
+      "id": "e6f8be3c-ef24-417c-8dc6-024f5e7abbb8",
+      "observable_moment": "news about sales team restructure"
+    },
+    {
+      "id": "9188816f-c372-459d-b24c-1b8a8f33f51f",
+      "observable_moment": "news reports"
+    },
+    {
+      "id": "0592c122-d03e-4b23-bda0-bd0bceeebfac",
+      "observable_moment": "job postings for new roles"
+    },
+    {
+      "id": "e7d41882-1930-4b3f-9409-35710a184267",
+      "observable_moment": "news article about expansion"
+    },
+    {
+      "id": "b946587e-2ee1-45d6-8d1f-c8c2274dfa55",
+      "observable_moment": "news article about new regulations"
+    },
+    {
+      "id": "c7a381a5-6dec-48cc-99ef-8eb767b2591b",
+      "observable_moment": "social media post"
+    },
+    {
+      "id": "a061fabc-8d0c-4b88-88ee-2eec284b3a39",
+      "observable_moment": "news article about team structure"
+    },
+    {
+      "id": "16890a22-4156-4379-b769-b1bd2af7b9b6",
+      "observable_moment": "company's statement or response"
+    },
+    {
+      "id": "3fe229cf-a5f6-476c-b762-6c150539e347",
+      "observable_moment": "interview with sales head on strategy"
+    },
+    {
+      "id": "ae606182-1e25-4c27-ae6e-3f9626ef8643",
+      "observable_moment": "social media posts on new products"
+    },
+    {
+      "id": "a01c50df-6406-4d9b-a6ae-d07b5332e7f8",
+      "observable_moment": "social media posts on remote work"
+    },
+    {
+      "id": "0051d7c2-cf5f-4e45-b887-5fda0d610b3e",
+      "observable_moment": "news articles on audit"
+    },
+    {
+      "id": "49cdd694-0d07-4708-b3c7-17a6967650d9",
+      "observable_moment": "press release on new product"
+    },
+    {
+      "id": "5484de38-41ed-45b5-994d-a950ae49f5e9",
+      "observable_moment": "press release on leadership change"
+    },
+    {
+      "id": "5fb5a7d9-4554-44b0-9a6f-459e9feb2cc0",
+      "observable_moment": "new sales leadership profile on company website"
+    },
+    {
+      "id": "a2be01fe-74f3-4a86-9a89-cae8fbb55f9a",
+      "observable_moment": "press release on penalty"
+    },
+    {
+      "id": "b9b35583-8b3d-4125-947c-047029e44629",
+      "observable_moment": "news articles on regulation"
+    },
+    {
+      "id": "9185f57e-ddbb-441b-acf7-8aedd5fb9c03",
+      "observable_moment": "quarterly financial reports"
+    },
+    {
+      "id": "fe58d548-d2f6-4a1e-9eb8-82a2f3e3ac19",
+      "observable_moment": "press release on compliance"
+    },
+    {
+      "id": "0369af97-e854-4dde-ad79-a9311ddc80b0",
+      "observable_moment": "news about regulatory audit"
+    },
+    {
+      "id": "0ff6e0cf-d3d4-4d78-98b8-5086b0ff4c51",
+      "observable_moment": "news about market downturn"
+    },
+    {
+      "id": "815268a3-5a25-49ca-a448-1942b568d373",
+      "observable_moment": "news about loss of major client"
+    },
+    {
+      "id": "da9c00c9-c8c9-4381-a3c9-85f200370845",
+      "observable_moment": "news about legal disputes"
+    },
+    {
+      "id": "edbdccfe-bc7e-4e92-97a0-d3d5e2c37322",
+      "observable_moment": "company's press release"
+    },
+    {
+      "id": "520ed763-cd7b-41fa-acd0-108bf9251dfb",
+      "observable_moment": "company's earnings call"
+    },
+    {
+      "id": "b9393c25-7fb4-4007-81ba-a9446f73d855",
+      "observable_moment": "legal news articles"
+    },
+    {
+      "id": "7ae19ac5-a41b-45f1-9594-53b81e813d0b",
+      "observable_moment": "job postings for data managers"
+    },
+    {
+      "id": "878cb064-b9de-4fb2-a83f-8e676be4ced3",
+      "observable_moment": "social media discussions about data security"
+    },
+    {
+      "id": "74ffb4a5-0905-4389-bbcc-da7f25f98a3d",
+      "observable_moment": "job postings for new sales roles"
+    },
+    {
+      "id": "bd9b1680-fa81-4757-b944-825366cd59ff",
+      "observable_moment": "news article about regulatory impact"
+    },
+    {
+      "id": "4e865bb4-72af-49e9-979b-1ded4f29dfb8",
+      "observable_moment": "news article about breach"
+    },
+    {
+      "id": "7180570c-dc2b-4a9a-9f91-08e3d61412e9",
+      "observable_moment": "news article about system changes"
+    },
+    {
+      "id": "f7935679-2a45-4c3c-bd5c-e0e1daa08c04",
+      "observable_moment": "press release announcing new leadership"
+    },
+    {
+      "id": "b4db0d52-118d-4f80-b054-b7ebc1aced04",
+      "observable_moment": "news article about company's market expansion"
+    },
+    {
+      "id": "d75ea099-7cc9-49b9-9774-b736076baa6e",
+      "observable_moment": "news article about key personnel leaving"
     }
   ],
   "Keywords": [
     {
-      "id": "f70267a1-bd40-44dd-abc4-928a41eab885",
-      "keyword": "data-driven decision making"
-    },
-    {
-      "id": "d3b8e555-05fd-4586-91ee-d3108a115af4",
-      "keyword": "new ceo"
-    },
-    {
-      "id": "f5a39f56-d403-40f1-9dbd-99bc3e892ad5",
-      "keyword": "software implementation"
-    },
-    {
-      "id": "3198a3a3-c43a-4f8a-a56b-62757a5771ab",
-      "keyword": "software upgrade"
-    },
-    {
-      "id": "42bede2c-8f09-4168-bc81-f26fbbe01d94",
-      "keyword": "integration"
-    },
-    {
-      "id": "c58d2f54-3054-4fbb-afed-ebd2e1cbefd8",
-      "keyword": "leadership change"
-    },
-    {
-      "id": "7e5d20a5-e7ba-46b6-92ff-ea3fdb68b084",
-      "keyword": "website redesign"
-    },
-    {
-      "id": "548646d9-a857-42d7-83f7-874cd33d67ed",
-      "keyword": "user experience"
-    },
-    {
-      "id": "8632acb5-8900-41cd-ae4a-78f0be878d94",
-      "keyword": "checkout optimization"
-    },
-    {
-      "id": "fe927ab8-4b05-49b3-afb7-d8ca28e4ea25",
-      "keyword": "time-consuming"
-    },
-    {
-      "id": "d61d3a41-03f9-4a8b-9934-59de710dbe67",
-      "keyword": "business expansion"
-    },
-    {
-      "id": "fba7b222-edcf-41fc-82a7-690b4ce405af",
-      "keyword": "slow checkout"
-    },
-    {
-      "id": "f3df82c7-b503-4c98-a8a5-b7dc43878595",
-      "keyword": "it hiring"
-    },
-    {
-      "id": "47ae7116-2704-4e3a-a89f-7c1605bc829d",
-      "keyword": "kpi"
-    },
-    {
-      "id": "cb06e705-938b-4c64-a910-9746f16da466",
+      "id": "7461eb39-120c-43a2-a6e0-36893e88389d",
       "keyword": "new product"
     },
     {
-      "id": "54fade62-de3f-4d3f-ab34-3f153f3fc9c9",
-      "keyword": "complicated process"
+      "id": "75ec6d5d-19d2-4963-96eb-5dbbb4126b26",
+      "keyword": "vp of sales"
     },
     {
-      "id": "15a82abf-84d7-43ff-8cd9-32f3aac33742",
-      "keyword": "performance tracking"
+      "id": "53d82f63-75e4-4f2b-985e-c266c50914c1",
+      "keyword": "launch"
+    },
+    {
+      "id": "1e270e9a-c163-4cfa-87e4-6077abc92913",
+      "keyword": "poor sales performance"
+    },
+    {
+      "id": "093fc610-f2ff-452e-b5e9-9d9937be3c1e",
+      "keyword": "new sales strategy"
+    },
+    {
+      "id": "7ec562e0-c909-4866-b9e9-6d3af207bd8b",
+      "keyword": "inaccurate financial forecast"
+    },
+    {
+      "id": "d9a0d120-2bba-44da-809e-498bddc39b0b",
+      "keyword": "new finance director"
+    },
+    {
+      "id": "c341237b-43a2-42f4-9a87-b27747c52574",
+      "keyword": "growing salesforce"
+    },
+    {
+      "id": "f1a5e1db-0d3f-472d-b519-be91f8d42063",
+      "keyword": "product expansion"
+    },
+    {
+      "id": "f1856716-45fb-40e9-8af8-fa8c11719749",
+      "keyword": "ai"
+    },
+    {
+      "id": "56ba97b5-0396-4130-90d5-5f9ec8294a49",
+      "keyword": "staff turnover"
+    },
+    {
+      "id": "55b33841-f92c-4745-88bb-14aef61b40d3",
+      "keyword": "financial audit"
+    },
+    {
+      "id": "74397878-caa2-486f-be51-595edda18fba",
+      "keyword": "commission structure change"
+    },
+    {
+      "id": "cb389d99-71a8-4c22-9d09-c5ac14a67f64",
+      "keyword": "executive"
+    },
+    {
+      "id": "bef51371-60a2-4537-9a7c-8b447c8b3ce8",
+      "keyword": "capital raise"
+    },
+    {
+      "id": "ce1fb9ed-468f-4554-b874-2bc82134173f",
+      "keyword": "holiday sales"
+    },
+    {
+      "id": "c8d03686-5d83-48fc-b441-20af75a4bbf8",
+      "keyword": "new market"
+    },
+    {
+      "id": "38f15fb5-d2c8-4445-b274-29eefd7b21b9",
+      "keyword": "new ceo"
+    },
+    {
+      "id": "9f342585-ce93-4d17-8da2-f8bbd498f1b3",
+      "keyword": "financial irregularities"
+    },
+    {
+      "id": "fceae8c5-13f1-4d4a-83a4-220635b230c9",
+      "keyword": "new data source"
+    },
+    {
+      "id": "8b375586-3cf6-4805-8664-4ff0080aa6ab",
+      "keyword": "increased sales volume"
+    },
+    {
+      "id": "b671c88f-6129-4ed6-89ae-c2dbe331bc9f",
+      "keyword": "customer preferences"
+    },
+    {
+      "id": "6f01756a-4606-4b9f-9a0c-65813e2d8d9a",
+      "keyword": "increased sales targets"
+    },
+    {
+      "id": "b01cd761-e341-4a59-b961-2006731d75bf",
+      "keyword": "market shift"
+    },
+    {
+      "id": "ab2557cf-091f-4c6a-b41a-72931f37bbcb",
+      "keyword": "financial regulation"
+    },
+    {
+      "id": "60025de1-9143-4ad8-87e5-ca22d1e92252",
+      "keyword": "audit failure"
+    },
+    {
+      "id": "54b06028-13d1-47bb-85dc-73a9c3c664b5",
+      "keyword": "court ruling"
+    },
+    {
+      "id": "a5308765-16af-4e5b-9b50-282063d25c4d",
+      "keyword": "regulatory breach"
+    },
+    {
+      "id": "efdde5a9-50aa-4d34-b969-a9243410701f",
+      "keyword": "new commission plan"
+    },
+    {
+      "id": "6b1d9b63-a832-44e5-a018-c2b1174e171f",
+      "keyword": "security breach"
+    },
+    {
+      "id": "236f88ca-6590-4501-842c-dcc4725f2f8a",
+      "keyword": "technology upgrade"
+    },
+    {
+      "id": "9fd3c792-bcdf-4b27-a5b7-781fe21fe03b",
+      "keyword": "hiring sales"
+    },
+    {
+      "id": "8637b614-a8b7-464f-b99a-f680010cc90e",
+      "keyword": "strategy shift"
+    },
+    {
+      "id": "25788eed-9169-42f8-b6f5-16127d809f78",
+      "keyword": "commission dispute"
+    },
+    {
+      "id": "e28484cf-c40c-445c-af09-a3d5cb686d75",
+      "keyword": "takeover"
+    },
+    {
+      "id": "eb8848a0-b04c-4627-bcbb-00edb212857a",
+      "keyword": "hiring sales team"
+    },
+    {
+      "id": "2e8a051f-41de-469e-bcde-cd628eeb4e7d",
+      "keyword": "sales team"
+    },
+    {
+      "id": "83823e45-24e2-4998-9ec5-7a68a101eaff",
+      "keyword": "recession"
+    },
+    {
+      "id": "93975825-ce26-4cc4-a2f3-b80abb17ad91",
+      "keyword": "compliance"
+    },
+    {
+      "id": "a7d9ed9f-830b-42b2-85eb-8c6b58a7a5f9",
+      "keyword": "non-compliance"
+    },
+    {
+      "id": "d39cc0ae-056e-4e40-8cee-55aaa209aa4a",
+      "keyword": "new campaign"
+    },
+    {
+      "id": "8cb49c65-6ff8-4acc-bd26-27a8c447a966",
+      "keyword": "regulatory updates"
+    },
+    {
+      "id": "8fd5ddef-b2e1-4902-9371-5ef92d5d6070",
+      "keyword": "unhappy sales team"
+    },
+    {
+      "id": "5f709e1b-e04e-4498-998e-aacf6022feb2",
+      "keyword": "management shakeup"
+    },
+    {
+      "id": "51f13aea-516a-4f6a-91c5-0dfae3f11f63",
+      "keyword": "data expansion"
+    },
+    {
+      "id": "f972ca60-a2e3-4357-bc79-bbbc30a12db0",
+      "keyword": "fines"
+    },
+    {
+      "id": "fceffe1a-cbfb-4067-a94e-99a5d5263e69",
+      "keyword": "investment"
+    },
+    {
+      "id": "71e7edce-8332-4042-9437-589f78930cf9",
+      "keyword": "new targets"
+    },
+    {
+      "id": "0ae4663a-f5a2-4c17-95b1-c4db96df893b",
+      "keyword": "unfair compensation"
+    },
+    {
+      "id": "d2ac55a2-3fe2-40a0-aba3-f9eb1bcc4dd9",
+      "keyword": "low morale"
+    },
+    {
+      "id": "0977906e-7a7e-49be-8cd3-b7d02e97390a",
+      "keyword": "sales reorganization"
+    },
+    {
+      "id": "0ceabb33-3717-4856-bae5-b2eb68d65416",
+      "keyword": "new regulations"
+    },
+    {
+      "id": "65312e07-ea87-4c1d-8700-e1914e710745",
+      "keyword": "cfo change"
+    },
+    {
+      "id": "74d8ce4d-8e17-4358-aa90-4a5fd079c772",
+      "keyword": "compliance requirement"
+    },
+    {
+      "id": "f112b2ab-4fbb-4130-99e1-fa8cc4c32cb9",
+      "keyword": "leadership"
+    },
+    {
+      "id": "c254854c-2929-4495-8e4e-5bdfd3a99c11",
+      "keyword": "market growth"
+    },
+    {
+      "id": "18480e3c-fdda-483d-af75-69483e3fc971",
+      "keyword": "sales strategy change"
+    },
+    {
+      "id": "72e9ece3-d726-48af-9163-069f21398e2a",
+      "keyword": "consolidation"
+    },
+    {
+      "id": "fa363585-198c-4280-9b5b-982766123888",
+      "keyword": "economic slowdown"
+    },
+    {
+      "id": "feb3c19e-5da9-45e6-8afd-5f70c3e78335",
+      "keyword": "product innovation"
+    },
+    {
+      "id": "4623f043-78be-4199-82fe-477e7ef03858",
+      "keyword": "sales target"
+    },
+    {
+      "id": "3139309d-5518-4cbb-a9ff-beaa1171b7b2",
+      "keyword": "budget overrun"
+    },
+    {
+      "id": "302c32e5-3f64-41ec-b6a1-e6c2fc522849",
+      "keyword": "funding round"
+    },
+    {
+      "id": "7c4dd97c-1c1a-4645-a0ac-8a151aaef8fe",
+      "keyword": "manual tasks"
+    },
+    {
+      "id": "b684212e-2d61-49eb-9ac7-e2f6e20d12a9",
+      "keyword": "product launch"
+    },
+    {
+      "id": "1fc70f08-f09f-4fc0-851e-f0bbcd610b21",
+      "keyword": "data management hiring"
+    },
+    {
+      "id": "0259ce34-12a2-46a6-9bf8-536a9a582a1e",
+      "keyword": "legal issues"
+    },
+    {
+      "id": "cb597eeb-265a-4fd2-aa2d-2e9cb7243f7c",
+      "keyword": "funding"
+    },
+    {
+      "id": "61bdf401-8045-40a5-be2b-f4e59b3babc5",
+      "keyword": "sales process"
+    },
+    {
+      "id": "269e0adb-433b-4822-81b9-d423b7b95910",
+      "keyword": "data privacy"
+    },
+    {
+      "id": "91eb4f53-772c-4d5e-ac97-c49e81d40957",
+      "keyword": "financial reporting changes"
+    },
+    {
+      "id": "ee55a1a8-3120-4ccc-a95c-cdd4b45b7921",
+      "keyword": "regulatory compliance"
+    },
+    {
+      "id": "4e95f969-c1d5-461a-8bde-14b4e32b8842",
+      "keyword": "team expansion"
+    },
+    {
+      "id": "6e5ccc05-a32c-41ca-8028-76beafba3739",
+      "keyword": "sales leadership change"
+    },
+    {
+      "id": "ae9d051e-5ea0-466a-bfdb-1b4c14e01190",
+      "keyword": "system upgrade"
+    },
+    {
+      "id": "0b966f64-f100-40e3-86ac-8dd2662f0051",
+      "keyword": "legislative change"
+    },
+    {
+      "id": "c77b2891-abd9-40a2-a63f-ac57da7c2ce0",
+      "keyword": "new product launch"
+    },
+    {
+      "id": "63c13b36-d615-49d8-9edb-9d5c95ab981c",
+      "keyword": "hiring"
+    },
+    {
+      "id": "2e0b85d7-116c-4bfe-808c-f3d3a72d7656",
+      "keyword": "regulatory penalties"
+    },
+    {
+      "id": "0288b0da-8324-48b7-b68f-918fc4593c65",
+      "keyword": "product line expansion"
+    },
+    {
+      "id": "f384ec0e-7bbe-4cb6-82a5-5591ff4bbd7b",
+      "keyword": "new locations"
+    },
+    {
+      "id": "ad4f0480-05a6-470c-88a5-b5dd88796789",
+      "keyword": "innovation"
+    },
+    {
+      "id": "2d04d929-8d9b-4aab-b24d-af9ddb9579f9",
+      "keyword": "payroll complaints"
+    },
+    {
+      "id": "f70ac5bf-9b14-4132-8eb3-a8af9bc09f96",
+      "keyword": "legal reform"
+    },
+    {
+      "id": "d9d2b592-8959-42e5-8ad1-455b8e1ce0bc",
+      "keyword": "data growth"
+    },
+    {
+      "id": "4e71dc94-c980-4d67-b303-d3e7870b0a26",
+      "keyword": "new sales strategies"
+    },
+    {
+      "id": "baafd3a9-d501-46e3-9725-ce0c5c423df6",
+      "keyword": "sales growth"
+    },
+    {
+      "id": "51838b31-02ed-46d1-9f68-d1e59c620ec1",
+      "keyword": "data leak"
+    },
+    {
+      "id": "1265a1c3-84b2-4849-8a0c-456ad5846aa1",
+      "keyword": "regulatory changes"
+    },
+    {
+      "id": "9140a1d1-8260-4878-baa4-f190d072efc1",
+      "keyword": "regulatory non-compliance"
+    },
+    {
+      "id": "e3efb926-d27c-4844-85f7-76937f85210c",
+      "keyword": "not meeting sales goals"
+    },
+    {
+      "id": "e756bcf2-6d46-4010-97f4-2545a60aee9d",
+      "keyword": "compliance issues"
+    },
+    {
+      "id": "103f7084-49f3-4218-8650-e4492231efc9",
+      "keyword": "strategy change"
+    },
+    {
+      "id": "2e2611dd-9338-48e5-a538-af9601e3a002",
+      "keyword": "new competitor"
+    },
+    {
+      "id": "00e47c64-e1de-40ba-b6ab-323cf6b81551",
+      "keyword": "team turnover"
+    },
+    {
+      "id": "c10315fe-752f-4504-916d-944c53cae65a",
+      "keyword": "increased sales"
+    },
+    {
+      "id": "8d0176a0-9fee-48ac-8ec9-5c0170265a7f",
+      "keyword": "automation"
+    },
+    {
+      "id": "46e66e71-3898-43d8-aa7c-620f9a2eae1a",
+      "keyword": "year-end financials"
+    },
+    {
+      "id": "c2ce89de-8e30-4627-ae75-5fc9d166daf2",
+      "keyword": "new markets"
+    },
+    {
+      "id": "aa67def4-8659-451f-89b2-a58f6397fc75",
+      "keyword": "new sales director"
+    },
+    {
+      "id": "d3823267-1089-43ea-8fac-46719578db25",
+      "keyword": "market volatility"
+    },
+    {
+      "id": "01fc44b0-c62b-4605-a831-c6f645eebd7f",
+      "keyword": "new sales team"
+    },
+    {
+      "id": "9d8ec62d-59fd-4824-96ec-a0507c79154f",
+      "keyword": "customer behavior shift"
+    },
+    {
+      "id": "93ee1750-cf06-4e7d-acf7-f5c3e55211a5",
+      "keyword": "customer acquisition"
+    },
+    {
+      "id": "b9411fba-2d60-4019-9d27-ad3b7935a71d",
+      "keyword": "market competition"
+    },
+    {
+      "id": "656e28a8-87a6-46ff-953e-9b873a85c3a8",
+      "keyword": "new product line"
+    },
+    {
+      "id": "bfc47ca0-2147-44d4-a130-8ca84b93c56e",
+      "keyword": "system transition"
+    },
+    {
+      "id": "386027d8-3e15-4608-97cc-48c92682a75d",
+      "keyword": "sales team expansion"
+    },
+    {
+      "id": "e4aae72b-65ce-4f63-b9dd-9cf93923a702",
+      "keyword": "negative feedback"
+    },
+    {
+      "id": "0233ce39-6d56-48d5-96a2-51e342cc5f5d",
+      "keyword": "regulatory scrutiny"
+    },
+    {
+      "id": "6f0ef21b-d9f9-4f56-81dc-eb8e8fa582ea",
+      "keyword": "data integration"
+    },
+    {
+      "id": "96bc487a-e267-4638-a15f-ce6b74887135",
+      "keyword": "compliance check"
+    },
+    {
+      "id": "a5c82666-7b36-4ecf-a4e8-8ad51af4a0bf",
+      "keyword": "legal penalties"
+    },
+    {
+      "id": "04530e84-fa69-4583-b1a3-1fc04f0ccf3e",
+      "keyword": "sales goal increase"
+    },
+    {
+      "id": "ec16c355-58fe-401d-9f2e-bbacf7208a3d",
+      "keyword": "new vp sales"
+    },
+    {
+      "id": "9aa9cedc-0a3b-486b-ba83-60fca66d255d",
+      "keyword": "recruitment"
+    },
+    {
+      "id": "a590678e-a43b-4a5b-b619-e72fbd3ba84c",
+      "keyword": "sales transformation"
+    },
+    {
+      "id": "6cf8534a-19dd-4eed-be0c-a71b110f9b5a",
+      "keyword": "rapid growth"
+    },
+    {
+      "id": "a0129e85-f28f-4923-aa45-c9f9f4677d29",
+      "keyword": "financial review"
+    },
+    {
+      "id": "dcd4d281-d36a-4b45-a79a-d377d575ee99",
+      "keyword": "compliance law"
+    },
+    {
+      "id": "47e93c1f-6292-4fc5-8294-ce6d4e4bad32",
+      "keyword": "merger"
+    },
+    {
+      "id": "6546708c-52fa-4fe4-a2a3-df48051f5656",
+      "keyword": "new regulation"
+    },
+    {
+      "id": "af24ba4a-a03c-41b7-adaa-fe4b1152add3",
+      "keyword": "audit findings"
+    },
+    {
+      "id": "7a24ba5d-c80a-484f-974c-872ebcdc51b5",
+      "keyword": "manual data management"
+    },
+    {
+      "id": "86d6f65e-02a7-481d-ab04-a95750f5eaa6",
+      "keyword": "sales volume"
+    },
+    {
+      "id": "6e738355-dcf7-4a38-bdb4-9c1d3deb35a7",
+      "keyword": "regulatory fines"
+    },
+    {
+      "id": "db66a6b9-b701-4403-b1f8-fcb5be77b341",
+      "keyword": "expanded product range"
+    },
+    {
+      "id": "9b96bf2f-72f2-46fa-a82b-7deda1d2736c",
+      "keyword": "compliance reporting"
+    },
+    {
+      "id": "23fae747-e672-4d69-acac-03347e8ea816",
+      "keyword": "data loss"
+    },
+    {
+      "id": "e93b99ac-ebe2-4f43-a739-3ec61346df13",
+      "keyword": "change"
+    },
+    {
+      "id": "1ae22822-fe8d-4154-8697-9cae9750c48f",
+      "keyword": "system failure"
+    },
+    {
+      "id": "6d8da950-7f2f-476c-be5d-d3148a231589",
+      "keyword": "payout error"
+    },
+    {
+      "id": "68aa09ee-6f57-441c-93af-ea7fed6c7bdb",
+      "keyword": "regulation change"
+    },
+    {
+      "id": "e20360d1-9a58-4944-9b32-193cdbc28d33",
+      "keyword": "market expansion"
+    },
+    {
+      "id": "a7792c9f-d900-4e27-be51-242aecd2b3c4",
+      "keyword": "new sku"
+    },
+    {
+      "id": "fc390511-e976-415c-8ccd-8d79d7b47368",
+      "keyword": "black friday"
+    },
+    {
+      "id": "f57ac757-1217-41ee-8af4-9d071892f468",
+      "keyword": "financial forecasting"
+    },
+    {
+      "id": "42ccd848-175e-49dd-898c-5cee5dd3dfbd",
+      "keyword": "strategy"
+    },
+    {
+      "id": "91a8c3e3-bd26-40dc-91aa-596837335fc1",
+      "keyword": "sales restructure"
+    },
+    {
+      "id": "3e2b416b-ed5b-4c8a-936d-7f9838176c04",
+      "keyword": "market conditions"
+    },
+    {
+      "id": "5165642a-e09d-401c-966a-029f8c390334",
+      "keyword": "resignation"
+    },
+    {
+      "id": "d4df41da-6004-4158-8050-21b7dd53cc09",
+      "keyword": "new service"
+    },
+    {
+      "id": "7f54f1e7-612e-4d90-8cc5-f2874b64c4d0",
+      "keyword": "unexpected expenses"
+    },
+    {
+      "id": "2e3fffe6-242c-4e2b-bd86-b2e6a6dd3d58",
+      "keyword": "new customer"
+    },
+    {
+      "id": "b382c87d-dcc7-400b-8de2-b0742b56b407",
+      "keyword": "new laws"
+    },
+    {
+      "id": "ac550714-2309-41a1-b623-6db2889a764a",
+      "keyword": "financial closing"
+    },
+    {
+      "id": "1b61722d-c96c-4bb2-bd85-af7cc95ce8ca",
+      "keyword": "sales initiatives"
+    },
+    {
+      "id": "c6ad3bd0-12fb-494b-bf52-5486038fdf0b",
+      "keyword": "annual finance report"
+    },
+    {
+      "id": "648af626-e736-4036-9faf-bb608b9fbbaa",
+      "keyword": "international expansion"
+    },
+    {
+      "id": "bfd268ec-e93f-4e78-826f-12013ca80bbe",
+      "keyword": "sales increase"
+    },
+    {
+      "id": "4edf1494-1a6c-4b74-a442-13d7f4c1f65c",
+      "keyword": "big data"
+    },
+    {
+      "id": "50540f31-5dcf-4f0d-a7c5-848785edad38",
+      "keyword": "lack of automation"
+    },
+    {
+      "id": "874326e9-e6d4-46f8-8f69-989c83cbcedd",
+      "keyword": "sales executive"
+    },
+    {
+      "id": "fbf0fc1d-920d-40cc-a9ac-fe0bbccca3c4",
+      "keyword": "security issue"
+    },
+    {
+      "id": "65d8ab3f-ad43-4288-9283-fceab8d63726",
+      "keyword": "growth in sales"
+    },
+    {
+      "id": "23c30abb-4b39-4bda-845e-2b7298a624c6",
+      "keyword": "data system improvement"
+    },
+    {
+      "id": "2531aaa0-2c68-469b-a7cf-8174fa90a8a9",
+      "keyword": "migration"
+    },
+    {
+      "id": "f940568c-fcc3-4ed3-bc2c-846ff53c843d",
+      "keyword": "new cfo"
+    },
+    {
+      "id": "ca20d72f-24aa-4883-8b28-ee2aee332fb2",
+      "keyword": "sales target missed"
+    },
+    {
+      "id": "6ff08b46-db5e-431d-9d7c-0bd2fb15598f",
+      "keyword": "ceo"
+    },
+    {
+      "id": "d0f922c5-6095-4f1e-8294-682e32d3aa1a",
+      "keyword": "data breach"
+    },
+    {
+      "id": "9c4b2e5f-c21a-4d3f-89f0-de014f1de6e7",
+      "keyword": "sales strategy"
+    },
+    {
+      "id": "c8428fd7-dc91-452b-b320-2e0656ee9979",
+      "keyword": "compliance regulation"
+    },
+    {
+      "id": "d66bd859-2d38-47a8-90be-6116513d43f5",
+      "keyword": "sales failure"
+    },
+    {
+      "id": "a4a04944-8c70-4e06-aa51-9bfa1c7f3034",
+      "keyword": "penalties"
+    },
+    {
+      "id": "9fefcb40-c814-4d30-818b-f4bee415a66e",
+      "keyword": "economic uncertainty"
+    },
+    {
+      "id": "9fc2102b-aed6-412e-b9b3-da284cc5ec69",
+      "keyword": "acquisition"
+    },
+    {
+      "id": "f7bfb6b6-f53d-426f-a50a-83b7a698d20d",
+      "keyword": "new sales approach"
+    },
+    {
+      "id": "a9070c8c-c57b-45b5-9846-0d023ab72a21",
+      "keyword": "market entry"
+    },
+    {
+      "id": "4358c472-e130-42ee-81af-1a11bf987560",
+      "keyword": "data volume"
+    },
+    {
+      "id": "46051fca-9e75-4541-94c7-eee2d5087a37",
+      "keyword": "new data system"
+    },
+    {
+      "id": "d00f1a22-2139-430a-a457-0f54f69ed371",
+      "keyword": "new competition"
+    },
+    {
+      "id": "b683bbfa-f749-4ac1-8725-fb774f680877",
+      "keyword": "machine learning"
+    },
+    {
+      "id": "97322710-5a6f-4968-9b9e-b85b27eeafc3",
+      "keyword": "global expansion"
+    },
+    {
+      "id": "1e875ad8-18a4-4d1e-9ed3-7dcd919dd575",
+      "keyword": "sales launch"
+    },
+    {
+      "id": "9461a88c-4638-442b-a877-1ead8f1eb968",
+      "keyword": "losing salespeople"
+    },
+    {
+      "id": "192061f7-03ad-46dc-8cf7-9150c1a80ade",
+      "keyword": "performance drop"
+    },
+    {
+      "id": "645a98d1-912f-4e2e-8d97-df588670ed15",
+      "keyword": "growth"
+    },
+    {
+      "id": "90057a5a-44a4-418d-9e31-ba6accf6244c",
+      "keyword": "new law"
+    },
+    {
+      "id": "9675acda-e7ba-49e4-8439-b791daf08bea",
+      "keyword": "change in regulation"
+    },
+    {
+      "id": "b451e0ec-4eec-41bb-89b3-8b37faddf9a1",
+      "keyword": "incentive restructuring"
+    },
+    {
+      "id": "2c8ef5a9-f852-46c2-b00b-69d3b3bc0832",
+      "keyword": "new sales leader"
+    },
+    {
+      "id": "47d1511e-7823-413a-bd9e-2a009033f650",
+      "keyword": "downtime"
+    },
+    {
+      "id": "4778ef75-059c-4b3c-8dda-386afce3391f",
+      "keyword": "target achievement"
+    },
+    {
+      "id": "c7dd6c57-965a-4e00-83da-c84dc9a2cef8",
+      "keyword": "legal action"
+    },
+    {
+      "id": "52f325ce-af14-43a9-9d0e-cde9793a12b9",
+      "keyword": "legislation update"
+    },
+    {
+      "id": "48d426b7-0a58-4b8c-9047-9f9f61085498",
+      "keyword": "dissatisfaction"
+    },
+    {
+      "id": "bdf0891e-875a-4e4b-bd3b-60947c691aac",
+      "keyword": "audit"
+    },
+    {
+      "id": "ed6565a3-0b7e-4b5d-a2ff-186d8ee7a95e",
+      "keyword": "release"
+    },
+    {
+      "id": "721d2107-04b9-455e-b11e-8bebcec11fab",
+      "keyword": "team growth"
+    },
+    {
+      "id": "6b3d55f5-7390-4375-817c-7ae0e2e0db29",
+      "keyword": "capital"
+    },
+    {
+      "id": "c49b1e0d-4b97-4b4e-8472-7ad9790a8865",
+      "keyword": "cyber monday"
+    },
+    {
+      "id": "1df69c27-1c21-4d8a-a3e5-cbe5bbad4a42",
+      "keyword": "violation of regulations"
+    },
+    {
+      "id": "5a981e70-1cf9-48c5-8902-9f10b57fb20d",
+      "keyword": "regulatory change"
+    },
+    {
+      "id": "b638ddce-b12d-40b2-a3ae-646c8d636265",
+      "keyword": "compliance failure"
+    },
+    {
+      "id": "632c5803-6792-4eec-8ce9-4d83761aa5da",
+      "keyword": "sales attrition"
+    },
+    {
+      "id": "2d0922cb-3206-4c07-9115-c64f8dc11906",
+      "keyword": "sales campaign"
+    },
+    {
+      "id": "540261a2-d80f-48b8-a063-05462efa2538",
+      "keyword": "expansion"
+    },
+    {
+      "id": "1d38adba-f883-48a7-a2d3-0e3b19ef720f",
+      "keyword": "campaign launch"
+    },
+    {
+      "id": "12f6e440-98cf-4525-ad20-3a52929e9afa",
+      "keyword": "new account"
+    },
+    {
+      "id": "b05df313-8f23-4164-a60f-4b50705c2252",
+      "keyword": "leadership change"
+    },
+    {
+      "id": "1e68bf49-1ba9-43b8-a2a8-5d9317d98899",
+      "keyword": "product release"
+    },
+    {
+      "id": "6a78750d-36bc-458f-b59c-d6503e99d2d5",
+      "keyword": "target change"
+    },
+    {
+      "id": "46ea727b-2a36-4294-94d3-c6b963e35c9c",
+      "keyword": "data management"
+    },
+    {
+      "id": "794502e7-1257-405c-84c9-b965a25b7949",
+      "keyword": "ceo change"
+    },
+    {
+      "id": "b338967b-4c6b-4aac-b425-42e48dce2c77",
+      "keyword": "competitor's product launch"
+    },
+    {
+      "id": "cd437006-e904-421f-8963-d67e7e65743a",
+      "keyword": "product development"
+    },
+    {
+      "id": "2f2ac08d-34c3-45cd-8d00-1854104d053a",
+      "keyword": "new sales targets"
+    },
+    {
+      "id": "62137341-e056-4de2-b318-e882eb2717ed",
+      "keyword": "erp rollout"
+    },
+    {
+      "id": "d31610de-0b12-4029-a2c3-203003c0f228",
+      "keyword": "new crm system"
+    },
+    {
+      "id": "b388d410-ebf9-4ccd-8674-0073b3584177",
+      "keyword": "commission changes"
+    },
+    {
+      "id": "d69fab15-8761-4064-bde2-f5257bef2cd7",
+      "keyword": "business consolidation"
+    },
+    {
+      "id": "d9e2e2fd-393f-41e1-83e0-6f8d2e80883c",
+      "keyword": "sales quotas"
+    },
+    {
+      "id": "3499e773-f655-4406-bd32-78b47989028c",
+      "keyword": "new management"
+    },
+    {
+      "id": "337d209a-6349-42e9-a17d-2817d4012c33",
+      "keyword": "omnichannel"
+    },
+    {
+      "id": "e9caf8b0-f75a-43fa-b289-b900c5e80d7a",
+      "keyword": "sales results"
+    },
+    {
+      "id": "fcfb8be1-3246-48b4-93bd-2c986a31a69a",
+      "keyword": "product introduction"
+    },
+    {
+      "id": "5297001f-e56b-4076-99e2-2176b7ffa8b3",
+      "keyword": "service introduction"
+    },
+    {
+      "id": "eebafc64-be1c-4f7f-92dc-a967c069e80b",
+      "keyword": "new sales channels"
+    },
+    {
+      "id": "e2a87439-0a23-4f9a-b17f-7c77656d1f37",
+      "keyword": "new direction"
+    },
+    {
+      "id": "a7f2a7a9-7c29-49e9-8e47-975b8bb0af32",
+      "keyword": "crm implementation"
+    },
+    {
+      "id": "298a645a-265a-4a21-affa-edda25e215f6",
+      "keyword": "sales leadership"
+    },
+    {
+      "id": "38d01a54-4a8b-42bd-87c8-be10bb17bf57",
+      "keyword": "sales cycle"
+    },
+    {
+      "id": "773cd8a6-7e7f-499b-ac4d-477c098d9e14",
+      "keyword": "unauthorized access"
+    },
+    {
+      "id": "cb4d4f3f-1d40-437c-af0d-d998f925c299",
+      "keyword": "strategy implementation"
+    },
+    {
+      "id": "2a84822d-2e69-4b34-90eb-3cbf8e75326e",
+      "keyword": "product announcement"
+    },
+    {
+      "id": "8e30174b-becf-47e9-b1ad-5125b3063d96",
+      "keyword": "company growth"
+    },
+    {
+      "id": "cdf043b2-53b3-49c5-89c3-c68c330949c6",
+      "keyword": "geographic expansion"
+    },
+    {
+      "id": "62c252e9-9225-4cd6-aedd-b4768d214276",
+      "keyword": "sales turnover"
+    },
+    {
+      "id": "44823c35-ba86-4d0f-bb70-9a1ed123b5ec",
+      "keyword": "omnichannel expansion"
+    },
+    {
+      "id": "7197ec0f-cbe1-40de-8ba5-5f88b2dcf461",
+      "keyword": "regulatory audit"
+    },
+    {
+      "id": "39f0e610-33fc-4a21-b479-3f9541a11457",
+      "keyword": "m&a"
+    },
+    {
+      "id": "dc993729-e664-466d-af88-a4d43400dad0",
+      "keyword": "compliance update"
+    },
+    {
+      "id": "9506b952-91a1-492a-9cb1-a5d9e61a4f5b",
+      "keyword": "system integration"
+    },
+    {
+      "id": "0c173423-6685-4fa8-919e-0855672f040c",
+      "keyword": "team changes"
+    },
+    {
+      "id": "0200040c-5010-45f7-ae08-047c27e799d0",
+      "keyword": "losing employees"
+    },
+    {
+      "id": "815ecbaf-0888-4430-bd5d-5ab6e6eeb0ab",
+      "keyword": "budget error"
+    },
+    {
+      "id": "7d1f20e9-60a3-4ca1-92c4-455b4f551811",
+      "keyword": "new competitor product"
+    },
+    {
+      "id": "ab899348-4432-4ba7-8b13-a7f1e19996b0",
+      "keyword": "employee churn"
+    },
+    {
+      "id": "81a46534-7a60-41f5-8d63-745b4811c8f4",
+      "keyword": "operational inefficiencies"
+    },
+    {
+      "id": "b5792182-876f-4845-b56c-fcaff8cd25a2",
+      "keyword": "asc606"
+    },
+    {
+      "id": "f506ecc8-4656-4fb9-bee6-9d3131ddc345",
+      "keyword": "revenue growth"
+    },
+    {
+      "id": "945a56cd-0485-4476-9bb9-8f363865614c",
+      "keyword": "cut in benefits"
+    },
+    {
+      "id": "ddfbed96-6336-48bc-a9fe-266fcca5da9c",
+      "keyword": "decreased market share"
+    },
+    {
+      "id": "707e9871-00ea-4930-982b-a4c3249acaa3",
+      "keyword": "sales variability"
+    },
+    {
+      "id": "6c2d5d14-fdd7-4fc6-8c3f-3d6db358ae7b",
+      "keyword": "software integration"
+    },
+    {
+      "id": "e4a7365b-54d8-4f13-9ae2-de8a0c403548",
+      "keyword": "gdpr"
+    },
+    {
+      "id": "3b7f5674-2264-460e-942d-1abe03fe4499",
+      "keyword": "economic downturn"
+    },
+    {
+      "id": "a7615405-07ed-44bc-ba6b-083df955880c",
+      "keyword": "product marketing"
+    },
+    {
+      "id": "b9f4b369-b805-4cbf-b167-a2b84b5b7829",
+      "keyword": "benefits reduction"
+    },
+    {
+      "id": "015df9cd-1341-40e6-a7ce-3759cbe31696",
+      "keyword": "quota changes"
+    },
+    {
+      "id": "7d9a988f-35e7-4a08-803d-cfe607f22d98",
+      "keyword": "product rollout"
+    },
+    {
+      "id": "3bd5de50-a8e5-4b8c-a111-9bfd7372305b",
+      "keyword": "new sales leadership"
+    },
+    {
+      "id": "301ac2b8-f8fe-4718-b8aa-ba0e5526409f",
+      "keyword": "compliance issue"
+    },
+    {
+      "id": "183be745-c0d3-4492-9e34-15f8b29be230",
+      "keyword": "incorrect forecasting"
+    },
+    {
+      "id": "b7e6c149-c969-4cdc-a135-3bbd06768b12",
+      "keyword": "layoffs"
+    },
+    {
+      "id": "50549429-2425-474a-b310-7ef0bdf88bd5",
+      "keyword": "lawsuit"
+    },
+    {
+      "id": "56adb362-68c0-43db-b3d6-7b87cf24b569",
+      "keyword": "sales targets"
+    },
+    {
+      "id": "aa4631e6-3619-420b-8481-2a4edfe40539",
+      "keyword": "regional sales"
+    },
+    {
+      "id": "768946e7-7cd6-4c10-8684-4793913c870f",
+      "keyword": "poor quarterly results"
+    },
+    {
+      "id": "5fca7770-53b5-472e-a184-cb0edb8fd5fb",
+      "keyword": "global growth"
+    },
+    {
+      "id": "c4d64ee3-08a9-4af7-9c5a-445f7819cc6f",
+      "keyword": "launch announcement"
+    },
+    {
+      "id": "f3953de2-aa3b-4560-8868-23b9ad4f5700",
+      "keyword": "sales channel"
+    },
+    {
+      "id": "14eca3dc-a11c-45e2-9ad6-0232a1e83184",
+      "keyword": "sales drop"
+    },
+    {
+      "id": "feb5d6f3-bb8c-4504-979b-b231d39c874c",
+      "keyword": "executive appointment"
+    },
+    {
+      "id": "96d62eed-b1ab-4987-90b9-0fe2436ddfef",
+      "keyword": "expansion problems"
+    },
+    {
+      "id": "363d215a-9c6c-4204-92f3-49ccb112e327",
+      "keyword": "policy update"
+    },
+    {
+      "id": "e76a4141-d231-426e-a7f5-fbe99148d821",
+      "keyword": "integration"
+    },
+    {
+      "id": "55a15a98-50e9-4122-bf49-89d9770c7abb",
+      "keyword": "data security"
+    },
+    {
+      "id": "ba727507-c83a-4336-adc0-fc4bb653bd8d",
+      "keyword": "financial realignment"
+    },
+    {
+      "id": "5fd9f488-9b15-4c3b-b088-9718ffdd2f6a",
+      "keyword": "compliance changes"
+    },
+    {
+      "id": "6c653643-006d-4471-b8fa-402b832eb758",
+      "keyword": "uneven sales performance"
+    },
+    {
+      "id": "8495d64f-cadc-40c0-8ed2-937fea339c20",
+      "keyword": "deal"
+    },
+    {
+      "id": "bce3d3d3-8f40-420f-b6f6-a38fa305569a",
+      "keyword": "law change"
+    },
+    {
+      "id": "af02548a-fb8e-4ada-80a6-084fbd39d48c",
+      "keyword": "process bottlenecks"
+    },
+    {
+      "id": "ab72b75d-75c9-45ac-b822-5f600aeb0621",
+      "keyword": "sales expansion"
+    },
+    {
+      "id": "08c1f4da-110d-4adf-8c59-721d1ea6d943",
+      "keyword": "legal issue"
+    },
+    {
+      "id": "ec3e6d0b-1a9c-41d7-8782-465f49c42698",
+      "keyword": "penalty payment"
+    },
+    {
+      "id": "9cc00e39-2769-445f-970c-70ee25962234",
+      "keyword": "new market entry"
+    },
+    {
+      "id": "d50f90c9-1f07-4fbc-9428-05a7efd8add5",
+      "keyword": "financial investigation"
+    },
+    {
+      "id": "b474cfe5-4dcb-4587-a4dd-45c4691d6525",
+      "keyword": "new release"
+    },
+    {
+      "id": "276a44e8-0cc5-44a5-8be6-e23687bc0a5b",
+      "keyword": "channel sales"
+    },
+    {
+      "id": "2cea57ba-c4ed-4de0-afd5-45531510ee44",
+      "keyword": "legal dispute"
+    },
+    {
+      "id": "5ac021c0-e843-4a39-81e8-a8ff8ea3120e",
+      "keyword": "financial innovation"
+    },
+    {
+      "id": "9b877778-a41e-47be-8892-3f561a0b12ed",
+      "keyword": "restructuring"
+    },
+    {
+      "id": "65e9b64f-9336-4618-9ff3-7e45069162ac",
+      "keyword": "sales decline"
+    },
+    {
+      "id": "acadd272-8f74-43bd-a728-cd08a2e57395",
+      "keyword": "market changes"
+    },
+    {
+      "id": "80edb11c-37f6-4ed4-bf26-cab0f628d2dd",
+      "keyword": "complex sales strategy"
+    },
+    {
+      "id": "b517f546-1611-4f9a-b23c-79750fb6c419",
+      "keyword": "regulatory penalty"
+    },
+    {
+      "id": "619780a6-28d7-42d1-a62b-6f1b3a7b23e1",
+      "keyword": "revenue decline"
+    },
+    {
+      "id": "66f97f41-dc11-4796-9af1-dec352219bea",
+      "keyword": "workflow issues"
+    },
+    {
+      "id": "414c1754-76c3-4270-83c6-3adec0fa11b8",
+      "keyword": "sales software implementation"
+    },
+    {
+      "id": "edd0bbb0-7523-4592-a2a6-b46791e94740",
+      "keyword": "compensation adjustment"
+    },
+    {
+      "id": "f6641687-6910-462f-91b6-f192549e3317",
+      "keyword": "new compliance requirements"
+    },
+    {
+      "id": "ed85d668-343e-4875-9194-5e2751c86c64",
+      "keyword": "revenue shortfall"
+    },
+    {
+      "id": "de609afd-600a-4598-85d6-d230b71fe1d0",
+      "keyword": "fine"
+    },
+    {
+      "id": "bb810866-cda8-4617-827e-8ca6a485ac3c",
+      "keyword": "high turnover"
+    },
+    {
+      "id": "7dc4c553-f1fd-4c32-8da5-a6bb5619436d",
+      "keyword": "growth pains"
+    },
+    {
+      "id": "0b62ef67-992d-4f22-91ce-886a46985574",
+      "keyword": "payout structure"
+    },
+    {
+      "id": "2b7fa8fd-9edc-4ab1-ad82-512e7481fe08",
+      "keyword": "sales targets missed"
+    },
+    {
+      "id": "6fa1739f-d390-4bd9-b42a-61428a84faa1",
+      "keyword": "financial management"
+    },
+    {
+      "id": "d08e5fec-f47b-47e4-8dc5-7d584effefc4",
+      "keyword": "service announcement"
+    },
+    {
+      "id": "55896cf3-dc51-4621-a3e7-2f40cb021c2e",
+      "keyword": "compensation changes"
+    },
+    {
+      "id": "a3e0691b-f6d7-4eba-8bda-bae9c4293364",
+      "keyword": "expanding sales team"
+    },
+    {
+      "id": "67b5a9a0-682d-42aa-90f8-d472fc89b8e2",
+      "keyword": "financial reporting updates"
+    },
+    {
+      "id": "a0e8f935-530a-40e4-b14d-7c8413317b08",
+      "keyword": "commission structure"
+    },
+    {
+      "id": "f4627477-21a1-40c7-8c68-beb9a32b8f6f",
+      "keyword": "competitor's launch announcement"
+    },
+    {
+      "id": "e151ca01-96c1-4367-bb18-01dfe5c9c5ab",
+      "keyword": "complex commission"
+    },
+    {
+      "id": "d4b86bb9-ffdc-4e63-b405-d35e043acfe1",
+      "keyword": "new sales plan"
+    },
+    {
+      "id": "f2b0e42a-75a3-4e18-8427-8fa01a2fb26d",
+      "keyword": "economic instability"
+    },
+    {
+      "id": "184bc269-e209-4677-9828-5b6f24245450",
+      "keyword": "negative reviews"
+    },
+    {
+      "id": "80f0e0e0-b753-49d0-b693-4501794e08a4",
+      "keyword": "penalty"
+    },
+    {
+      "id": "b147acb2-1e1c-4dd8-9b38-bd11594e9dbe",
+      "keyword": "unexpected market shift"
+    },
+    {
+      "id": "527e875d-4ea9-4c85-bd3a-ceeddf99046c",
+      "keyword": "channel diversification"
+    },
+    {
+      "id": "9aabee71-a91d-41b0-aa4f-8a90327215a9",
+      "keyword": "job cuts"
+    },
+    {
+      "id": "4a9613bf-177c-4729-b09b-7d17c7d60b7d",
+      "keyword": "performance-based commission"
+    },
+    {
+      "id": "b9d74aa8-449c-4202-ae06-f5779e95f95e",
+      "keyword": "regulation"
+    },
+    {
+      "id": "6165b1ec-d6dd-47c5-8026-3735c4d37669",
+      "keyword": "sales target increase"
+    },
+    {
+      "id": "0456f7b7-3368-4d16-aa8b-2a22fecd5c11",
+      "keyword": "new financial product"
+    },
+    {
+      "id": "1cff335d-9f03-4845-8a22-10d0b8ce595d",
+      "keyword": "strategic shift"
+    },
+    {
+      "id": "8f4814ca-b7bc-4548-9897-d06c7eee187f",
+      "keyword": "financial success"
+    },
+    {
+      "id": "80f43536-e3eb-4c72-ac8d-848064689597",
+      "keyword": "higher quotas"
+    },
+    {
+      "id": "929780c7-d9da-4985-ab17-d4efcc6fe569",
+      "keyword": "forecasting error"
+    },
+    {
+      "id": "261253c9-86c6-4f48-a108-f0e835cf29a5",
+      "keyword": "new sales channel"
+    },
+    {
+      "id": "6dbb1542-c604-4a38-a0a3-84187e3e1617",
+      "keyword": "sales performance"
+    },
+    {
+      "id": "f43540a8-33d7-4ff0-a62b-3633c39b564f",
+      "keyword": "scaling issues"
+    },
+    {
+      "id": "9c9276af-2080-4af5-8be2-55382826b560",
+      "keyword": "channel introduction"
+    },
+    {
+      "id": "91bd42d7-2fe7-475e-9a3f-901376c7f9bb",
+      "keyword": "legal update"
+    },
+    {
+      "id": "d65bb31d-2e6c-4561-99d7-f8ec48714874",
+      "keyword": "financial restructuring"
+    },
+    {
+      "id": "c64597f7-da60-4009-8cc0-df5bc334ddc8",
+      "keyword": "sales hiring"
+    },
+    {
+      "id": "edc81f63-f796-4226-9daa-c9447372cc6f",
+      "keyword": "product failure"
+    },
+    {
+      "id": "6ae7e9eb-7683-414b-901a-d071c5313e7c",
+      "keyword": "market disruption"
+    },
+    {
+      "id": "8fd62e07-6f6a-418d-80bf-33b34c3c8ecf",
+      "keyword": "strategic change"
+    },
+    {
+      "id": "50591289-69d7-4488-a0b7-5b1908006195",
+      "keyword": "market challenges"
+    },
+    {
+      "id": "2a71b0ad-ef65-4d1a-aaf6-b9994747cc1d",
+      "keyword": "sales roles"
+    },
+    {
+      "id": "93fa7e2b-1565-4c57-bd74-bc1e6f6bbc58",
+      "keyword": "new sales roles"
+    },
+    {
+      "id": "1084d57f-cfd6-4701-a30a-6c519da736bb",
+      "keyword": "new market job posting"
+    },
+    {
+      "id": "eb6ccac9-c10e-4dc9-9a85-43ad81181f89",
+      "keyword": "team restructuring"
+    },
+    {
+      "id": "4aeddda4-d81d-475b-9491-b70aad56c643",
+      "keyword": "product updates"
+    },
+    {
+      "id": "71eb53a5-9c87-44a1-bf5e-9a875a91253d",
+      "keyword": "financial misestimation"
+    },
+    {
+      "id": "979b14c5-99f3-4803-a1f7-130529aa432b",
+      "keyword": "audit report"
+    },
+    {
+      "id": "fb5b2782-5577-4cb7-82e3-f0d3b95c2977",
+      "keyword": "new sales hires"
+    },
+    {
+      "id": "e5e500e4-c99b-46d9-ad89-a2519a69faac",
+      "keyword": "financial volatility"
+    },
+    {
+      "id": "1bd6f11b-b7a5-4ff1-b548-336593db4011",
+      "keyword": "data collection"
+    },
+    {
+      "id": "0ee7813c-1598-48ad-80fe-feb4507ee0d1",
+      "keyword": "audit discrepancy"
+    },
+    {
+      "id": "74c97845-96ee-4a52-9514-ae111b71c201",
+      "keyword": "increased revenue"
+    },
+    {
+      "id": "2dbf25af-1770-43df-8def-0e7a80aecae1",
+      "keyword": "sales team turnover"
+    },
+    {
+      "id": "a0cb6793-77b1-4b6c-a29d-3b3ec5c9e091",
+      "keyword": "sales team growth"
+    },
+    {
+      "id": "692ceef9-b1a3-4979-a4fd-b668a24e1952",
+      "keyword": "regulatory amendment"
+    },
+    {
+      "id": "5c3ea306-4c27-463c-a2e7-4edcdc1f085e",
+      "keyword": "new technology"
+    },
+    {
+      "id": "cb2c2109-1b1f-4643-b411-84c99c9bcfb8",
+      "keyword": "compliance roles"
+    },
+    {
+      "id": "33d214c4-4ff1-4a3e-9091-9df4fc1819cc",
+      "keyword": "court decision"
+    },
+    {
+      "id": "31d38154-a4ab-4490-9313-8463ef8dbf37",
+      "keyword": "compliance change"
+    },
+    {
+      "id": "a1346e41-d0ae-496b-adbe-5b460aa97035",
+      "keyword": "product buzz"
+    },
+    {
+      "id": "17a40391-beeb-496f-9bc9-95e2c25894f1",
+      "keyword": "financial reporting laws"
+    },
+    {
+      "id": "891cce9e-ddd7-4ef6-a20c-c519e63246df",
+      "keyword": "market fluctuation"
+    },
+    {
+      "id": "9f620e8b-5ad3-499a-bdba-0159069ff8ae",
+      "keyword": "lack of recognition"
+    },
+    {
+      "id": "4b249a63-4241-40fd-8f26-66221737c677",
+      "keyword": "strategic planning"
+    },
+    {
+      "id": "c9c370fe-cb80-48a1-96f6-52c967b940b0",
+      "keyword": "marketing campaign"
+    },
+    {
+      "id": "40a827c7-bcb5-489e-80a8-bc0c51116e3b",
+      "keyword": "market saturation"
+    },
+    {
+      "id": "955d502a-698f-4366-bb27-e679920c908f",
+      "keyword": "hiring legal professionals"
+    },
+    {
+      "id": "52982c42-7008-46ec-8476-bb97d3cf6554",
+      "keyword": "data roles"
+    },
+    {
+      "id": "975f12a0-0f8b-4148-a2b2-0f50c18407e8",
+      "keyword": "new policy"
+    },
+    {
+      "id": "01f814fb-2de0-422b-b7f1-9bca37dd9a4a",
+      "keyword": "financial error"
+    },
+    {
+      "id": "26c5df11-4f33-4a52-a08e-5abb4871a9f4",
+      "keyword": "expansion hype"
+    },
+    {
+      "id": "373dce88-4e01-4ec4-ae83-76f0259dc1bb",
+      "keyword": "business acquisition"
+    },
+    {
+      "id": "85375882-bb88-4713-a7e8-3617780a96e7",
+      "keyword": "new branch"
+    },
+    {
+      "id": "bcd56ca5-f035-487e-97cf-692b06f2a57a",
+      "keyword": "business transformation"
+    },
+    {
+      "id": "a6739b62-3db1-421b-b97b-4ae1426287b6",
+      "keyword": "expand team"
+    },
+    {
+      "id": "04124848-6b26-4bff-b5ff-a23562acee42",
+      "keyword": "fiscal year"
+    },
+    {
+      "id": "17e83b30-e802-4750-987a-0bee466d20ea",
+      "keyword": "new technology implementation"
+    },
+    {
+      "id": "f371ed82-ae9d-4950-bd47-64c5f5a3d190",
+      "keyword": "market change"
+    },
+    {
+      "id": "91db8b12-c418-41f2-a52a-f9ec3f327681",
+      "keyword": "compensation plan"
+    },
+    {
+      "id": "4cfcb2bc-021c-45de-a503-fca07d85dcac",
+      "keyword": "hiring for new locations"
+    },
+    {
+      "id": "531aff29-1f72-4fec-a112-9c519e99faa8",
+      "keyword": "tech update"
+    },
+    {
+      "id": "5d03e42d-3d2d-4be5-93cb-88db5c8b50ec",
+      "keyword": "competitor product"
+    },
+    {
+      "id": "a469b930-acb3-4239-bcd1-aa0381257ae4",
+      "keyword": "organizational change"
+    },
+    {
+      "id": "c035eb8f-783a-4e3a-9461-31b8ff5c0c50",
+      "keyword": "competitor launch"
+    },
+    {
+      "id": "20c79393-d38c-4e45-9b9b-defd79f3c31c",
+      "keyword": "data integrity"
+    },
+    {
+      "id": "76587c01-7e37-4eb0-923c-d8658a64d9dc",
+      "keyword": "new rules"
+    },
+    {
+      "id": "6575728c-ebbb-4601-b456-f8c37d15607b",
+      "keyword": "executive team"
+    },
+    {
+      "id": "e6c15934-c56c-4607-af56-1367c30ba6a6",
+      "keyword": "technology transformation"
+    },
+    {
+      "id": "c9d47a40-a9ff-4be0-835f-e935f66db7b7",
+      "keyword": "revenue increase"
+    },
+    {
+      "id": "a50e49d5-66a3-47ce-89ab-59ada8a5e2c3",
+      "keyword": "executive change"
+    },
+    {
+      "id": "22af24e6-a34b-489c-9bff-3c7740a91625",
+      "keyword": "business development"
+    },
+    {
+      "id": "f5de9937-4162-4b50-8e94-7c743a5b4e79",
+      "keyword": "business expansion"
+    },
+    {
+      "id": "b863fddf-edc8-467e-b464-20a0295142cd",
+      "keyword": "regulatory fine"
+    },
+    {
+      "id": "7ef0341a-5c24-42e3-a95e-e8d76530f402",
+      "keyword": "sales job posting"
+    },
+    {
+      "id": "52c1c856-d459-427b-878c-d0299fdc1d7d",
+      "keyword": "regulatory update"
+    },
+    {
+      "id": "ec8b8dfd-26a3-42a2-8531-3f04cdd946f1",
+      "keyword": "auditing"
+    },
+    {
+      "id": "5d54d13b-07c3-479a-9757-365b87ced22a",
+      "keyword": "leadership transition"
+    },
+    {
+      "id": "9898f756-db44-4bc9-9215-d83157dce413",
+      "keyword": "new leadership"
+    },
+    {
+      "id": "7d991e63-94d5-42f1-9bac-80e04a2a1475",
+      "keyword": "legal research"
+    },
+    {
+      "id": "d11cefc2-ac36-4914-9ad3-6b9578c1f3bb",
+      "keyword": "data"
+    },
+    {
+      "id": "9b4d0456-a72b-4394-b2fa-44e6d9a6c0d4",
+      "keyword": "sales commission structure"
+    },
+    {
+      "id": "b6540113-f322-45eb-86cb-53d6a2f4a81b",
+      "keyword": "product redevelopment"
+    },
+    {
+      "id": "24f03777-d313-4f39-a5a7-07446095ebea",
+      "keyword": "plan change"
+    },
+    {
+      "id": "9dec9d3f-df17-45a3-aa81-ab32df4bf024",
+      "keyword": "database upgrade"
+    },
+    {
+      "id": "c7ff53a3-302e-4355-bf93-768af5b4c9d8",
+      "keyword": "retention issues"
+    },
+    {
+      "id": "9a99bdde-e076-45db-bf16-a2481d3d72d7",
+      "keyword": "company merge"
+    },
+    {
+      "id": "38f2ebdd-2f67-4a4c-9f3b-18a905f23ef4",
+      "keyword": "adapting to new regulations"
+    },
+    {
+      "id": "86585e9a-639f-419f-b6cf-03cb8fcc37e9",
+      "keyword": "financial regulation change"
+    },
+    {
+      "id": "eaddf3ee-8e5f-441e-8b12-20a276c9e7d9",
+      "keyword": "geographical expansion"
+    },
+    {
+      "id": "2cbbaa2f-7dad-48b0-958f-9836427f1eb9",
+      "keyword": "increased targets"
+    },
+    {
+      "id": "c0e5864c-afb6-454e-acf9-150eb128d080",
+      "keyword": "inaccurate prediction"
+    },
+    {
+      "id": "0885e4ca-d801-4837-ad13-d083ecab2c56",
+      "keyword": "regional office"
+    },
+    {
+      "id": "817275b7-24f1-4a33-bc1d-82ddd538b335",
+      "keyword": "regulation buzz"
+    },
+    {
+      "id": "d084aa60-1e86-44cf-bc8a-beb8e08466df",
+      "keyword": "strategic sales"
+    },
+    {
+      "id": "bb28bbbe-6ea9-4df6-830b-75ae1ad890cd",
+      "keyword": "sales success"
+    },
+    {
+      "id": "4f27a83c-0e9a-4ce3-83a5-b6fed203f03c",
+      "keyword": "compliance system"
+    },
+    {
+      "id": "a7a7dda3-2f41-4232-b6b7-e0bb16a2ec7a",
+      "keyword": "regulatory issue"
+    },
+    {
+      "id": "b7ec2889-db68-48f3-a916-6d5673f7f87d",
+      "keyword": "product management"
+    },
+    {
+      "id": "055e0eeb-be49-472e-a569-94181350e1e8",
+      "keyword": "sales recognition"
+    },
+    {
+      "id": "354f436d-44df-4faa-85af-a7df024ff60d",
+      "keyword": "commission structure changes"
+    },
+    {
+      "id": "7ed0181e-89ed-46cd-bfb4-50455620be69",
+      "keyword": "cybersecurity"
+    },
+    {
+      "id": "6562fd46-df9f-4ccc-ba9c-aa065d08cab5",
+      "keyword": "competitive market"
+    },
+    {
+      "id": "11687208-9088-45dd-9f7f-f90728f83e9a",
+      "keyword": "market threat"
+    },
+    {
+      "id": "4635412c-d4a1-4318-8615-4acdb9fd81f5",
+      "keyword": "new financial year"
+    },
+    {
+      "id": "15e9451b-849c-4dae-b8fb-24992858b273",
+      "keyword": "security incident"
+    },
+    {
+      "id": "392f0239-1348-450d-aabf-5c8f6bf4c513",
+      "keyword": "competitive analysis"
+    },
+    {
+      "id": "00046cb1-9dc4-4897-abdf-811281654031",
+      "keyword": "new regulatory requirement"
+    },
+    {
+      "id": "95071cdd-1e49-4271-9f01-88637e28183c",
+      "keyword": "hacked"
+    },
+    {
+      "id": "aa290ad1-13a3-4911-9d43-afd2a08c5571",
+      "keyword": "new sales lead"
+    },
+    {
+      "id": "90a02b6d-62f9-404f-a393-c79336002dda",
+      "keyword": "system downtime"
+    },
+    {
+      "id": "294bdab2-053c-489d-9514-7a94a0c71ba6",
+      "keyword": "market contraction"
+    },
+    {
+      "id": "699a0303-3d07-41a7-94d8-3e3cbb95cb08",
+      "keyword": "business model"
+    },
+    {
+      "id": "8787ddd5-b0a8-487c-8c47-abe914801277",
+      "keyword": "product hype"
+    },
+    {
+      "id": "c2da7fe3-f9ce-4dd1-b5bd-2557c66a7436",
+      "keyword": "legal penalty"
+    },
+    {
+      "id": "2cf8d0e6-e163-4706-93be-ae4bc450c66a",
+      "keyword": "industry trends"
+    },
+    {
+      "id": "e0456c15-4bc6-449a-85f7-3ed7a95442aa",
+      "keyword": "legislation change"
+    },
+    {
+      "id": "567d67ab-7c5d-42fb-8459-549c226acb0d",
+      "keyword": "new offering"
+    },
+    {
+      "id": "90c1cf02-3a2e-48a8-905e-3baa4964d7cd",
+      "keyword": "new strategy"
+    },
+    {
+      "id": "10275909-6f84-40a2-8a2a-6e76b47d5d7f",
+      "keyword": "corporate restructuring"
+    },
+    {
+      "id": "7083c585-6240-4edf-bba8-1e02bbf56402",
+      "keyword": "adapting to market changes"
+    },
+    {
+      "id": "dd644f7a-13c8-41ba-ade7-da32b26010a4",
+      "keyword": "regulatory violation"
+    },
+    {
+      "id": "501d1aba-38a0-4a52-86a4-6a2a1e0d7c5d",
+      "keyword": "new hires"
+    },
+    {
+      "id": "348f5b78-5c32-4de7-a7dc-37b0b8123720",
+      "keyword": "earnings report"
+    },
+    {
+      "id": "a6b02076-cbb9-40a0-9fa2-5dbc99657b08",
+      "keyword": "legal"
+    },
+    {
+      "id": "1e46cae2-4e96-4f8e-a334-b52005d5a2d8",
+      "keyword": "high sales targets"
+    },
+    {
+      "id": "4ab9cfc5-93d1-47ec-9b81-41717cb2cfa9",
+      "keyword": "new compensation structure"
+    },
+    {
+      "id": "0616c011-11c8-4281-8f37-58bdf0f1e743",
+      "keyword": "demand change"
+    },
+    {
+      "id": "e79138de-9cd6-40dc-8e86-d80199e36a50",
+      "keyword": "compliance job posting"
+    },
+    {
+      "id": "303dd203-997e-488a-a7b1-9ccfa1af6e39",
+      "keyword": "hiring salespeople"
+    },
+    {
+      "id": "f4e14a86-d1f1-4661-b378-4933a65b4e99",
+      "keyword": "non-compliance penalty"
+    },
+    {
+      "id": "449d3df7-ea4a-484c-ae7c-bf7df3492e39",
+      "keyword": "court case"
+    },
+    {
+      "id": "21da90f3-0b11-48e8-923a-d810e73ce093",
+      "keyword": "series c funding"
+    },
+    {
+      "id": "18a262f0-72d6-40d0-a62c-499a2984a2fb",
+      "keyword": "competition"
+    },
+    {
+      "id": "8f4465c3-adaa-4eb0-be52-6842001dbdbf",
+      "keyword": "compliance updates"
+    },
+    {
+      "id": "df586339-c98a-44cb-989d-4083243c08b9",
+      "keyword": "financial performance"
+    },
+    {
+      "id": "32540a5d-b14d-4d4c-8714-1f496083d59e",
+      "keyword": "penalty announcement"
+    },
+    {
+      "id": "23a7ebfd-dc3e-49a7-92be-5b9a1bbbafe7",
+      "keyword": "financial year start"
+    },
+    {
+      "id": "913da319-d712-4bbe-98f5-833e718b55ce",
+      "keyword": "growth slowdown"
+    },
+    {
+      "id": "88523d71-26a3-408f-a85e-0579552c6b6e",
+      "keyword": "sales management"
+    },
+    {
+      "id": "062d4ebb-b0e6-4dbc-bb7c-964775d07ab2",
+      "keyword": "regulatory system implementation"
+    },
+    {
+      "id": "94afb491-57cf-49c6-87be-99e37c542c6d",
+      "keyword": "competitive landscape"
+    },
+    {
+      "id": "731d5d85-abdf-480f-9176-99ab06eac268",
+      "keyword": "rapid expansion"
+    },
+    {
+      "id": "95b79c68-15dd-4a01-8619-0c5d493341f3",
+      "keyword": "entering new markets"
+    },
+    {
+      "id": "ad300865-7e27-43cb-ae8c-f6ce4330615c",
+      "keyword": "data migration"
+    },
+    {
+      "id": "65bef300-5c05-400e-9727-6f9ea037525c",
+      "keyword": "recognition improvement"
+    },
+    {
+      "id": "56bedb49-7178-46cb-853d-a26ed4b873e3",
+      "keyword": "legal case"
+    },
+    {
+      "id": "6c86d78f-e496-4694-b641-23b7c83065c1",
+      "keyword": "sales team hiring"
+    },
+    {
+      "id": "e83ceb6f-9e54-4603-a405-513a1836fbcd",
+      "keyword": "process management"
+    },
+    {
+      "id": "4be70346-8d6b-4b7c-b5f4-b2af60b0a3b7",
+      "keyword": "process upgrade"
+    },
+    {
+      "id": "19ffd495-3b5d-4ae2-bdee-c2bad1c3e59d",
+      "keyword": "data consolidation"
+    },
+    {
+      "id": "5d85be64-6856-4d5e-8769-46a75e459639",
+      "keyword": "market analysis"
+    },
+    {
+      "id": "f93f8f7c-8542-42ab-9e50-57a133ea9110",
+      "keyword": "regulations"
+    },
+    {
+      "id": "d47653df-0f60-44a4-a5b7-d2a414341790",
+      "keyword": "cash flow problem"
+    },
+    {
+      "id": "8049b8be-5af6-43e1-b905-5af79a5db3eb",
+      "keyword": "compliance breach"
+    },
+    {
+      "id": "5ffb80b8-f03c-4947-99f4-cc09b7f19141",
+      "keyword": "growth plan"
+    },
+    {
+      "id": "997f61cd-c60d-4f49-b3fe-262f1d051719",
+      "keyword": "company restructuring"
+    },
+    {
+      "id": "1aea25e5-7006-46fe-954b-c4f5b49b1987",
+      "keyword": "compliance hiring"
+    },
+    {
+      "id": "48d5c6e3-6d8e-4cfe-a805-d61ea4ebeaff",
+      "keyword": "international sales"
+    },
+    {
+      "id": "9890fe8a-147c-41bd-a441-21904f196b84",
+      "keyword": "audit remediation"
+    },
+    {
+      "id": "9e2b5b32-5feb-4c4b-a183-3ba3ee9aa76e",
+      "keyword": "compliance regulations"
+    },
+    {
+      "id": "7b336795-3220-4abd-a573-63581ddf1112",
+      "keyword": "strategy launch"
+    },
+    {
+      "id": "ebb707bb-23fe-4f32-b992-01c5bb630989",
+      "keyword": "market trends"
+    },
+    {
+      "id": "62789753-3327-4a5d-bc0e-3e7016762bfa",
+      "keyword": "inaccurate financial forecasting"
+    },
+    {
+      "id": "5beb8803-3c58-4afe-b84d-66d6e4840ef6",
+      "keyword": "audit results"
+    },
+    {
+      "id": "2ebfdc8f-a6e6-473b-8f62-bccd2b503199",
+      "keyword": "compliance audit"
+    },
+    {
+      "id": "be75e1cb-3dc7-401c-b6b0-b9bd3169ceb1",
+      "keyword": "financial instability"
+    },
+    {
+      "id": "b7ac19aa-db38-4d30-a887-318e4c700540",
+      "keyword": "new business strategy"
+    },
+    {
+      "id": "1cc9e20d-efdc-4023-9496-be78f45174bc",
+      "keyword": "competitor"
+    },
+    {
+      "id": "db98e464-839d-485a-9617-c167a4659f5a",
+      "keyword": "new sales vp"
+    },
+    {
+      "id": "baad006c-0c96-432c-a4c5-0365db85cb4b",
+      "keyword": "sales"
+    },
+    {
+      "id": "c0555c4f-57fc-45b7-a304-68bd71159ae9",
+      "keyword": "compliance review"
+    },
+    {
+      "id": "25ba675d-d926-4a3b-b665-7dc02753f9c9",
+      "keyword": "market consolidation"
+    },
+    {
+      "id": "5b15d2d7-cd93-4b33-a7b2-ef7dcaa9e734",
+      "keyword": "regulation breach"
+    },
+    {
+      "id": "e882d862-d4f2-4281-8d2c-d57bb4499e42",
+      "keyword": "sales goals"
+    },
+    {
+      "id": "d2853ba5-cc32-41d9-9ef3-c6757ebc0137",
+      "keyword": "new requirements"
+    },
+    {
+      "id": "a30df876-6d16-489c-ab7d-53da56eae2ee",
+      "keyword": "sales role"
+    },
+    {
+      "id": "40f82d4f-70a5-429f-897f-32ad67c5af72",
+      "keyword": "global presence"
+    },
+    {
+      "id": "0be57338-0370-4747-8580-2b9da0009968",
+      "keyword": "service launch"
+    },
+    {
+      "id": "9a97eb39-2b14-4125-97ed-b741d809d881",
+      "keyword": "scaling"
+    },
+    {
+      "id": "2e5f5886-9a45-4875-8c24-0aa39c7e5aac",
+      "keyword": "financial compliance"
+    },
+    {
+      "id": "e66a3a58-39c9-4911-a5f4-03cfa67e9416",
+      "keyword": "company restructure"
+    },
+    {
+      "id": "4d1b0da9-f62f-444c-bb03-ee2e4ea4f98a",
+      "keyword": "service complexity"
+    },
+    {
+      "id": "562dceaa-2aa2-4612-985e-46ca1d1fa154",
+      "keyword": "new financial regulation"
+    },
+    {
+      "id": "43df9d43-dd1d-4920-a6cb-774fd5518418",
+      "keyword": "increased complexity"
+    },
+    {
+      "id": "ef5d64d6-85d2-42e3-af2c-ccfae7b03f11",
+      "keyword": "financial reporting issues"
+    },
+    {
+      "id": "c802de66-92fd-4baa-b27e-a3faf256298d",
+      "keyword": "product complexity"
+    },
+    {
+      "id": "30dcd1be-846f-4e1c-818d-28a42afccc2a",
+      "keyword": "high attrition"
+    },
+    {
+      "id": "3ade1f24-e731-4e15-b77f-bc8f4137f168",
+      "keyword": "management change"
+    },
+    {
+      "id": "950c9e0d-3eb7-44b6-9cd4-c35f8e6ccd40",
+      "keyword": "competitor's release"
+    },
+    {
+      "id": "d4e54686-eb11-4c5b-a0a2-68ff577f8109",
+      "keyword": "expansion plan"
+    },
+    {
+      "id": "d884557e-9c31-4a82-8ba0-24a70f1f49b5",
+      "keyword": "competitor product launch"
+    },
+    {
+      "id": "8bd332e8-81ad-4f88-af11-921be0c9e30e",
+      "keyword": "leadership shuffle"
+    },
+    {
+      "id": "07f1c766-9d16-47a6-830c-ffc3778ad546",
+      "keyword": "sales goal"
+    },
+    {
+      "id": "8a650e01-c735-4016-bae8-e7b49c89d64e",
+      "keyword": "sales quota"
+    },
+    {
+      "id": "c5c48504-4423-4726-acb9-4255db711cf5",
+      "keyword": "commission plan"
+    },
+    {
+      "id": "0541c77f-909b-4fef-be59-2ef8335993c6",
+      "keyword": "compensation structure"
+    },
+    {
+      "id": "a89c4507-8755-4682-b427-2e55fa490314",
+      "keyword": "record sales"
+    },
+    {
+      "id": "fac2e456-f2e5-4b61-bfb0-ef0f36717c3c",
+      "keyword": "cybersecurity attack"
+    },
+    {
+      "id": "434ca1d4-9cfc-4bf5-8d3c-92e19268985a",
+      "keyword": "product portfolio growth"
+    },
+    {
+      "id": "ac7845ab-a2a7-4494-ba46-68cb10b4c00c",
+      "keyword": "sales team changes"
+    },
+    {
+      "id": "6949d821-a59e-4ec4-a5a6-3528d40e76f7",
+      "keyword": "internal audit"
+    },
+    {
+      "id": "5ddfbe94-66a6-4393-af08-5ddf3b07f229",
+      "keyword": "compliance standard"
+    },
+    {
+      "id": "ef1d4546-dabb-463b-a68c-6ac87950e7cf",
+      "keyword": "increased transactions"
+    },
+    {
+      "id": "3650e18f-e6ae-43dc-ae00-5d0af518fab9",
+      "keyword": "budgeting"
+    },
+    {
+      "id": "a6d34c52-8c06-49dd-ba85-a8b8adb0eedd",
+      "keyword": "litigation"
+    },
+    {
+      "id": "49cde770-1baf-4bbc-9156-8b96e09c01e2",
+      "keyword": "financial year end"
+    },
+    {
+      "id": "e40771b6-e60e-4461-b174-ad09c06cb07e",
+      "keyword": "sales channels"
+    },
+    {
+      "id": "758b1b29-f1b9-41fb-814e-eb0be91793ea",
+      "keyword": "channel expansion"
+    },
+    {
+      "id": "5fc18206-d11d-43ec-a3cb-51052a314fbf",
+      "keyword": "compliance requirements"
+    },
+    {
+      "id": "64f3e13c-8615-4dd0-ac39-8304c3cf295c",
+      "keyword": "change in direction"
+    },
+    {
+      "id": "a05ac0c4-2c76-4a5c-9978-8b821a49bea0",
+      "keyword": "company strategy"
+    },
+    {
+      "id": "8eaf8b76-eaa1-4390-9ae0-26a4b1a710ef",
+      "keyword": "digitization"
+    },
+    {
+      "id": "d95d4c6f-0334-4d48-abfd-472c12fc6f8d",
+      "keyword": "multichannel sales"
+    },
+    {
+      "id": "a5a3c1b1-f33d-4a2f-90e3-da8d15096871",
+      "keyword": "digital transformation"
+    },
+    {
+      "id": "c61c4fc9-40b7-4783-a074-19d7ddab2291",
+      "keyword": "global operations"
+    },
+    {
+      "id": "a17bf425-99e0-4617-b000-6b514c8e911c",
+      "keyword": "international growth"
+    },
+    {
+      "id": "e0d9f9b0-ec28-4bb3-b7ad-2a37cc70be00",
+      "keyword": "policy updates"
+    },
+    {
+      "id": "ecb13a4c-23fc-44e9-bbe4-bde269fbdbd5",
+      "keyword": "earnings growth"
+    },
+    {
+      "id": "1ee6f7ed-a63f-4ed7-badb-67a11c8f533f",
+      "keyword": "rebranding"
+    },
+    {
+      "id": "640d46b6-4cd5-489c-b82a-c3cca5ebcc53",
+      "keyword": "gut decisions"
+    },
+    {
+      "id": "d9fc0885-7164-4bc8-947c-7de762db8c58",
+      "keyword": "work from home"
+    },
+    {
+      "id": "9eb06a0a-5871-40ab-a753-c4fc7a548004",
+      "keyword": "customer demand"
+    },
+    {
+      "id": "73f70e5f-4eeb-4a13-8bda-139cd848b893",
+      "keyword": "new leader"
+    },
+    {
+      "id": "38b7c4da-0c4a-439e-9c0c-4cefd4ce5212",
+      "keyword": "regulatory burden"
+    },
+    {
+      "id": "69c18c9f-45a9-4594-bae0-ca9a65ce51af",
+      "keyword": "changing preferences"
+    },
+    {
+      "id": "b0b983e8-0df2-415c-9d88-0bb21ecf57e5",
+      "keyword": "lack of data"
+    },
+    {
+      "id": "e3eae8e6-12a7-495f-b4b1-1c110344c5a9",
+      "keyword": "complex compliance"
+    },
+    {
+      "id": "b202b825-9ec3-415c-8377-f4ca54ee94af",
+      "keyword": "law changes"
+    },
+    {
+      "id": "0075a55e-963d-4440-9888-0c21273baa69",
+      "keyword": "customer needs"
+    },
+    {
+      "id": "767d875e-414c-46dd-be6e-8cb01aa6a565",
+      "keyword": "industry shift"
+    },
+    {
+      "id": "7e065ba8-5fa3-4fd6-a5bd-4493d16b4937",
+      "keyword": "remote work"
+    },
+    {
+      "id": "771f7e75-b931-429e-bf1c-f62e9b655d09",
+      "keyword": "increased regulation"
+    },
+    {
+      "id": "b4fa6b2d-c335-4558-bf2c-e603a0fb108b",
+      "keyword": "market trend"
+    },
+    {
+      "id": "2118f50a-1500-4eb8-826a-dc2de98a6e04",
+      "keyword": "non-compliance fine"
+    },
+    {
+      "id": "b1909ba3-0b27-4106-9d6c-e9dc8a5b8534",
+      "keyword": "data-driven"
+    },
+    {
+      "id": "9461327c-9e1e-4309-bbb6-4f7475793263",
+      "keyword": "compliance violation"
+    },
+    {
+      "id": "cc6db474-0e2e-44ca-8e61-59003dcf08ad",
+      "keyword": "competitive threat"
+    },
+    {
+      "id": "115d4b7e-d0c5-4f00-a61d-0ebcbd5b7d19",
+      "keyword": "distributed team"
+    },
+    {
+      "id": "5d558ba2-db57-4ce4-b22b-9b2aff56ca1d",
+      "keyword": "legal changes"
+    },
+    {
+      "id": "48ff2abf-2b29-47bc-9919-d3e1191f8190",
+      "keyword": "reorganization"
+    },
+    {
+      "id": "b5186a3d-a55c-42fb-86d6-20efad40b362",
+      "keyword": "tool migration"
+    },
+    {
+      "id": "60e87de5-31ea-464e-8ad7-339e3fc0e2bf",
+      "keyword": "trend analysis"
+    },
+    {
+      "id": "3e974e15-bdb2-474f-995e-532b86f57147",
+      "keyword": "compliance lawsuit"
+    },
+    {
+      "id": "744898e5-9121-42ef-99ef-13a432a46979",
+      "keyword": "data management change"
+    },
+    {
+      "id": "a29fb26f-9f2d-4b41-a844-3987a57a01a0",
+      "keyword": "new data tool"
+    },
+    {
+      "id": "df33e577-73d2-4b39-8941-3f0bd35a3666",
+      "keyword": "law passed"
+    },
+    {
+      "id": "09e1030f-b1a4-4317-9528-f13120f13103",
+      "keyword": "hiring in"
+    },
+    {
+      "id": "fe6be1dd-7783-4cf3-a22d-640691d7d0b5",
+      "keyword": "legal violation"
+    },
+    {
+      "id": "d71fc19e-7740-4e1d-be5b-b202cddd6def",
+      "keyword": "new legislation"
+    },
+    {
+      "id": "23d848d2-d521-4d1a-baf3-4e4b0d363885",
+      "keyword": "data regulation"
+    },
+    {
+      "id": "3d4ddcae-5cba-422f-ae1c-64760d4b7fd2",
+      "keyword": "it improvements"
+    },
+    {
+      "id": "b8d9ada1-80e0-4102-96e5-01b20ba6e0ed",
+      "keyword": "data protection"
+    },
+    {
+      "id": "14f9f5ff-7c43-4fd3-bb13-3a9fea4b41f4",
+      "keyword": "new data law"
+    },
+    {
+      "id": "cddd7600-f3c0-4000-b5c5-b2afb1995ec1",
+      "keyword": "new system"
+    },
+    {
+      "id": "61ae2557-1e4d-4600-9bfa-453be79ca0e2",
+      "keyword": "increase"
+    },
+    {
+      "id": "43815c2f-8c18-46d7-bfb4-9bebc2c54b61",
+      "keyword": "sales director"
+    },
+    {
+      "id": "5e5403a1-2403-4550-ab88-d52e9ffad913",
+      "keyword": "shift"
+    },
+    {
+      "id": "18ee5dc0-e2e6-495d-af01-2fc009a73c05",
+      "keyword": "implementation"
+    },
+    {
+      "id": "43bb9ef3-84a3-417b-b43c-e701805281e1",
+      "keyword": "buy"
+    },
+    {
+      "id": "9b2b79ed-df24-4bc4-94d9-83440a361af6",
+      "keyword": "vp sales"
+    },
+    {
+      "id": "9bf85032-9246-4fb7-9438-6cc2ffce2c09",
+      "keyword": "market downturn"
+    },
+    {
+      "id": "41267ebe-69ca-4a40-8630-bf321531b365",
+      "keyword": "major account"
+    },
+    {
+      "id": "27536c88-074c-428a-87e0-f79bc65192c9",
+      "keyword": "customer growth"
+    },
+    {
+      "id": "890e80cf-1aa1-4159-95c8-554574836a32",
+      "keyword": "merge"
+    },
+    {
+      "id": "b2ba9813-0c44-489e-84fa-30f5254b214e",
+      "keyword": "customer loss"
+    },
+    {
+      "id": "b16eddad-b48b-49d4-a4dc-fa85402f56c2",
+      "keyword": "economic decline"
+    },
+    {
+      "id": "75843524-886d-48d7-b288-82b9b52f495a",
+      "keyword": "crm"
+    },
+    {
+      "id": "7b2a99e9-88c7-478d-b35d-09ec9e81125e",
+      "keyword": "peak sale period"
+    },
+    {
+      "id": "79470854-c994-46ef-8d94-09ac10c28c82",
+      "keyword": "seasonal sales"
+    },
+    {
+      "id": "587c830d-9f4d-4cea-932b-6b63a1016492",
+      "keyword": "year-end report"
+    },
+    {
+      "id": "5146f640-7e45-4a8d-a31e-ec082b0ab3d4",
+      "keyword": "quarterly report"
+    },
+    {
+      "id": "c1523ec1-6386-4fa4-894b-7ce9d945fca1",
+      "keyword": "financial scrutiny"
+    },
+    {
+      "id": "13dabb38-70ed-449d-a6f6-fdab2e72bc26",
+      "keyword": "financial reporting"
+    },
+    {
+      "id": "3bfecaea-8a62-42c4-8990-39b968060598",
+      "keyword": "financial leadership"
+    },
+    {
+      "id": "bc7966e2-a305-473e-865c-fe356b7e68c6",
+      "keyword": "sales force expansion"
+    },
+    {
+      "id": "7788e110-e046-441f-85d5-02b20d78e570",
+      "keyword": "sales positions"
+    },
+    {
+      "id": "a4f79b61-be31-4ccb-a87c-fa90f27474bf",
+      "keyword": "regional sales managers"
+    },
+    {
+      "id": "4db00c82-8943-4237-bbd9-1a25f77c4aab",
+      "keyword": "mergers and acquisitions"
+    },
+    {
+      "id": "41ad240a-1aba-49b5-a131-644f4a95538a",
+      "keyword": "regulatory roles"
+    },
+    {
+      "id": "a36a4eea-f1ca-49e1-9217-f8d7ccddfceb",
+      "keyword": "audit roles"
+    },
+    {
+      "id": "f4b7706c-0fa1-43c2-969b-418441147dc1",
+      "keyword": "financial discrepancies"
+    },
+    {
+      "id": "da17cb75-1623-4dcd-8f6d-07ff8e8bf050",
+      "keyword": "cfo appointment"
+    },
+    {
+      "id": "b41f3464-101c-4721-9aa7-fab354d6e724",
+      "keyword": "data security failure"
+    },
+    {
+      "id": "a1fe6d42-14de-485a-bffd-d07c3006f973",
+      "keyword": "launch event"
+    },
+    {
+      "id": "79b971f9-f653-4acb-b9a6-7c79233d97aa",
+      "keyword": "financial leadership change"
+    },
+    {
+      "id": "e344ff97-1b67-4418-8e87-9af0ce8aae53",
+      "keyword": "salesforce growth"
+    },
+    {
+      "id": "a312d770-41c0-4b11-b44e-ec7f994f1421",
+      "keyword": "sales data"
+    },
+    {
+      "id": "9ec25244-838c-44d4-b07f-b5d2899262d7",
+      "keyword": "regulatory failure"
+    },
+    {
+      "id": "4bc8b9c7-8887-4f64-935c-2f71b8913413",
+      "keyword": "reporting frequency"
+    },
+    {
+      "id": "173406f8-1974-48e3-9b68-a5a3e020f1ae",
+      "keyword": "reporting issues"
+    },
+    {
+      "id": "c4922a23-0ae6-4bb6-9578-2aa04f2be996",
+      "keyword": "company merger"
+    },
+    {
+      "id": "c40f7b84-56c9-421d-b527-c8053e40d28e",
+      "keyword": "sales head"
+    },
+    {
+      "id": "97e2f755-c1ed-488c-8777-d04a0c523ac5",
+      "keyword": "sales volume growth"
+    },
+    {
+      "id": "27e9671e-f847-4a33-9598-895ec26ce3da",
+      "keyword": "sales growth plan"
+    },
+    {
+      "id": "4b7530eb-e7c4-4eb3-a525-8e5a3287681d",
+      "keyword": "market analyst"
+    },
+    {
+      "id": "a9d64065-5dbd-4489-9a8e-da7e6c3177bc",
+      "keyword": "data clerk"
+    },
+    {
+      "id": "603d8386-3c60-4a7a-ab78-68df99925cc3",
+      "keyword": "reporting period"
+    },
+    {
+      "id": "04848af0-c545-4638-8eb4-03f39c605ef3",
+      "keyword": "compliance officer"
+    },
+    {
+      "id": "c11cb445-a5c2-4e99-8523-e094a29bc216",
+      "keyword": "employee turnover"
+    },
+    {
+      "id": "7155e5ee-ff55-4192-8ebe-ce75545b6dc3",
+      "keyword": "sales team restructure"
+    },
+    {
+      "id": "588e4892-8777-4c09-bc17-f0adb40dc307",
+      "keyword": "migration specialist"
+    },
+    {
+      "id": "50e6ee70-5f97-4301-abbf-16ae945d7230",
+      "keyword": "multiple job openings"
+    },
+    {
+      "id": "e15a5b0d-1a1c-4767-83d8-7767cc3fa7f9",
+      "keyword": "data entry system"
+    },
+    {
+      "id": "0c8c8d0d-ec1e-4998-8429-0023e19d2862",
+      "keyword": "data entry"
+    },
+    {
+      "id": "845ba352-464d-4acb-b367-8f76466df7c2",
+      "keyword": "financial analyst"
+    },
+    {
+      "id": "59d58d45-c849-47b3-b164-2ce524852de1",
+      "keyword": "data transfer"
+    },
+    {
+      "id": "c4374c80-9574-4704-bf8a-bb1a7d712360",
+      "keyword": "sales representative"
+    },
+    {
+      "id": "d143be9f-5f4d-45e0-9986-578781f330bc",
+      "keyword": "auditor"
+    },
+    {
+      "id": "6b755d6b-1c80-448e-b418-7451d4490e16",
+      "keyword": "audit preparation"
+    },
+    {
+      "id": "71578617-9fad-47f0-b039-2f020103564f",
+      "keyword": "sales manager"
+    },
+    {
+      "id": "fe61cf4d-c82f-40a7-a72a-e6518db9b7b6",
+      "keyword": "culture change"
+    },
+    {
+      "id": "7ac3d18f-b55b-43d2-97fe-ab4c79c2218c",
+      "keyword": "company values"
+    },
+    {
+      "id": "e98795cc-1aaa-4cf1-ad3f-57e0888ecdce",
+      "keyword": "change in policy"
+    },
+    {
+      "id": "fbe1f562-3063-4ef8-a75e-ec7c0a0e2960",
+      "keyword": "redundancies"
+    },
+    {
+      "id": "9ae87ae4-aa0e-4d90-9c72-a735a8875ac5",
+      "keyword": "lay-off"
+    },
+    {
+      "id": "1d3dead8-a73b-4299-9332-4643733bf4ce",
+      "keyword": "executive reshuffle"
+    },
+    {
+      "id": "3488381f-de43-4ea3-bf93-93605ab851cd",
+      "keyword": "sales objectives"
+    },
+    {
+      "id": "4453d209-7415-4ff6-a186-702a0f62e315",
+      "keyword": "employee dissatisfaction"
+    },
+    {
+      "id": "2c61310c-b33d-4c95-bab0-8032b54ce1cf",
+      "keyword": "global"
+    },
+    {
+      "id": "a467d7a3-fa8e-452c-9fc0-8ba21a094eef",
+      "keyword": "team structure"
+    },
+    {
+      "id": "8c35d786-b764-4749-a42b-5d81e6a3fe77",
+      "keyword": "new subsidiary"
+    },
+    {
+      "id": "06dcccd3-2970-4772-a551-dbe3dd02a72c",
+      "keyword": "new roles"
+    },
+    {
+      "id": "50cb25dd-0f29-414b-b20a-7c3f4af2aede",
+      "keyword": "sales plan"
+    },
+    {
+      "id": "81919eec-deb8-4e6d-99ab-c33b3317f766",
+      "keyword": "legal compliance"
+    },
+    {
+      "id": "b6bc6797-5ad0-4e87-85cd-477aea7599b2",
+      "keyword": "remote roles"
+    },
+    {
+      "id": "3787e405-204c-42b8-b01c-b85aa78f9af6",
+      "keyword": "product portfolio"
+    },
+    {
+      "id": "3bc84752-ea63-4a19-9760-e6ca0a1c0855",
+      "keyword": "client loss"
+    },
+    {
+      "id": "96e61349-5001-4197-8af6-0937b8d0a6b8",
+      "keyword": "financial law"
+    },
+    {
+      "id": "5d4444c0-6071-4784-9c6e-85365fae3abf",
+      "keyword": "legal law"
+    },
+    {
+      "id": "3118682f-92e0-477d-b23d-0e253bf5c805",
+      "keyword": "regulatory inspection"
+    },
+    {
+      "id": "814f9e17-c932-4855-94d6-616dcdc225aa",
+      "keyword": "customer trend"
+    },
+    {
+      "id": "5708f66c-a4ca-42da-9eac-ad20676ecbb2",
+      "keyword": "expanded inventory"
+    },
+    {
+      "id": "60f8976f-b2c5-4423-9023-76c2e30f64ac",
+      "keyword": "regulation update"
+    },
+    {
+      "id": "2df27ab6-e9e8-4ac9-9498-c3371be76c92",
+      "keyword": "consumer behavior"
+    },
+    {
+      "id": "8b4736b4-5968-47e3-85b4-15b481e4afa0",
+      "keyword": "increased demand"
+    },
+    {
+      "id": "b2a375fa-4e05-4897-907d-877f134310ca",
+      "keyword": "new region"
+    },
+    {
+      "id": "eaabd228-cf9c-4417-ba14-15f97fbff3b8",
+      "keyword": "seasonal promotion"
+    },
+    {
+      "id": "b5482e54-1a6d-4b8f-854c-b620d5df21ff",
+      "keyword": "sales team shuffle"
+    },
+    {
+      "id": "af7d835a-7663-40ce-ae96-199ee52416fd",
+      "keyword": "revenue drop"
+    },
+    {
+      "id": "8b041bf4-1e2a-4255-a4b5-64492562395b",
+      "keyword": "legal updates"
+    },
+    {
+      "id": "0e69c9fc-7131-42ef-8ff3-51b5d880241c",
+      "keyword": "data sources"
+    },
+    {
+      "id": "7b4b4b1c-9211-4873-accd-c12ae8db7cbb",
+      "keyword": "data inconsistency"
+    },
+    {
+      "id": "42ac460b-8f67-418a-8a51-56fa1387c812",
+      "keyword": "legal disputes"
+    },
+    {
+      "id": "db6464ba-5566-4d9e-a4d0-0b72532f9f69",
+      "keyword": "personnel change"
+    },
+    {
+      "id": "be0cd5f4-83cf-41aa-84ed-044a1de4d74e",
+      "keyword": "regional growth"
+    },
+    {
+      "id": "3cd14946-4acb-4fa9-b97a-7d58f3bcb41c",
+      "keyword": "new data sources"
+    },
+    {
+      "id": "571111ec-30c1-41f8-9ee5-3ee08b5b8abb",
+      "keyword": "key personnel"
+    },
+    {
+      "id": "9f9d3713-1cdb-41e7-bd60-703fa1810129",
+      "keyword": "system change"
     }
   ]
 }

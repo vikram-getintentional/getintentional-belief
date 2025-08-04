@@ -1,96 +1,160 @@
 {
   "industry": [
     {
-      "id": "a33da996-9e02-4382-b4e8-9f0a2f364d77",
-      "industry": "technology"
-    },
-    {
-      "id": "5722bd20-8727-480e-b41c-948d983684bc",
-      "industry": "finance"
-    },
-    {
-      "id": "5e55e458-58c8-454c-bb77-08e9af05f383",
-      "industry": "e-commerce"
-    },
-    {
-      "id": "788e61c2-9e3e-4ad4-9f62-a277b758f6fa",
+      "id": "ea7f3a3c-b5a9-4370-be1d-7c43d6aa9448",
       "industry": "retail"
     },
     {
-      "id": "5c991917-eb41-4ee1-aa3f-b76f41844573",
-      "industry": "hospitality"
+      "id": "0bdb76b8-6077-4ab0-802f-f3584f884e71",
+      "industry": "e-commerce"
     },
     {
-      "id": "0b5b45b3-2842-46da-a384-d253e44456b4",
+      "id": "a778894f-820c-4ef3-a359-5a1324e0d6b0",
+      "industry": "manufacturing"
+    },
+    {
+      "id": "6d185778-6e62-471a-9293-3ee269572d9e",
+      "industry": "technology"
+    },
+    {
+      "id": "68c00c31-26ec-42ae-aa86-25a959554111",
+      "industry": "finance"
+    },
+    {
+      "id": "d795a1c4-befc-43ae-9a85-dd42469f48e8",
+      "industry": "it services"
+    },
+    {
+      "id": "4aee5114-1996-4574-bc2a-710f97d3e3b3",
       "industry": "healthcare"
+    },
+    {
+      "id": "4a089736-c67c-43f8-b920-4d8444efc7f6",
+      "industry": "real estate"
+    },
+    {
+      "id": "bc93afc7-b5fb-4dcf-a1fc-cb31d16e64f1",
+      "industry": "insurance"
+    },
+    {
+      "id": "87d94f97-b2be-4042-af69-ca85aa637a43",
+      "industry": "b2b saas"
+    },
+    {
+      "id": "45347510-bdb8-4ceb-8876-9b70f7c702fb",
+      "industry": "information technology"
+    },
+    {
+      "id": "c2a4b359-4f42-4aaa-9de6-5e3486051fe6",
+      "industry": "telecommunications"
+    },
+    {
+      "id": "c077dd53-709c-4979-9a7f-8a84f38a60f0",
+      "industry": "software"
+    },
+    {
+      "id": "3a6eedd6-51b0-47ec-8948-a97f5131ec71",
+      "industry": "ecommerce"
     }
   ],
   "revenue": [
     {
-      "id": "de6d883b-42ad-4a56-b3d8-c989bce84ad0",
+      "id": "2da71aca-6fee-4dde-9e4c-7190b0503649",
+      "revenue": "1-10m"
+    },
+    {
+      "id": "3afe5e2a-1c3c-4ee1-b94e-9b4d8214178b",
       "revenue": "10-100m"
     },
     {
-      "id": "a82553d4-52e4-4990-a47f-c4e99fe5479b",
+      "id": "ee642407-4a9e-41fb-84e7-8644921a7f75",
       "revenue": "100m-500m"
     },
     {
-      "id": "89ab7c01-7059-4543-9ce7-c0762d6fb9f4",
+      "id": "73956847-f913-490f-a4ca-3e1c647b7836",
+      "revenue": "1b+"
+    },
+    {
+      "id": "249619f2-39cf-44b6-88cf-14c705d4c108",
       "revenue": "500m - 1b"
     },
     {
-      "id": "8c01aed4-f874-44a2-bbe9-e92d15073769",
-      "revenue": "1-10m"
+      "id": "4f2bafef-401f-4e06-90b6-5540d7a6d6d1",
+      "revenue": "500m-1b"
     }
   ],
   "employees": [
     {
-      "id": "7601c9c6-8cc1-44d7-9456-8a7d431cda60",
+      "id": "a4fda9cc-5126-4412-98ab-a0fd02eae39d",
       "employees": "51-200"
     },
     {
-      "id": "6538005a-9c4a-4b54-9ca0-1c1d793054ca",
+      "id": "9ff3391a-a7e0-4fe2-8ec8-89d0b5eda000",
       "employees": "201-500"
     },
     {
-      "id": "146e5bcc-a1bf-405f-8187-17450234b16d",
+      "id": "db1b7f4c-3a20-4c64-9dc3-07d79a472bc4",
+      "employees": "1000-5000"
+    },
+    {
+      "id": "5227fea5-cbb0-4fee-b4b8-e173895fbc93",
+      "employees": "5000-10000"
+    },
+    {
+      "id": "f13ff5a5-d024-4ffc-92d2-a1d3184e40f3",
+      "employees": "10000+"
+    },
+    {
+      "id": "e4a6cad9-ad2a-467b-abac-56c9b1d67895",
       "employees": "501-1000"
     },
     {
-      "id": "d0756847-38d7-448d-a63d-f42dbe188798",
-      "employees": "1000-5000"
+      "id": "0b8f1a01-963d-4772-b845-9f26d6d8118e",
+      "employees": "11-50"
+    },
+    {
+      "id": "c6a08531-153f-4494-bd6b-da7a334207b6",
+      "employees": "500-1000"
     }
   ],
   "funding_stage": [
     {
-      "id": "2ea7d6a0-ab22-46b5-bffd-48aad241b3b7",
+      "id": "f04eef31-b076-42d4-a03a-0d89652f755e",
+      "funding_stage": "seed"
+    },
+    {
+      "id": "6b67d3e2-947b-4b1d-b258-146ea87ef1b1",
       "funding_stage": "series a"
     },
     {
-      "id": "88608cc8-bcf7-4960-b33c-964c030f438c",
+      "id": "af50e11a-9667-44c1-b0d5-b519ebe6b798",
       "funding_stage": "series b"
     },
     {
-      "id": "6c318a46-af34-4e0c-9b36-8b2c22c52650",
+      "id": "df3422de-0a6b-48d1-acd4-4710a0e5620b",
       "funding_stage": "series c+"
     },
     {
-      "id": "04304ae0-abfa-47b6-9d1c-772d9433978e",
-      "funding_stage": "seed"
+      "id": "7a5a4fb6-9ef0-4abb-8e74-0a615e2d0ce5",
+      "funding_stage": "public"
+    },
+    {
+      "id": "3249e000-fabf-4c51-b8cb-17ba229fb3ce",
+      "funding_stage": "private equity"
     }
   ],
   "geography": [
     {
-      "id": "ee70102f-22f7-4b92-9abe-770af55aa0f3",
+      "id": "02f8ea08-5ea3-441e-ae10-fb9201259947",
       "geography": "north america"
     },
     {
-      "id": "2dd0226f-8f77-445c-b14e-b02e83ca5e2b",
-      "geography": "europe"
+      "id": "bcff70b1-39b2-4cad-8201-e404240d08ae",
+      "geography": "asia"
     },
     {
-      "id": "5740de86-6c61-474e-9a8c-2cbad76f6d08",
-      "geography": "asia"
+      "id": "6d007862-5660-4efd-aa84-437ab58f4c41",
+      "geography": "europe"
     }
   ]
 }

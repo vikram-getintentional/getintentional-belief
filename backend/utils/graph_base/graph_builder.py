@@ -509,6 +509,7 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
             print("❌ Job ID is missing in entry:", entry)
             continue
         if entry.get("pain_source") == "external":
+            
             print("⚠️ Job is external, skipping pain processing for this entry in job:", original_job_id)
             continue
 
@@ -580,6 +581,9 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
     }
     print("Lookup dictionaries created with sizes. Starting final node and edge processing")
     for entry in gpt_results:
+        print("--- ---- --- ---- --- ---- ---")
+        print("Processing entry:", entry)
+
         source = entry.get("source", "openai")
         now = datetime.utcnow().isoformat()
         original_job_id = entry.get("original_job_id").strip()
@@ -606,8 +610,9 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
                 last_updated=now,
                 source=source
             )
+            print(f"Added edge from Original Job {original_job_id} to Pain {pain_node_id} with weight {severity}")
                 
-            jobs = entry.get("jobs", [])
+            jobs = pain.get("jobs", [])
             for job in jobs:
                 raw_job = job.get("description", "").strip()
                 job_canonical = canonical_jobs.get(raw_job, raw_job)
@@ -629,6 +634,7 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
                     last_updated=now,
                     source=source
                 )
+                print(f"Added edge from Pain {pain_node_id} to Job {job_node_id} with weight {impact}")
                 
                 # Extra logic to add newly added jobs to the return loop
                 if job_node_id not in results_job_ids:
@@ -663,7 +669,7 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
                         print("Available persona keys:", list(persona_lookup.keys()))
                     
                     persona_node_id = persona_lookup.get(persona_lookup_key)
-                    persona_job_importance = persona.get("job_importance", 0.5)  # Default to 0.5 if not specified
+                    job_importance = persona.get("job_importance", 0.5)  # Default to 0.5 if not specified
                     #Add edge: Job → Persona
                     add_edge(
                         product_id=product_id,
@@ -674,8 +680,8 @@ def canonicalize_and_create_hop_plus_nodes(gpt_results, product_id):
                         last_updated=now,
                         source=source
                     )
+                    
 
-        print("Updated entry:", entry)
     print("Finished Graph and Edge math for Hop++:", gpt_results)
 
     return results_job_ids

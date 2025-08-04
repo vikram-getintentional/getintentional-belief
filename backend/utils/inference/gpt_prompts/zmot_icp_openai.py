@@ -36,10 +36,11 @@ For each pain, do the following:
         - Geographies: locations or market presence of this company archetype (North America | Europe | Asia | South America | Africa | Australia),
       - For each element in the ICP archetype provide a match_score as a float (0.0-1.0) indicating how likely this archetype is to experience this pain trigger.
         A match score of 0.7-1 indicates very likely, 0.3-0.6 indicates a moderate likelihood, and 0.0-0.2 indicates it is unlikely to experience this pain trigger.
-        Return each value in the ICP archetype as list of all possible values.
+        Return each value in the ICP archetype as list of all possible values. Be very strict about the values you return. 
         For example, if both "healthcare" and "finance" are valid industries, return them as ["Healthcare", "Finance"].
     - A list of at least 3-5 external events (ZMOTs) that likely caused or accelerated these internal conditions in these organizations in the context of the product's domain and industy as:
-        - trigger_event: The Event such as Recent funding round, market expansion, new product launch, leadership change, security breach, compliance failure, etc.
+        - trigger_event: The actual external event such as - but not limited to - Recent funding round, market expansion, new product launch, leadership change, security breach, compliance failure, etc.
+          Think through the trigger event as "what organizational, customer-led, market, industry, or global event could have caused an escalation of this pain trigger?"
         - match_score: float (0.0-1.0) indicating how likely this event is to trigger the pain in the ICP archetype.
           A match score of 0.7-1 indicates very likely, 0.3-0.6 indicates a moderate likelihood, and 0.0-0.2 indicates it is unlikely to trigger this pain.
         - observable_moment: At least 3 Specific externally observable data points or event sources for each ZMOT trigger event that indicate the event such as News articles; press releases; social media post/ discussions; job postings; interviews in podcasts, webinars, etc.; Status pages; G2 reviews; glassdoor reviews; SEC filings; and any other pertinent publicly available data that might indicate this.
@@ -130,9 +131,10 @@ Return your output as a JSON array, one entry per pain, with this structure:
   }}
 
 Use only realistic, clearly defined pain triggers, events, observable moments and keywords. 
-IMPORTANT: Return ONLY the JSON array, with no explanation or formatting.
+IMPORTANT: Return ONLY the JSON array, with no explanation, formatting, or trailing commas. Ensure all arrays and objects are properly closed.
 IMPORTANT: For each list (pain_triggers, icp_archetypes, zmot_events), you MUST provide at least 3-5 items. Do not return only one item for any list. If you cannot find 3 strong matches, look for slightly poorer matches.
 IMPORTANT: Each ICP Archetype, pain trigger, ZMOT event, and keyword must be tightly linked to the context of the product’s value proposition. Do not generalize — reference domain-specific signals wherever possible.
+Be brutally specific with the returned values and match scores. 
 
 
 Summary:

@@ -30,6 +30,22 @@ def build_product_graph(product_id):
 
     return product_graph
 
+def update_graph(product_subgraph): 
+    """
+    Updates the product subgraph with latest available nodes and edges
+    """
+    product_id = get_product_id_from_subgraph(product_subgraph)
+    print("Updating graph for product ID:", product_id)
+    
+    # Load the latest product graph
+    latest_graph = build_product_graph(product_id)
+
+    # Merge the new graph into the existing subgraph
+    product_subgraph = nx.compose(product_subgraph, latest_graph)
+
+    print("Graph updated successfully.")
+    return product_subgraph
+
 def get_node_by_id(G, node_id: str) -> dict:
     """
     Retrieves a node from the node registry by its ID.

@@ -12,18 +12,24 @@ def get_upstream_triplets(summary, domain, industry, job_sets: list[dict[str, an
     job_list_json = json.dumps(job_sets, indent=2)
     prompt = f"""
 
-    You are given a list of Jobs to be done in an organization along with the personas typically doing them, and the pains faced while performing this job. 
-    Now answer the following in the context of the product summary provided below.
-    Ensure that all answers are relevant and in context to the product's domain and industry.
+    You are given a list of Jobs To Be Done (JTBD) in an organization along with the personas doing them, and pains they face while performing this job. 
+    Now answer the following in the context of the product summary, domain, and industry provided below.
 
-    For each job, treat the personas as actors performing the specified job, and experiencing the specified pains.
-    Then do the following:
-    1. List 1–3 upstream business pains internal to the organization faced by any persona (including the current persona) while performing another job that the current job exists to solve.
-    2. For each pain, assign a Severity Score as a float between 0.0 and 1.0 that reflects how much it is impacted by the job's failure.
-    - Severity scores of 0.7-1.0 indicate that the pain is a direct and complete result of this job's failure.
-    - Scores of 0.3–0.6 indicate that the pain is only partially caused by this job's failure (e.g. same persona, downstream workflow, or shared pain).
+    Do the following:
+    1. List 1-3 upstream business pains that this job exists to solve.
+    - Upstream pains should be internal to the organization, faced by another persona in the same or different department.
+    - The upstream pain should be a specific workflow inefficiency or business problem that is directly addressed by the job.
+    - The pain should be causally upstream of the job, meaning that the job exists to resolve this upstream pain.
+    - The pain should be temporally upstream of the job, meaning that it is experienced before the job is performed.
+    - You may think of the current job as a delegation to resolve this upstream pain, for example from a senior persona or from a complementary department.
+    - Avoid creating cycles or loops with the input jobs/pains unless there is a strong, unavoidable business logic reason.
+    
+    2. For each pain, assign a Severity Score as a float between 0.0 and 1.0 that reflects how directly and completely it is solved by the job.
+    - Severity scores of 0.7-1.0 indicate that the pain is a completely solved by the job.
+    - Scores of 0.3–0.6 indicate that the pain is only partially solved by this job, and other jobs may be necessary to completely solve it. (e.g. same persona, downstream workflow, or shared pain).
     - Use 0.0 only if the pain has no meaningful connection to the job.
-    3. For each pain, List 1–3 upstream jobs that are directly blocked or improved when this pain is solved in the product summary.
+    3. For each pain, List 1–3 upstream jobs during which this pain is typically experienced. 
+       You may infer that these jobs as a Job to Be Done in the context of the product, that is directly blocked by this pain, and improved when this pain is solved.
     4. For each job provide a score (0.0 to 1.0) indicating how directly the job is impacted by the pain. 0.7-1.0 indicates this pain always occurs in this job, 0.3-0.6 indicates this pain is common but not always present, 0.1-0.2 indicates this pain is rarely felt in this job, and 0.0 indicates this job is not affected by this pain.
     5. For each job, provide a list of personas responsible for that job, each with:
           - title
@@ -57,8 +63,10 @@ def get_upstream_triplets(summary, domain, industry, job_sets: list[dict[str, an
                   - seniority: string
 
       Use only realistic, clearly defined jobs and persona roles. Do not invent exotic titles unless required by the domain. All capabilities should return at least one pain with structured jobs and personas.
-      IMPORTANT: Return ONLY the JSON array, with no explanation or formatting.
-      Return a JSON entry for every capability in the list above. Do not skip any capability.
+      IMPORTANT: Return ONLY the JSON array, with no explanation or formatting for every capability in the list above. Do not skip any job.
+      For each job you must infer at least 1 plausible upstream pain and job that are NOT already present in the input list. Use your knowledge of typical business processes in this domain and industry to hypothesize what could be upstream, even if it is not explicitly mentioned. Avoid simply repeating jobs or pains from the input unless absolutely necessary.
+      IMPORTANT: For each job, do not simply repeat jobs or pains from the input list.
+      For each job in the input list, process it independently and return a separate JSON object using the job_id as the key. Do not let the context of one job influence the others.
     """
 
     try:

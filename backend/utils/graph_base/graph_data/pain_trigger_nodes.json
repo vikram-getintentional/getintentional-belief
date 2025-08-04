@@ -1,38 +1,944 @@
 [
   {
-    "id": "acace16b-40cb-4851-bdc0-7a3b7d75bee5",
-    "attribute": "checkout process duration",
-    "dimension": "time",
+    "id": "8034f241-66e7-440f-9bc1-f7952a1e9663",
+    "attribute": "number of compliance reports",
+    "dimension": "frequency",
     "direction": "increase"
   },
   {
-    "id": "e4887836-7cb0-4da7-9289-f7b5dd04e6f1",
-    "attribute": "number of software integrations",
+    "id": "2c399aef-e54b-43a6-b2e5-c2fb3a85e7bf",
+    "attribute": "variability of commission payouts",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "cb6241a5-0f04-4add-8f44-6ab772f4ace9",
+    "attribute": "sales data",
+    "dimension": "quality",
+    "direction": "decrease"
+  },
+  {
+    "id": "6e09a520-b0fa-4acc-adbc-1bcc625c0ad3",
+    "attribute": "regulation changes",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "ac44c081-6d84-48da-a158-ebf25013fc5e",
+    "attribute": "sales data",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "224e59c2-015c-4a53-b949-71f9457aad41",
+    "attribute": "data entry errors",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "702e0001-2928-47aa-8c51-3ab9c760a286",
+    "attribute": "number of sales tools",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "ae10f2e0-20bf-472e-a486-7a2f4214b640",
+    "attribute": "manual data management",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "ee6c1469-4ab4-4438-9933-d040c2c3b504",
+    "attribute": "sales data",
     "dimension": "complexity",
     "direction": "increase"
   },
   {
-    "id": "1ff8eca0-6c63-455e-abf8-712cc1a0b632",
-    "attribute": "number of untracked business metrics",
+    "id": "319196ed-7060-43b4-b3dc-fbe240febb38",
+    "attribute": "number of financial reports",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "ee1f49ff-5637-492c-8ab9-3b350eb1cb79",
+    "attribute": "complexity of data",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "0a203f4d-5a22-4eac-ac59-3a1ffab01fda",
+    "attribute": "number of sales tools",
     "dimension": "volume",
     "direction": "increase"
   },
   {
-    "id": "f62ef3d0-658e-4399-8021-d5b9e275b7cb",
-    "attribute": "average checkout time",
+    "id": "876cf108-7b2e-4c79-9880-aa8fda98b37c",
+    "attribute": "changes in reporting standards",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "e8727b3d-2ba9-4750-9b29-71d43ab188d5",
+    "attribute": "number of data inputs",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "4ec6d3ba-785e-4a36-9419-69b6b59113d8",
+    "attribute": "unpredictability in commission expenses",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "48697f89-1c51-422a-9252-dbe1a8215509",
+    "attribute": "revenue forecasting accuracy",
+    "dimension": "accuracy",
+    "direction": "decrease"
+  },
+  {
+    "id": "b317f3c8-5724-4a88-971d-61ec8d8b3f4a",
+    "attribute": "number of data inputs",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "1ffb963c-1d1f-4851-b9fc-7ecc51edd524",
+    "attribute": "number of sales tools",
+    "dimension": "quality",
+    "direction": "decrease"
+  },
+  {
+    "id": "1b0fc944-2b1c-4601-9706-588d5d7a6303",
+    "attribute": "number of legal changes",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "4a0ad3e4-0bba-4282-9787-df4ff2caa5bf",
+    "attribute": "number of financial reports",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "e5fb0368-83b8-4230-8f2d-791f3f5d37c8",
+    "attribute": "number of compliance reports",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "ba20abdf-2118-402b-993b-7acb32629954",
+    "attribute": "number of compliance reports",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "fa0af082-e07d-43a0-a659-fa08d823de16",
+    "attribute": "variability of commission payouts",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "8b234980-cb83-4f60-8495-28bac94d532c",
+    "attribute": "number of data inputs",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "da233870-b583-4c34-ac27-79bfe27d604b",
+    "attribute": "number of manual tasks",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "90d9786d-218b-49b7-b41a-62f38b82062e",
+    "attribute": "sales cycle length",
     "dimension": "time",
     "direction": "increase"
   },
   {
-    "id": "47a6f4fe-74fe-4f0a-9c2c-a1a525948920",
-    "attribute": "number of untracked key performance indicators (kpis)",
+    "id": "7809ea2b-5a74-4cdc-84da-2073c44e9234",
+    "attribute": "data processing speed",
+    "dimension": "frequency",
+    "direction": "decrease"
+  },
+  {
+    "id": "550558fe-ebc0-4668-a770-e96172bb21ba",
+    "attribute": "data entry errors",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "30eed0c9-ced9-4ff9-b69d-b3a2851dc544",
+    "attribute": "number of sales tools",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "f9429dd3-1080-4c61-acc9-1ca398e10514",
+    "attribute": "complexity of data",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "31e98bb2-f4c4-48a6-a9f4-a6923681c777",
+    "attribute": "manual data management",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "11674fd2-483c-416f-a29f-5ca3c2382c3f",
+    "attribute": "data entry",
     "dimension": "volume",
     "direction": "increase"
   },
   {
-    "id": "93559628-3c1a-45d3-af90-9a84ae6b6204",
-    "attribute": "number of software solutions used in the organization",
+    "id": "84c64561-faf3-4f19-b44d-4907a31c18e5",
+    "attribute": "sales target setting",
+    "dimension": "accuracy",
+    "direction": "decrease"
+  },
+  {
+    "id": "2f70a752-f331-4306-b70d-5e987f522300",
+    "attribute": "number of regulatory changes",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "9e9fc8be-7262-42cf-adaa-668f0d9e2049",
+    "attribute": "commission expense variability",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "beaad2c7-6bf9-425d-8eaa-9ea6fc32527f",
+    "attribute": "sales cycle length",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "fbc9b5ab-a44b-4b31-b61a-d5aa8ce1e01f",
+    "attribute": "sales target setting",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "895d4bb9-e7c3-4b36-a78f-0f42be6af8e3",
+    "attribute": "compliance",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "c387d6cc-0a6f-4e22-ba0f-19c310a73c0a",
+    "attribute": "sales quota achievement",
+    "dimension": "transparency",
+    "direction": "decrease"
+  },
+  {
+    "id": "e287160a-5b7f-42a1-8e4f-14603b786a74",
+    "attribute": "commission expense variability",
+    "dimension": "flexibility",
+    "direction": "decrease"
+  },
+  {
+    "id": "41e10f5c-36e1-48aa-ac41-f2aaf2cb1182",
+    "attribute": "accuracy of sales data",
+    "dimension": "quality",
+    "direction": "decrease"
+  },
+  {
+    "id": "28935fdc-23bb-45ff-9f52-b95f6548a822",
+    "attribute": "legal complexity",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "96570088-ae13-4df2-8924-6496acc34b3e",
+    "attribute": "sales team morale",
+    "dimension": "quality",
+    "direction": "decrease"
+  },
+  {
+    "id": "13a12808-40d3-4680-ae74-11bbea37a7d8",
+    "attribute": "number of data entries",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "dec9b0b3-4659-45db-9f34-6808ed6a789f",
+    "attribute": "legal complexity",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "22774286-4978-457f-9872-e365d8954ac8",
+    "attribute": "number of unconsolidated data points",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "15e89bde-abeb-4f8b-8f07-92f07ac38be5",
+    "attribute": "sales team morale",
     "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "b33fea6f-67b1-4741-b729-52831e659fed",
+    "attribute": "budgeting accuracy",
+    "dimension": "quality",
+    "direction": "decrease"
+  },
+  {
+    "id": "73e7bba0-536e-4ca2-b0f1-106112d38071",
+    "attribute": "number of regulatory changes",
+    "dimension": "compliance",
+    "direction": "change"
+  },
+  {
+    "id": "a0ea11c3-e58d-4eb8-89b3-92beb7dbe688",
+    "attribute": "compliance",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "2968085b-7c13-473a-823f-23ab284ec8fa",
+    "attribute": "budgeting accuracy",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "24e353f4-01e3-4b63-8edf-6470fb4170a8",
+    "attribute": "number of data entries",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "b8e322df-0d2f-4d14-85ca-6e713c5a77e8",
+    "attribute": "number of manual tasks",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "ae5174d5-892a-4d37-aca2-b3166a7340e6",
+    "attribute": "data entry",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "a7a0e45c-cdcf-4aa5-a874-d1cf56d45595",
+    "attribute": "sales quota achievement",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "bc528869-f1c6-46c7-a55a-1faea3b1cd49",
+    "attribute": "number of manual tasks",
+    "dimension": "time",
+    "direction": "increase"
+  },
+  {
+    "id": "a98e8076-dc7c-4967-968c-2b85cab09684",
+    "attribute": "sales cycle length",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "18fb5da4-735c-41ee-9467-2a884f2f3059",
+    "attribute": "legal penalties",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "5f95eb8b-ff2b-4896-a7bc-64cd9caa009e",
+    "attribute": "incorrect payout predictions",
+    "dimension": "accuracy",
+    "direction": "decrease"
+  },
+  {
+    "id": "99b01c7b-17de-49a4-b78a-2845fae1ca8a",
+    "attribute": "accuracy of sales data",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "8a1abf6c-92a8-4cac-a79f-be1d8b26f935",
+    "attribute": "compliance",
+    "dimension": "compliance",
+    "direction": "decrease"
+  },
+  {
+    "id": "4a46101b-d288-4632-9c69-9d023151e966",
+    "attribute": "budgeting accuracy",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "9525c3a9-003b-4906-abc1-59c8710cf0ad",
+    "attribute": "sales quota achievement",
+    "dimension": "frequency",
+    "direction": "decrease"
+  },
+  {
+    "id": "9b6a1217-5003-4599-aae2-8aa72eaa692e",
+    "attribute": "accuracy of sales data",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "9d8088ce-8810-4703-a091-4988e00aa20a",
+    "attribute": "commission calculation errors",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "e92e97c3-4dfa-47d7-a191-8b5e9a295699",
+    "attribute": "number of budget modifications",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "bed6730b-cc88-4e70-86b1-be127995462a",
+    "attribute": "regulatory compliance",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "58658f1f-ba3d-4ed9-88eb-89f7e6346f0a",
+    "attribute": "commission calculation errors",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "44f10c27-6e86-4334-b951-76094dcc65c2",
+    "attribute": "sales targets met",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "0f05b8a3-aba3-4b23-ab70-216c988c3844",
+    "attribute": "regulatory changes",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "44cf936c-119b-482e-9e82-6fa321c6206b",
+    "attribute": "sales targets met",
+    "dimension": "frequency",
+    "direction": "decrease"
+  },
+  {
+    "id": "00d5b281-a2ec-4874-8a26-26febc52b4be",
+    "attribute": "number of data sources",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "8601a3cc-7a3e-4814-8f4c-40d89a0d7b95",
+    "attribute": "sales targets met",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "6bf5abc7-bed0-4723-a695-f40882e5fd50",
+    "attribute": "number of legal cases",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "ab98f0e2-82b6-476c-90ae-d60141300d30",
+    "attribute": "sales cycle length",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "7b8e15a6-67c8-4531-82af-a51dbe18a6ff",
+    "attribute": "sales data volume",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "33ec2a6d-7ee8-4842-a160-29478de49916",
+    "attribute": "sales data volume",
+    "dimension": "quality",
+    "direction": "decrease"
+  },
+  {
+    "id": "df5a0f9e-407e-4d91-95c0-9ba85d0d6865",
+    "attribute": "sales performance",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "031b294b-b514-49e6-a549-3bf957b5dbae",
+    "attribute": "sales forecast accuracy",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "e54e18c6-929e-4a08-b17d-ab502af3ac74",
+    "attribute": "regulatory compliance",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "8927f4cc-d929-4926-9dec-608537e1c885",
+    "attribute": "sales forecast accuracy",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "11ce6d0d-181d-4a41-b6c1-3057c0e0d0eb",
+    "attribute": "sales data volume",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "2af53b88-5598-432a-9812-f3ed319748c0",
+    "attribute": "regulatory compliance",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "52e25196-4595-4439-aeb5-5f976b01d41c",
+    "attribute": "regulatory changes",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "0dbddfbb-8703-494a-89dd-af17102060a4",
+    "attribute": "sales forecast accuracy",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "f4662742-41b6-466a-862c-cca2984730b3",
+    "attribute": "lack of sales performance visibility",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "865d149b-2926-4167-808a-030a45b7a903",
+    "attribute": "inflexible commission structures",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "357ed3e4-af65-4e7b-a749-62312d82bcc2",
+    "attribute": "inaccuracy in commission payout predictions",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "cbd085c6-7620-45e4-beee-3887c094fd4e",
+    "attribute": "non-compliance incidents",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "b8f09222-5803-4e66-a276-475530c90dbf",
+    "attribute": "data volume",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "1e2a7381-cefb-47d0-b21e-44e346e2b5e4",
+    "attribute": "number of sales transactions",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "7c7ebc92-f6c2-4325-b59b-292cf49edb45",
+    "attribute": "payout delays",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "8ff53d2c-c3a3-49eb-a21e-1cd4959697d8",
+    "attribute": "number of commission payments",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "b7c42d19-f2ec-4652-aa39-8c094db7b552",
+    "attribute": "sales data accuracy",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "284cf347-df30-4f42-a377-0a30925523a7",
+    "attribute": "sales data accuracy",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "38608dc1-04de-4a4f-a327-d58b7aeb804a",
+    "attribute": "reporting requirements",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "5c0cda43-ed89-4c40-a2f6-1c41afc63397",
+    "attribute": "financial forecasting accuracy",
+    "dimension": "accuracy",
+    "direction": "decrease"
+  },
+  {
+    "id": "0ec15fa4-ce02-4f30-a8ac-ad6cd8e724bc",
+    "attribute": "compliance reporting complexity",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "f2491023-4ef4-46bb-8341-4d8945103e2c",
+    "attribute": "sales process efficiency",
+    "dimension": "efficiency",
+    "direction": "decrease"
+  },
+  {
+    "id": "0dff95ba-a96d-4bb7-bbe8-133f846dddfe",
+    "attribute": "sales forecast accuracy",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  {
+    "id": "4d128325-d56b-4fc8-a415-d36b8275a398",
+    "attribute": "sales data quality",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "d54f4521-d201-405f-9e2b-43db9c26d832",
+    "attribute": "reporting time",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "c18ed676-d7ba-4577-9205-1ef2f91d8519",
+    "attribute": "sales team performance",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "128584e7-94c8-419e-96ff-c7b210c7e8bf",
+    "attribute": "number of regulatory updates",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "d08ebf98-2b79-4568-8a53-8d3feaf6590d",
+    "attribute": "sales team performance",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  {
+    "id": "089eca78-8536-4db0-bb91-9b75a94255d5",
+    "attribute": "length of sales cycle",
+    "dimension": "duration",
+    "direction": "increase"
+  },
+  {
+    "id": "c851f931-bad8-4a26-8c0e-ab2d879a61c4",
+    "attribute": "number of data entry errors",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "c7b80a91-bd30-4dab-869a-c62565b0ecd8",
+    "attribute": "sales team's performance",
+    "dimension": "complexity",
+    "direction": "decrease"
+  },
+  {
+    "id": "82e5650b-591d-44f5-875b-19b44ae2879c",
+    "attribute": "accuracy of sales forecasts",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "82e393cd-f21d-4565-91d5-353a791e9246",
+    "attribute": "unpredictability of commission payouts",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "a3a90121-f013-4f09-aa76-bd56525d7702",
+    "attribute": "non-compliance with reporting standards",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "f2b3ea6b-c395-49b1-8bf3-05cb6ad2b4b2",
+    "attribute": "sales target allocation",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "480ff0b1-a316-406c-9796-df8f8eeb3df8",
+    "attribute": "manual data entry",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "f4223ebf-a1d1-48e7-829d-27fac5470e56",
+    "attribute": "legal risk assessment",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "392be7ee-3b8d-44fc-a9cc-ee80c935801d",
+    "attribute": "budgeting and financial planning",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "e452aedf-3aba-4c44-a470-25e5b9b806cf",
+    "attribute": "number of data entry errors",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "98aba1c1-b24d-4a48-a099-584ebdc91445",
+    "attribute": "changes in business objectives",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "5314eeb2-9f9e-43d5-82e7-30372788cbec",
+    "attribute": "time spent on legal research",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "8d500814-cba9-406d-b221-3c5a29a6472d",
+    "attribute": "number of missed sales targets",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "512a126f-3ed8-4405-925f-43999fe474ba",
+    "attribute": "number of missed sales targets",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "c3a54170-1e6f-4614-aa21-0acc19c74c5f",
+    "attribute": "time spent on data validation",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "b2838f84-ffe1-4cc5-820c-cbdee42888d9",
+    "attribute": "number of regulatory violations",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "c7404939-5993-45d5-9c40-b0583b0e1f58",
+    "attribute": "time spent on manual data collection",
+    "dimension": "duration",
+    "direction": "increase"
+  },
+  {
+    "id": "4cc1c7b7-7b2c-42b2-ac9f-f330dabd9f39",
+    "attribute": "number of outdated legal documents",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "761c28d0-860a-4dd8-857e-7017dc884b9d",
+    "attribute": "sales performance",
+    "dimension": "effectiveness",
+    "direction": "decrease"
+  },
+  {
+    "id": "cd0d553d-5fa7-4027-a210-3bceeffa07df",
+    "attribute": "number of inaccurate commission calculations",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "e56e0fed-8c28-4b82-b042-220fce0a3246",
+    "attribute": "changes in regulatory standards",
+    "dimension": "compliance",
+    "direction": "change"
+  },
+  {
+    "id": "d592ad38-f57a-420a-a54f-6df12a297476",
+    "attribute": "uncertain payouts",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "143538d3-cd02-4115-b539-e8809ded05c5",
+    "attribute": "commission expense fluctuation",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "83a35c03-139f-47e6-bbca-ccb31d117965",
+    "attribute": "data management complexity",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "02bd03b5-1e62-4158-a53e-cdc5b91bf756",
+    "attribute": "sales performance visibility",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "c1031741-7455-4b65-ba63-9bc69b0820cf",
+    "attribute": "data management tasks",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "e805a9b7-a414-44ca-8fb3-f41c4fe88dc2",
+    "attribute": "compliance reporting tasks",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "c3de3255-1694-4d58-b192-91d17770d305",
+    "attribute": "time spent on sales process",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "968629ba-35e4-470c-9ad6-dc93a21cc25e",
+    "attribute": "number of inaccurate financial forecasts",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "8c9aa1e7-8c12-4aff-9a0c-c2a031f35184",
+    "attribute": "reporting frequency",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "f0fb2bd5-09a7-4ec9-bf06-56a81cbc8faf",
+    "attribute": "sales targets",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "c1b181d3-d9e6-4443-b1b0-724cbdeef649",
+    "attribute": "sales commission expenses",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "005b7f6d-cfe9-4d1b-aad8-3753841be894",
+    "attribute": "length of sales cycle",
+    "dimension": "time",
+    "direction": "increase"
+  },
+  {
+    "id": "e102f2b4-16be-44c3-9951-95f15bf98ed1",
+    "attribute": "employee turnover rate",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "f185d117-742c-4c56-83da-8cb8e8c88d90",
+    "attribute": "inaccuracy in sales forecasts",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "2fe28739-74cc-4ca6-9718-a9c4f1a28043",
+    "attribute": "number of unconsolidated data points",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "fc35f00b-24df-46f7-8446-df51aed6ea8c",
+    "attribute": "variability in sales commission payouts",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "55a83db1-fd1f-4eec-8c53-ce29daf6736b",
+    "attribute": "number of manual data entries",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "3e230739-998c-4ebe-94bb-e6d7114a9fd7",
+    "attribute": "number of non-compliance incidents",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "36480487-d7b8-4e7d-9bc3-c5f0ee4794c3",
+    "attribute": "number of sales targets set",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  {
+    "id": "882b5c0e-adaa-4c74-bdb2-2ff6adad9f56",
+    "attribute": "number of financial models",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "7127ffca-9f80-4304-bbb8-91476cad7d46",
+    "attribute": "number of legal requirements",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "12f509bd-f4c1-4f0d-9fa4-bba99c323b46",
+    "attribute": "number of sales data sources",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "f457b77f-dbe8-4338-8f2f-d08e109eee97",
+    "attribute": "number of sales objectives not met",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "9f47f137-44aa-4885-86b2-5fb097a9c2f4",
+    "attribute": "sales data inaccuracies",
+    "dimension": "complexity",
+    "direction": "decrease"
+  },
+  {
+    "id": "81cad899-0400-44f6-8b9b-6edf5ca4dc15",
+    "attribute": "sales data inaccuracies",
+    "dimension": "volume",
+    "direction": "increase"
+  },
+  {
+    "id": "e3e696aa-58f3-4d71-86ae-bfd4a5919024",
+    "attribute": "number of legal updates",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "513ce673-a629-49d3-ac8c-3d3018637a8f",
+    "attribute": "number of data sources",
+    "dimension": "complexity",
+    "direction": "increase"
+  },
+  {
+    "id": "ff01a555-a95f-4d53-8a12-8d990d7c20a1",
+    "attribute": "data collection process",
+    "dimension": "frequency",
+    "direction": "increase"
+  },
+  {
+    "id": "490eaa0d-1add-4ec6-addc-79f7117bb7bf",
+    "attribute": "sales data volume",
+    "dimension": "volume",
+    "direction": "decrease"
+  },
+  {
+    "id": "570fc56a-e91b-4b29-8f15-45d2040fe72e",
+    "attribute": "data collection process",
+    "dimension": "complexity",
     "direction": "increase"
   }
 ]
