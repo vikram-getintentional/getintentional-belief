@@ -1,12 +1,12 @@
 from collections import defaultdict
 import json
 from typing import List, Dict, Any, Set
-from backend.utils.graph_base.agent_graph_builder import build_hop0_graph, build_hop_plus_graph, build_icp_graph, build_zmot_nodes_to_graph
+from backend.utils.graph_base.agent_graph_builder import build_hop0_graph, build_hop_plus_graph, build_icp_graph, build_zmot_archetypes_to_graph, build_zmot_nodes_to_graph
 from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list_ids, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type, update_capability_centralities, update_graph
 import networkx as nx
 from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.inference.discovery_engine.agentic_engine.agent_context import AgentContext
-from backend.utils.inference.gpt_prompts.agentic_prompts import  infer_icp, infer_pain_and_source, infer_upstream_for_internal_jobs
+from backend.utils.inference.gpt_prompts.agentic_prompts import  infer_archetypes_for_zmots, infer_icp, infer_pain_and_source, infer_upstream_for_internal_jobs
 from backend.utils.graph_base.network_graph import update_graph
 
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
@@ -555,4 +555,107 @@ def generate_icps_for_hop0( product_subgraph: nx.DiGraph, context: AgentContext)
 
 
     update_graph(product_subgraph)
+    return product_subgraph
+
+
+def process_upstream_zmot_archetype(product_subgraph, upstream_zmot_ids, context):
+    product_id = get_node_id(product_subgraph, "product",{})
+    product_node = get_node_by_id(product_subgraph, product_id)
+    if not product_node:
+        raise ValueError("Product node not found.")
+    summary = product_node.get("summary", "")
+    domain = product_node.get("domain", "")
+    industry = product_node.get("industry", "")
+
+    gpt_input_buffer = []
+
+    print("Starting upstream zmot inference for archetypes loop: ", product_id)
+    from datetime import datetime
+    # Updated query logic
+    zmot_bundle = []
+    for zmot_id in upstream_zmot_ids:
+        print("Processing ZMOT Archetypes for ZMOT: ", zmot_id)
+        zmot_node = get_node_by_id(product_subgraph, zmot_id)
+        zmot_event = zmot_node.get("trigger_event")
+        if not zmot_event:
+            print(f"ZMOT node {zmot_id} has no trigger event. Skipping.")
+            continue
+
+        jobs = []
+        personas = []
+
+        downstream_job_ids = get_source_nodes_by_target_and_type(product_subgraph, zmot_id, "triggered_by")
+        
+        for job_id in downstream_job_ids:
+            job_node = get_node_by_id(product_subgraph, job_id)
+            if not job_node:
+                print(f"Job node {job_id} not found in the product subgraph.")
+                continue
+            job_description = job_node.get("description", "")
+            immediate_persona_ids = get_target_nodes_by_source_and_type(product_subgraph, job_id, "performed_by")
+            for persona_id in immediate_persona_ids:
+                persona_node = get_node_by_id(product_subgraph, persona_id)
+                if persona_node:
+                    persona_title = persona_node.get("title", "")
+                    persona_department = persona_node.get("department", "")
+                    persona_seniority = persona_node.get("seniority", "")
+                    personas.append({
+                        "title": persona_title,
+                        "department": persona_department,
+                        "seniority": persona_seniority
+                    })
+                    jobs.append({
+                        "job_to_be_done": job_description,
+                        "persona_responsible": persona_title,
+                        "persona_department": persona_department,
+                        "persona_seniority": persona_seniority
+                    })
+        zmot_bundle.append({
+            "zmot_id": zmot_id,
+            "zmot_event": zmot_event,
+            "jobs": jobs
+        })
+    if not zmot_bundle:
+        print("⚠️ No ZMOTs found for upstream inference. Cannot proceed.")
+        return []
+    
+    print("🔁 Running GPT reasoning for upstream ZMOTs...")
+
+    # ---- Batching logic for GPT calls ----
+    def batch_list(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
+
+    print("🧠 [GPT] Generating ZMOTs map...")
+    gpt_output = []
+    batch_size = 5  # You can tune this for your token limits
+    for batch in batch_list(zmot_bundle, batch_size):
+        try:
+            print("🧠 [GPT] Generating ZMOTs map for batch...")
+            batch_output = infer_archetypes_for_zmots(summary, domain, industry, batch)
+            if isinstance(batch_output, str):
+                batch_output = json.loads(batch_output)
+            if not batch_output:
+                print("⚠️ No valid data found in OpenAI output for this batch. Skipping.")
+                continue
+            gpt_output = batch_output
+
+            if not gpt_output:
+                print("⚠️ No valid data found in OpenAI output. Cannot proceed.")
+                return []
+            print("GPT output for upstream ZMOT Archetypes:", gpt_output)
+
+            # Process the GPT output to create nodes and edges
+            upstream_archetypes_map = build_zmot_archetypes_to_graph(gpt_output, product_id)
+
+        except Exception as e:
+                print("❌ Error in ZMOT Archetype Reasoning:", e)
+                import traceback
+                traceback.print_exc()
+                continue 
+    print("Upstream ZMOT Archetypes processed successfully.")
+
+    # Update the graph with new nodes and edges
+    product_subgraph = update_graph(product_subgraph)
+
     return product_subgraph

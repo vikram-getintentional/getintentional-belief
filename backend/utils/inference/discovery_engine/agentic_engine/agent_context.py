@@ -6,6 +6,7 @@ class AgentContext:
         self.hop_plus_cache = []
         self.zmot_cache = []
         self.pain_source_cache = []
+        self.zmot_archetype_cache = []
         self.inference_log = {}
     
     def mark_visited(self, job_id):

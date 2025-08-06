@@ -856,3 +856,59 @@ def build_icp_graph(icp_gpt_output, product_id):
             )
             print("Archetype node created with ID:", archetype_node_id)
     return archetype_result_ids
+
+
+def build_zmot_archetypes_to_graph(gpt_output, product_id):
+    print("Starting node creation & processing for ZMOT Archetypes")
+    archetype_result_ids = []
+    """
+   Output is of the format
+        
+            "industry": "Healthcare",
+            "revenue_range": "100-500M",
+            "employee_range": "1000-5000",
+            "funding_stage": "Series C+",
+            "geography": "North America",
+            "match_score": 0.87
+      
+    """
+    # Defensive: If output is a string, try to parse it
+    if isinstance(gpt_output, str):
+        import json
+        try:
+            gpt_output = json.loads(gpt_output)
+        except Exception as e:
+            print("❌ Could not parse zmot_archetype_gpt_output as JSON:", e)
+            return []
+        
+    # Gather unique raw values for canonicalization
+    for archetype in gpt_output:
+        archetype["source"] = "openai"
+        zmot_id = archetype.get("zmot_id", "").strip().lower()
+        industry = archetype.get("industry", "").strip().lower()
+        revenue_range = archetype.get("revenue_range", "").strip().lower()
+        geography = archetype.get("geography", "").strip().lower()
+        employee_range = archetype.get("employee_range", "").strip().lower()
+        funding_stage = archetype.get("funding_stage", "").strip().lower()
+        match_score = archetype.get("match_score", 0.0)
+        if industry or revenue_range or geography or employee_range or funding_stage:
+            archetype_node_id = get_or_create_archetype_node(
+                industry=industry,
+                revenue_range=revenue_range,
+                geography=geography,
+                employee_range=employee_range,
+                funding_stage=funding_stage,
+            )["id"]
+            archetype_result_ids.append(archetype_node_id)
+            
+            add_edge(
+                product_id=product_id,
+                source_id=archetype_node_id,
+                target_id=zmot_id,
+                edge_type="responds_to",
+                weight=match_score,
+                last_updated=datetime.utcnow().isoformat(),
+                source=archetype.get("source", "openai")
+            )
+            print("Archetype node created with ID:", archetype_node_id)
+    return archetype_result_ids

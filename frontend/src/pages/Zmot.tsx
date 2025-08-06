@@ -16,6 +16,8 @@ const ZmotIcp = () => {
   const [showBuilder, setShowBuilder] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const token = localStorage.getItem("token");
+  const [archetypeVisibleCount, setArchetypeVisibleCount] = useState(5);
+  const [zmotVisibleCount, setZmotVisibleCount] = useState(5);
 
   // 1. Get company ID on mount
   useEffect(() => {
@@ -151,24 +153,45 @@ const ZmotIcp = () => {
         <section className="mb-10">
           <h2 className="text-2xl font-bold mb-4">ICP Archetypes</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {zmotIcp[0].icp.map((icpItem, idx) => (
-              <IcpCard key={idx} icp={icpItem} />
-            ))}
+            {zmotIcp[0].icp
+              .slice(0, archetypeVisibleCount)
+              .map((icpItem, idx) => (
+                <IcpCard key={idx} icp={icpItem} />
+              ))}
           </div>
+          {archetypeVisibleCount < zmotIcp[0].icp.length && (
+            <button
+              className="mt-4 px-4 py-2 bg-gray-200 rounded"
+              onClick={() => setArchetypeVisibleCount(archetypeVisibleCount + 5)}
+            >
+              Show More Archetypes
+            </button>
+          )}
         </section>
       )}
+
       {/* ZMOT Cards Section */}
       {zmotIcp.length > 0 && zmotIcp[0].zmot && (
         <section>
           <h2 className="text-2xl font-bold mb-4">ZMOTs & Triggers</h2>
           {Array.isArray(zmotIcp[0].zmot) && zmotIcp[0].zmot.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {zmotIcp[0].zmot.map((zmotItem, idx) => (
-                <ZmotCard key={idx} zmot={zmotItem} />
-              ))}
+              {zmotIcp[0].zmot
+                .slice(0, zmotVisibleCount)
+                .map((zmotItem, idx) => (
+                  <ZmotCard key={idx} zmot={zmotItem} />
+                ))}
             </div>
           ) : (
             <div className="text-gray-400">No ZMOTs found.</div>
+          )}
+          {zmotVisibleCount < zmotIcp[0].zmot.length && (
+            <button
+              className="mt-4 px-4 py-2 bg-gray-200 rounded"
+              onClick={() => setZmotVisibleCount(zmotVisibleCount + 5)}
+            >
+              Show More ZMOTs
+            </button>
           )}
         </section>
       )}

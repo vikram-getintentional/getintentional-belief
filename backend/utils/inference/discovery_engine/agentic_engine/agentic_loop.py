@@ -5,11 +5,11 @@ from backend.utils.graph_base.network_graph import (
 )
 from backend.utils.inference.discovery_engine.agentic_discovery_engine import (
     generate_icps_for_hop0, hop0_inference, pain_source_inference,
-    process_hop_plus_gpt_cache, process_zmot_gpt_cache
+    process_hop_plus_gpt_cache, process_upstream_zmot_archetype, process_zmot_gpt_cache
 )
 import networkx as nx
 
-def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth=3):
+def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth=5):
     context = AgentContext(max_depth=max_depth)
     while True:
         agentic_inference(product_subgraph, context)
@@ -17,11 +17,12 @@ def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth=3):
             not context.hop_plus_cache
             and not context.zmot_cache
             and not context.pain_source_cache
+            and not context.zmot_archetype_cache
         ) or context.current_depth >= context.max_depth:
             print("🛑 Agentic loop complete.")
             break
         recursive_agentic_traversal(product_subgraph, context)
-        context.current_depth += 1
+        
 
 def agentic_inference(product_subgraph: nx.DiGraph, context=None) -> nx.DiGraph:
     product_id = get_node_id(product_subgraph, "product", {})
@@ -76,15 +77,28 @@ def agentic_inference(product_subgraph: nx.DiGraph, context=None) -> nx.DiGraph:
                 if not context.is_visited(job_id):
                     context.hop_plus_cache.append(job_id)
             elif pain_source == "external":
-                upstream_zmots = get_source_nodes_by_target_and_type(product_subgraph, job_id, "triggered_by")
+                upstream_zmots = get_target_nodes_by_source_and_type(product_subgraph, job_id, "triggered_by")
+                print("🔍 Found upstream ZMOTs for job:", job_id, "->", upstream_zmots)
                 if upstream_zmots:
-                    context.mark_visited(job_id)
+                    print("Looping through upstream ZMOTs for job:", job_id)
+                    for upstream_zmot_id in upstream_zmots:
+                        print("Looking for upstream archetypes")
+                        upstream_archetypes = get_source_nodes_by_target_and_type(product_subgraph, upstream_zmot_id, "responds_to")
+                        if upstream_archetypes:
+                            context.mark_visited(job_id)
+                            continue
+                        else:
+                            print(f"⚠️ No upstream archetypes found for ZMOT {upstream_zmot_id}. Adding to ZMOT Archetype cache.")
+                            context.zmot_archetype_cache.append(upstream_zmot_id)
                 if not context.is_visited(job_id):
                     context.zmot_cache.append(job_id)
             else:
                 print(f"⚠️ Job {job_id} has an unknown pain source: {pain_source}")
                 context.pain_source_cache.append(job_id)
-
+    print("🔍 Pain source cache:", context.pain_source_cache)
+    print("🔍 Hop+ cache:", context.hop_plus_cache)
+    print("🔍 ZMOT cache:", context.zmot_cache)
+    print("🔍 ZMOT Archetype cache:", context.zmot_archetype_cache)
     if context.pain_source_cache:
         pain_source_agent(product_subgraph, context)
 
@@ -116,6 +130,7 @@ def recursive_agentic_traversal(product_subgraph, context):
             for job_id in hop_plus_jobs:
                 if job_id not in context.visited_jobs:
                     context.mark_visited(job_id)
+                    context.current_depth += 1
 
     # ZMOT loop
     if context.zmot_cache:
@@ -126,3 +141,13 @@ def recursive_agentic_traversal(product_subgraph, context):
             for job_id in zmot_jobs:
                 if job_id not in context.visited_jobs:
                     context.mark_visited(job_id)
+                    context.current_depth += 1
+    
+    # Deep ZMOT Archetype loop
+    if context.zmot_archetype_cache:
+        print("🔍 Processing ZMOT Archetype cache...")
+        zmot_archetype_events = context.zmot_archetype_cache.copy()
+        context.zmot_archetype_cache.clear()
+        results = process_upstream_zmot_archetype(product_subgraph, zmot_archetype_events, context)
+        context.current_depth += 1
+            

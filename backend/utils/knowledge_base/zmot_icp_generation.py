@@ -39,7 +39,7 @@ def get_zmot_icp_relevance(sub_graph: nx.DiGraph, threshold = 0.0) -> list[dict]
                 "geography": geography,
                 "relevance": relevance
             })
-    print("Archetypes found:", archetypes)
+    
 
     
     zmot = []
@@ -75,6 +75,8 @@ def get_zmot_icp_relevance(sub_graph: nx.DiGraph, threshold = 0.0) -> list[dict]
         
         print("Current zmot list:", zmot)
 
+    archetypes.sort(key=lambda x: x["relevance"], reverse=True)
+    zmot.sort(key=lambda x: x["trigger_event_relevance"], reverse=True)
     icp_zmot_result = {
         "icp": archetypes,
         "zmot": zmot

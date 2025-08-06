@@ -49,7 +49,6 @@ def load_product_graph_from_folder(product_id: str, folder_path: str = GRAPH_DAT
                     for zmot_key in ["TriggerEvents", "ObservableMoments", "Keywords"]:
                         for node in nodes.get(zmot_key, []):
                             if node.get("id") not in unique_node_ids:
-                                print("Node not in unique_node_ids, skipping:", node)
                                 continue
                             node["node_type"] = f"zmot_{zmot_key.lower()}"
                             if zmot_key == "TriggerEvents":

@@ -374,7 +374,75 @@ def infer_icp(summary, domain, industry, capabilities_mapping):
         print("❌ Error in get_upstream_triplets:", e)
         return []
     
-    
+def infer_archetypes_for_zmots(summary, domain, industry, zmot_bundle):
+    """
+    Given a set of ZMOT maps including ZMOT, immediate jobs and pains,
+    this function queries OpenAI to produce a mapping of ICP Archetypes typically experiencing this ZMOT.
+    """
+    zmot_bundle_json = json.dumps(zmot_bundle, indent=2)
+    prompt = f"""
+        You are a B2B market segmentation expert. You are given a list of external trigger events, the immediate jobs-to-be-done that are impacted by or in response to them along with the personas typically responsible for these jobs,
+
+        Your task is to identify 5–10 **Ideal Customer Profile (ICP) archetypes** — distinct organizational types that are most likely to experience these pains and perform these jobs, given the product context.
+
+        Given:
+        - Product value proposition: {summary}
+        - Product domain: {domain}
+        - Product industry: {industry}
+        - Capabilities, jobs, and pains (JSON): {zmot_bundle_json}
+
+        For each ICP archetype:
+        - Choose **exactly one** value for each of the following attributes:
+            - `industry` (e.g., "Healthcare", "Finance", "Retail")
+            - `revenue_range` (e.g., "0-1M", "1-10M", "10-100M", "100-500M", "500M-1B", "1B+")
+            - `employee_range` (e.g., "1-10", "11-50", "51-200", "201-500", "501-1000", "1000-5000", "5000-10000", "10000+")
+            - `funding_stage` (e.g., "Pre-Seed", "Seed", "Series A", "Series B", "Series C+", "Public")
+            - `geography` (e.g., "North America", "Europe", "Asia", "South America", "Africa", "Australia")
+
+        - For each archetype, provide a single `match_score` (float between 0.0–1.0) that reflects how well this organizational type aligns with the provided jobs and pains. Use this scale:
+            - 0.7–1.0: Very likely fit
+            - 0.4–0.6: Moderate fit
+            - 0.0–0.3: Unlikely
+
+        Return your answer as a **strict JSON array**, where each entry is a full ICP archetype. Use this structure:
+
+        ```json
+        [
+        {{
+            "industry": "Healthcare",
+            "revenue_range": "100-500M",
+            "employee_range": "1000-5000",
+            "funding_stage": "Series C+",
+            "geography": "North America",
+            "match_score": 0.87
+        }},
+        ...
+        ]
+        IMPORTANT:
+
+        Do not return multiple values per attribute. Each archetype must use only one value per attribute.
+        Do not include any commentary or explanation.
+        Return only the JSON array.
+        """
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You create upstream business impact of a personas jobs."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5,
+        )
+        content = response.choices[0].message.content
+        # Parse and return the JSON output from OpenAI
+        return extract_json(content)
+    except Exception as e:
+        print("❌ Error in get_upstream_triplets:", e)
+        return []
+
+
+
 
 def extract_json(text):
     # Extract the first JSON array or object from the text
