@@ -46,10 +46,8 @@ def load_product_graph_from_folder(product_id: str, folder_path: str = GRAPH_DAT
 
                 # Special handling for zmot nodes
                 if node_type == "zmot":
-                    print("Processing zmot nodes:")
                     for zmot_key in ["TriggerEvents", "ObservableMoments", "Keywords"]:
                         for node in nodes.get(zmot_key, []):
-                            print("Processing zmot node:", node, "with key", zmot_key)
                             if node.get("id") not in unique_node_ids:
                                 print("Node not in unique_node_ids, skipping:", node)
                                 continue
@@ -61,28 +59,10 @@ def load_product_graph_from_folder(product_id: str, folder_path: str = GRAPH_DAT
                             elif zmot_key == "Keywords":
                                 node["value"] = node.get("keyword", "").strip().lower()
                             node_registry[node["id"]] = node
-                            print("Processed zmot node:", node, "with type", node["node_type"])
                     continue  # skip generic block
 
                 # Special handling for company nodes
-                if node_type == "company":
-                    for company_key in ["industry", "revenue", "employees", "funding_stage", "geography"]:
-                        for node in nodes.get(company_key, []):
-                            if node.get("id") not in unique_node_ids:
-                                continue
-                            node["node_type"] = f"icp_{company_key.lower()}"
-                            if company_key == "industry":
-                                node["value"] = node.get("industry", "").strip().lower()
-                            elif company_key == "revenue":
-                                node["value"] = node.get("revenue", "").strip().lower()
-                            elif company_key == "employees":
-                                node["value"] = node.get("employees", "").strip().lower()
-                            elif company_key == "funding_stage":
-                                node["value"] = node.get("funding_stage", "").strip().lower()
-                            elif company_key == "geography":
-                                node["value"] = node.get("geography", "").strip().lower()
-                            node_registry[node["id"]] = node
-                    continue  # skip generic block
+                
 
                 for node in nodes:
                     if node.get("id") not in unique_node_ids:

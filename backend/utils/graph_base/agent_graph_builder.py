@@ -377,7 +377,7 @@ def build_zmot_nodes_to_graph(gpt_results, product_id):
             if isinstance(keywords, dict):
                 keywords = [keywords]
             for kw in keywords:
-                kw_stripped = kw.get("trigger_keyword", "").strip()
+                kw_stripped = kw.get("keyword", "").strip()
                 kw["match_score"] = kw.get("match_score", 0.0)
                 if kw_stripped:
                     keywords_cache.add(kw_stripped)
