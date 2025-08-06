@@ -15,6 +15,7 @@ PERSONA_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "persona_to_canonical.json"
 PAIN_TRIGGER_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "pain_trigger_to_canonical.json"
 TRIGGER_EVENT_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "trigger_event_to_canonical.json"
 OBSERVABLE_MOMENT_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "observable_moment_to_canonical.json"
+METRIC_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "metric_to_canonical.json"
 
 
 # Preloaded embeddings
@@ -23,6 +24,14 @@ try:
     JOB_EMBEDDINGS = load_embeddings("job")
     PAIN_EMBEDDINGS = load_embeddings("pain")
     PERSONA_EMBEDDINGS = load_embeddings("persona")
+    ATTRIBUTE_EMBEDDINGS = load_embeddings("attribute")
+    DEPARTMENT_EMBEDDINGS = load_embeddings("department")
+    PAIN_TRIGGER_EMBEDDINGS = load_embeddings("pain_trigger")
+    OBSERVABLE_MOMENT_EMBEDDINGS = load_embeddings("observable_moment")
+    TITLE_EMBEDDINGS = load_embeddings("title")
+    TRIGGER_EVENT_EMBEDDINGS = load_embeddings("trigger_event")
+    PERCEIVED_METRIC_EMBEDDINGS = load_embeddings("perceived_metric")
+
 except Exception as e:
     print(f"⚠️ Embedding preload failed: {e}")
     JOB_EMBEDDINGS = {}
@@ -73,6 +82,27 @@ def canonicalize_pain(pains: list[str]) -> dict:
     save_canonical_map(canonical_map, PAIN_CANONICAL_MAP_PATH)
     return canonical_map
 
+def canonicalize_perceived_metric(perceived_metrics: list[str]) -> dict:
+    perceived_metrics = list(set(perceived_metrics))
+    if not perceived_metrics:
+        print("⚠️ No perceived metrics provided for canonicalization.")
+        return {}
+
+    perceived_metric_embeddings = generate_and_save_embeddings(perceived_metrics, "perceived_metric")
+
+    if len(perceived_metric_embeddings) == 1:
+        print("⚠️ Only one perceived metric provided. Skipping clustering.")
+        canonical_map = {perceived_metrics[0]: perceived_metrics[0]}
+        save_canonical_map(canonical_map, METRIC_CANONICAL_MAP_PATH)
+        return canonical_map
+
+    clustered_perceived_metrics = cluster_items(perceived_metric_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_perceived_metrics)
+    canonical_map = {perceived_metric: canonical_label_map[perceived_metric] for perceived_metric in perceived_metrics}
+    save_canonical_map(canonical_map, METRIC_CANONICAL_MAP_PATH)
+    return canonical_map
+
+
 def canonicalize_attributes(attributes: list[str]) -> dict:
     attributes = list(set(attributes))
     if not attributes:
@@ -110,9 +140,10 @@ def canonicalize_pain_trigger(pain_triggers: list[dict]) -> dict:
             "dimension": orig.get("dimension", "").strip().lower(),
             "direction": orig.get("direction", "").strip().lower()
         }
-        # Use a tuple key for lookups
-        key = f"{canonical_attr.lower()}|{canonical_trigger['dimension']}|{canonical_trigger['direction']}"
-        pain_trigger_canonical_map[key] = canonical_trigger
+        # Use the RAW key for mapping, just like other canonicalizers
+        raw_key = f"{orig['attribute'].strip().lower()}|{canonical_trigger['dimension']}|{canonical_trigger['direction']}"
+        pain_trigger_canonical_map[raw_key] = canonical_trigger
+
 
     save_canonical_map(pain_trigger_canonical_map, PAIN_TRIGGER_CANONICAL_MAP_PATH)
     return pain_trigger_canonical_map

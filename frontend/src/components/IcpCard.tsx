@@ -1,10 +1,14 @@
+import { getCardClass } from "./interfaceElements/cardUtils";
+import Pill from "./interfaceElements/pillbox";
+
 type IcpCardProps = {
   icp: {
-    industries: [string, number][];
-    revenues: [string, number][];
-    employees: [string, number][];
-    funding_stages: [string, number][];
-    geographies: [string, number][];
+    industry: string;
+    revenue: string;
+    employees: string;
+    funding_stage: string;
+    geography: string;
+    relevance: number;
   };
 };
 
@@ -23,68 +27,43 @@ const getPillClass = (score: number) => {
 };
 
 const IcpCard = ({ icp }: IcpCardProps) => (
-  <div className="mb-8 p-4 border rounded bg-white shadow">
+  <div className={getCardClass(icp.relevance)}>
     <h3 className="font-bold text-lg mb-2">ICP Profile</h3>
+    <div className="mb-2">
+      <span className={getPillClass(icp.relevance)}>
+        Relevance: {(icp.relevance * 100).toFixed(1)}%
+      </span>
+    </div>
     <ul className="mb-2 space-y-2">
       <li>
-        <b>Industries:</b>{" "}
-        {icp.industries && icp.industries.length > 0 ? (
-          icp.industries.map(([label, score], idx) => (
-            <span key={idx} className={getPillClass(score)}>
-              {label}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-400">None</span>
-        )}
+        <b>Industry:</b>{" "}
+        <span className="inline-block bg-gray-100 text-gray-800 border border-gray-300 text-xs font-semibold mr-2 mb-2 px-3 py-1 rounded-full">
+          {icp.industry}
+        </span>
       </li>
       <li>
-        <b>Revenues:</b>{" "}
-        {icp.revenues && icp.revenues.length > 0 ? (
-          icp.revenues.map(([label, score], idx) => (
-            <span key={idx} className={getPillClass(score)}>
-              {label}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-400">None</span>
-        )}
+        <b>Revenue:</b>{" "}
+        <span className="inline-block bg-gray-100 text-gray-800 border border-gray-300 text-xs font-semibold mr-2 mb-2 px-3 py-1 rounded-full">
+          {icp.revenue}
+        </span>
       </li>
       <li>
         <b>Employees:</b>{" "}
-        {icp.employees && icp.employees.length > 0 ? (
-          icp.employees.map(([label, score], idx) => (
-            <span key={idx} className={getPillClass(score)}>
-              {label}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-400">None</span>
-        )}
+        <span className="inline-block bg-gray-100 text-gray-800 border border-gray-300 text-xs font-semibold mr-2 mb-2 px-3 py-1 rounded-full">
+          {icp.employees}
+        </span>
       </li>
       <li>
-        <b>Funding Stages:</b>{" "}
-        {icp.funding_stages && icp.funding_stages.length > 0 ? (
-          icp.funding_stages.map(([label, score], idx) => (
-            <span key={idx} className={getPillClass(score)}>
-              {label}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-400">None</span>
-        )}
+        <b>Funding Stage:</b>{" "}
+        <span className="inline-block bg-gray-100 text-gray-800 border border-gray-300 text-xs font-semibold mr-2 mb-2 px-3 py-1 rounded-full">
+          {icp.funding_stage}
+        </span>
       </li>
       <li>
-        <b>Geographies:</b>{" "}
-        {icp.geographies && icp.geographies.length > 0 ? (
-          icp.geographies.map(([label, score], idx) => (
-            <span key={idx} className={getPillClass(score)}>
-              {label}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-400">None</span>
-        )}
+        <b>Geography:</b>{" "}
+        <span className="inline-block bg-gray-100 text-gray-800 border border-gray-300 text-xs font-semibold mr-2 mb-2 px-3 py-1 rounded-full">
+          {icp.geography}
+        </span>
       </li>
     </ul>
   </div>

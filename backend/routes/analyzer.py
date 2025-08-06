@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_node_by_id, update_capabilities_by_nodes_list
+from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import agentic_inference, run_agentic_loop
 from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
 from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
@@ -7,7 +8,7 @@ from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
-from backend.utils.dev_environment.graph_loader import load_graph_from_folder, load_product_graph_from_folder
+from backend.utils.dev_environment.graph_loader import load_product_graph_from_folder
 from backend.utils.inference.discovery_engine.zmot_discovery import infer_zmot_icp
 from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities, process_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
@@ -233,11 +234,17 @@ async def analyze_deep(payload: dict, request: Request):
         # 🧠 Inference
         product_subgraph = build_product_graph(product_id)
         print("Extracted product subgraph with total nodes:", len(product_subgraph.nodes))
-        print("Starting hop0 inference")
-        hop_0_results = infer_with_rules_then_fallback(product_id, product_subgraph)
+        print("Starting hop0 inference with agent loop")
+        # New code for agentic looping
+
+        run_agentic_loop(product_subgraph)
+        print("Agentic analysis completed for product_id:", product_id)
+        return {"status": "Agentic analysis complete"}
+
+        #hop_0_results = infer_with_rules_then_fallback(product_id, product_subgraph)
         # Run Hop+ upstream inference
         #hop_plus_results = infer_upstream_with_rules(product_subgraph)
-        return {"hop_0_results": hop_0_results}
+        #return {"hop_0_results": hop_0_results}
 
     except Exception as e:
         print("❌ Deep inference error:", e)

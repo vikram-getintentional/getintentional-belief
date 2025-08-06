@@ -3,6 +3,7 @@ import json
 from backend.utils.graph_base.graph_utils.json_store import load_json, save_json
 
 COMPANY_PATH = "backend/utils/graph_base/graph_data/company_nodes.json"
+ARCHETYPE_PATH = "backend/utils/graph_base/graph_data/archetype_nodes.json"
 
 def get_or_create_industry_node(industry, return_created=False):
     data = load_json(COMPANY_PATH)
@@ -118,4 +119,21 @@ def get_or_create_geographies_node(geography, return_created=False):
 
     data["geography"].append(new_node)
     save_json(COMPANY_PATH, data)
+    return (new_node, True) if return_created else new_node
+
+
+def get_or_create_archetype_node(industry=None, revenue_range=None, employee_range=None, funding_stage=None, geography=None, return_created=False): 
+    data = load_json(ARCHETYPE_PATH)
+
+    # Create a new Archetype node
+    new_node = {
+        "id": str(uuid.uuid4()),
+        "industry": industry,
+        "revenue_range": revenue_range,
+        "employee_range": employee_range,
+        "funding_stage": funding_stage,
+        "geography": geography
+    }
+    data.append(new_node)
+    save_json(ARCHETYPE_PATH, data)
     return (new_node, True) if return_created else new_node

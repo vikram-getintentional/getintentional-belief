@@ -147,18 +147,16 @@ const ZmotIcp = () => {
       )}
 
      {/* ICP Cards Section */}
-      {zmotIcp.length > 0 && zmotIcp[0].icp && (
+      {zmotIcp.length > 0 && Array.isArray(zmotIcp[0].icp) && zmotIcp[0].icp.length > 0 && (
         <section className="mb-10">
-          
-            <h2 className="text-2xl font-bold mb-4">ICP Archetypes</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
-              {/* If you have multiple ICPs, map here. If only one, just render one card. */}
-              <IcpCard icp={zmotIcp[0].icp} />
-            </div>
-          
+          <h2 className="text-2xl font-bold mb-4">ICP Archetypes</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {zmotIcp[0].icp.map((icpItem, idx) => (
+              <IcpCard key={idx} icp={icpItem} />
+            ))}
+          </div>
         </section>
       )}
-
       {/* ZMOT Cards Section */}
       {zmotIcp.length > 0 && zmotIcp[0].zmot && (
         <section>
