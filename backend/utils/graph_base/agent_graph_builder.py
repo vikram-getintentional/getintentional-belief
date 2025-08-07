@@ -8,7 +8,7 @@ from collections import defaultdict
 from datetime import datetime
 from backend.utils.graph_base.nodes.capability_nodes import get_or_create_capability_node
 from backend.utils.graph_base.nodes.zmot_nodes import get_or_create_trigger_event_node, get_or_create_keyword_node, get_or_create_observable_moment_node
-from backend.utils.knowledge_base.canonicalizer import canonicalize_attributes, canonicalize_observable_moments, canonicalize_pain_trigger, canonicalize_perceived_metric, canonicalize_trigger_events
+from backend.utils.knowledge_base.canonicalizer import canonicalize_attributes, canonicalize_keywords, canonicalize_observable_moments, canonicalize_pain_trigger, canonicalize_perceived_metric, canonicalize_trigger_events
 from backend.utils.knowledge_base.canonicalizer import (
         canonicalize_pain,
         canonicalize_job,
@@ -387,7 +387,7 @@ def build_zmot_nodes_to_graph(gpt_results, product_id):
     
     canonical_zmot_trigger_events = canonicalize_trigger_events(list(trigger_event_cache))
     canonical_zmot_observable_moments = canonicalize_observable_moments(list(observable_moment_cache))
-    canonical_zmot_keywords = list(keywords_cache)
+    canonical_zmot_keywords = canonicalize_keywords(list(keywords_cache))
 
     # Create Nodes and do Lookup logic for setting right node IDs to each entry
     
@@ -863,7 +863,7 @@ def build_zmot_archetypes_to_graph(gpt_output, product_id):
     archetype_result_ids = []
     """
    Output is of the format
-        
+            "original_zmot_id": "zmot_id"
             "industry": "Healthcare",
             "revenue_range": "100-500M",
             "employee_range": "1000-5000",
@@ -884,13 +884,14 @@ def build_zmot_archetypes_to_graph(gpt_output, product_id):
     # Gather unique raw values for canonicalization
     for archetype in gpt_output:
         archetype["source"] = "openai"
-        zmot_id = archetype.get("zmot_id", "").strip().lower()
+        zmot_id = archetype.get("original_zmot_id", "").strip().lower()
         industry = archetype.get("industry", "").strip().lower()
         revenue_range = archetype.get("revenue_range", "").strip().lower()
         geography = archetype.get("geography", "").strip().lower()
         employee_range = archetype.get("employee_range", "").strip().lower()
         funding_stage = archetype.get("funding_stage", "").strip().lower()
-        match_score = archetype.get("match_score", 0.0)
+        zmot_match_score = archetype.get("zmot_match_score", 0.0)
+        product_match_score = archetype.get("product_match_score", 0.0)
         if industry or revenue_range or geography or employee_range or funding_stage:
             archetype_node_id = get_or_create_archetype_node(
                 industry=industry,
@@ -900,13 +901,24 @@ def build_zmot_archetypes_to_graph(gpt_output, product_id):
                 funding_stage=funding_stage,
             )["id"]
             archetype_result_ids.append(archetype_node_id)
+            print("Adding product->Archetype edge")
+            add_edge(
+                product_id=product_id,
+                source_id=product_id,
+                target_id=archetype_node_id,
+                edge_type="is_icp",
+                weight=product_match_score,
+                last_updated=datetime.utcnow().isoformat(),
+                source=archetype.get("source", "openai")
+            )
             
+            print("Adding archetype->zmot edge")
             add_edge(
                 product_id=product_id,
                 source_id=archetype_node_id,
                 target_id=zmot_id,
                 edge_type="responds_to",
-                weight=match_score,
+                weight=zmot_match_score,
                 last_updated=datetime.utcnow().isoformat(),
                 source=archetype.get("source", "openai")
             )

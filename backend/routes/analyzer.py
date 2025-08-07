@@ -10,6 +10,7 @@ from backend.database import get_db
 from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
 from backend.utils.dev_environment.graph_loader import load_product_graph_from_folder
 from backend.utils.inference.discovery_engine.zmot_discovery import infer_zmot_icp
+from backend.utils.inference.visual_analysis_engine.rcs_generator import build_zmot_summary, get_best_match_archetypes, get_best_match_zmots_for_archetype, get_top_archetypes
 from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities, process_capabilities
 from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
 from backend.utils.graph_base.nodes.capability_nodes import (
@@ -455,3 +456,45 @@ async def get_zmot_icp(product_id: str, request: Request):
     except Exception as e:
         print("❌ Get ZMOTs error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve ZMOTs and ICP Archetypes")
+    
+
+@router.get("/get-reverse-case-studies/{product_id}")
+async def get_reverse_case_studies(product_id: str, request: Request):
+    print("Generating reverse case studies for product_id:", product_id)
+    """
+    Returns a list of reverse case studies for the product_id.
+    Assumes initial traversal is complete
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # 🧠 Inference
+        product_subgraph = build_product_graph(product_id)
+
+        top_archetypes = get_top_archetypes(product_subgraph)
+        for archetype in top_archetypes:
+            print("ZMOT Summary for Archetype Node: \n", archetype)
+            best_match_archetypes = get_best_match_archetypes(product_subgraph, archetype)
+            for best_match in best_match_archetypes:
+                print("Best Match Archetype Nodes: \n", best_match)
+                best_match_id = best_match.get("id")
+                best_zmots = get_best_match_zmots_for_archetype(product_subgraph, best_match_id)
+                for zmot in best_zmots:
+                    print("ZMOT:", zmot.get("trigger_event", ""), "\n Relevance to Org:", zmot.get("org_relevance",0), "\n Product Relevance:", zmot.get("relevance", 0))
+                    print("----------------------")
+
+                    build_zmot_summary(product_subgraph, zmot.get("id"), archetype.get("id"))
+        return []
+    except Exception as e:
+        print("❌ Get Reverse Case Studies error:", e)
+        raise HTTPException(status_code=500, detail="Could not retrieve Reverse Case Studies")

@@ -9,7 +9,7 @@ from backend.utils.inference.discovery_engine.agentic_discovery_engine import (
 )
 import networkx as nx
 
-def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth=5):
+def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth=3):
     context = AgentContext(max_depth=max_depth)
     while True:
         agentic_inference(product_subgraph, context)
@@ -22,6 +22,7 @@ def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth=5):
             print("🛑 Agentic loop complete.")
             break
         recursive_agentic_traversal(product_subgraph, context)
+        context.current_depth += 1
         
 
 def agentic_inference(product_subgraph: nx.DiGraph, context=None) -> nx.DiGraph:
@@ -41,21 +42,10 @@ def agentic_inference(product_subgraph: nx.DiGraph, context=None) -> nx.DiGraph:
     job_ids = get_nodes_list_ids(product_subgraph, "job", {})
     if not job_ids:
         print("No jobs found, running Hop0 inference...")
-        hop0_result = hop0_inference(product_id, product_subgraph, context)
-        if not hop0_result or "capability_map" not in hop0_result:
+        hop0_jobs = hop0_inference(product_id, product_subgraph, context)
+        if not hop0_jobs:
             raise RuntimeError("❌ Hop0 inference failed.")
     update_graph(product_subgraph)
-
-    # 2.5. Get ICP Archetypes with this info
-    print("Generating ICP Archetypes if they don't exist...")
-    archetype_ids = get_nodes_list_ids(product_subgraph, "archetype", {})
-    if not archetype_ids:
-        print("ICP archetypes not found. Running inference.")
-        job_ids = get_nodes_list_ids(product_subgraph, "job", {})
-        pain_ids = get_nodes_list_ids(product_subgraph, "pain", {})
-        persona_ids = get_nodes_list_ids(product_subgraph, "persona", {})
-        if job_ids and pain_ids and persona_ids:
-            generate_icps_for_hop0(product_subgraph, context)
 
     # 3: Infer pain sources (internal vs external)
     print("🔍 Classifying jobs as internal or external...")
@@ -79,17 +69,20 @@ def agentic_inference(product_subgraph: nx.DiGraph, context=None) -> nx.DiGraph:
             elif pain_source == "external":
                 upstream_zmots = get_target_nodes_by_source_and_type(product_subgraph, job_id, "triggered_by")
                 print("🔍 Found upstream ZMOTs for job:", job_id, "->", upstream_zmots)
-                if upstream_zmots:
+                if upstream_zmots or len(upstream_zmots) > 0:
                     print("Looping through upstream ZMOTs for job:", job_id)
                     for upstream_zmot_id in upstream_zmots:
-                        print("Looking for upstream archetypes")
-                        upstream_archetypes = get_source_nodes_by_target_and_type(product_subgraph, upstream_zmot_id, "responds_to")
-                        if upstream_archetypes:
-                            context.mark_visited(job_id)
-                            continue
-                        else:
-                            print(f"⚠️ No upstream archetypes found for ZMOT {upstream_zmot_id}. Adding to ZMOT Archetype cache.")
-                            context.zmot_archetype_cache.append(upstream_zmot_id)
+                        if upstream_zmot_id not in context.visited_zmot_archetypes and upstream_zmot_id not in context.zmot_archetype_cache:
+                            print("Looking for upstream archetypes")
+                            upstream_archetypes = get_source_nodes_by_target_and_type(product_subgraph, upstream_zmot_id, "responds_to")
+                            if upstream_archetypes:
+                                context.mark_visited(job_id)
+                                context.visited_zmot_archetypes.add(upstream_zmot_id)
+                                continue
+                            else:
+                                print(f"⚠️ No upstream archetypes found for ZMOT {upstream_zmot_id}. Adding to ZMOT Archetype cache.")
+                                if upstream_zmot_id not in context.zmot_archetype_cache:
+                                    context.zmot_archetype_cache.append(upstream_zmot_id)
                 if not context.is_visited(job_id):
                     context.zmot_cache.append(job_id)
             else:
@@ -130,7 +123,7 @@ def recursive_agentic_traversal(product_subgraph, context):
             for job_id in hop_plus_jobs:
                 if job_id not in context.visited_jobs:
                     context.mark_visited(job_id)
-                    context.current_depth += 1
+                    
 
     # ZMOT loop
     if context.zmot_cache:
@@ -141,7 +134,7 @@ def recursive_agentic_traversal(product_subgraph, context):
             for job_id in zmot_jobs:
                 if job_id not in context.visited_jobs:
                     context.mark_visited(job_id)
-                    context.current_depth += 1
+                    
     
     # Deep ZMOT Archetype loop
     if context.zmot_archetype_cache:
@@ -149,5 +142,8 @@ def recursive_agentic_traversal(product_subgraph, context):
         zmot_archetype_events = context.zmot_archetype_cache.copy()
         context.zmot_archetype_cache.clear()
         results = process_upstream_zmot_archetype(product_subgraph, zmot_archetype_events, context)
-        context.current_depth += 1
+        if results:
+            for zmot_id in zmot_archetype_events:
+                context.visited_zmot_archetypes.add(zmot_id)
+        
             

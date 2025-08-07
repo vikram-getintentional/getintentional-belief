@@ -6,7 +6,7 @@ from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, 
 import networkx as nx
 from backend.utils.graph_base.nodes.job_nodes import get_or_create_job_node
 from backend.utils.inference.discovery_engine.agentic_engine.agent_context import AgentContext
-from backend.utils.inference.gpt_prompts.agentic_prompts import  infer_archetypes_for_zmots, infer_icp, infer_pain_and_source, infer_upstream_for_internal_jobs
+from backend.utils.inference.gpt_prompts.agentic_prompts import  infer_archetypes_for_product_zmots, infer_archetypes_for_zmots, infer_icp, infer_pain_and_source, infer_upstream_for_internal_jobs
 from backend.utils.graph_base.network_graph import update_graph
 
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
@@ -559,6 +559,7 @@ def generate_icps_for_hop0( product_subgraph: nx.DiGraph, context: AgentContext)
 
 
 def process_upstream_zmot_archetype(product_subgraph, upstream_zmot_ids, context):
+
     product_id = get_node_id(product_subgraph, "product",{})
     product_node = get_node_by_id(product_subgraph, product_id)
     if not product_node:
@@ -567,9 +568,69 @@ def process_upstream_zmot_archetype(product_subgraph, upstream_zmot_ids, context
     domain = product_node.get("domain", "")
     industry = product_node.get("industry", "")
 
-    gpt_input_buffer = []
+    print("Starting Integrated Archetype Discovery inference for archetypes loop: ", product_id)
+    
+    capabilities_map = {}
+    pains = []
+    capabilities = []
+    jobs = []
+    personas = []
+    
+    capabilities = get_nodes_list_ids(product_subgraph, "capability", {})
+    if not capabilities:
+        print("⚠️ No capabilities found in the product subgraph. Cannot proceed with inference.")
+        return []
+    for cap in capabilities:
+        cap_node = get_node_by_id(product_subgraph, cap)
+        if cap_node:
+            cap_description = cap_node.get("description", "")
+            capabilities.append(cap_description)
+            primary_pain_ids = get_target_nodes_by_source_and_type(product_subgraph, cap, "solves")
+            if not primary_pain_ids:
+                print(f"⚠️ No primary pains found for capability {cap}.")
+                continue
+            for pain_id in primary_pain_ids:
+                pain_node = get_node_by_id(product_subgraph, pain_id)
+                if pain_node:
+                    pain_text = pain_node.get("text", "")
+                    if pain_text not in pains:
+                        pains.append(pain_text)
+                    primary_job_ids = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "addresses")
+                    if not primary_job_ids:
+                        print(f"⚠️ No primary jobs found for pain {pain_id}.")
+                        continue
+                    for job_id in primary_job_ids:
+                        job_node = get_node_by_id(product_subgraph, job_id)
+                        if job_node:
+                            job_description = job_node.get("description", "")
+                            if job_description not in jobs:
+                                jobs.append(job_description)
+                        primary_persona_ids = get_target_nodes_by_source_and_type(product_subgraph, job_id, "performed_by")
+                        if not primary_persona_ids:
+                            print(f"⚠️ No primary personas found for job {job_id}.")
+                            continue
+                        for persona_id in primary_persona_ids:
+                            persona_node = get_node_by_id(product_subgraph, persona_id)
+                            if persona_node:
+                                persona_title = persona_node.get("title", "")
+                                persona_department = persona_node.get("department", "")
+                                persona_seniority = persona_node.get("seniority", "")
+                                personas.append({
+                                    "title": persona_title,
+                                    "department": persona_department,
+                                    "seniority": persona_seniority
+                                })
 
-    print("Starting upstream zmot inference for archetypes loop: ", product_id)
+    capabilities_map = {
+            "primary_pains": pains,
+            "primary_jobs_to_be_done": jobs,
+            "product_capabilities_offered": capabilities,
+            "primary_personas": personas
+        }
+
+    
+
+    
     from datetime import datetime
     # Updated query logic
     zmot_bundle = []
@@ -632,7 +693,7 @@ def process_upstream_zmot_archetype(product_subgraph, upstream_zmot_ids, context
     for batch in batch_list(zmot_bundle, batch_size):
         try:
             print("🧠 [GPT] Generating ZMOTs map for batch...")
-            batch_output = infer_archetypes_for_zmots(summary, domain, industry, batch)
+            batch_output = infer_archetypes_for_product_zmots(summary, domain, industry, capabilities_map, batch)
             if isinstance(batch_output, str):
                 batch_output = json.loads(batch_output)
             if not batch_output:

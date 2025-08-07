@@ -22,10 +22,13 @@ def infer_pain_and_source(summary, domain, industry, job_sets: list[dict[str, an
     For each job, Infer whether the job exists as a response to an internal pain or an external event.
         Internal: it is caused by a workflow inefficiency, process bottleneck, or organizational issue faced by another persona in the same or different department while performing the job.
         External: it is caused by market conditions, customer demands, or other external factors that cannot be directly controlled by the organization.
+    Assume a job to be internal by default unless you have very clear evidence that it is external.
     Infer a job as External only if the following conditions are met:
     - The nature of a job is clearly external-facing, such as directly managing investor, shareholder, partner, or customer relationships; or relying heavily on external inputs such as legal, compliance, regulatory requirements, etc.
-    - The job does not have a strong internal organizational connection or issue
+    - The job is a direct response to the external condition.
+    - The job does not have a strong internal upstream pain, failure or delegation.
     - The job is typically not a delegation from another senior persona or complementary department.
+    - The less senior the persona performing the job, the less likely that it is an external job.
     Return your result for each job in the following format:
     - original_job_id: string
     - pain_source: string (either "internal" or "external")
@@ -158,11 +161,13 @@ def infer_zmot_for_external_jobs(summary, domain, industry, jobs_pains):
     - Jobs to be done, and pains in the context of this product: {jobs_pains_json}
 
     For each job, do the following:
-    1. Specify at least 3-5 external trigger events (ZMOTs) in the context of the product domain and industry that likely caused or accelerated the need for this job to be done.
+    1. Specify 2-3 external trigger events (ZMOTs) in the context of the product domain and industry that likely caused or accelerated the need for this job to be done.
     - A ZMOT is an external event such as a market change, customer demand, regulatory change, industry trend, or other external factor that drives the need for this job.
     - The ZMOT should be a specific, measurable event that is relevant to the product's domain and industry.
     - The ZMOT should be causally related to the job, meaning that it is a trigger that leads to the job being performed.
     - The ZMOT should be temporally related to the job, meaning that it occurs before or during the time the job is performed.
+    - The ZMOT should be a strong indicator that an organization's need for this product is likely to increase
+    - Prioritize ZMOTs that are likely to be more specific to one target customer organization than general industry trends.
     2. For each ZMOT trigger, provide a match score as a float (0.0-1.0) indicating how likely this event is to trigger this job in the organization.
     3. For each ZMOT include at least 3 Observable Moments - as Specific externally observable data points or event sources to infer the occurance of this eventsuch as News articles; press releases; social media post/ discussions; job postings; interviews in podcasts, webinars, Website Status pages; G2 reviews; glassdoor reviews; SEC filings; and any other pertinent trackable data that might indicate this.
             - For each observable moment provide a match_score as a float (0.0-1.0) indicating how likely this observable moment is to indicate the trigger_event.
@@ -404,17 +409,96 @@ def infer_archetypes_for_zmots(summary, domain, industry, zmot_bundle):
             - 0.4–0.6: Moderate fit
             - 0.0–0.3: Unlikely
 
-        Return your answer as a **strict JSON array**, where each entry is a full ICP archetype. Use this structure:
+        Return your answer as a **strict JSON array**, where each entry is a full ICP archetype along with the original zmot_id in each zmot bundle. Use this structure:
 
         ```json
         [
         {{
+            "original_zmot_id": string,
             "industry": "Healthcare",
             "revenue_range": "100-500M",
             "employee_range": "1000-5000",
             "funding_stage": "Series C+",
             "geography": "North America",
             "match_score": 0.87
+        }},
+        ...
+        ]
+        IMPORTANT:
+
+        Do not return multiple values per attribute. Each archetype must use only one value per attribute.
+        Do not include any commentary or explanation.
+        Return only the JSON array.
+        """
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You create upstream business impact of a personas jobs."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5,
+        )
+        content = response.choices[0].message.content
+        # Parse and return the JSON output from OpenAI
+        return extract_json(content)
+    except Exception as e:
+        print("❌ Error in get_upstream_triplets:", e)
+        return []
+
+
+def infer_archetypes_for_product_zmots(summary, domain, industry, capabilities_mapping, zmot_bundle):
+    """
+    Given a set of ZMOT maps including ZMOT, immediate jobs and pains,
+    this function queries OpenAI to produce a mapping of ICP Archetypes typically experiencing this ZMOT.
+    """
+    zmot_bundle_json = json.dumps(zmot_bundle, indent=2)
+    capabilities_mapping_json = json.dumps(capabilities_mapping, indent=2)
+    prompt = f"""
+        You are a B2B market segmentation expert. You are given the following information:
+         - list of external trigger events, the immediate jobs-to-be-done that are impacted by or in response to them along with the personas typically responsible for these jobs,
+         - the list of core product capabilities, primary pains, and jobs to be done (JTBD) directly by end users of the product in an organization, along with the product's domain and industry.
+
+        Your task is to identify 5–10 **Ideal Customer Profile (ICP) archetypes** — distinct organizational types that are most likely to experience these pains and perform these jobs, given the product context.
+
+        Given:
+        - Product value proposition: {summary}
+        - Product domain: {domain}
+        - Product industry: {industry}
+        - External Event Triggers and Immediate Jobs to Be Done (JSON): {zmot_bundle_json}
+        - Capabilities and Pains (JSON): {capabilities_mapping_json}
+
+        For each ICP archetype:
+        - Choose **exactly one** value for each of the following attributes:
+            - `industry` (e.g., "Healthcare", "Finance", "Retail")
+            - `revenue_range` (e.g., "0-1M", "1-10M", "10-100M", "100-500M", "500M-1B", "1B+")
+            - `employee_range` (e.g., "1-10", "11-50", "51-200", "201-500", "501-1000", "1000-5000", "5000-10000", "10000+")
+            - `funding_stage` (e.g., "Pre-Seed", "Seed", "Series A", "Series B", "Series C+", "Public")
+            - `geography` (e.g., "North America", "Europe", "Asia", "South America", "Africa", "Australia")
+
+        - For each archetype, provide a single `ZMOT match_score` (float between 0.0–1.0) that reflects how likely this organizational type is to face the provided ZMOT Event Trigger. Use this scale:
+            - 0.7–1.0: Very likely to occur in this archetype
+            - 0.4–0.6: Moderately likely to occur in this archetype
+            - 0.0–0.3: Unlikely to occur in this archetype
+        - For each archetype, provide a single `product match_score` (float between 0.0–1.0) that reflects how well this organizational type aligns with the provided Product Capabilities. Use this scale:
+            - 0.7–1.0: Very tight fit - Will always face primary pains and require these capabilities
+            - 0.4–0.6: Moderate fit - Sometimes faces primary pains, often has a less efficient workaround or process
+            - 0.0–0.3: Poor fit - Rarely faces primary pains, does not have a set workaround or process
+
+        Return your answer as a **strict JSON array**, where each entry is a full ICP archetype along with the original zmot_id in each zmot bundle. Use this structure:
+
+        ```json
+        [
+        {{
+            "original_zmot_id": string,
+            "industry": "Healthcare",
+            "revenue_range": "100-500M",
+            "employee_range": "1000-5000",
+            "funding_stage": "Series C+",
+            "geography": "North America",
+            "zmot_match_score": 0.87,
+            "product_match_score": 0.42
         }},
         ...
         ]

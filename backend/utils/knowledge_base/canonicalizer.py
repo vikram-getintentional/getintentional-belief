@@ -16,6 +16,7 @@ PAIN_TRIGGER_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "pain_trigger_to_canonica
 TRIGGER_EVENT_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "trigger_event_to_canonical.json"
 OBSERVABLE_MOMENT_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "observable_moment_to_canonical.json"
 METRIC_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "metric_to_canonical.json"
+KEYWORD_CANONICAL_MAP_PATH = CANONICAL_MAP_PATH / "keyword_to_canonical.json"
 
 
 # Preloaded embeddings
@@ -31,12 +32,22 @@ try:
     TITLE_EMBEDDINGS = load_embeddings("title")
     TRIGGER_EVENT_EMBEDDINGS = load_embeddings("trigger_event")
     PERCEIVED_METRIC_EMBEDDINGS = load_embeddings("perceived_metric")
+    KEYWORD_EMBEDDINGS = load_embeddings("keyword")
 
 except Exception as e:
     print(f"⚠️ Embedding preload failed: {e}")
     JOB_EMBEDDINGS = {}
     PAIN_EMBEDDINGS = {}
     PERSONA_EMBEDDINGS = {}
+    KEYWORD_EMBEDDINGS = {}
+    ATTRIBUTE_EMBEDDINGS = {}
+    DEPARTMENT_EMBEDDINGS = {}
+    PAIN_TRIGGER_EMBEDDINGS = {}
+    OBSERVABLE_MOMENT_EMBEDDINGS = {}
+    TITLE_EMBEDDINGS = {}
+    TRIGGER_EVENT_EMBEDDINGS = {}
+    PERCEIVED_METRIC_EMBEDDINGS = {}
+    
 
 # Utility
 def generate_new_id(prefix="pain"):
@@ -190,6 +201,25 @@ def canonicalize_observable_moments(observable_moments: list[str]) -> dict:
     save_canonical_map(canonical_map, OBSERVABLE_MOMENT_CANONICAL_MAP_PATH)
     return canonical_map
 
+def canonicalize_keywords(keywords: list[str]) -> dict:
+    keywords = list(set(keywords))
+    if not keywords:
+        print("⚠️ No keywords provided for canonicalization.")
+        return {}
+
+    keyword_embeddings = generate_and_save_embeddings(keywords, "keyword")
+
+    if len(keyword_embeddings) == 1:
+        print("⚠️ Only one keyword provided. Skipping clustering.")
+        canonical_map = {keywords[0]: keywords[0]}
+        save_canonical_map(canonical_map, KEYWORD_CANONICAL_MAP_PATH)
+        return canonical_map
+
+    clustered_keywords = cluster_items(keyword_embeddings)
+    canonical_label_map = assign_canonical_labels(clustered_keywords)
+    canonical_map = {keyword: canonical_label_map[keyword] for keyword in keywords}
+    save_canonical_map(canonical_map, KEYWORD_CANONICAL_MAP_PATH)
+    return canonical_map
 
 def canonicalize_titles(titles: list[str]) -> dict:
     titles = list(set(titles))

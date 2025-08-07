@@ -11,6 +11,7 @@ import AppLayout from './layout/AppLayout';
 import Personas from './pages/Personas'; 
 import Zmot from './pages/Zmot'; 
 import ValueProp from './pages/ValueProposition';
+import ReverseCaseStudies from './pages/ReverseCaseStudies'
 import './output.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -26,6 +27,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/value-prop" element={<ValueProp />} />
           <Route path="/personas" element={<Personas />} />
           <Route path="/zmot" element={<Zmot />} />
+          <Route path="/reverse-case-studies" element={<ReverseCaseStudies />} />
           {/* Add other routes here */}
           
 

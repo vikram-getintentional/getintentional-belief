@@ -8,6 +8,7 @@ class AgentContext:
         self.pain_source_cache = []
         self.zmot_archetype_cache = []
         self.inference_log = {}
+        self.visited_zmot_archetypes = set()
     
     def mark_visited(self, job_id):
         self.visited_jobs.add(job_id)
