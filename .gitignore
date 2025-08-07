@@ -6,3 +6,6 @@
 
 # Generated JSON files
 backend/utils/*.json
+
+# Python virtual env
+.venv
