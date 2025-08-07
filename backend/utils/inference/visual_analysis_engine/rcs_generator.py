@@ -1,6 +1,25 @@
 
 import networkx as nx
 
+from backend.utils.inference.visual_analysis_engine.rcs_helpers import get_zmot_root_job
+from backend.utils.inference.visual_analysis_engine.rcs_utils import assign_temporal_depths
+
+
+def generate_rcs_from_zmot(product_subgraph, archetype_id, zmot_node_id):
+    """
+    Full RCS generation pipeline, anchored on the given ZMOT node.
+    """
+    depth = assign_temporal_depths(product_subgraph)
+
+    root_triplets = get_zmot_root_job(product_subgraph, zmot_node_id)
+    if not root_triplets:
+        return {}
+    print("Root Job for ZMOT:", root_triplets)
+
+    return []
+
+
+
 """
 we now have a beautiful loop in our graph like: 
 source - node type - target
@@ -53,242 +72,140 @@ from backend.utils.graph_base.network_graph import get_edge_weight, get_node_by_
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 
-def get_top_archetypes(product_subgraph, threshold = 0.2, top_n = 2):
-	"""
-	Get top archetypes based on relevance threshold.
-	"""
-	product_id = get_node_id(product_subgraph, "product", {})
-	product_node = get_node_by_id(product_subgraph, product_id)
-	if not product_node:
-		raise ValueError("Product node not found.")
 
-	archetypes = []
-	archetype_ids = get_nodes_list_ids(product_subgraph, "archetype", {})
-	for archetype_id in archetype_ids:
-		archetype = get_node_by_id(product_subgraph, archetype_id)
-		archetype["relevance"] = get_cumulative_relevance_data(product_id, archetype_id)
-		archetypes.append(archetype)
-	sorted_archetypes = sorted(archetypes, key=lambda x: x["relevance"], reverse=True)
-	top_archetypes = [archetype for archetype in sorted_archetypes if archetype["relevance"] >= threshold]
-	return top_archetypes[:top_n]
 
-def get_best_match_archetypes(product_subgraph, attribute_combo: dict, threshold=0.2, top_n=5):
-    product_id = get_node_id(product_subgraph, "product", {})
-    archetype_ids = get_nodes_list_ids(product_subgraph, "archetype", {})
-    matches = []
 
-    for archetype_id in archetype_ids:
-        archetype = get_node_by_id(product_subgraph, archetype_id)
-        match = True
-        for key, value in attribute_combo.items():
-            if value and key in archetype:
-                # Support list of values
-                values = value if isinstance(value, list) else [value]
-                if not any(v.lower() in str(archetype[key]).lower() for v in values):
-                    match = False
-                    break
-        if match:
-            archetype["relevance"] = get_cumulative_relevance_data(product_id, archetype_id)
-            matches.append(archetype)
 
-    sorted_matches = sorted(matches, key=lambda x: x["relevance"], reverse=True)
-    return [a for a in sorted_matches if a["relevance"] >= threshold][:top_n]
-
-def get_best_match_archetypes(product_subgraph, attribute_combo: dict, threshold=0.2, top_n=5):
-    
-    product_id = get_node_id(product_subgraph,"product", {})
-    archetype_ids = []
-    naive_archetype_ids = get_nodes_list_ids(product_subgraph, "archetype", {})
-    for naive_archetype_id in naive_archetype_ids:
-         related_zmot_ids = get_target_nodes_by_source_and_type(product_subgraph, naive_archetype_id, "responds_to")
-         if not related_zmot_ids or len(related_zmot_ids) == 0:
-             continue # We want to only consider archetypes that have a zmot downstream
-         archetype_ids.append(naive_archetype_id)
-         
-    matches = []
-    
-    # Only keep keys that are in priorities
-    relevant_keys = {"industry", "revenue_range", "employee_range", "funding_stage", "geography"}
-    attribute_combo = {k: v for k, v in attribute_combo.items() if k in relevant_keys}
-    # Helper: Related industries (expand as needed)
-    related_industries = {
-        "automotive": ["transportation", "mobility", "manufacturing"],
-        # Add more mappings as needed
-    }
-
-    # Helper: Bracket ordering (expand as needed)
-    revenue_brackets = ["0-1m", "1-10m", "10-100m", "100-500m", "500m-1b", "1b+"]
-    employee_brackets = ["1-50", "51-200", "201-500", "501-1000", "1000-5000", "5000-10000", "10000+"]
-    funding_stages = ["seed", "series a", "series b", "series c+", "public"]
-
-    def get_next_bracket(brackets, value, direction="up"):
-        try:
-            idx = brackets.index(value.lower())
-            if direction == "up" and idx < len(brackets) - 1:
-                return brackets[idx + 1]
-            elif direction == "down" and idx > 0:
-                return brackets[idx - 1]
-        except ValueError:
-            return None
-        return None
-
-    # 1. Try exact match
-    for archetype_id in archetype_ids:
-        archetype = get_node_by_id(product_subgraph, archetype_id)
-        match_score = 0
-        # Priority order
-        priorities = [
-            ("industry", 5),
-            ("revenue_range", 4),
-            ("geography", 3),
-            ("employee_range", 2),
-            ("funding_stage", 1)
-        ]
-        exact = True
-        for key, weight in priorities:
-            val = attribute_combo.get(key)
-            arch_val = str(archetype.get(key, "")).lower()
-            if val:
-                if arch_val == str(val).lower():
-                    match_score += weight
-                else:
-                    exact = False
-        if exact:
-            archetype["relevance"] = get_cumulative_relevance_data(product_id, archetype_id)
-            archetype["match_score"] = match_score
-            matches.append(archetype)
-
-    # 2. If no exact match, try softer matching
-    if not matches:
-        print("No exact matches found, trying softer matching...")
-        for archetype_id in archetype_ids:
-            archetype = get_node_by_id(product_subgraph, archetype_id)
-            match_score = 0
-            for key, weight in priorities:
-                val = attribute_combo.get(key)
-                arch_val = str(archetype.get(key, "")).lower()
-                print(f"Matching {key}: input={val}, node={arch_val}")
-                if val:
-                    # Industry: try related
-                    if key == "industry":
-                        if arch_val == str(val).lower():
-                            match_score += weight
-                        elif val.lower() in related_industries and arch_val in related_industries[val.lower()]:
-                            match_score += weight - 1
-                    # Revenue/Employee/Funding: try next higher, then lower
-                    elif key in ["revenue_range", "employee_range", "funding_stage"]:
-                        brackets = revenue_brackets if key == "revenue_range" else employee_brackets if key == "employee_range" else funding_stages
-                        if arch_val == str(val).lower():
-                            match_score += weight
-                        else:
-                            up = get_next_bracket(brackets, str(val).lower(), "up")
-                            down = get_next_bracket(brackets, str(val).lower(), "down")
-                            if arch_val == up:
-                                match_score += weight - 1
-                            elif arch_val == down:
-                                match_score += weight - 2
-                    # Geography: exact, then skip
-                    elif key == "geography":
-                        if arch_val == str(val).lower():
-                            match_score += weight
-            if match_score > 0:
-                archetype["relevance"] = get_cumulative_relevance_data(product_id, archetype_id)
-                archetype["match_score"] = match_score
-                matches.append(archetype)
-
-    # Sort by match_score (priority), then relevance
-    sorted_matches = sorted(matches, key=lambda x: (x["match_score"], x["relevance"]), reverse=True)
-    return [a for a in sorted_matches if a["relevance"] >= threshold][:top_n]
-
-def get_best_match_zmots_for_archetype(product_subgraph, archetype_id, threshold=0.2, top_n=5):
-	product_id = get_node_id(product_subgraph, "product", {})
-	related_zmot_ids = get_target_nodes_by_source_and_type(product_subgraph, archetype_id, "responds_to")
-	matches = []
-
-	for zmot_id in related_zmot_ids:
-		zmot_node = get_node_by_id(product_subgraph, zmot_id)
-		zmot_relevance = get_cumulative_relevance_data(product_id, zmot_id)
-		if zmot_relevance < threshold:
-			continue
-		zmot_node["relevance"] = zmot_relevance
-		zmot_node["org_relevance"] = get_edge_weight(product_subgraph, archetype_id, zmot_id)
-		matches.append(zmot_node)
-
-	sorted_matches = sorted(matches, key=lambda x: x["relevance"], reverse=True)
-	return sorted_matches[:top_n]
-
-def build_zmot_summary(product_subgraph, zmot_event_id, archetype_id):
+def walk_forward_to_hop0(product_subgraph, start_job_id, hop0_pain_ids):
     """
-    Final output is a paragraph summary of the format:
-    1. Archetype experienced ZMOT Event
-    2. This was observed from Observable Moments using Trigger Keywords
-    3. The ZMOT Event forced Persona to perform Job
-    4. This Job pushed a bunch of downstream Pains
-    5. Each Pain was getting worse due to Pain Triggers, as experienced by Perceived Metrics
+    Walk from zmot root job toward hop0 pain nodes.
+    Record nodes as 'problem realization' until we hit hop0.
     """
-    product_id = get_node_id(product_subgraph, "product", {})
-    
-    archetype_node = get_node_by_id(product_subgraph, archetype_id)
-    print("RCS for Archetype: \n")
-    print(archetype_node)
-    print("--------------------------------")
-    zmot_node = get_node_by_id(product_subgraph, zmot_event_id)
-    if not zmot_node:
-        return None
-    trigger_event = zmot_node.get("trigger_event", "").strip().lower()
-    print("trigger event: ", trigger_event)
-    
-    observable_moments = []
-    trigger_keywords = []
-    print("Observable Moments and Trigger Keywords for ZMOT Event:")
-    observable_moment_ids = get_target_nodes_by_source_and_type(product_subgraph, zmot_event_id, "observed_in")
-    for observable_moment_id in observable_moment_ids:
-        observable_moment_node = get_node_by_id(product_subgraph, observable_moment_id)
-        observable_moment = observable_moment_node.get("observable_moment", "").strip().lower()
-        print(observable_moment)
-    keywords = get_target_nodes_by_source_and_type(product_subgraph, zmot_event_id, "associated_with")
-    print("\n Where we tracked phrases like:")
-    for keyword in keywords:
-        keyword_node = get_node_by_id(product_subgraph, keyword)
-        keyword = keyword_node.get("keyword", "").strip().lower()
-        print(keyword)
-	
-    shortest_path = nx.shortest_path(product_subgraph, source=product_id, target=zmot_event_id, weight='weight')
-    print("Shortest Path from Product to ZMOT Event:", shortest_path)
+    visited = set()
+    queue = [start_job_id]
+    problem_realization = []
 
-    for node_id in shortest_path:
+    while queue:
+        node_id = queue.pop(0)
+        if node_id in visited:
+            continue
+        visited.add(node_id)
+
+        if node_id in hop0_pain_ids:
+            continue  # Stop at discovery point
         node = get_node_by_id(product_subgraph, node_id)
-        node_type = node.get("node_type", "").strip().lower()
-        print("Node in shortest path:", node_id, "Type:", node_type)
+        label = get_node_label(product_subgraph, node_id)
 
-    impacted_job_ids = get_source_nodes_by_target_and_type(product_subgraph, zmot_event_id, "triggered_by")
-    for impacted_job_id in impacted_job_ids:
-        responsible_persona_ids = get_target_nodes_by_source_and_type(product_subgraph, impacted_job_id, "performed_by")
-        persona_node = get_node_by_id(product_subgraph, responsible_persona_ids[0]) if responsible_persona_ids else None
-        persona_title = persona_node.get("title", "").strip().lower() if persona_node else ""
-        job_description = get_node_by_id(product_subgraph, impacted_job_id).get("description", "").strip().lower()
-        print("Primary Job Owner?")
-        print(f"{persona_title} with job: {job_description}")
-        print("\nImmediate Domino Effect?")
-        downstream_pain_ids = get_source_nodes_by_target_and_type(product_subgraph, impacted_job_id, "solves")
-        for downstream_pain_id in downstream_pain_ids:
-            pain_node = get_node_by_id(product_subgraph, downstream_pain_id)
-            pain_text = pain_node.get("text", "").strip().lower()
-            pain_trigger_ids = get_target_nodes_by_source_and_type(product_subgraph, downstream_pain_id, "scales_with")
-            pain_triggers = [get_node_by_id(product_subgraph, pt).get("attribute", "").strip().lower() for pt in pain_trigger_ids]
-            perceived_metric_ids = get_target_nodes_by_source_and_type(product_subgraph, downstream_pain_id, "expressed_as")
-            perceived_metrics = [get_node_by_id(product_subgraph, pm).get("metric", "").strip().lower() for pm in perceived_metric_ids]
-            print(f"{perceived_metrics} started looking bad")
-            print("\nAnd got worse due to:")
-            print(perceived_metrics)
+        problem_realization.append({
+            "id": node_id,
+            "depth": node.get("temporal_depth")
+        })
 
-        
+        for _, tgt, d in product_subgraph.out_edges(node_id, data=True):
+            if d.get("type") in ["solves", "addresses", "performed_by"]:
+                queue.append(tgt)
 
-    # Get the relevant data
-    zmot_summary = {
-        "trigger_event": zmot_node.get("trigger_event", ""),
-        "relevance": zmot_node.get("relevance", 0),
-        "org_relevance": zmot_node.get("org_relevance", 0)
-    }
+    return problem_realization
 
-    return zmot_summary
+
+def find_hop0_discovery_nodes(product_subgraph):
+    """
+    Identify the hop0 pain (directly solved by product capability) and its job.
+    """
+    discovery = []
+    hop0_pain_id_set = set()
+    hop0_job_id_set = set()
+    capability_ids = get_nodes_list_ids(product_subgraph, "capability", {})
+    
+    for capability_id in capability_ids:
+        pain_ids = get_target_nodes_by_source_and_type(product_subgraph, capability_id, "solves")
+        if not pain_ids:
+            print(f"No pains found for capability {capability_id}")
+            continue
+        hop0_pain_id_set.update(pain_ids)
+    
+    for pain_id in hop0_pain_id_set:
+        job_ids = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "addresses")
+        hop0_job_id_set.update(job_ids)
+    
+    for p in hop0_pain_id_set:
+        pain_node = get_node_by_id(product_subgraph, p)
+        if not pain_node:
+            continue
+        discovery.append({
+			"id": pain_node["id"],
+			"depth": pain_node.get("temporal_depth")
+		})
+    
+    for j in hop0_job_id_set:
+        job_node = get_node_by_id(product_subgraph, j)
+        if not job_node:
+            continue
+        discovery.append({
+			"id": job_node["id"],
+			"depth": job_node.get("temporal_depth")
+		})
+    
+    return discovery
+
+
+
+def find_implementation_capabilities(product_subgraph, discovery_node_ids):
+    """
+    Find capabilities that solve discovery pains
+    """
+    implementation = []
+    for node_id in discovery_node_ids:
+        node = get_node_by_id(product_subgraph, node_id)
+        if node.get("node_type") != "pain":
+            continue
+        for u, v, d in product_subgraph.in_edges(node_id, data=True):
+            if d.get("type") == "solves" and product_subgraph.nodes[u]["node_type"] == "capability":
+                implementation.append({
+                    "id": u,
+                    "depth": product_subgraph.nodes[u].get("temporal_depth")
+                })
+    return implementation
+
+
+def find_promised_land(product_subgraph, hop0_job_ids):
+    """
+    Traverse downstream from hop0 jobs to find 'enabled' jobs in Hop++.
+    """
+    promised_land = []
+    visited = set()
+    queue = []
+    print("hop0 job ids: ", hop0_job_ids)
+    for hop0_job_id in hop0_job_ids:
+        j = get_node_by_id(product_subgraph, hop0_job_id)
+        if j["node_type"] == "job":
+            queue.append(j["id"])
+
+    while queue:
+        node_id = queue.pop(0)
+        if node_id in visited:
+            continue
+        visited.add(node_id)
+
+        for _, tgt, d in product_subgraph.out_edges(node_id, data=True):
+            if d.get("type") in ["solves", "addresses"] and product_subgraph.nodes[tgt]["node_type"] in ["job", "pain"]:
+                promised_land.append({
+                    "id": tgt,
+                    "depth": product_subgraph.nodes[tgt].get("temporal_depth")
+                })
+                queue.append(tgt)
+
+    return promised_land
+
+
+
+
+def reverse_case_study_trascriber(product_subgraph, reverse_case_study):
+    rcs_output = {}
+    for key, item in reverse_case_study.items():
+        rcs_output[key] = {
+            "id": item["id"],
+            "depth": product_subgraph.nodes[item["id"]].get("temporal_depth")
+        }
+    
+    return rcs_output
