@@ -1,29 +1,23 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
-from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_node_by_id, update_capabilities_by_nodes_list
+from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_node_by_id, get_product_id_from_subgraph, update_capabilities_by_nodes_list
 from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import agentic_inference, run_agentic_loop
 from backend.utils.inference.discovery_engine.openai_helper import extract_summary_and_capabilities
-from backend.utils.inference.discovery_engine.openai_helper_core import infer_with_rules_then_fallback
 from backend.auth.jwt_handler import decode_token
 from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
-from backend.db.schema_templates.save_company_value_prop import save_company_value_prop, get_company_value_prop
-from backend.utils.dev_environment.graph_loader import load_product_graph_from_folder
-from backend.utils.inference.discovery_engine.zmot_discovery import infer_zmot_icp
+
+
 from backend.utils.inference.visual_analysis_engine.rcs_generator import generate_rcs_from_zmot
 from backend.utils.inference.visual_analysis_engine.rcs_temp import assumed_zmot_sample
 from backend.utils.inference.visual_analysis_engine.rcs_utils import get_best_match_archetypes, get_best_match_zmots_for_archetype, get_top_archetypes
-from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities, process_capabilities
-from backend.utils.graph_base.nodes.product_nodes import get_or_create_product_node
-from backend.utils.graph_base.nodes.capability_nodes import (
-    get_or_create_capability_node,
-)
+from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities
+
 from backend.utils.knowledge_base.persona_generation import (
     get_company_products,
     get_persona_relevance
 )
 
-from backend.utils.inference.discovery_engine.hop_plus_agent import infer_upstream_with_rules
 import networkx as nx
 
 # Hardcoded path to graph data folder - to be updated in production
@@ -272,13 +266,18 @@ async def get_products(company_id: str, request: Request):
             raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
         # 🧠 Inference
-        product_id = get_product_id_from_company_id(company_id)
-        if product_id:
-            product_subgraph = build_product_graph(product_id)
-            product_node = get_node_by_id(product_subgraph, product_id)
+        product_lookup = get_product_id_from_company_id(company_id)
+        if product_lookup:
+            print("Product ID found for company_id:", company_id)
+            product_subgraph = build_product_graph(product_lookup)
+            print("Product subgraph data loaded")
+            product_id = get_product_id_from_subgraph(product_subgraph)
+            
+            product_node = product_subgraph.nodes[product_id]
             products = [{
-                "id": product_node.get("id"),
-                "name": product_node.get("name", ""),
+                "id": product_lookup,
+                "domain": product_node.get("domain", ""),
+                "industry": product_node.get("industry", ""),
                 "summary": product_node.get("summary", ""),
                 "url": product_node.get("url", ""),
             }]
@@ -351,90 +350,14 @@ async def get_personas(product_id: str, request: Request):
     except Exception as e:
         print("❌ Get personas error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve personas")
-
-# 🪄 Hop+ recursive dependency analysis
-@router.post("/analyze/hop_plus")
-async def analyze_hop_plus(payload: dict, request: Request):
-    """
-    Expects payload with:
-    - results: list of {persona, job, pain, capability, relevance}
-    """
-    print("Analyze Hop+ payload:", payload)
-    try:
-        # 🔐 Auth
-        auth_header = request.headers.get("authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Missing Authorization header")
-        token = auth_header.split(" ")[1]
-        decoded = decode_token(token)
-        company_id = decoded.get("company_id")
-        if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-        db = SessionLocal()
-        product_id = payload.get("product_id")
-        if not product_id:
-            raise HTTPException(status_code=400, detail="Product ID required.")
-        print("Starting Hop0 graph load")
-        product_subgraph = build_product_graph(product_id)
-        
-        hop_plus_results = infer_upstream_with_rules(
-            product_subgraph=product_subgraph,
-            cap_threshold=0.3,
-            relevance_threshold=0.6,
-            max_depth=3
-        )
-
-        print("results in analyze_hop_plus:", hop_plus_results)
-        return {"hop_plus_results": hop_plus_results}
-
-    except Exception as e:
-        print("❌ Hop+ analysis error:", e)
-        raise HTTPException(status_code=500, detail="Could not run Hop+ analysis")
-
-
-# GET /generate_zmot_icp/{product_id}
-@router.post("/analyze/generate_zmot_icp/{product_id}")
-async def generate_zmot_icp(product_id: str, request: Request):
-    print("Generating ZMoT ICP for product_id:", product_id)
-    """
-    Returns a list of ZMOTs, ICP Archetypes (and pain triggers under the hood) for the product_id. 
-    Assumes that at least hop0 traversal exists.
-    """
-    try:
-        # 🔐 Auth
-        auth_header = request.headers.get("authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Missing Authorization header")
-
-        token = auth_header.split(" ")[1]
-        decoded = decode_token(token)
-        company_id = decoded.get("company_id")
-
-        if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-        # 🧠 Inference
-        product_subgraph = build_product_graph(product_id)
-
-        zmot_icp_nodes = infer_zmot_icp(product_id, product_subgraph)
-        
-        print("ZMOT ICP nodes generated in analyzer:", zmot_icp_nodes)
-
-        return []
-    except Exception as e:
-        print("❌ Generate ZMOT ICP error:", e)
-        raise HTTPException(status_code=500, detail="Could not generate ZMOTs and ICP Archetypes")
-    
     
 
-# GET /get_zmot_icp/{product_id}
+# GET /get-zmot-icp/{product_id}
 @router.get("/get_zmot_icp/{product_id}")
 async def get_zmot_icp(product_id: str, request: Request):
-    print("Generating ZMoT ICP for product_id:", product_id)
+    print("Getting ZMOT ICP for product_id:", product_id)
     """
-    Returns a list of ZMOTs, ICP Archetypes (and pain triggers under the hood) for the product_id. 
-    Assumes that at least hop0 traversal exists.
+    Returns the ZMOT ICP for the given product_id.
     """
     try:
         # 🔐 Auth
@@ -451,14 +374,12 @@ async def get_zmot_icp(product_id: str, request: Request):
 
         # 🧠 Inference
         product_subgraph = build_product_graph(product_id)
-
-        icp_zmot_result = get_zmot_icp_relevance(product_subgraph)
-        print("Analyzer ZMOT results:", icp_zmot_result)
-        return icp_zmot_result
+        zmot_icp = get_zmot_icp_relevance(product_subgraph)
+        return zmot_icp
     except Exception as e:
-        print("❌ Get ZMOTs error:", e)
-        raise HTTPException(status_code=500, detail="Could not retrieve ZMOTs and ICP Archetypes")
-    
+        print("❌ Get ZMOT ICP error:", e)
+        raise HTTPException(status_code=500, detail="Could not retrieve ZMOT ICP")
+
 
 @router.get("/get-reverse-case-studies/{product_id}")
 async def get_reverse_case_studies(product_id: str, request: Request):

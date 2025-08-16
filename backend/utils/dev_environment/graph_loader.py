@@ -36,75 +36,95 @@ def load_product_graph_from_folder(product_id: str, folder_path: str = GRAPH_DAT
 
     # Load nodes for each unique node ID found in edges
     for fname in os.listdir(folder_path):
-        if fname.endswith("_nodes.json"):
-            print("Processing file:", fname)
-            node_type = fname.replace("_nodes.json", "")
-            print("Node type:", node_type)
-            
-            with open(os.path.join(folder_path, fname), "r") as f:
-                nodes = json.load(f)
+        if not fname.endswith("_nodes.json"):
+            continue
 
-                # Special handling for zmot nodes
-                if node_type == "zmot":
-                    for zmot_key in ["TriggerEvents", "ObservableMoments", "Keywords"]:
-                        for node in nodes.get(zmot_key, []):
-                            if node.get("id") not in unique_node_ids:
-                                continue
-                            node["node_type"] = f"zmot_{zmot_key.lower()}"
-                            if zmot_key == "TriggerEvents":
-                                node["value"] = node.get("trigger_event", "").strip().lower()
-                            elif zmot_key == "ObservableMoments":
-                                node["value"] = node.get("observable_moment", "").strip().lower()
-                            elif zmot_key == "Keywords":
-                                node["value"] = node.get("keyword", "").strip().lower()
-                            node_registry[node["id"]] = node
-                    continue  # skip generic block
+        path = os.path.join(folder_path, fname)
+        node_type = fname.replace("_nodes.json", "").strip().lower()
 
-                # Special handling for company nodes
-                
+        with open(path, "r") as f:
+            nodes = json.load(f)
 
-                for node in nodes:
-                    if node.get("id") not in unique_node_ids:
-                        continue
-                    if node_type == "product":
-                        value = (
-                            node.get("summary", "").strip().lower(),
-                            node.get("url", "").strip().lower(),
-                            node.get("plg_flag")
-                        )
-                    elif node_type == "persona":
-                        value = (node.get("title", "").strip().lower(),
-                                 node.get("department", "").strip().lower(),
-                                 node.get("seniority", "").strip().lower())
-                    elif node_type == "pain":
-                        value = node.get("text", "").strip().lower()
-                    elif node_type == "job":
-                        value = node.get("description", "").strip().lower()
-                    elif node_type == "capability":
-                        value = (node.get("name", "").strip().lower(),
-                                 node.get("description", "").strip().lower())
-                    elif node_type == "pain_trigger":
-                        value = (
-                            node.get("attribute", "").strip().lower(),
-                            node.get("dimension", "").strip().lower(),
-                            node.get("direction", "").strip().lower()
-                        )
-                    elif node_type == "archetype":
-                        value = (
-                            node.get("industry", "").strip().lower(),
-                            node.get("revenue_range", "").strip().lower(),
-                            node.get("employee_range", "").strip().lower(),
-                            node.get("funding_stage", "").strip().lower(),
-                            node.get("geography", "").strip().lower()
-                        )
-                    
-    
-                    else:
-                        value = node.get("id")
-                        print("Setting unknown node type:", node_type, "with value:", value)
-                    node["node_type"] = node_type
-                    node["value"] = value
-                    node_registry[node["id"]] = node
+        # --- New/regular per-type files: [..., pain_nodes.json, job_nodes.json, zmot_event_nodes.json, ...] ---
+        # Ensure "nodes" is always a list here
+        if isinstance(nodes, dict):
+            # Safety: some writers might wrap items under a top-level key
+            # Try to flatten if there's a single list in the dict
+            for v in nodes.values():
+                if isinstance(v, list):
+                    nodes = v
+                    break
+            if isinstance(nodes, dict):
+                nodes = []  # fallback
+
+        for node in nodes:
+            if node.get("id") not in unique_node_ids:
+                continue
+
+            nt = node_type  # convenience alias
+            # Map values per node type (support both new + legacy fields)
+            if nt == "product":
+                value = (
+                    node.get("summary", "").strip().lower(),
+                    node.get("url", "").strip().lower(),
+                    node.get("plg_flag"),
+                )
+            elif nt == "persona":
+                value = (
+                    node.get("title", "").strip().lower(),
+                    node.get("department", "").strip().lower(),
+                    node.get("seniority", "").strip().lower(),
+                )
+            elif nt == "pain":
+                # NEW builder uses "description"; old dumps used "text"
+                value = (node.get("description") or node.get("text") or "").strip().lower()
+                # Keep pain_source if present (new builder sets it)
+                if "pain_source" in node:
+                    node["pain_source"] = (node.get("pain_source") or "").strip().lower()
+            elif nt == "job":
+                value = (node.get("description") or "").strip().lower()
+            elif nt == "capability":
+                value = (
+                    node.get("name", "").strip().lower(),
+                    node.get("description", "").strip().lower(),
+                )
+            elif nt == "pain_trigger":
+                value = (
+                    node.get("attribute", "").strip().lower(),
+                    node.get("dimension", "").strip().lower(),
+                    node.get("direction", "").strip().lower(),
+                )
+            elif nt == "perceived_metric":
+                # new node type from builder
+                value = (
+                    node.get("metric", "").strip().lower(),
+                    node.get("dimension", "").strip().lower(),
+                    node.get("direction", "").strip().lower(),
+                )
+            elif nt == "archetype":
+                value = (
+                    node.get("industry", "").strip().lower(),
+                    node.get("revenue_range", "").strip().lower(),
+                    node.get("employee_range", "").strip().lower(),
+                    node.get("funding_stage", "").strip().lower(),
+                    node.get("geography", "").strip().lower(),
+                )
+            elif nt == "zmot_event":
+                value = (node.get("event") or node.get("trigger_event") or "").strip().lower()
+            elif nt == "observable_moment":
+                value = (node.get("text") or node.get("observable_moment") or "").strip().lower()
+            elif nt == "keyword":
+                value = (node.get("text") or node.get("keyword") or "").strip().lower()
+            else:
+                # Unknown/new type: keep something stable
+                value = node.get("id")
+                # Optional: print once for awareness
+                # print("Setting unknown node type:", nt, "with value:", value)
+
+            node["node_type"] = nt
+            node["value"] = value
+            node_registry[node["id"]] = node
+
 
     
     print("Graph loaded with nodes:", len(node_registry), "and edges:", len(graph_edges))

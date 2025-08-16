@@ -3,48 +3,51 @@ import networkx as nx
 import os
 from collections import defaultdict, deque
 from backend.utils.dev_environment.graph_loader import load_product_graph_from_folder
+from backend.utils.graph_base.agent_graph_builder import _capability, _upsert_edge
+from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import save_graph_as_json, load_graph_from_json
+from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
 
 
-def build_product_graph(product_id):
+def build_product_graph(product_lookup_id: str):
     """
     Build a NetworkX DiGraph for the given product_id using your internal graph data.
     """
-    product_graph = nx.DiGraph()
-    # Load raw data from graph_loader
-    node_registry, graph_edges, edge_weights = load_product_graph_from_folder(product_id)
-
-    # Add nodes
-    for node_id, node_data in node_registry.items():
-        product_graph.add_node(node_id, **node_data)
-
-    # Add edges
-    for edge in graph_edges:
-        source = edge["source"]
-        target = edge["target"]
-        attrs = {k: v for k, v in edge.items() if k not in ["source", "target", "weight"]}
-        weight = edge_weights.get((source, target), attrs.get("weight", 1.0))
-        product_graph.add_edge(source, target, weight=weight, **attrs)
-
+    product_graph = load_graph_from_json(product_lookup_id)
     return product_graph
 
 def update_graph(product_subgraph): 
     """
     Updates the product subgraph with latest available nodes and edges
     """
-    product_id = get_product_id_from_subgraph(product_subgraph)
-    print("Updating graph for product ID:", product_id)
-    
+    product_lookup_id = product_subgraph.graph.get("product_lookup_id")
+    print("Updating graph for product ID:", product_lookup_id)
+
     # Load the latest product graph
-    latest_graph = build_product_graph(product_id)
+    latest_graph = build_product_graph(product_lookup_id)
 
     # Merge the new graph into the existing subgraph
     product_subgraph = nx.compose(product_subgraph, latest_graph)
 
     print("Graph updated successfully.")
+
+    # Save updated graph to JSON
+    save_graph_as_json(product_subgraph, product_lookup_id)
+    product_node_id = get_product_id_from_subgraph(product_subgraph)
+    relevance_nodes = calculate_soft_or_relevance(product_subgraph)
+    cumulative_relevance = {item["node_id"]: item["relevance"] for item in relevance_nodes}
+    add_or_update_cumulative_relevance_data(product_node_id, cumulative_relevance)
+    print("Relevance updated in Update Graph")
+
     return product_subgraph
+
+def get_product_id_from_subgraph(G) -> str:
+    for node_id, data in G.nodes(data=True):
+        if data.get("node_type") == "product":
+            return node_id
+    raise ValueError("No product node found in subgraph.")
 
 def get_node_by_id(G, node_id: str) -> dict:
     """
@@ -157,7 +160,7 @@ def update_capabilities_by_nodes_list(G, capability_nodes):
     return updated_nodes
 
 def set_capabilities_relevance(G, capability_threshold=0.5, coreness_threshold=0.4):
-    product_id = get_node_id(G, "product", {})
+    product_id = get_product_id_from_subgraph(G)
     capability_node_ids = get_target_nodes_by_source_and_type(G, product_id, "offered_by")
     functional_capabilities_ids = []
     blocker_capabilities_ids = []
@@ -176,10 +179,17 @@ def set_capabilities_relevance(G, capability_threshold=0.5, coreness_threshold=0
 def add_capabilities_to_product(G, product_id, capabilities):
     added_capabilities = []
     for capability in capabilities:
-        node_id = capability.get("id")
-        G.add_node(node_id, **capability)
-        G.add_edge(node_id, product_id, type="offered_by")
-        added_capabilities.append(G.nodes[node_id])
+        cap_id = _capability(
+            G, 
+            name =capability.get("name",""), 
+            description=capability.get("description", ""), 
+            coreness=capability.get("coreness", 0.0), 
+            centrality=capability.get("centrality", 0.0),
+            node_type="capability")
+
+        _upsert_edge(G, product_id, "offers", cap_id)
+        added_capabilities.append(G.nodes[cap_id])
+    G = update_graph(G)
     return added_capabilities
 
 def get_cumulative_relevance(G):

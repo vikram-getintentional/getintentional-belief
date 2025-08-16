@@ -43,7 +43,7 @@ def get_zmot_icp_relevance(sub_graph: nx.DiGraph, threshold = 0.0) -> list[dict]
 
     
     zmot = []
-    zmot_triggerevent_ids = get_nodes_list_ids(sub_graph, "zmot_triggerevents", {})
+    zmot_triggerevent_ids = get_nodes_list_ids(sub_graph, "zmot_event", {})
     for zmot_triggerevent_id in zmot_triggerevent_ids:
         observable_moments = []
         trigger_keywords = []
@@ -56,13 +56,13 @@ def get_zmot_icp_relevance(sub_graph: nx.DiGraph, threshold = 0.0) -> list[dict]
         trigger_keyword_ids = get_target_nodes_by_source_and_type(sub_graph, zmot_triggerevent_id, "associated_with")
         for observable_moment_id in observable_moment_ids:
             obs_relevance = get_cumulative_relevance_data(product_id, observable_moment_id)
-            obs_label = get_node_by_id(sub_graph, observable_moment_id).get("observable_moment", "").strip().lower()
+            obs_label = get_node_by_id(sub_graph, observable_moment_id).get("text", "").strip().lower()
             if obs_relevance < threshold:
                 continue
             observable_moments.append((obs_label, obs_relevance))
         for trigger_keyword_id in trigger_keyword_ids:
             kw_relevance = get_cumulative_relevance_data(product_id, trigger_keyword_id)
-            kw_label = get_node_by_id(sub_graph, trigger_keyword_id).get("keyword", "").strip().lower()
+            kw_label = get_node_by_id(sub_graph, trigger_keyword_id).get("text", "").strip().lower()
             if kw_relevance < threshold:
                 continue
             trigger_keywords.append((kw_label, kw_relevance))

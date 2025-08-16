@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 import json
 from collections import defaultdict
-from backend.utils.graph_base.network_graph import calculate_eigenvector_centrality, calculate_pagerank_centrality, calculate_personalized_pagerank_centrality, calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list, get_source_nodes_by_target_and_type, max_flow, relevance, reverse_belief_weight, update_capability_centralities
+from backend.utils.graph_base.network_graph import calculate_eigenvector_centrality, calculate_pagerank_centrality, calculate_personalized_pagerank_centrality, calculate_soft_or_relevance, get_cumulative_relevance, get_node_by_id, get_node_id, get_nodes_list, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, max_flow, relevance, reverse_belief_weight, update_capability_centralities
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 
 import networkx as nx
@@ -24,10 +24,11 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
     print("Starting relevance computation - at this point centrality & cum relevance should be set")
     personas = []
 
-    product_id = get_node_id(sub_graph, "product",{})
+    product_id = get_product_id_from_subgraph(sub_graph)
 
 
     relevance_nodes = calculate_soft_or_relevance(sub_graph)
+    print("Relevance nodes calculated:", relevance_nodes)
     cumulative_relevance = {item["node_id"]: item["relevance"] for item in relevance_nodes}
     for node_id, relevance in cumulative_relevance.items():
         node_data = get_node_by_id(sub_graph, node_id)
@@ -71,7 +72,7 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
                 "relevance": job_relevance
             })
             # For each pain solved by this job
-            pain_ids = get_source_nodes_by_target_and_type(sub_graph, job_id, "addresses")
+            pain_ids = get_source_nodes_by_target_and_type(sub_graph, job_id, "felt_in")
             for pain_id in pain_ids:
                 pain_node = get_node_by_id(sub_graph, pain_id)
                 if not pain_node:
@@ -99,9 +100,15 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
         personas.append(persona)
     
     
-    print("Persona relevance computed, total personas found:", personas)
-
-
+    print("Persona relevance computed, total personas found:")
+    for persona in personas:
+        print("Persona: ", persona["persona"]["title"],
+              persona["persona"]["department"],
+                persona["persona"]["seniority"],
+                "Relevance:", persona["relevance"],
+                "Jobs:", len(persona["jobs"]),
+                "Pains:", len(persona["pains"])
+              )
 
     aggregated_personas = aggregated_personas_map(sub_graph, personas, threshold=0.2)
     return aggregated_personas
