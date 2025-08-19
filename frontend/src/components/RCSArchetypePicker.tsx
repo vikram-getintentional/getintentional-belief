@@ -4,8 +4,8 @@ type Archetype = {
   archetype_id: string;
   label?: string;
   industry?: string;
-  revenue_range?: string;
-  employee_range?: string;
+  revenue?: string;
+  employees?: string;
   funding_stage?: string;
   geography?: string;
 };
@@ -80,6 +80,7 @@ export default function RCSArchetypePicker({
         });
         if (!res.ok) throw new Error(`Failed to load archetypes (${res.status})`);
         const data = await res.json();
+        console.log("Output archetype:", data);
         if (!alive) return;
         setArchetypes(data.archetypes || []);
       } catch (e: any) {
@@ -102,13 +103,16 @@ export default function RCSArchetypePicker({
     setZmotEvents([]);
     setSelectedZmotEvent("");
     (async () => {
+      
       try {
         const res = await fetch(
           `http://localhost:8000/get-zmots-for-archetype/${selectedProductId}?archetype_id=${selectedArch}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log("ZMOT fetch for arch:", selectedArch);
         if (!res.ok) throw new Error("Failed to load ZMOT events");
         const data = await res.json();
+        console.log("Zmot response:", data);
         if (!alive) return;
         setZmotEvents(Array.isArray(data) ? data : data.zmots || []);
       } catch (err) {
@@ -141,6 +145,7 @@ export default function RCSArchetypePicker({
         });
         if (!res.ok) throw new Error(`Failed to get reverse case study (${res.status})`);
         const data = await res.json();
+        console.log("RCS response:", data);
         setRcs(data);
       } catch (e: any) {
         setError(e.message || "Failed to load reverse case study");
@@ -154,7 +159,7 @@ export default function RCSArchetypePicker({
   const current = archetypes.find(a => a.archetype_id === selectedArch);
   const title = current
     ? current.label ||
-      [current.industry, current.funding_stage, current.geography].filter(Boolean).join(" | ")
+      [current.industry, current.funding_stage, current.geography, current.revenue, current.employees].filter(Boolean).join(" | ")
     : "";
 
   return (
@@ -178,7 +183,7 @@ export default function RCSArchetypePicker({
               <option key={a.archetype_id} value={a.archetype_id}>
                 {[
                   a.label,
-                  [a.industry, a.funding_stage, a.geography].filter(Boolean).join(" | ")
+                  [a.industry, a.funding_stage, a.geography, a.revenue, a.employees].filter(Boolean).join(" | ")
                 ].filter(Boolean)[0]}
               </option>
             ))}

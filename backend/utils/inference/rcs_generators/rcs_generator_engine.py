@@ -126,9 +126,6 @@ def build_archetype_subgraph_with_temporal_depth(
     pain_trigger_ids = get_source_nodes_by_target_and_type(G, archetype_id, "prevalent_in")
     seed_triggers.update(pain_trigger_ids)
 
-    # Not doing ZMOT work now - remember to bring this in once arche works
-    # Also get all ZMOTs for the pain trigger right away
-
     # Seed pains from triggers (depth=1)
     pain_q: deque[Tuple[str, int]] = deque()
 
@@ -225,6 +222,15 @@ def build_archetype_subgraph_with_temporal_depth(
                     print(f"Enqueuing higher order pain {felt_pain!r} with depth {d + 2}")
                     pain_q.append((felt_pain, d))
                     # Queued felt_in pain with d = 2. 
+    
+    if zmot_id:
+        if zmot_id not in G:
+            print(f"ZMOT node {zmot_id!r} not found in graph, skipping")
+        zmot_node = get_node_by_id(G, zmot_id)
+        if not zmot_node:
+            print(f"ZMOT node {zmot_id!r} not found in graph, skipping")
+        _update_relevant_nodes(relevant_nodes, zmot_id, 0)
+
     final_nodes_set = set({n for n, d in relevant_nodes.items()})
     G_a = G.subgraph(final_nodes_set)
     for n in G_a.nodes:
