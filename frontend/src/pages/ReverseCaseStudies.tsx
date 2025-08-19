@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import RCSArchetypePicker from "../components/RCSArchetypePicker";
 
 
 const ReverseCaseStudies = () => {
@@ -46,47 +47,6 @@ const ReverseCaseStudies = () => {
     fetchCompanyAndProducts();
   }, [token]);
 
-  // 4. When a product is selected, fetch personas
-  useEffect(() => {
-    console.log("🔄 Working with product:", selectedProductId);
-    if (!selectedProductId) {
-      console.log("❌ No product selected, skipping persona fetch.");
-      return;
-    }
-    const fetchPersonas = async () => {
-      try {
-        console.log("🔄 Fetching reverse case studies for product:", selectedProductId);
-        const reverseCaseStudyRes = await fetch(
-          `http://localhost:8000/get-reverse-case-studies/${selectedProductId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const reverseCaseStudyData = await reverseCaseStudyRes.json();
-        console.log("Backend reverse case studies response:", reverseCaseStudyData);
-
-        // 5. Handle backend messages
-        if (reverseCaseStudyData?.detail === "No Summaries or Capabilities Mapped") {
-          setStatusMsg("No summaries or capabilities mapped. Please run Value Prop first.");
-          setReverseCaseStudy([]);
-          return;
-        }
-
-        setStatusMsg("");
-        setReverseCaseStudy(reverseCaseStudyData || []);
-
-        // 6. If no reverse case studies, prompt to infer
-        if (!reverseCaseStudyData || reverseCaseStudyData.length === 0) {
-          setStatusMsg("No reverse case studies found..");
-        }
-      } catch (err) {
-        setStatusMsg("Error fetching reverse case studies.");
-        console.error("Error fetching reverse case studies:", err);
-      }
-    };
-    fetchPersonas();
-  }, [selectedProductId]);
-
   return (
     <div className="p-8">
       
@@ -109,13 +69,9 @@ const ReverseCaseStudies = () => {
 
       {/* 4. If no products, show message */}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
-
-      {/* 5. Show reverse case studies if they exist */}
-      {reversecasestudy.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          Reverse Case Study Data in Terminal
-        </div>
-      )}
+      {/* 5. Show reverse case studies from picker */}
+      <RCSArchetypePicker selectedProductId={selectedProductId ?? ""} token={token ?? ""} />
+      
     </div>
   );
 };

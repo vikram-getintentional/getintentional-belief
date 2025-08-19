@@ -67,7 +67,7 @@ const ZmotIcp = () => {
       try {
         console.log("🔄 Fetching ZMOTs and ICPs for product:", selectedProductId);
         const zmotIcpRes = await fetch(
-          `http://localhost:8000/get_zmot_icp/${selectedProductId}`,
+          `http://localhost:8000/get-zmot-icp/${selectedProductId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

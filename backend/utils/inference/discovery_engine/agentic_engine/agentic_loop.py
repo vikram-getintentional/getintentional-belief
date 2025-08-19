@@ -202,8 +202,7 @@ def recursive_agentic_traversal(product_subgraph: nx.DiGraph, context: AgentCont
         context.hop_plus_cache.clear()
 
         print(f"🪜 Hop+ on {len(hop_plus_pains)} pains…")
-        #results = process_hop_plus_gpt_cache(hop_plus_pains, product_subgraph, context)
-        results = []
+        results = process_hop_plus_gpt_cache(hop_plus_pains, product_subgraph, context)
         product_subgraph = update_graph(product_subgraph)
 
         if results:

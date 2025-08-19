@@ -6,11 +6,7 @@ from backend.auth.jwt_handler import decode_token
 from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
-
-
-from backend.utils.inference.visual_analysis_engine.rcs_generator import generate_rcs_from_zmot
-from backend.utils.inference.visual_analysis_engine.rcs_temp import assumed_zmot_sample
-from backend.utils.inference.visual_analysis_engine.rcs_utils import get_best_match_archetypes, get_best_match_zmots_for_archetype, get_top_archetypes
+from backend.utils.inference.rcs_generators.rcs_simulator import simulate_rcs
 from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities
 
 from backend.utils.knowledge_base.persona_generation import (
@@ -24,7 +20,7 @@ import networkx as nx
 
 import os
 
-from backend.utils.knowledge_base.zmot_icp_generation import get_zmot_icp_relevance
+from backend.utils.knowledge_base.zmot_icp_generation import get_archetypes_by_relevance, get_best_zmots_for_archetype, get_zmot_icp_relevance
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
@@ -289,8 +285,8 @@ async def get_products(company_id: str, request: Request):
         print("❌ Get products error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve products")
 
-# GET /get-product_capabilities/{product_id}
-@router.get("/get_product_capabilities/{product_id}")
+# GET /get-product-capabilities/{product_id}
+@router.get("/get-product-capabilities/{product_id}")
 async def get_product_capabilities(product_id: str, request: Request):
     print("Getting product capabilities for product_id:", product_id)
     """
@@ -353,7 +349,7 @@ async def get_personas(product_id: str, request: Request):
     
 
 # GET /get-zmot-icp/{product_id}
-@router.get("/get_zmot_icp/{product_id}")
+@router.get("/get-zmot-icp/{product_id}")
 async def get_zmot_icp(product_id: str, request: Request):
     print("Getting ZMOT ICP for product_id:", product_id)
     """
@@ -380,9 +376,69 @@ async def get_zmot_icp(product_id: str, request: Request):
         print("❌ Get ZMOT ICP error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve ZMOT ICP")
 
+# GET /get-archetypes/{product_id}
+@router.get("/get-archetypes/{product_id}")
+async def get_archetypes(product_id: str, request: Request):
+    print("Getting archetypes for product_id:", product_id)
+    """
+    Returns the archetypes for the given product_id.
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
 
-@router.get("/get-reverse-case-studies/{product_id}")
-async def get_reverse_case_studies(product_id: str, request: Request):
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # 🧠 Inference
+        product_subgraph = build_product_graph(product_id)
+        archetypes = get_archetypes_by_relevance(product_subgraph)
+        print("Archetypes found:", archetypes)
+        return archetypes
+    except Exception as e:
+        print("❌ Get Archetypes error:", e)
+        raise HTTPException(status_code=500, detail="Could not retrieve Archetypes")
+
+# GET /get-zmots-for-archetype/{product_id}
+@router.get("/get-zmots-for-archetype/{product_id}")
+async def get_zmots_for_archetype(product_id: str, archetype_id: str, request: Request):
+    print("Getting ZMOTs for selected archetype for product_id:", product_id)
+    """
+    Returns the ZMOTs for the given product_id and archetype_id.
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        # 🧠 Inference
+        product_subgraph = build_product_graph(product_id)
+        zmots_for_archetype = get_best_zmots_for_archetype(product_subgraph, archetype_id=archetype_id)
+        if not get_zmots_for_archetype:
+            raise HTTPException(status_code=404, detail="No ZMOTs found for the given archetype ID")
+        print("ZMOTs found:", zmots_for_archetype)
+        return zmots_for_archetype
+    except Exception as e:
+        print("❌ Get ZMOTs error:", e)
+        raise HTTPException(status_code=500, detail="Could not retrieve ZMOTs")
+
+#Post /get-reverse-case-study/{product_id}
+@router.post("/get-reverse-case-study/{product_id}")
+async def get_reverse_case_study(product_id: str, payload:dict, request: Request):
     print("Generating reverse case studies for product_id:", product_id)
     """
     Returns a list of reverse case studies for the product_id.
@@ -403,33 +459,19 @@ async def get_reverse_case_studies(product_id: str, request: Request):
 
         # 🧠 Inference
         product_subgraph = build_product_graph(product_id)
+        archetype_id = payload.get("archetype_id")
+        if not archetype_id:
+            raise HTTPException(status_code=400, detail="Archetype ID is required.")
+        zmot_event = payload.get("zmot_event_id", None)
+        engagement_meta = payload.get("engagement_meta", None)
+        print("Calling RCS Simulator")
+        reverse_case_study = simulate_rcs(
+            product_subgraph,
+            archetype_id,
+            zmot_event
+        )
 
-        # 1. Find top archetypes & best match
-        # 2. For each archetype find best ZMOTs
-        # 3. From the list of ZMOTs assume best ZMOT has occurred
-        #4. Generate RCS from this ZMOT
-
-        top_archetypes = get_top_archetypes(product_subgraph)
-        for archetype in top_archetypes:
-            print("ZMOT Summary for Archetype Node: \n", archetype)
-            best_match_archetypes = get_best_match_archetypes(product_subgraph, archetype)
-            for best_match in best_match_archetypes:
-                print("Best Match Archetype Nodes: \n", best_match)
-                best_match_id = best_match.get("id")
-                best_zmots = get_best_match_zmots_for_archetype(product_subgraph, best_match_id)
-                for zmot in best_zmots:
-                    print("ZMOT:", zmot.get("trigger_event", ""), "\n Relevance to Org:", zmot.get("org_relevance",0), "\n Product Relevance:", zmot.get("relevance", 0))
-                    print("----------------------")
-
-                assumed_zmot_event = assumed_zmot_sample(product_subgraph, best_match_id)
-                print("Assumed ZMOT Event:", assumed_zmot_event)
-                rcs = generate_rcs_from_zmot(product_subgraph, best_match_id, assumed_zmot_event)
-                print("Generated RCS:", rcs)
-
-
-                        
-
-        return []
+        return reverse_case_study
     except Exception as e:
         print("❌ Get Reverse Case Studies error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve Reverse Case Studies")

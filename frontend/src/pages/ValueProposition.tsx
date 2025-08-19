@@ -67,7 +67,7 @@ const ValueProposition = () => {
       setStatusMsg("Loading product data...");
       try {
         const res = await fetch(
-          `http://localhost:8000/get_product_capabilities/${selectedProductId}`,
+          `http://localhost:8000/get-product-capabilities/${selectedProductId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
