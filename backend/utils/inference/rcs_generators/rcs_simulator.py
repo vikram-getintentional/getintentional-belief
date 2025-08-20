@@ -1,7 +1,10 @@
 from backend.utils.graph_base.network_graph import get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
-from backend.utils.inference.rcs_generators.rcs_generator_engine import build_archetype_subgraph_with_temporal_depth
+from backend.utils.inference.rcs_generators.rcs_generator_engine import build_archetype_subgraph_with_temporal_depth, build_persona_adjacency_from_subgraph
 import networkx as nx
-
+import numpy as np
+import numpy as np
+from backend.utils.inference.rcs_generators.beliefs.machine import ProbBeliefMachine
+from backend.utils.inference.rcs_generators.beliefs.states import BeliefState as S
 
 def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
     print(f"Simulating RCS for archetype ID: {archetype_id} with zmot_id: {zmot_id}")
@@ -17,6 +20,42 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
             archetype_id=archetype_id
         )
     print(f"Archetype subgraph built with temporal depth for archetype ID: {archetype_id}")
+    # ----------------------------
+    # 0) Add belief bundles
+    # ----------------------------
+    belief_bundle = archetype_subgraph.graph.get("belief_init", {})
+    A_persona, persona_order = build_persona_adjacency_from_subgraph(archetype_subgraph)
+    n = A_persona.shape[0]
+
+    belief_summary = {
+        "personas": persona_order,
+        "activation_SOL": [],
+        "activation_PR": [],
+        "expected_score_SOL": 0.0,
+        "expected_score_PR": 0.0,
+        "marginal_lift_example": 0.0,
+    }
+
+    if n > 0:
+        r = np.ones(n, dtype=float)  # uniform committee weight for now
+        beta = float(belief_bundle.get("beta", 0.35))
+        bm = ProbBeliefMachine(A=A_persona, r=r, beta=beta)
+
+        # if the bundle has a π that matches, restore it (optional but nice)
+        pi0 = belief_bundle.get("pi")
+        if isinstance(pi0, list):
+            pi0 = np.array(pi0, dtype=float)
+            if pi0.shape == bm.pi.shape:
+                bm.pi = pi0
+
+        # baseline scores / activations
+        belief_summary.update({
+            "activation_SOL": bm.activation("SOL").tolist(),
+            "activation_PR":  bm.activation("PR").tolist(),
+            "expected_score_SOL": bm.expected_score("SOL"),
+            "expected_score_PR":  bm.expected_score("PR"),
+        })
+
     # ----------------------------
     # 1) Construct Archetype for Output
     # ----------------------------
@@ -35,25 +74,32 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
     d = 0
     first_response_pain_family = []
     archetype_pain_trigger_ids = get_source_nodes_by_target_and_type(archetype_subgraph, archetype_id, "prevalent_in")
+
+    #----------------------
+    # Softmax logic for baseline likelihoods of archetype on pain triggers
+    #----------------------
     
     for pain_trigger_id in archetype_pain_trigger_ids:    
         pain_set = {}
         metric = {}
         pain_trigger_res = {}
         zmot_boost = 0
-        if zmot_id:
-            zmot_node = get_node_by_id(archetype_subgraph, zmot_id)
-            if not zmot_node:
-                print("ZMOT node not found in archetype subgraph, skipping")
-            zmot_boost = get_edge_weight(archetype_subgraph, pain_trigger_id, zmot_id)
-        
         pain_trigger_node = get_node_by_id(archetype_subgraph, pain_trigger_id)
         pain_trigger_depth = pain_trigger_node.get("depth")
         if pain_trigger_depth == 1:
+            if zmot_id:
+                zmot_node = get_node_by_id(archetype_subgraph, zmot_id)
+                if not zmot_node:
+                    print("ZMOT node not found in archetype subgraph, skipping")
+                zmot_boost = get_edge_weight(archetype_subgraph, pain_trigger_id, zmot_id)
+            print("Zmot boost for pain trigger:", pain_trigger_id, " = ", zmot_boost)
             pain_trigger_attribute = pain_trigger_node.get("attribute", "UNKNOWN")
             # Log odds multiplier for pain trigger boost...
             baseline_pain_trigger_likelihood = get_edge_weight(archetype_subgraph, pain_trigger_id, archetype_id)
-            pain_trigger_likelihood = (1+ zmot_boost)* baseline_pain_trigger_likelihood / (((1+ zmot_boost)* baseline_pain_trigger_likelihood)+(1- baseline_pain_trigger_likelihood))
+            print("Pain trigger likelihood without boost:", baseline_pain_trigger_likelihood)
+            pain_trigger_likelihood = (1+ 10*zmot_boost)* baseline_pain_trigger_likelihood / (((1+ 10*zmot_boost)* baseline_pain_trigger_likelihood)+(1- baseline_pain_trigger_likelihood))
+            #pain_trigger_likelihood = 1-((1 - baseline_pain_trigger_likelihood) * (1 - zmot_boost))
+            print("Pain trigger likelihood with boost:", pain_trigger_likelihood)
 
             pain_ids = get_source_nodes_by_target_and_type(archetype_subgraph, pain_trigger_id, "triggered_by")
             pain_sets = []
@@ -68,7 +114,6 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
                     for perceived_metric_id in perceived_metric_ids:
                         perceived_metric_node = get_node_by_id(archetype_subgraph, perceived_metric_id)
                         metric_depth = perceived_metric_node.get("depth")
-                        print(f"Processing perceived metric ID: {perceived_metric_id}, depth: {metric_depth}")
                         if metric_depth == 1:
                             metric_description = perceived_metric_node.get("metric", "UNKNOWN")
                             metric_likelihood = get_edge_weight(archetype_subgraph, pain_id, perceived_metric_id) * pain_likelihood
@@ -84,7 +129,6 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
                     for solving_job_id in solving_job_ids:
                         solving_job_node = get_node_by_id(archetype_subgraph, solving_job_id)
                         if solving_job_node.get("type") != "job":
-                            print("Hit a capability node. Skipping")
                             continue
 
                         solving_job_depth = solving_job_node.get("depth")
@@ -150,8 +194,23 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
         "persona_id": most_likely_persona["persona_id"] if most_likely_persona else "UNKNOWN",
     }
 
+    # -----------------------------
+    # 3) Lift from potential engagement
+    # -----------------------------
+    # --- Belief: next-best actions + ML persona what-if ---
+    belief_next_best = []
+    belief_mlp_lift = 0.0
+    if n > 0:  # bm exists
+        # Top-k actions across all personas
+        belief_next_best = recommend_next_actions(bm, persona_order, k=5, mode="SOL")
+
+        # If your “most likely persona” is in the persona_order, compute its what-if lift
+        mlp_id = most_likely_persona["persona_id"] if most_likely_persona else None
+        if mlp_id and mlp_id in persona_order:
+            belief_mlp_lift = marginal_lift_for_persona(bm, persona_order, mlp_id, mode="SOL")
+
     #-----------------------------
-    # Causal Temporal Path Reconstruction
+    # 4) Causal Temporal Path Reconstruction
     #-----------------------------
     job_id = most_likely_first_responder_path_ids.get("job_id")
     product_id = get_product_id_from_subgraph(archetype_subgraph)
@@ -202,9 +261,28 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
 
     }
 
+    first_response_pain_family = sorted(first_response_pain_family, key=lambda x: x["trigger_likelihood"], reverse=True)
+    first_response_pain_family_data = []
+    for trigger_res in first_response_pain_family:
+            first_response_pain_family_data.append({
+                "pain_trigger": trigger_res["pain_trigger"],
+                "trigger_likelihood": trigger_res["trigger_likelihood"],
+                "trigger_depth": trigger_res["trigger_depth"],
+            })
+
 
     final_rcs = {
         "archetype": archetype,
+        "belief": {
+            "personas": persona_order,
+            "activation_SOL": belief_summary.get("activation_SOL", []),
+            "activation_PR":  belief_summary.get("activation_PR", []),
+            "expected_score_SOL": belief_summary.get("expected_score_SOL", 0.0),
+            "expected_score_PR":  belief_summary.get("expected_score_PR", 0.0),
+            "marginal_lift_example": belief_mlp_lift,
+            "next_best_actions": belief_next_best,
+        },
+        "first_response_pain_family": first_response_pain_family_data,
         "most_likely_first_response_path": most_likely_first_responder_data,
         "causal_chains": causal_chains
     }
@@ -271,3 +349,43 @@ def _node_content(archetype_subgraph, node_id):
         }
     return content
     
+def _current_stage(bm, i: int) -> S:
+    # argmax over the 6-state distribution
+    return S(int(bm.pi[i].argmax()))
+
+def _next_stage(s: S) -> S | None:
+    order = [S.Unaware, S.ProblemRealisation, S.PainRealisation, S.Discovery, S.Barriers, S.Implementation]
+    try:
+        j = order.index(s)
+        return order[j+1] if j+1 < len(order) else None
+    except ValueError:
+        return None
+
+def marginal_lift_for_persona(bm, persona_order: list[str], persona_id: str, mode="SOL") -> float:
+    if persona_id not in persona_order:
+        return 0.0
+    i = persona_order.index(persona_id)
+    s_from = _current_stage(bm, i)
+    s_to = _next_stage(s_from)
+    if s_to is None:
+        return 0.0  # already at terminal state
+    return float(bm.marginal_lift_if_forced(i, s_from, s_to, mode=mode))
+
+
+def recommend_next_actions(bm, persona_order: list[str], k: int = 5, mode: str = "SOL"):
+    items = []
+    for pid in persona_order:
+        i = persona_order.index(pid)
+        s_from = _current_stage(bm, i)
+        s_to = _next_stage(s_from)
+        if s_to is None:
+            continue
+        dS = float(bm.marginal_lift_if_forced(i, s_from, s_to, mode=mode))
+        items.append({
+            "persona_id": pid,
+            "from": s_from.name,
+            "to": s_to.name,
+            "delta_score": dS
+        })
+    items.sort(key=lambda x: x["delta_score"], reverse=True)
+    return items[:k]
