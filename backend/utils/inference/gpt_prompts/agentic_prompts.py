@@ -34,24 +34,42 @@ def build_hop0_prompt(
         - Product industry: {industry}
         - Capabilities: {_fmt(caps_payload)}
 
+        Labeling guides (apply to all outputs as directed):
+        - Relevance label: How central is the source node to resolving or enabling the target node?
+        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+        • Critical: Without the source, the target cannot be achieved.
+        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
+        • Supportive: The source contributes to the target but is not sufficient on its own.
+        • Ancillary: The source may only help in edge cases or indirectly.
+        • Out-of-scope: The source does not materially affect the target.
+
+        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
+        One of: {"Essential","Expected","Common","Rare","Unlikely"}
+        • Essential: The source is almost always the solution/enabler for the target.
+        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
+        • Common: Commonly expected, but other solutions/enablers exist.
+        • Rare: Rarely used or expected only in special cases.
+        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
+
         Instructions:
         1) For each capability, infer 1–3 *concrete pains* it directly solves.
         IMPORTANT:
             Each pain must be an actual inefficiency or friction a persona faces while performing a job. Think of a pain as the reason why a persona was unable to sufficiently, efficiently, or effectively deliver the job’s outcomes.
         For each pain include:
-        - the pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that blocks a persona's ability to perform a job.
-        - relevance: an array of floats (0.0–1.0), one per capability in input order.
-            the relevance array describes how relevant this pain is against each capability in the input, in the exact order as the input capabilities.
-            relevance array length MUST equal the number of capabilities in the input.
-        - pain_triggers: list 3–5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
+        1a) the pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that blocks a persona's ability to perform a job.
+        1b) Relevance & Likelihood Labels: For each pain as the target and the corresponding capability as the source provide a relevance label and a likelihood label.
+
+        2) pain_triggers: list 3–5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
             - Evaluate each "pain trigger" as a response to "what must increase, scale, or significantly change for this pain to become worse?"
             - Only return the attribute term — no units, direction, or values.
             - Be specific in your response
             - Ensure that the returned output is normalized and lemmatized
             For example, a pain in "difficulty managing data pipelines" gets worse with "analytics data sources".
             Only return: "analytics data sources" as the pain trigger attribute. 
+            - For each pain trigger as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         - perceived_metrics: list ≥2 measurable indicators of the pain
             for example "data pipeline latency", "data quality issues", "data processing costs"
+            for each perceived metric as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         3) felt_in_jobs: For each pain infer 1–3 jobs-to-be-done that this pain is typically felt in.
         IMPORTANT: 
             The job must be the specific task or business objective that a persona performs during which this pain is felt. 
@@ -61,7 +79,7 @@ def build_hop0_prompt(
             The job language must be something that you might find in the typical job description for a persona in an organization.
         For each job include:
         - job_to_be_done (string): A one sentence description of the specific job that is performed by a persona during which this pain is felt.
-        - impact (float 0.0–1.0): How directly this pain impacts the outcome of this job. 0.8-1.0 means this pain prevents the job from delivering its outcomes, 0.7-0.5 means this pain significantly degrades the job's outcomes, 0.4-0.2 means this pain has a moderate impact on the job's outcomes, and 0.1-0.0 means this pain has a minor or negligible impact on the job's outcomes.
+        - for each job_to_be_done as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         
         4) For each job, infer 1-3 personas who would typically be responsible for performing this job in an organization.
         Ensure that each persona is an actual "job title" that exists in an organization, and the job to be done usually is part of their job description or responsibilities.
@@ -69,7 +87,7 @@ def build_hop0_prompt(
                  - "title",
                  - "department",
                  - "seniority" : "Junior|Operator|Manager|Senior|Executive",
-                 - "job_importance" (float 0.0–1.0): how important or core the outcome of this job is to the persona's role. 0.7-1.0 means the successful delivery of this job is a key part of the persona's role, 0.4-0.6 means this job is a significant part of the persona's role, 0.1-0.3 means this job's outcome is a minor or peripheral part of the persona's role.
+                 - provide a relevance label and a likelihood label for the persona as the target and the corresponding job as the source.
        
         5) For each job, infer 1-3 "solving pains" as the business pains, workflow inefficiencies or organizational issues that this job exists to solve.
         IMPORTANT:
@@ -81,7 +99,7 @@ def build_hop0_prompt(
             The solving pain must NOT equal, paraphrase, or be the canonical equivalent of the job description or the original pain.
         For each solving pain include:
                 - pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that is solved by this job_to_be_done.
-                - criticality: float (0.0-1.0) describing how critical this job is to solving this pain (0.7-1.0 = pain cannot be resolved without this job, 0.0-0.3 = pain is peripheral to this job)
+                - for each solving pain as the target and the corresponding job as the source provide a relevance label and a likelihood label.
                 - perceived_metrics: list ≥2 "metrics"
                 - pain_triggers: list 2–4 "attributes"
         Rules:
@@ -90,31 +108,35 @@ def build_hop0_prompt(
         3. Ensure all responses are in the context of a typical organization that could potentially benefit from the provided product summary, domain and industry.
         4. IMPORTANT: Avoid cycles and rewording in pains, jobs, and solving pains. Ensure distinct responses with clear causal/temporal order.
         5. Use precise and specific, domain-relevant language; avoid vague terms (“optimize”, “improve process”) without specifics.
-        6. IMPORTANT: Ensure all results fit a typical organization with needs aligned to the product summary, domain, and industry.
+        6. IMPORTANT: Ensure all results are relevant and with context of the provided product summary, domain and industry. Do not hallucinate or return results that aare irrelevant or questionable in the given context.
 
         Return STRICT JSON array:
         [{{
             "capability_id": must be exactly one of the input capability_ids provided in context,
             "pains": [{{
             "pain": "string",
-            "relevance": [float,...],
-            "pain_triggers": ["string",...],
-            "perceived_metrics": ["string",...],
+            "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+            "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
+            "pain_triggers": [{{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}},...],
+            "perceived_metrics": [{{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}},...],
             "felt_in_jobs": [{{
                 "job_to_be_done": "string",
-                "impact": float,
+                "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
                 "personas": [{{
                     "title":"string",
                     "department":"string",
                     "seniority":"Junior|Operator|Manager|Senior|Executive",
-                    "job_importance":float
+                    "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                    "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"
                     }},...],
                     
                 "solving_pains": [{{
                     "pain":"string",
-                    "criticality": float,
-                    "pain_triggers": ["string",...],
-                    "perceived_metrics": ["string",...],
+                    "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                    "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
+                    "pain_triggers": [{{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}},...],
+                    "perceived_metrics": [{{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}},...],
                     }},...]
                 }},...]
             }},...]
@@ -212,6 +234,23 @@ def build_hop_plus_prompt(
         - Product industry: {industry}
         - Internal pains (with anchors): {_fmt(upstream_pain_contexts)}
 
+        Labeling guides (apply to all outputs as directed):
+        - Relevance label: How central is the source node to resolving or enabling the target node?
+        One of: {{"Critical","Core","Supportive","Ancillary","Out-of-scope"}}
+        • Critical: Without the source, the target cannot be achieved.
+        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
+        • Supportive: The source contributes to the target but is not sufficient on its own.
+        • Ancillary: The source may only help in edge cases or indirectly.
+        • Out-of-scope: The source does not materially affect the target.
+
+        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
+        One of: {{"Essential","Expected","Common","Rare","Unlikely"}}
+        • Essential: The source is almost always the solution/enabler for the target.
+        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
+        • Common: Commonly expected, but other solutions/enablers exist.
+        • Rare: Rarely used or expected only in special cases.
+        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
+
         Instructions:
         For each pain in the input, do the following:
         1) felt_in_jobs: infer 1–3 jobs where this pain is experienced.
@@ -225,7 +264,7 @@ def build_hop_plus_prompt(
             Remember not to just rephrase the downstream job description that solves for this pain, but to infer the upstream job that this pain is experienced during.
         For each job include:
         - job_to_be_done (string): A one sentence description of the specific job that is performed by a persona during which this pain is experienced.
-        - severity (float 0.0–1.0): How much the success of this job is impacted by this pain. 0.8-1.0 means this pain prevents the job from delivering its outcomes, 0.7-0.5 means this pain significantly degrades the job's outcomes, 0.4-0.2 means this pain has little to moderate impact on the job's outcomes, and 0.1-0.0 means this pain has a minor or negligible impact on the job's outcomes.
+        - for each job_to_be_done as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         
         2) Why–What–Fail reasoning (for each job):
             a. Why does this job exist? (independent of the original pain; job exists as a standing responsibility)
@@ -245,7 +284,7 @@ def build_hop_plus_prompt(
                 The solving pain must be temporally earlier to the job, meaning the pain is experienced first, and the job is performed or delegated as a response to this pain.
                 The solving pain remains unsolved or gets worse if the job is not performed well or does not deliver its intended outcomes.
                 The solving pain must not be a rephrasing of the job description or the original pain. It must be a distinct causally and temporally upstream business pain. 
-            - criticality: float (0.0-1.0) describing how critical this job is to solving this pain (0.7-1.0 = pain cannot be resolved without this job, 0.0-0.3 = pain is peripheral to this job)
+            - for each solving pain as the target and the corresponding job as the source provide a relevance label and a likelihood label.
             - pain_triggers: list 3-5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
                 - Evaluate each "pain trigger" as a response to "what must increase, scale, or significantly change for this pain to become worse?"
                 - Only return the attribute term — no units, direction, or values.
@@ -253,8 +292,10 @@ def build_hop_plus_prompt(
                 - Ensure that the returned output is normalized and lemmatized
                 For example, a pain in "difficulty managing data pipelines" gets worse with "analytics data sources".
                 Only return: "analytics data sources" as the pain trigger attribute. 
+                - For each pain trigger as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
             - perceived_metrics: list ≥2 measurable indicators of the pain
                 for example "data pipeline latency", "data quality issues", "data processing costs"
+                = for each perceived metric as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         
         4) For each job, infer 1-3 personas who would typically be responsible for performing this job in an organization.
         Ensure that each persona is an actual "job title" that exists in an organization, and the job to be done usually is part of their job description or responsibilities.
@@ -262,15 +303,16 @@ def build_hop_plus_prompt(
                  - "title",
                  - "department",
                  - "seniority" : "Junior|Operator|Manager|Senior|Executive",
-                 - "job_importance" (float 0.0–1.0): how important or core the outcome of this job is to the persona's role. 0.7-1.0 means the successful delivery of this job is a key part of the persona's role, 0.4-0.6 means this job is a significant part of the persona's role, 0.1-0.3 means this job's outcome is a minor or peripheral part of the persona's role.
+                 - provide a relevance label and a likelihood label for the persona as the target and the corresponding job as the source.
        
                  
         Rules:
-        1. Treat each input pain independently. Do not let context or output of one pain bleed into another.
-        2. Ensure that the output includes all pains provided in the input, at least 1 "felt_in" job per pain, 1 persona per job, and 1 solving pain per job.
-        3. Ensure all responses are in the context of a typical organization that could potentially benefit from the provided product summary, domain and industry.
-        4. IMPORTANT: Avoid cycles and rewording in pains, jobs, and solving pains. Ensure distinct responses with clear causal/temporal order.
-        5. Use precise and specific language that is typically used in an organization. Do not use generic or vague terms.
+        1. IMPORTANT: Only use the provided context and ensure all responses are tightly relevant to the product summary, domain, and industry inputs. If this is not a strongly plausible context or you find your confidence < 40% return an empty array [].
+        2. Treat each input pain independently. Do not let context or output of one pain bleed into another.
+        3. Ensure that the output includes all pains provided in the input, at least 1 "felt_in" job per pain, 1 persona per job, and 1 solving pain per job.
+        4. Ensure all responses are in the context of a typical organization that could potentially benefit from the provided product summary, domain and industry.
+        5. IMPORTANT: Avoid cycles and rewording in pains, jobs, and solving pains. Ensure distinct responses with clear causal/temporal order.
+        6. Use precise and specific language that is typically used in an organization. Do not use generic or vague terms.
 
          Return STRICT JSON array:
         [{{
@@ -278,18 +320,21 @@ def build_hop_plus_prompt(
         "felt_in_jobs":
             [{{
             "job_to_be_done":"string",
-            "severity": float,
+            "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+            "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
             "personas":
                 [{{"title":"string",
                 "department":"string",
                 "seniority":"Junior|Operator|Manager|Senior|Executive",
-                "job_importance": float
+                "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"
                 }}...],
             "solving_pains":[{{
                 "pain":"string",
-                "criticality": "float",
-                "pain_triggers": ["string",...],
-                "perceived_metrics": ["string",...],
+                "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
+                "pain_triggers": [{{"text":"string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}},...],
+                "perceived_metrics": [{{"text":"string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}},...],
                 }},...]
             }}...],
         }}]
@@ -315,12 +360,27 @@ def build_archetypes_relevance_matrix(
         - Product domain: {domain}
         - Product industry: {industry}
         - Pain triggers with anchors: {_fmt(trigger_contexts)}
+        
+        Labeling guides (apply to all outputs as directed):
+        - Relevance label: How central is the source node to resolving or enabling the target node?
+        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+        • Critical: Without the source, the target cannot be achieved.
+        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
+        • Supportive: The source contributes to the target but is not sufficient on its own.
+        • Ancillary: The source may only help in edge cases or indirectly.
+        • Out-of-scope: The source does not materially affect the target.
 
-        Definitions:
-        - Baseline prevalence: how common a trigger is for an archetype under normal conditions (no special event).
-        - Accelerating event: a discrete, observable event that increases the likelihood/severity of a trigger.
+        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
+        One of: {"Essential","Expected","Common","Rare","Unlikely"}
+        • Essential: The source is almost always the solution/enabler for the target.
+        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
+        • Common: Commonly expected, but other solutions/enablers exist.
+        • Rare: Rarely used or expected only in special cases.
+        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
+        
 
         Instructions:
+        1) Ensure all responses are in tight context of the provided product summary, domain and industry. If this is not a strongly plausible context or you find your confidence < 40% return an empty archetypes array and an empty relevance_matrix array.
         1) Internally cluster triggers into coherent themes to avoid duplication and to ground events. (Do NOT return these clusters.)
         2) Infer a candidate set of 8-12 organizational archetypes that typically experience these triggers, ensuring each input trigger is represented in at least one archetype.
         For each archetype, include:
@@ -329,7 +389,7 @@ def build_archetypes_relevance_matrix(
            - employee_range: "<50" | "50–200" | "200–1k" | "1k–5k" | ">5k"
            - funding_stage: "bootstrapped" | "seed" | "Series A" | "Series B" | "growth" | "public"
            - geography: "North America", "Europe", "Asia-Pacific", "Latin America", "Middle East & Africa", etc.
-        3) Build a **full relevance matrix**: for each archetype, provide a score for every input trigger (dense, no omissions).
+        3) Build a **full relevance matrix**: for each archetype, providing a Relevance and Likelihood label for every input trigger (dense, no omissions).
         4) Keep language specific and organization-realistic; deduplicate near-synonyms; do not invent trigger IDs.
 
         Guardrails:
@@ -353,7 +413,7 @@ def build_archetypes_relevance_matrix(
             {{
             "archetype_ref":"arch_1",
             "trigger_scores":[
-                {{"pain_trigger_id":"<id from input>","relevance": float}}
+                {{"pain_trigger_id":"<id from input>","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}},...  # one for each input trigger
             ]
             }}
         ],
@@ -383,12 +443,38 @@ def build_zmot_for_triggers_prompt(product_summary: str,
         - Organizational Archetypes: {_fmt(archetype_contexts)}
         - Pain triggers with anchors: {_fmt(trigger_contexts)}
 
+        Labeling guides (apply to all outputs as directed):
+        - Relevance label: How central is the source node to resolving or enabling the target node?
+        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+        • Critical: Without the source, the target cannot be achieved.
+        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
+        • Supportive: The source contributes to the target but is not sufficient on its own.
+        • Ancillary: The source may only help in edge cases or indirectly.
+        • Out-of-scope: The source does not materially affect the target.
+
+        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
+        One of: {"Essential","Expected","Common","Rare","Unlikely"}
+        • Essential: The source is almost always the solution/enabler for the target.
+        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
+        • Common: Commonly expected, but other solutions/enablers exist.
+        • Rare: Rarely used or expected only in special cases.
+        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
+
+        - Boost label: How strongly does the occurance of this event accelerate or intensify the pain trigger for this archetype?
+        One of: {"Very High", "High","Medium","Low","Negligible"}
+        • Very High: This event always significantly accelerates or intensifies the pain trigger for this archetype, and requires immediate attention.
+        • High: This event often significantly accelerates or intensifies the pain trigger for this archetype, and should be monitored closely.
+        • Medium: This event sometimes accelerates or intensifies the pain trigger for this archetype, and should be monitored periodically.
+        • Low: This event rarely accelerates or intensifies the pain trigger for this archetype, and can be monitored infrequently.
+        • Negligible: This event does not materially accelerate or intensify the pain trigger for this archetype, and does not require monitoring.
+
         For each (archetype × pain_trigger) pair, identify **(minimum) 3 to (utmost) 5** specific, discrete external events that would significantly accelerate or intensify the given pain trigger for that archetype.
 
         For each external event include:
         - trigger_event: short, specific description of the event (e.g., "leadership change", "pricing overhaul", "market entry — APAC", "regulatory change", "compliance audit", "IPO readiness", "funding round", "merger announcement", "customer dissatisfaction", "employee churn", etc.)
-        - match_score (0.0–1.0): How likely this event is to occur in this specific archetype (0.7-1.0 means this event happens very frequently, 0.4-0.1 means this event rarely occurs for this archetype)
-        - boost_score (0.0-1.0): How strongly the event accelerates the pain trigger for this archetype (0.7-1.0 means this event significantly increases the relative impact of the pain trigger, 0.1-0.4 means this event has a minor or negligible impact on the pain trigger)
+        - include an archetype relevance label and an archetype likelihood label for the trigger_event as the target and the corresponding archetype as the source.
+        - include a pain_trigger relevance label and a pain_trigger likelihood label for the trigger_event as the target and the corresponding pain_trigger as the source.
+        - For each trigger event include a boost label describing How strongly the occurance of this event accelerates the pain trigger for this archetype 
         - observable_moments: 3–6 concrete sources or proxy signals (free-form; allow niche communities, forums, datasets, etc.).
                    • For each trigger_event ask "what externally observable information can signal or help infer the occurrence of this event?" 
                    • Example (get creative here): 
@@ -397,13 +483,14 @@ def build_zmot_for_triggers_prompt(product_summary: str,
                         job postings of AEs/ sales executives in specific regions to infer "market expansion"
                         subreddits, forums or communities discussions to infer specific concerns
                         glassdoor reviews to infer "employee churn" or "company culture"
-            - For each observable moment include a match_score (0.0–1.0) indicating how well this observable moment can be used to infer the occurrence of the event (0.7-1.0 means this observable moment is a strong signal for the event, 0.1-0.4 means this observable moment is a weak or indirect signal for the event)
+            - For each observable moment include a relevance label and liklihood label for the observable_moment as the target and the corresponding trigger_event as the source.
         - trigger_keywords: 6–12 normalized, lemmatized, lowercase terms to look for in an observable moment that indicate the occurrence of the event
                         each trigger keyword should be a word or short phrase - no units/direction; brand terms only if essential.
-            - For each trigger keyword include a match_score (0.0–1.0) indicating how well this keyword can be used to infer the occurrence of the event (0.7-1.0 means this keyword is a strong signal for the event, 0.1-0.4 means this keyword is a weak or indirect signal for the event)
+            - For each trigger keyword include a relevance label and liklihood label for the trigger_keyword as the target and the corresponding trigger_event as the source.
 
         
         Guardrails:
+        - IMPORTANT: Ensure all responses are in tight context of the provided product summary, domain and industry. If this is not a strongly plausible context or you find your confidence < 40% return empty results.
         - Do not invent archetype IDs or trigger IDs — use exactly those given.
         - Make events specific to both the archetype and trigger context.
         - Ensure all answers are in the context of a typical organization that could potentially benefit from the provided product summary, domain, and industry.
@@ -433,14 +520,14 @@ def build_zmot_for_triggers_prompt(product_summary: str,
               "zmot_triggers": [
                 {{
                   "trigger_event": "string",
-                  "match_score": 0.85,
-                  "boost_score": 0.90,
+                  "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                  "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
+                  "boost_label": "Very High|High|Medium|Low|Negligible",
                   "observable_moments": [
-                    {{"observable_moment": "string", "match_score": 0.80}}
+                    {{"observable_moment": {{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}}}}
                   ],
                   "trigger_keywords": [
-                    {{"keyword": "string", "match_score": 0.75}}
-                  ]
+                    {{"keyword": {{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}}}}]
                 }}
               ]
             }}

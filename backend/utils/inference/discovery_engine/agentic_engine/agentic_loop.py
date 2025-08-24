@@ -21,7 +21,7 @@ import networkx as nx
 # Public entry point
 # ---------------------------------------------------------------------------
 
-def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth: int = 3):
+def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth: int = 6):
     """
     Main driver: executes incremental agentic inference passes until caches are empty
     or max_depth is reached. Then runs a single archetype discovery pass for all
@@ -49,14 +49,14 @@ def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth: int = 3):
                 f"(done={done}, depth={context.current_depth}/{context.max_depth})")
             break
     # Finalize: run archetype discovery for Pain Triggers
-    
+    print("✅ Completed agentic Hop loop passes.")
     print("🔍 Running final Trigger Event + Archetype discovery for Pain Triggers…")
     archetype_event_discovery(product_subgraph, context)
 
 
-    print("✅ Completed agentic loop passes.")
-    #archetype_discovery(product_subgraph, context)
-    #print("✅ Completed Archetype discovery.")
+    
+    
+    print("✅ Completed Archetype discovery.")
 
 
 # ---------------------------------------------------------------------------
@@ -243,7 +243,7 @@ def archetype_event_discovery(
     product_subgraph: nx.DiGraph,
     context: AgentContext,
     batch_size: int = 50,
-    max_passes: int = 6,   # safety cap to avoid infinite loops
+    max_passes: int = 10,   # safety cap to avoid infinite loops
 ) -> None:
     """
     Keep discovering (1) Archetype prevalence and (2) ZMOT events for pain_triggers

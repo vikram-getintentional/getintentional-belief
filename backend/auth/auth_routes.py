@@ -61,4 +61,4 @@ def login(user: schemas.LoginRequest, db: Session = Depends(get_db)):
     "sub": db_user.email,
     "company_id": db_user.company_id  # ✅ Make sure this is included
 })
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "company_id": db_user.company_id}

@@ -26,6 +26,7 @@ const Login = () => {
 
     const data = await res.json();
     localStorage.setItem('token', data.access_token);
+    console.log('Post login data:', data);
 
     // Assume company_id is returned in login response
     const companyId = data.company_id;

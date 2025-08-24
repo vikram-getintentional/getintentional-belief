@@ -21,3 +21,4 @@ class Config:
 class Token(BaseModel):
     access_token: str
     token_type: str
+    company_id: str

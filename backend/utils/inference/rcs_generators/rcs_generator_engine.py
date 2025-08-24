@@ -36,7 +36,7 @@ import itertools
 import math
 import networkx as nx
 
-from backend.utils.graph_base.network_graph import get_node_by_id, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.graph_base import schema
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.inference.rcs_generators.beliefs.machine import ProbBeliefMachine #BeliefMachine logic
@@ -90,66 +90,55 @@ def build_persona_adjacency_from_subgraph(G_a: nx.MultiDiGraph) -> tuple[np.ndar
       personas_in_order: list[str]
     """
     # personas present in G_a
-    personas = [n for n, d in G_a.nodes(data=True) if d.get("type") == "persona"]
-    personas.sort()  # stable order for reproducibility
-    idx = {p: i for i, p in enumerate(personas)}
-    n = len(personas)
-    A = np.zeros((n, n), dtype=float)
-    if n == 0:
-        return A, personas
-
-    # preindex jobs owned_by persona and pains felt_in job, jobs that solve pain
-    jobs_by_persona = {p: [u for u, _, _, ed in G_a.in_edges(p, keys=True, data=True)
-                           if ed.get("type") == "performed_by" and G_a.nodes[u].get("type") == "job"]
-                       for p in personas}
-
-    pains_by_job = {j: [p for p, _, _, ed in G_a.in_edges(j, keys=True, data=True)
-                        if ed.get("type") == "felt_in" and G_a.nodes[p].get("type") == "pain"]
-                    for j, d in G_a.nodes(data=True) if d.get("type") == "job"}
-
-    jobs_solving_pain = {}
-    for p, d in G_a.nodes(data=True):
-        if d.get("type") != "pain":
+    persona_ids = get_nodes_list_ids(G_a, "persona", {})
+    if not persona_ids:
+        return np.zeros((0, 0), dtype=float), []
+    persona_ids.sort()  # stable order for reproducibility
+    adj = np.zeros((len(persona_ids), len(persona_ids)), dtype=float)
+    idx = {p: i for i, p in enumerate(persona_ids)}
+    for persona_id in persona_ids:
+        source_job_ids = get_source_nodes_by_target_and_type(G_a, persona_id, "performed_by")
+        if not source_job_ids:
+            print(f"Warning: Persona {persona_id} has no jobs performed_by, skipping.")
             continue
-        jobs_solving_pain[p] = [j for j, _, _, ed in G_a.in_edges(p, keys=True, data=True)
-                                if ed.get("type") == "solves" and G_a.nodes[j].get("type") == "job"]
-
-    def w(u, v, etype):
-        # get_edge_weight is not imported here; edge attrs carry 'weight'
-        # pick max weight over parallel edges of the given type
-        mx = 0.0
-        for _, _, _, ed in G_a.edges(u, v, keys=True, data=True):
-            if ed.get("type") == etype:
-                mx = max(mx, float(ed.get("weight", 0.0)))
-        return mx
-
-    # build A[u,v]
-    for u in personas:
-        iu = idx[u]
-        for j_u in jobs_by_persona.get(u, []):
-            # pains felt in job j_u
-            for p in pains_by_job.get(j_u, []):
-                w_pju = w(p, j_u, "felt_in")
-                if w_pju <= 0:
+        for source_job_id in source_job_ids:
+            orig_job_weight = get_edge_weight(G_a, source_job_id, persona_id)
+            felt_in_pain_ids = get_source_nodes_by_target_and_type(G_a, source_job_id, "felt_in")
+            if not felt_in_pain_ids:
+                print(f"Warning: Job {source_job_id} performed_by {persona_id} has no pains felt_in, skipping.")
+                continue
+            for pain_id in felt_in_pain_ids:
+                felt_pain_weight = get_edge_weight(G_a, pain_id, source_job_id)
+                if felt_pain_weight <= 0:
+                    print(f"Warning: Pain {pain_id} felt_in by job {source_job_id} performed_by {persona_id} has non-positive weight, skipping.")
                     continue
-                # jobs that solve p
-                for j_v in jobs_solving_pain.get(p, []):
-                    w_jvp = w(j_v, p, "solves")
-                    if w_jvp <= 0:
+                solving_job_ids = get_source_nodes_by_target_and_type(G_a, pain_id, "solves")
+                if not solving_job_ids:
+                    print(f"Warning: Pain {pain_id} has no jobs solving it, skipping.")
+                    continue
+                for solving_job_id in solving_job_ids:
+                    solving_job_weight = get_edge_weight(G_a, solving_job_id, pain_id)
+                    if solving_job_weight <= 0:
+                        print(f"Warning: Job {solving_job_id} solves pain {pain_id} with non-positive weight, skipping.")
                         continue
-                    # personas owning j_v
-                    for v in [x for x in G_a.successors(j_v)
-                              if G_a.nodes[x].get("type") == "persona"
-                              and any(ed.get("type") == "performed_by" for _,_,_,ed in G_a.edges(j_v, x, keys=True, data=True))]:
-                        if u == v:
+                    target_persona_ids = get_target_nodes_by_source_and_type(G_a, solving_job_id, "performed_by")
+                    if not target_persona_ids:
+                        print(f"Warning: Job {solving_job_id} has no personas performed_by, skipping.")
+                        continue
+                    for target_persona_id in target_persona_ids:
+                        if target_persona_id == persona_id:
+
                             continue
-                        iv = idx[v]
-                        w_juu = w(j_u, u, "performed_by")
-                        w_jvv = w(j_v, v, "performed_by")
-                        if w_juu > 0 and w_jvv > 0:
-                            path_w = w_juu * w_pju * w_jvp * w_jvv
-                            A[iu, iv] = max(A[iu, iv], path_w)  # max over pains/jobs
-    return A, personas
+                        target_job_weight = get_edge_weight(G_a, solving_job_id, target_persona_id)
+                        if target_job_weight <= 0:
+                            print(f"Warning: Persona {target_persona_id} performed_by job {solving_job_id} has non-positive weight, skipping.")
+                            continue
+                        # Update adjacency matrix A[u, v]
+                        iu = idx[persona_id]
+                        iv = idx[target_persona_id]
+                        adj[iu, iv] = orig_job_weight * felt_pain_weight * solving_job_weight * target_job_weight
+
+    return adj, persona_ids
 
 
 

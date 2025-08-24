@@ -251,48 +251,7 @@ const WebsiteAnalysis = ({ scrapedText, url, plgCta = false, footerFeatures = []
       });
   }, []);
 
-  /*const handleAnalyzeClick = () => {
-    const token = localStorage.getItem("token");
-    setIsGenerating(true);
   
-    // 🛡️ Prevent running before company_id is ready
-    if (!productId) {
-      alert("Product ID is not yet available. Please wait a moment and try again.");
-      console.error("❌ Cannot run analysis without product_id.");
-      setIsGenerating(false);
-      return;
-    }
-  
-    fetch("http://localhost:8000/analyze/deep", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        product_id: productId,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          console.error("🛑 Deep analysis failed:", data.error);
-          alert("Could not generate persona analysis. Please try again.");
-          setIsGenerating(false);
-          return;
-        }
-  
-        console.log("✅ Deep analysis success. Printing all data attributes", data);
-        setPersonaSuggestions(data.personas || []);
-        setShowAdvanced(true);
-        setIsGenerating(false);
-      })
-      .catch((err) => {
-        console.error("❌ Deep analysis error:", err);
-        alert("An unexpected error occurred while generating analysis.");
-        setIsGenerating(false);
-      });
-  };*/
 
 
   return (
