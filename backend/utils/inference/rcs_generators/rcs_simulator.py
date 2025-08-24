@@ -1,4 +1,4 @@
-from backend.utils.graph_base.network_graph import get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import get_edge_attribute, get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.inference.rcs_generators.rcs_generator_engine import build_archetype_subgraph_with_temporal_depth, build_persona_adjacency_from_subgraph
 import networkx as nx
 import numpy as np
@@ -88,10 +88,12 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
         pain_trigger_depth = pain_trigger_node.get("depth")
         if pain_trigger_depth == 1:
             if zmot_id:
+                print("Archetype ID:", archetype_id)
+                print("ZMOT ID provided:", zmot_id)
                 zmot_node = get_node_by_id(archetype_subgraph, zmot_id)
                 if not zmot_node:
                     print("ZMOT node not found in archetype subgraph, skipping")
-                zmot_boost = get_edge_weight(archetype_subgraph, pain_trigger_id, zmot_id)
+                zmot_boost = get_edge_attribute(archetype_subgraph, pain_trigger_id, zmot_id, "boost")
             print("Zmot boost for pain trigger:", pain_trigger_id, " = ", zmot_boost)
             pain_trigger_attribute = pain_trigger_node.get("attribute", "UNKNOWN")
             # Log odds multiplier for pain trigger boost...
@@ -273,6 +275,10 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
 
     final_rcs = {
         "archetype": archetype,
+        
+        "first_response_pain_family": first_response_pain_family_data,
+        "most_likely_first_response_path": most_likely_first_responder_data,
+        "causal_chains": causal_chains,
         "belief": {
             "personas": persona_order,
             "activation_SOL": belief_summary.get("activation_SOL", []),
@@ -282,9 +288,6 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
             "marginal_lift_example": belief_mlp_lift,
             "next_best_actions": belief_next_best,
         },
-        "first_response_pain_family": first_response_pain_family_data,
-        "most_likely_first_response_path": most_likely_first_responder_data,
-        "causal_chains": causal_chains
     }
 
     print(f"Final RCS generated for archetype ID: {archetype_id}")

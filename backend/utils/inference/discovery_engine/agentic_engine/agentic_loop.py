@@ -28,7 +28,7 @@ def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth: int = 6):
     remaining Pain Triggers missing Archetype prevalence.
     """
     context = AgentContext(max_depth=max_depth)
-
+    
     while True:
         agentic_inference(product_subgraph, context)
 
@@ -48,6 +48,7 @@ def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth: int = 6):
             print("🛑 Agentic loop complete.",
                 f"(done={done}, depth={context.current_depth}/{context.max_depth})")
             break
+    
     # Finalize: run archetype discovery for Pain Triggers
     print("✅ Completed agentic Hop loop passes.")
     print("🔍 Running final Trigger Event + Archetype discovery for Pain Triggers…")
@@ -202,8 +203,9 @@ def recursive_agentic_traversal(product_subgraph: nx.DiGraph, context: AgentCont
         context.hop_plus_cache.clear()
 
         print(f"🪜 Hop+ on {len(hop_plus_pains)} pains…")
-        #results = process_hop_plus_gpt_cache(hop_plus_pains, product_subgraph, context)
-        results = []
+        print("Pain IDs:", hop_plus_pains)
+        results = process_hop_plus_gpt_cache(hop_plus_pains, product_subgraph, context)
+        
         product_subgraph = update_graph(product_subgraph)
 
         if results:
@@ -242,8 +244,8 @@ def _pending_triggers_without_edge(G, edge_type: str) -> list[str]:
 def archetype_event_discovery(
     product_subgraph: nx.DiGraph,
     context: AgentContext,
-    batch_size: int = 50,
-    max_passes: int = 10,   # safety cap to avoid infinite loops
+    batch_size: int = 100,
+    max_passes: int = 20,   # safety cap to avoid infinite loops
 ) -> None:
     """
     Keep discovering (1) Archetype prevalence and (2) ZMOT events for pain_triggers
@@ -254,6 +256,9 @@ def archetype_event_discovery(
     print("🔍 Running final Trigger Event + Archetype discovery for Pain Triggers…")
 
     pass_num = 0
+    last_pending_zmots = set()
+    stagnant_count = 0
+    
     while pass_num < max_passes:
         pass_num += 1
         progress = False
@@ -273,6 +278,7 @@ def archetype_event_discovery(
 
         # 2) ZMOTs (PainTrigger -> accelerated_by -> ZMOT), now that archetypes likely exist
         pending_zmots = _pending_triggers_without_edge(product_subgraph, "accelerated_by")
+        pending_zmots_set = set(pending_zmots)
         if pending_zmots:
             print(f"⚡ ZMOT discovery for {len(pending_zmots)} triggers (batch={batch_size})…")
             for i in range(0, len(pending_zmots), batch_size):
@@ -282,6 +288,21 @@ def archetype_event_discovery(
                     progress = True
                 product_subgraph = update_graph(product_subgraph)
             print("⚡ ZMOT discovery pass complete.")
+        
+        # Check for stagnation
+        if pending_zmots_set == last_pending_zmots and pending_zmots:
+            stagnant_count += 1
+        else:
+            stagnant_count = 0
+        last_pending_zmots = pending_zmots_set
+
+        # If stagnant for 2 cycles, mark as attempted and skip
+        if stagnant_count >= 2 and pending_zmots:
+            print(f"⚠️ Marking {len(pending_zmots)} pain_triggers as attempted (no ZMOTs found after 2 cycles).")
+            for t in pending_zmots:
+                print("No ZMOT data found. Moving out")
+            product_subgraph = update_graph(product_subgraph)
+            break
 
         # Re-check if anything remains; if not, or no progress, we can stop
         remaining_arch = _pending_triggers_without_edge(product_subgraph, "prevalent_in")

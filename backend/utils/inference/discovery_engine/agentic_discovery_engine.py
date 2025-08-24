@@ -378,7 +378,7 @@ def process_hop_plus_gpt_cache(pain_ids: list[str], G, context) -> list[str]:
     if not pain_ids:
         return []
     _, summary, domain, industry, _, client, builder = _extract_product_context(G, context)
-
+    
     pain_ctx = _gather_pain_contexts(G, pain_ids)
     print("Pain context gathered. Starting LLM call with pain context: \n", pain_ctx)
     print("----------------- LLM call for Hop+ ----------------")
@@ -391,6 +391,7 @@ def process_hop_plus_gpt_cache(pain_ids: list[str], G, context) -> list[str]:
         user_prompt,
         temperature=0.15,
     )
+    
     builder.ingest_hop_plus(gpt_outputs=data, product_id=get_node_id(G, "product", {}))
     touched = builder.flush(G)
     product_subgraph = update_graph(G)

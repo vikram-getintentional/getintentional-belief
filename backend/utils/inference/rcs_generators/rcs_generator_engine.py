@@ -36,7 +36,7 @@ import itertools
 import math
 import networkx as nx
 
-from backend.utils.graph_base.network_graph import get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import get_edge_attribute, get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.graph_base import schema
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.inference.rcs_generators.beliefs.machine import ProbBeliefMachine #BeliefMachine logic
@@ -102,24 +102,24 @@ def build_persona_adjacency_from_subgraph(G_a: nx.MultiDiGraph) -> tuple[np.ndar
             print(f"Warning: Persona {persona_id} has no jobs performed_by, skipping.")
             continue
         for source_job_id in source_job_ids:
-            orig_job_weight = get_edge_weight(G_a, source_job_id, persona_id)
+            orig_job_likelihood = get_edge_attribute(G_a, source_job_id, persona_id, "likelihood")
             felt_in_pain_ids = get_source_nodes_by_target_and_type(G_a, source_job_id, "felt_in")
             if not felt_in_pain_ids:
                 print(f"Warning: Job {source_job_id} performed_by {persona_id} has no pains felt_in, skipping.")
                 continue
             for pain_id in felt_in_pain_ids:
-                felt_pain_weight = get_edge_weight(G_a, pain_id, source_job_id)
-                if felt_pain_weight <= 0:
-                    print(f"Warning: Pain {pain_id} felt_in by job {source_job_id} performed_by {persona_id} has non-positive weight, skipping.")
+                felt_pain_likelihood = get_edge_attribute(G_a, pain_id, source_job_id, "likelihood")
+                if felt_pain_likelihood <= 0:
+                    print(f"Warning: Pain {pain_id} felt_in by job {source_job_id} performed_by {persona_id} has non-positive likelihood, skipping.")
                     continue
                 solving_job_ids = get_source_nodes_by_target_and_type(G_a, pain_id, "solves")
                 if not solving_job_ids:
                     print(f"Warning: Pain {pain_id} has no jobs solving it, skipping.")
                     continue
                 for solving_job_id in solving_job_ids:
-                    solving_job_weight = get_edge_weight(G_a, solving_job_id, pain_id)
-                    if solving_job_weight <= 0:
-                        print(f"Warning: Job {solving_job_id} solves pain {pain_id} with non-positive weight, skipping.")
+                    solving_job_likelihood = get_edge_attribute(G_a, solving_job_id, pain_id, "likelihood")
+                    if solving_job_likelihood <= 0:
+                        print(f"Warning: Job {solving_job_id} solves pain {pain_id} with non-positive likelihood, skipping.")
                         continue
                     target_persona_ids = get_target_nodes_by_source_and_type(G_a, solving_job_id, "performed_by")
                     if not target_persona_ids:
@@ -129,14 +129,14 @@ def build_persona_adjacency_from_subgraph(G_a: nx.MultiDiGraph) -> tuple[np.ndar
                         if target_persona_id == persona_id:
 
                             continue
-                        target_job_weight = get_edge_weight(G_a, solving_job_id, target_persona_id)
-                        if target_job_weight <= 0:
-                            print(f"Warning: Persona {target_persona_id} performed_by job {solving_job_id} has non-positive weight, skipping.")
+                        target_job_likelihood = get_edge_attribute(G_a, solving_job_id, target_persona_id, "likelihood")
+                        if target_job_likelihood <= 0:
+                            print(f"Warning: Persona {target_persona_id} performed_by job {solving_job_id} has non-positive likelihood, skipping.")
                             continue
                         # Update adjacency matrix A[u, v]
                         iu = idx[persona_id]
                         iv = idx[target_persona_id]
-                        adj[iu, iv] = orig_job_weight * felt_pain_weight * solving_job_weight * target_job_weight
+                        adj[iu, iv] = orig_job_likelihood * felt_pain_likelihood * solving_job_likelihood * target_job_likelihood
 
     return adj, persona_ids
 

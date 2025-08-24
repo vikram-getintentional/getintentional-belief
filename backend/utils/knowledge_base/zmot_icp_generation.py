@@ -1,5 +1,5 @@
 from typing import Dict, List, Any
-from backend.utils.graph_base.network_graph import calculate_cumulative_relevance, calculate_soft_or_relevance, get_edge_weight, get_node_by_id, get_node_id, get_nodes_list_ids, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import calculate_cumulative_relevance, calculate_soft_or_relevance, get_edge_attribute, get_edge_weight, get_node_by_id, get_node_id, get_nodes_list_ids, get_target_nodes_by_source_and_type
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data, get_cumulative_relevance_data
 import networkx as nx
 
@@ -159,21 +159,50 @@ def get_best_zmots_for_archetype(sub_graph: nx.DiGraph, archetype_id: str, thres
         if not zmot_event_node:
             continue
         zmot_label = zmot_event_node.get("event", "").strip().lower()
-        weight = get_edge_weight(sub_graph, archetype_id, zmot_event_id)
-        print("Got weight: ", weight)
-        if weight < threshold:
-            print("weight below threshold, skipping:", zmot_event_id)
+        likelihood = get_edge_attribute(sub_graph, archetype_id, zmot_event_id, "likelihood")
+        print("Got likelihood: ", likelihood)
+        if likelihood < threshold:
+            print("likelihood below threshold, skipping:", zmot_event_id)
             continue
         existing = next((ze for ze in zmot_events if ze["zmot_event_id"] == zmot_event_id), None)
         if existing:
-            print("Existing ZMOT event found:", existing["zmot_event_id"], " with weight:", existing["weight"], "new weight:", weight)
-            if existing["weight"] < weight:
+            print("Existing ZMOT event found:", existing["zmot_event_id"], " with likelihood:", existing["likelihood"], "new likelihood:", likelihood)
+            if existing["likelihood"] < likelihood:
                 continue
-        
+        observable_moments = []
+        observable_moment_ids = get_target_nodes_by_source_and_type(sub_graph, zmot_event_id, "observed_in")
+        for observable_moment_id in observable_moment_ids:
+            obs_match = get_edge_attribute(sub_graph, zmot_event_id, observable_moment_id, "relevance")
+            if obs_match is None:
+                obs_match = 0.0
+            moment_node = get_node_by_id(sub_graph, observable_moment_id)
+            obs_label = moment_node.get("text", "").strip().lower()
+            observable_moments.append({
+                "label": obs_label, 
+                "fitness": obs_match
+            })
+        observable_moments.sort(key=lambda x: x["fitness"], reverse=True)
+        keyword_ids = get_target_nodes_by_source_and_type(sub_graph, zmot_event_id, "associated_with")
+        trigger_keywords = []
+        for keyword_id in keyword_ids:
+            kw_match = get_edge_attribute(sub_graph, zmot_event_id, keyword_id, "relevance")
+            if kw_match is None:
+                kw_match = 0.0
+            keyword_node = get_node_by_id(sub_graph, keyword_id)
+            kw_label = keyword_node.get("text", "").strip().lower()
+            trigger_keywords.append({
+                "label": kw_label,
+                "fitness": kw_match
+            })
+        trigger_keywords.sort(key=lambda x: x["fitness"], reverse=True)
+
+
         zmot_events.append({
             "zmot_event_id": zmot_event_id,
             "zmot_event": zmot_label,
-            "occurance": weight,
+            "occurance": likelihood,
+            "observable_moments": observable_moments,
+            "trigger_keywords": trigger_keywords
         })
 
     zmot_events.sort(key=lambda x: x["occurance"], reverse=True)

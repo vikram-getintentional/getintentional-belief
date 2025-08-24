@@ -95,6 +95,22 @@ def get_edge_weight(G, source_id, target_id):
         return G.get_edge_data(source_id, target_id).get("weight", 0.0)
     return 0.0
 
+def get_edge_attribute(G, source_id, target_id, attribute: str):
+    """
+    Returns the specified attribute of the edge from source_id to target_id, or 0.0 if not present.
+    """
+    if G.has_edge(source_id, target_id):
+        if attribute == "relevance":
+            return G.get_edge_data(source_id, target_id).get("relevance", 0.0)
+        elif attribute == "likelihood":
+            return G.get_edge_data(source_id, target_id).get("likelihood", 0.0)
+        elif attribute == "boost":
+            return G.get_edge_data(source_id, target_id).get("boost", 0.0)
+        else: 
+            print(f"Attribute {attribute} not recognized. Returning weight.")
+            return G.get_edge_data(source_id, target_id).get("weight", 0.0) 
+    return 0.0
+
 def get_source_nodes_by_target_and_type(G, target_id: str, edge_type: str) -> list:
     """
     Retrieves all source node IDs from the graph where the target matches the given ID and the edge type matches.
