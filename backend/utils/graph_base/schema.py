@@ -16,4 +16,5 @@ EDGES = {
     "OBSERVED_IN": "observed_in",       # zmot_event -> observable_moment
     "ASSOCIATED_WITH": "associated_with", # zmot_event -> keyword
     "PREVALENT_IN": "prevalent_in",     # pain_trigger -> archetype
+    "RELEVANT_TO": "relevant_to",       # archetype -> zmot_event
 }

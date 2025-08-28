@@ -59,15 +59,7 @@ def build_hop0_prompt(
         1a) the pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that blocks a persona's ability to perform a job.
         1b) Relevance & Likelihood Labels: For each pain as the target and the corresponding capability as the source provide a relevance label and a likelihood label.
 
-        2) pain_triggers: list 3–5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
-            - Evaluate each "pain trigger" as a response to "what must increase, scale, or significantly change for this pain to become worse?"
-            - Only return the attribute term — no units, direction, or values.
-            - Be specific in your response
-            - Ensure that the returned output is normalized and lemmatized
-            For example, a pain in "difficulty managing data pipelines" gets worse with "analytics data sources".
-            Only return: "analytics data sources" as the pain trigger attribute. 
-            - For each pain trigger as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
-        - perceived_metrics: list ≥2 measurable indicators of the pain
+        2) For each pain infer perceived_metrics: list ≥2 measurable indicators of the pain
             for example "data pipeline latency", "data quality issues", "data processing costs"
             for each perceived metric as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         3) felt_in_jobs: For each pain infer 1–3 jobs-to-be-done that this pain is typically felt in.
@@ -101,7 +93,14 @@ def build_hop0_prompt(
                 - pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that is solved by this job_to_be_done.
                 - for each solving pain as the target and the corresponding job as the source provide a relevance label and a likelihood label.
                 - perceived_metrics: list ≥2 "metrics"
-                - pain_triggers: list 2–4 "attributes"
+                - pain_triggers: list 3–5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
+                    - Evaluate each "pain trigger" as a response to "what must increase, scale, or significantly change for this pain to become worse?"
+                    - Only return the attribute term — no units, direction, or values.
+                    - Be specific in your response
+                    - Ensure that the returned output is normalized and lemmatized
+                    For example, a pain in "difficulty managing data pipelines" gets worse with "analytics data sources".
+                    Only return: "analytics data sources" as the pain trigger attribute. 
+                    - For each pain trigger as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
         Rules:
         1. Treat each capability independently. Do not let the context of one output bleed into another.
         2. Ensure that the output includes all capabilities provided in the input, at least 1 pain per capability, 1 job per pain, and 1 solving pain per job.
@@ -109,6 +108,15 @@ def build_hop0_prompt(
         4. IMPORTANT: Avoid cycles and rewording in pains, jobs, and solving pains. Ensure distinct responses with clear causal/temporal order.
         5. Use precise and specific, domain-relevant language; avoid vague terms (“optimize”, “improve process”) without specifics.
         6. IMPORTANT: Ensure all results are relevant and with context of the provided product summary, domain and industry. Do not hallucinate or return results that aare irrelevant or questionable in the given context.
+
+        Optimization goal (global across all pairs):
+        - Build the *smallest possible* pool of distinct pains, jobs, and personas that collectively cover as many capabilities as possible.
+        - Prefer pains plausibly solved by multiple capabilities, and jobs that plausibly experience multiple downstream pains.
+        - HARD CONSTRAINT: Every capability must map to ≥1 pain that it resolves.
+
+        Instructions (two-phase reasoning, single JSON output):
+        1) Generate candidates independently per capability (mentally), but DO NOT output them yet.
+        2) Consolidate into a *minimal shared pool* by deduping/merging near-duplicates and preferring cross-capability coverage.
 
         Return STRICT JSON array:
         [{{

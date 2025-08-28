@@ -59,7 +59,7 @@ def simulate_rcs(product_subgraph, archetype_id, zmot_id = None):
             print("Zmot Boost: ", zmot_boost, " Zmot Weight: ", zmot_weight)
         print("Zmot boost for pain trigger:", pain_trigger_id, " = ", zmot_boost)
         pain_trigger_attribute = pain_trigger_node.get("attribute", "UNKNOWN")
-        pain_trigger_depth = pain_trigger_node.get("depth", 0)
+        pain_trigger_depth = pain_trigger_node.get("depth", 1)
         # Log odds multiplier for pain trigger boost...
         baseline_pain_trigger_likelihood = get_edge_attribute(archetype_subgraph, pain_trigger_id, archetype_id, "likelihood")* pain_trigger_depth
         print("Pain trigger likelihood without boost:", baseline_pain_trigger_likelihood)
