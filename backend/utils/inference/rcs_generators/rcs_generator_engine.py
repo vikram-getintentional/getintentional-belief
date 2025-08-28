@@ -1,25 +1,4 @@
 """
-End-to-end RCS generation pipeline starting from a product graph (NetworkX MultiDiGraph).
-
-Pipeline:
-  1) Build archetype subgraph with temporal depth (first-encounter rule)
-  2) Derive potential committees (structural, belief-independent)
-  3) Overlay belief/satisfaction to classify committees (active/latent/blocked)
-  4) Deduce persona concerns
-  5) Propose engagement plan to move committees over the threshold
-
-Assumptions / Schema (adjust constants below to match your graph):
-  Node types:  Archetype, ZMOT (optional), Trigger, Pain, Job, Persona
-  Persona attrs (recommended):
-    - relevance: float [0,1]
-    - role_weight: float >0 (authority multiplier)
-    - dept: str (e.g., Finance, IT, Product, Marketing)
-    - belief_by_stage: dict like {"purchase":0.6, "impl":0.55, "sustain":0.5}
-    - (optional) resolution_fit, job_importance, pain_severity (persona-level defaults)
-
-  Pain attrs (recommended):
-    - importance, severity in [0,1] (if present)
-
   Edges (by type):
     - archetype  --sources--> trigger                 (EDGE_SRC_ARCH)
     - job        --solves-->  pain                    (EDGE_SOLVES)
@@ -36,10 +15,11 @@ import itertools
 import math
 import networkx as nx
 
-from backend.utils.graph_base.network_graph import get_edge_attribute, get_edge_weight, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import get_edge_attribute, get_edge_weight, get_node_by_id, get_node_subgraph_to_product, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.graph_base import schema
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.inference.rcs_generators.beliefs.machine import ProbBeliefMachine #BeliefMachine logic
+
 
 # ----------------------------
 # Utilities
@@ -64,12 +44,13 @@ def _update_relevant_pain_family(G, relevant_nodes: dict, pain_id: str, depth: i
     Update the relevant nodes list with a pain and its family (job, persona).
     """
     _update_relevant_nodes(relevant_nodes, pain_id, depth)
-    pain_trigger_ids = get_target_nodes_by_source_and_type(G, pain_id, "triggered_by")
-    for trigger_id in pain_trigger_ids:
-        _update_relevant_nodes(relevant_nodes, trigger_id, depth)
+    #pain_trigger_ids = get_target_nodes_by_source_and_type(G, pain_id, "triggered_by")
+    #for trigger_id in pain_trigger_ids:
+        #_update_relevant_nodes(relevant_nodes, trigger_id, depth)
     perceived_metrics = get_target_nodes_by_source_and_type(G, pain_id, "expressed_as")
     for metric_id in perceived_metrics:
         _update_relevant_nodes(relevant_nodes, metric_id, depth)
+
 
 #------------------------------
 # Util to convert graph to matrix
@@ -99,7 +80,7 @@ def build_persona_adjacency_from_subgraph(G_a: nx.MultiDiGraph) -> tuple[np.ndar
     for persona_id in persona_ids:
         source_job_ids = get_source_nodes_by_target_and_type(G_a, persona_id, "performed_by")
         if not source_job_ids:
-            print(f"Warning: Persona {persona_id} has no jobs performed_by, skipping.")
+            print(f"Warning: Persona {persona_id} has no jobs performed_by (Source Jobs - Ln 102), skipping.")
             continue
         for source_job_id in source_job_ids:
             orig_job_likelihood = get_edge_attribute(G_a, source_job_id, persona_id, "likelihood")
@@ -117,13 +98,18 @@ def build_persona_adjacency_from_subgraph(G_a: nx.MultiDiGraph) -> tuple[np.ndar
                     print(f"Warning: Pain {pain_id} has no jobs solving it, skipping.")
                     continue
                 for solving_job_id in solving_job_ids:
+                    solving_job_node = get_node_by_id(G_a, solving_job_id)
+                    if not solving_job_node:
+                        continue
+                    if solving_job_node.get("type") != "job":
+                        continue
                     solving_job_likelihood = get_edge_attribute(G_a, solving_job_id, pain_id, "likelihood")
                     if solving_job_likelihood <= 0:
                         print(f"Warning: Job {solving_job_id} solves pain {pain_id} with non-positive likelihood, skipping.")
                         continue
                     target_persona_ids = get_target_nodes_by_source_and_type(G_a, solving_job_id, "performed_by")
                     if not target_persona_ids:
-                        print(f"Warning: Job {solving_job_id} has no personas performed_by, skipping.")
+                        print(f"Warning: Job {solving_job_id} has no personas performed_by (Solving Job - ln 127), skipping.")
                         continue
                     for target_persona_id in target_persona_ids:
                         if target_persona_id == persona_id:
@@ -337,3 +323,431 @@ def build_archetype_subgraph_with_temporal_depth(
 
     # End of belief states logic
     return G_a
+
+def create_belief_bundle(G_a: nx.MultiDiGraph) -> Tuple[ProbBeliefMachine, List[str]]:
+    # Logic to add Belief States
+    A_persona, persona_order = build_persona_adjacency_from_subgraph(G_a)
+    if A_persona.shape[0] > 0:
+        # uniform relevance for now
+        r = np.ones(A_persona.shape[0], dtype=float)
+        bm = ProbBeliefMachine(A=A_persona, r=r, beta=0.35)
+
+        belief_bundle = {
+            "persona_order": persona_order,       # needed to map back to node ids
+            "activation_SOL": (bm.activation("SOL")).tolist(),
+            "activation_PR":  (bm.activation("PR")).tolist(),
+            "expected_score_SOL": bm.expected_score("SOL"),
+            "expected_score_PR":  bm.expected_score("PR"),
+            "pi": bm.pi.tolist(),                 # state distributions
+            # You can persist theta/beta if you plan to reconstruct exactly
+            "beta": 0.35,
+        }
+    else:
+        belief_bundle = {
+            "persona_order": [],
+            "activation_SOL": [],
+            "activation_PR": [],
+            "expected_score_SOL": 0.0,
+            "expected_score_PR": 0.0,
+            "pi": [],
+            "beta": 0.35,
+        }
+    return belief_bundle
+
+
+def augment_subgraph_with_zmots(
+    G: nx.DiGraph,
+    G_a: nx.DiGraph,
+    archetype_id: str
+) -> nx.DiGraph:
+    """
+    Return an induced subgraph that equals G_a plus any ZMOT nodes that are
+    co-parents of pain_triggers present in G_a. Edges are taken from the FULL graph G.
+    """
+    # Start from a REAL set of node ids
+    print("Augmenting G_a with ZMOT nodes. Total nodes before:", G_a.number_of_nodes())
+    keep: Set = set(G_a.nodes())
+
+    # Sanity: product node should already be in G_a; if not, keep it
+    # (helps later node->Product traversals on the pruned graph)
+    # if "product" in your schema: keep.add(product_id)
+
+    # For each archetype in the archetype subgraph, pull its ZMOT neighbors from FULL graph
+    related_zmot_ids = get_target_nodes_by_source_and_type(G, archetype_id, "relevant_event")
+    print(f"Found {len(related_zmot_ids)} ZMOT nodes related to archetype {archetype_id}")
+    for zmot_id in related_zmot_ids:
+        zmot_node = get_node_by_id(G, zmot_id)
+        if not zmot_node:
+            print(f"ZMOT node {zmot_id!r} not found in graph, skipping")
+            continue
+        keep.add(zmot_id)
+        print(f"Added ZMOT node {zmot_id}")
+    G_zmot = G.subgraph(keep).copy()
+    print("Total nodes after adding ZMOTs:", G_zmot.number_of_nodes())
+    # Build an induced subgraph FROM THE FULL GRAPH (so edges are present)
+    return G_zmot
+
+
+
+
+
+def generate_rcs(G, archetype_id: str, *, zmot_id: Optional[str] = None, rel_min: float = 0.0, max_nodes: int = 5000) -> Tuple[nx.DiGraph, Dict]:
+    """
+    Complete RCS Generator for an archetype and optional ZMOT.
+    """    
+    print("Generating RCS for archetype", archetype_id)
+    G_a = get_node_subgraph_to_product(G, archetype_id)
+    G_zmot = augment_subgraph_with_zmots(G, G_a, archetype_id)
+    if G_a.number_of_nodes() > 0:
+        if zmot_id is not None and zmot_id in G_zmot:
+            print("Pruning to ZMOT node", zmot_id)
+            zmot_node = get_node_by_id(G_zmot, zmot_id)
+            G_pruned_for_zmot = get_node_subgraph_to_product(G_zmot, zmot_id)
+            G_final = G_pruned_for_zmot
+        else:
+            G_final = G_zmot
+    else:
+        belief = {"reason": "empty_archetype_subgraph", "archetype_id": archetype_id}
+        return G_a, belief  # avoid referencing G_final later 
+
+    if G_final.number_of_nodes() <= 0:
+        belief = {"reason": "empty_archetype_subgraph", "archetype_id": archetype_id}
+        return G_final, belief
+    belief_bundle = create_belief_bundle(G_final)
+    G_final.graph["belief_bundle"] = belief_bundle
+    graph_win_likelihood = compute_product_likelihood(G_final, archetype_id)
+    G_final.graph["win_likelihood"] = graph_win_likelihood
+
+
+
+    return G_final, belief_bundle
+
+#--------------------------------------------
+# G_final metadata - product likelihood from input graph
+#--------------------------------------------
+
+def _path_probability(
+    G: nx.DiGraph,
+    path: List[str],
+    *,
+    edge_attr_prob: str = "likelihood",        # edge conditional prob in [0,1]
+    cap_node_type: str = "capability",
+    node_attr_gate: str = "relevance" # node gate in [0,1] (used e.g., for capability nodes)
+) -> float:
+    """Multiply edge probabilities; gate by node 'relevance' for capability nodes."""
+    p = 1.0
+    # multiply edges
+    for u, v in zip(path, path[1:]):
+        p *= float(G.edges[u, v].get(edge_attr_prob, 1.0))
+        if p <= 0.0:
+            return 0.0
+    # gate by capabilities’ relevance
+    for n in path:
+        if G.nodes[n].get("type") == cap_node_type:
+            p *= float(G.nodes[n].get(node_attr_gate, 1.0))
+            if p <= 0.0:
+                return 0.0
+    return max(0.0, min(1.0, p))
+
+
+def _greedy_overlap_aware_selection(
+    paths_with_p: List[Tuple[List[str], float]],
+    *,
+    overlap_penalty: float = 0.5  # shrink prob for later paths that overlap already-picked edges
+) -> List[float]:
+    """
+    Sort paths by prob desc. Keep them all, but penalize later ones if they share edges
+    with earlier picks (to reduce double-counting). Returns adjusted path probs.
+    """
+    # sort by p desc
+    paths_with_p = sorted(paths_with_p, key=lambda t: t[1], reverse=True)
+    used_edges = set()
+    adjusted: List[float] = []
+    for path, p in paths_with_p:
+        # compute penalty if overlapping
+        penalty = 1.0
+        for u, v in zip(path, path[1:]):
+            if (u, v) in used_edges:
+                penalty *= overlap_penalty
+        adjusted.append(max(0.0, min(1.0, p * penalty)))
+        # mark edges as used
+        for u, v in zip(path, path[1:]):
+            used_edges.add((u, v))
+    return adjusted
+
+
+def compute_product_likelihood(
+    G_orig: nx.DiGraph,
+    starting_node_id: str,
+    *,
+    product_type: str = "product",
+    max_hops: int = 8,
+    max_paths: Optional[int] = 1000,
+    edge_attr_prob: str = "likelihood",
+    cap_node_type: str = "capability",
+    node_attr_gate: str = "relevance",
+    start_likelihood_attr: str = "likelihood",
+    overlap_penalty: float = 0.5
+) -> float:
+    """
+    P(win | starting_node) ≈ L_start * ( 1 - Π_j (1 - q_j) )
+
+    where each q_j is a path probability from starting_node to product:
+      q_j = Π(edge p) * Π(capability node relevance gates)
+
+    Notes:
+      - L_start is the prior that the starting evidence is 'active' (node.likelihood, default 1).
+      - Uses a noisy-OR to avoid linear double-counting across multiple paths.
+      - Penalizes overlapping paths to reduce dependence violations.
+    """
+    # 0) find product node (assumes one)
+    product_id = None
+    for n, d in G_orig.nodes(data=True):
+        if d.get("type") == product_type:
+            product_id = n
+            break
+    if not product_id:
+        print("No product node found in subgraph")
+        return 0.0
+
+    if starting_node_id not in G_orig:
+        print("No starting node found in subgraph")
+        return 0.0
+
+    if starting_node_id == product_id:
+        return 1.0
+    
+    G = G_orig.reverse(copy=True)
+
+
+    # 1) prior that the starting evidence is 'on'
+    L_start = float(G.nodes[starting_node_id].get(start_likelihood_attr, 1.0))
+    L_start = max(0.0, min(1.0, L_start))
+
+    # 2) enumerate paths
+    try:
+        gen = nx.all_simple_paths(G, source=starting_node_id, target=product_id, cutoff=max_hops)
+    except nx.NetworkXNoPath:
+        return 0.0
+
+    paths = []
+    for i, path in enumerate(gen):
+        if max_paths is not None and i >= max_paths:
+            break
+        paths.append(path)
+
+    if not paths:
+        return 0.0
+
+    # 3) score each path
+    paths_with_p = []
+    for path in paths:
+        q = _path_probability(
+            G, path,
+            edge_attr_prob=edge_attr_prob,
+            cap_node_type=cap_node_type,
+            node_attr_gate=node_attr_gate
+        )
+        if q > 0:
+            paths_with_p.append((path, q))
+
+    if not paths_with_p:
+        return 0.0
+
+    # 4) reduce double-counting by penalizing overlapping paths
+    adjusted_qs = _greedy_overlap_aware_selection(paths_with_p, overlap_penalty=overlap_penalty)
+
+    # 5) noisy-OR aggregation across (approximately) independent routes
+    #    P_any = 1 - Π_j (1 - q_j)
+    log_prod = 0.0
+    for q in adjusted_qs:
+        q = max(0.0, min(1.0, q))
+        # multiply (1 - q) in log-space for stability
+        log_prod += math.log(max(1e-12, 1.0 - q))
+    P_any = 1.0 - math.exp(log_prod)
+
+    # 6) final: gate by the starting node's own likelihood
+    P_win = L_start * P_any
+    return max(0.0, min(1.0, P_win))
+
+    
+    
+    
+
+#--------------------------------------------
+# Experimental code for committee scoring models
+#--------------------------------------------
+
+# ---------- Core: Persona scoring ----------
+
+def persona_scores(
+    G: nx.DiGraph,
+    *,
+    persona_type: str = "persona",
+    use_belief: bool = True,
+    use_influence: bool = True,
+    score_cap: Optional[float] = None,
+) -> Dict[str, Dict[str, float]]:
+    """
+    Collect per-persona scores from node attributes.
+
+    Required node attrs (per persona node):
+      - likelihood: float in [0,1]
+      - relevance:  float in [0,1]
+
+    Optional node attrs:
+      - belief:     float in [0,1] (how convinced they currently are)
+      - influence:  float >= 0     (org influence weight; default 1.0)
+
+    Returns:
+      scores[p] = {
+         "L": likelihood,
+         "R": relevance,
+         "belief": belief,
+         "influence": influence,
+         "S": effective score used for committee math
+      }
+    """
+    out: Dict[str, Dict[str, float]] = {}
+    for n, data in G.nodes(data=True):
+        if data.get("type") != persona_type:
+            continue
+        L = float(data.get("likelihood", 0.0))
+        R = float(data.get("relevance", 0.0))
+        belief = float(data.get("belief", 1.0)) if use_belief else 1.0
+        influence = float(data.get("influence", 1.0)) if use_influence else 1.0
+
+        # Base node score
+        base = L * R
+        S = base * belief * influence
+        if score_cap is not None:
+            S = min(S, score_cap)
+
+        out[n] = {
+            "L": L,
+            "R": R,
+            "belief": belief,
+            "influence": influence,
+            "S": S,
+        }
+    return out
+
+
+# ---------- Model A: Democratic committee ----------
+
+def democratic_success(
+    scores: Dict[str, Dict[str, float]],
+    converted: Iterable[str],
+) -> Tuple[float, Dict[str, float]]:
+    """
+    Democratic model:
+      P_win = sum(S over converted) / sum(S over all personas)
+
+    Returns:
+      (p_win, breakdown)
+      breakdown has {"sum_converted", "sum_total", "coverage"}
+    """
+    S_total = sum(v["S"] for v in scores.values())
+    if S_total <= 0:
+        return 0.0, {"sum_converted": 0.0, "sum_total": 0.0, "coverage": 0.0}
+
+    S_conv = 0.0
+    for p in converted:
+        if p in scores:
+            S_conv += scores[p]["S"]
+
+    p_win = S_conv / S_total  # already in [0,1]
+    return p_win, {
+        "sum_converted": S_conv,
+        "sum_total": S_total,
+        "coverage": p_win,  # alias
+    }
+
+
+# ---------- Model B: Minimal coalition ----------
+
+def minimal_coalition(
+    scores: Dict[str, Dict[str, float]],
+    threshold: float,
+    *,
+    prefer: Optional[Dict[str, float]] = None,
+) -> List[str]:
+    """
+    Find the smallest set of personas whose cumulative S reaches a target
+    fraction of total S (threshold in (0,1]).
+
+    Greedy by descending S is optimal for minimizing *count* given a sum target.
+    `prefer` is an optional secondary tie-break (higher is better), e.g.,:
+      prefer = {"CFO": 1.0, "CTO": 0.8, ...} by node id
+
+    Returns:
+      ordered list of persona ids (the coalition)
+    """
+    assert 0 < threshold <= 1.0, "threshold must be in (0,1]"
+
+    # Sort personas by primary key S desc, secondary preference desc
+    items = []
+    for p, v in scores.items():
+        S = v["S"]
+        pref = (prefer or {}).get(p, 0.0)
+        items.append((p, S, pref))
+    items.sort(key=lambda t: (t[1], t[2]), reverse=True)
+
+    S_total = sum(v["S"] for v in scores.values())
+    target = threshold * S_total
+
+    coalition: List[str] = []
+    running = 0.0
+    for p, S, _ in items:
+        if running >= target:
+            break
+        coalition.append(p)
+        running += S
+
+    return coalition
+
+
+# ---------- Convenience: End-to-end helpers ----------
+
+def recommend_coalitions(
+    G: nx.DiGraph,
+    *,
+    thresholds: Iterable[float] = (0.5, 0.67, 0.8),  # 50%, 2/3rds, 80%
+    persona_type: str = "persona",
+    use_belief: bool = True,
+    use_influence: bool = True,
+) -> Dict[float, List[str]]:
+    """
+    Compute persona scores and produce minimal coalitions at several thresholds.
+    """
+    scr = persona_scores(
+        G,
+        persona_type=persona_type,
+        use_belief=use_belief,
+        use_influence=use_influence,
+    )
+    out: Dict[float, List[str]] = {}
+    for t in thresholds:
+        out[t] = minimal_coalition(scr, t)
+    return out
+
+
+def simulate_conversion_run(
+    G: nx.DiGraph,
+    converted: Iterable[str],
+    *,
+    persona_type: str = "persona",
+    use_belief: bool = True,
+    use_influence: bool = True,
+) -> Dict[str, float]:
+    """
+    One-shot simulation for a given converted set under the democratic model.
+    """
+    scr = persona_scores(
+        G,
+        persona_type=persona_type,
+        use_belief=use_belief,
+        use_influence=use_influence,
+    )
+    p_win, breakdown = democratic_success(scr, converted)
+    return {"p_win": p_win, **breakdown}

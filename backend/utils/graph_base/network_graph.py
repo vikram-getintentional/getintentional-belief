@@ -1,4 +1,5 @@
 import math
+from typing import Set
 import networkx as nx
 import os
 from collections import defaultdict, deque
@@ -406,3 +407,90 @@ def product(lst):
     return reduce(lambda x, y: x * y, lst, 1) if lst else 1
 
 
+def get_node_subgraph_to_product(
+    G: nx.DiGraph,
+    node_id: str,
+    *,
+    include_personas: bool = True,
+    include_metrics: bool = True,
+    persona_rel: str = "performed_by",   # Job -> Persona (in ORIGINAL G)
+    metric_rel: str  = "expressed_as",   # Pain -> Metric (in ORIGINAL G)
+    min_relevance: float = None,   # prune weak edges (optional)
+    min_likelihood: float = None,  # prune weak edges (optional)
+) -> nx.DiGraph:
+    """
+    Return the union subgraph of all nodes/edges that lie on at least one path
+    from `node_id` to the Product node, PLUS optional side-nodes:
+      - metrics linked via Pain --expressed_as--> Metric
+      - personas linked via Job  --performed_by--> Persona
+
+    Key idea:
+      - Your graph points OUTWARD from Product (Product->Capability->...->Trigger).
+      - We take a REVERSE VIEW (no copy), so 'forward' means 'toward Product'.
+      - Core = descendants(reverse, trigger) ∩ ancestors(reverse, product).
+
+    This avoids all_simple_paths blow-ups and is correct with cycles.
+    """
+    product_id = get_product_id_from_subgraph(G)
+    if not product_id:
+        raise ValueError("No product node found in graph.")
+
+    if not get_node_by_id(G, node_id):
+        raise ValueError(f"Node {node_id} not found in graph.")
+    
+
+    # Optional: filtered working copy to prune weak edges
+    H = G
+    if (min_relevance is not None) or (min_likelihood is not None):
+        H = G.copy()
+        to_drop = []
+        for u, v, data in H.edges(data=True):
+            r = data.get("relevance", 1.0)
+            l = data.get("likelihood", 1.0)
+            if (min_relevance is not None and r < min_relevance) or \
+            (min_likelihood is not None and l < min_likelihood):
+                to_drop.append((u, v))
+        if to_drop:
+            H.remove_edges_from(to_drop)
+
+    # Reverse VIEW (no data duplication). Because your edges are Product→…→Trigger,
+    # 'forward' in R means 'toward Product'.
+    R = H.reverse(copy=False)
+
+    # Nodes that can reach Product (in R): i.e., on some ... → Product route
+    can_reach_product: Set[str] = nx.ancestors(R, product_id) | {product_id}
+
+    # Nodes reachable 'forward' from the trigger (toward Product, in R)
+    forward_from_trigger: Set[str] = nx.descendants(R, node_id) | {node_id}
+
+    # Core = exactly the nodes on at least one path node_id → … → Product
+    core = forward_from_trigger & can_reach_product
+    if not core:
+        return nx.MultiDiGraph()
+
+    # Augment with side context AFTER core is fixed (from ORIGINAL G directions)
+    keep = set(core)
+    for n in list(core):
+        if G.nodes[n].get("type") == "pain":
+            
+            metric_ids = get_target_nodes_by_source_and_type(G, n, "expressed_as")
+            keep.update(metric_ids)
+        if G.nodes[n].get("type") == "job":
+            
+            persona_ids = get_target_nodes_by_source_and_type(G, n, "performed_by")
+            keep.update(persona_ids)
+    # Induced subgraph from ORIGINAL G to preserve original directions/labels
+    subG = G.subgraph(keep).copy()
+    # ---- Add depth attribute ----
+    R_sub = subG
+    print("Calculating depth for subgraph with nodes:", len(R_sub.nodes))
+    try:
+        lengths = nx.single_source_shortest_path_length(R_sub, product_id)
+        if lengths:
+            max_depth = max(lengths.values())
+            for n, d in lengths.items():
+                subG.nodes[n]["depth"] = d / max_depth if max_depth > 0 else 0.0
+                print(f"Node {n} depth set to {subG.nodes[n]['depth']}")
+    except Exception as e:
+        print(f"Error computing depth: {e}")
+    return subG

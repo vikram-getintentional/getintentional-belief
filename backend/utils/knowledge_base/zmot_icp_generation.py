@@ -161,7 +161,7 @@ def get_best_zmots_for_archetype(sub_graph: nx.DiGraph, archetype_id: str, thres
         zmot_label = zmot_event_node.get("event", "").strip().lower()
         likelihood = get_edge_attribute(sub_graph, archetype_id, zmot_event_id, "likelihood")
         print("Got likelihood: ", likelihood)
-        if likelihood < threshold:
+        if likelihood <= threshold:
             print("likelihood below threshold, skipping:", zmot_event_id)
             continue
         existing = next((ze for ze in zmot_events if ze["zmot_event_id"] == zmot_event_id), None)

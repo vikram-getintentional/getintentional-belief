@@ -244,7 +244,7 @@ def _pending_triggers_without_edge(G, edge_type: str) -> list[str]:
 def archetype_event_discovery(
     product_subgraph: nx.DiGraph,
     context: AgentContext,
-    batch_size: int = 100,
+    batch_size: int = 50,
     max_passes: int = 20,   # safety cap to avoid infinite loops
 ) -> None:
     """
@@ -300,7 +300,7 @@ def archetype_event_discovery(
         if stagnant_count >= 2 and pending_zmots:
             print(f"⚠️ Marking {len(pending_zmots)} pain_triggers as attempted (no ZMOTs found after 2 cycles).")
             for t in pending_zmots:
-                print("No ZMOT data found. Moving out")
+                print(f"No ZMOT data found for {t}. Moving out")
             product_subgraph = update_graph(product_subgraph)
             break
 

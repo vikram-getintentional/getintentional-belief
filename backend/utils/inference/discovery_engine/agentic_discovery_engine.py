@@ -82,6 +82,7 @@ def _gather_pain_contexts(G, pain_ids: List[str]) -> List[Dict[str, Any]]:
     for pid in pain_ids:
         p = get_node_by_id(G, pid)
         if not p: 
+            print(f"⚠️ Warning: Pain ID {pid} not found in graph. Breaking Hop+ context gathering.")
             continue
         # solving jobs
         jobs = []
@@ -99,9 +100,8 @@ def _gather_pain_contexts(G, pain_ids: List[str]) -> List[Dict[str, Any]]:
                 "importance": edge_importance if edge_importance is not None else 0.6
             })
 
-        # personas (via job -> performed_by)
-        personas = []
-        for jid in get_source_nodes_by_target_and_type(G, pid, "solves") or []:
+            # personas (via job -> performed_by)
+            personas = []
             for per_id in get_target_nodes_by_source_and_type(G, jid, "performed_by") or []:
                 per = get_node_by_id(G, per_id)
                 if not per: 
@@ -352,6 +352,9 @@ def hop0_inference(G, context, enrich_capabilities: bool = True) -> list[str]:
         raise ValueError("❌ No capability nodes found in graph for Hop0.")
 
     cap_ctx = _gather_capability_contexts(G, capability_ids) if enrich_capabilities else None
+    if enrich_capabilities and (not cap_ctx or len(cap_ctx) == 0):
+        print("⚠️ Warning: No valid capability contexts gathered; skipping Hop0 inference.")
+        return []
     print("Capability context gathered. Starting LLM call...")
     user_prompt = build_hop0_prompt(summary, domain, industry, capability_ids, capability_context=cap_ctx)
     print("User prompt for Hop0:", user_prompt)
@@ -380,6 +383,9 @@ def process_hop_plus_gpt_cache(pain_ids: list[str], G, context) -> list[str]:
     _, summary, domain, industry, _, client, builder = _extract_product_context(G, context)
     
     pain_ctx = _gather_pain_contexts(G, pain_ids)
+    if not pain_ctx or len(pain_ctx) == 0:
+        print("⚠️ Warning: No valid pain contexts gathered; skipping Hop+ inference.")
+        return []
     print("Pain context gathered. Starting LLM call with pain context: \n", pain_ctx)
     print("----------------- LLM call for Hop+ ----------------")
     user_prompt = build_hop_plus_prompt(summary, domain, industry, pain_ctx)
@@ -420,6 +426,10 @@ def process_trigger_for_zmot_boosts(trigger_ids: list[str], G, context, enrich_t
         if enrich_triggers
         else [{"pain_trigger_id": tid} for tid in trigger_ids]
     )
+
+    if not trig_ctx or len(trig_ctx) == 0:
+        print("⚠️ Warning: No valid trigger contexts gathered; skipping ZMOT inference.")
+        return []
 
     # ---- gather archetypes scoped to these triggers (prevalent_in), else all archetypes
     prevalent_edge = EDGES.get("PREVALENT_IN", "prevalent_in")
@@ -475,6 +485,9 @@ def process_trigger_for_archetype_prevalence(trigger_ids: list[str], G, context,
     _, summary, domain, industry, _, client, builder = _extract_product_context(G, context)
 
     trig_ctx = _gather_trigger_contexts(G, trigger_ids) if enrich_triggers else [{"pain_trigger_id": tid} for tid in trigger_ids]
+    if not trig_ctx or len(trig_ctx) == 0:
+        print("⚠️ Warning: No valid trigger contexts gathered; skipping Trigger Archetype Prevalence inference.")
+        return []
     print("Trigger context gathered. Starting LLM call...")
     user_prompt = build_archetypes_relevance_matrix(summary, domain, industry, trig_ctx)
     print("User prompt for Trigger Archetype Prevalence:", user_prompt)
@@ -505,6 +518,9 @@ def pain_source_inference(G, pain_ids: list[str], context, enrich_pains: bool = 
     _, summary, domain, industry, _, client, _ = _extract_product_context(G, context)
 
     pain_ctx = _gather_pain_contexts(G, pain_ids) if enrich_pains else [{"pain_id": pid} for pid in pain_ids]
+    if not pain_ctx or len(pain_ctx) == 0:
+        print("⚠️ Warning: No valid pain contexts gathered; skipping Pain Source inference.")
+        return {}
     print("Pain context gathered. Starting LLM call...")
     user_prompt = build_pain_source_prompt(summary, domain, industry, pain_ctx)
     print("User prompt for Pain Source:", user_prompt)

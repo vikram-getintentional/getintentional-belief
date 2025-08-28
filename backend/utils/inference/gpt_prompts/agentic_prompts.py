@@ -362,21 +362,21 @@ def build_archetypes_relevance_matrix(
         - Pain triggers with anchors: {_fmt(trigger_contexts)}
         
         Labeling guides (apply to all outputs as directed):
-        - Relevance label: How central is the source node to resolving or enabling the target node?
+        - Relevance label: How central or critical is this pain trigger to the organizational success of this archetype?
         One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
-        • Critical: Without the source, the target cannot be achieved.
-        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
-        • Supportive: The source contributes to the target but is not sufficient on its own.
-        • Ancillary: The source may only help in edge cases or indirectly.
-        • Out-of-scope: The source does not materially affect the target.
+        • Critical: Without solving for this pain trigger, the archetype's primary organizational goals cannot be achieved.
+        • Core: The pain trigger directly impacts the archetype organization in most workflows; if this pain trigger is not addressed, it would significantly weaken the archetype's success.
+        • Supportive: The pain trigger is important to the archetype but is not sufficient on its own as a primary concern.
+        • Ancillary: The pain trigger may only manifest in edge cases or indirectly, and does not significantly impact day to day operations.
+        • Out-of-scope: The pain trigger does not materially affect the archetype.
 
-        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
+        - Likelihood label: How expected is this pain trigger in this archetype organization?
         One of: {"Essential","Expected","Common","Rare","Unlikely"}
-        • Essential: The source is almost always the solution/enabler for the target.
-        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
-        • Common: Commonly expected, but other solutions/enablers exist.
-        • Rare: Rarely used or expected only in special cases.
-        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
+        • Essential: The pain trigger is almost always the expected in this archetype.
+        • Expected: Frequently expected in this archetype organization; omission would be surprising.
+        • Common: Commonly expected, but other likely more important pain triggers exist.
+        • Rare: This pain trigger is rarely expected, or occurs only in special cases.
+        • Unlikely: Unlikely to occur in this archetype organization.
         
 
         Instructions:
@@ -434,7 +434,7 @@ def build_zmot_for_triggers_prompt(product_summary: str,
 ) -> str:
     return f"""
         You are an expert in B2B Organization Structure and how they respond to external triggers with deep understanding of {domain} and {industry}. 
-        You are tasked with identifying the external events that accelerate organizational pain triggers.
+        You are tasked with identifying the external events that accelerate or cause organizational pain triggers to worsen.
 
         Context:
         - Product value proposition: {product_summary}
@@ -443,38 +443,27 @@ def build_zmot_for_triggers_prompt(product_summary: str,
         - Organizational Archetypes: {_fmt(archetype_contexts)}
         - Pain triggers with anchors: {_fmt(trigger_contexts)}
 
-        Labeling guides (apply to all outputs as directed):
-        - Relevance label: How central is the source node to resolving or enabling the target node?
-        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
-        • Critical: Without the source, the target cannot be achieved.
-        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
-        • Supportive: The source contributes to the target but is not sufficient on its own.
-        • Ancillary: The source may only help in edge cases or indirectly.
-        • Out-of-scope: The source does not materially affect the target.
-
-        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
-        One of: {"Essential","Expected","Common","Rare","Unlikely"}
-        • Essential: The source is almost always the solution/enabler for the target.
-        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
-        • Common: Commonly expected, but other solutions/enablers exist.
-        • Rare: Rarely used or expected only in special cases.
-        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
-
-        - Boost label: How strongly does the occurance of this event accelerate or intensify the pain trigger for this archetype?
-        One of: {"Very High", "High","Medium","Low","Negligible"}
-        • Very High: This event always significantly accelerates or intensifies the pain trigger for this archetype, and requires immediate attention.
-        • High: This event often significantly accelerates or intensifies the pain trigger for this archetype, and should be monitored closely.
-        • Medium: This event sometimes accelerates or intensifies the pain trigger for this archetype, and should be monitored periodically.
-        • Low: This event rarely accelerates or intensifies the pain trigger for this archetype, and can be monitored infrequently.
-        • Negligible: This event does not materially accelerate or intensify the pain trigger for this archetype, and does not require monitoring.
-
         For each (archetype × pain_trigger) pair, identify **(minimum) 3 to (utmost) 5** specific, discrete external events that would significantly accelerate or intensify the given pain trigger for that archetype.
 
         For each external event include:
         - trigger_event: short, specific description of the event (e.g., "leadership change", "pricing overhaul", "market entry — APAC", "regulatory change", "compliance audit", "IPO readiness", "funding round", "merger announcement", "customer dissatisfaction", "employee churn", etc.)
-        - include an archetype relevance label and an archetype likelihood label for the trigger_event as the target and the corresponding archetype as the source.
-        - include a pain_trigger relevance label and a pain_trigger likelihood label for the trigger_event as the target and the corresponding pain_trigger as the source.
-        - For each trigger event include a boost label describing How strongly the occurance of this event accelerates the pain trigger for this archetype 
+        - include an event likelihood label for the Archetype as: "Essential|Expected|Common|Rare|Unlikely"
+            Labeling Guide:
+            • Essential: The event is almost always expected in this archetype.
+            • Expected: Frequently expected in this archetype; omission would be surprising.
+            • Common: Commonly expected, but other likely more important events exist.
+            • Rare: This event is rarely expected, or occurs only in special cases.
+            • Unlikely: Unlikely to occur in this archetype organization.
+        - include a pain trigger Boost label for the Archetype as: "Very High|High|Medium|Low|Negligible"
+            Labeling Guide:
+            Compared to a situation where this event does not occur for this archetype, how strongly does the occurrence of this event accelerate or intensify the pain trigger?
+            • Very High: The occurrence of this event almost always significantly accelerates or intensifies the pain trigger for this archetype.
+            • High: The occurrence of this event frequently accelerates or intensifies the pain trigger for this archetype; omission would be surprising.
+            • Medium: The occurrence of this event commonly accelerates or intensifies the pain trigger for this archetype, but other events exist that have a stronger effect.
+            • Low: The occurrence of this event rarely accelerates or intensifies the pain trigger, or only in special cases.
+            • Negligible: The occurrence of this event has little to no effect on the pain trigger for this archetype.
+        - Justify your choice of event in 1-2 sentences (do NOT include in output).
+        
         - observable_moments: 3–6 concrete sources or proxy signals (free-form; allow niche communities, forums, datasets, etc.).
                    • For each trigger_event ask "what externally observable information can signal or help infer the occurrence of this event?" 
                    • Example (get creative here): 
@@ -483,10 +472,14 @@ def build_zmot_for_triggers_prompt(product_summary: str,
                         job postings of AEs/ sales executives in specific regions to infer "market expansion"
                         subreddits, forums or communities discussions to infer specific concerns
                         glassdoor reviews to infer "employee churn" or "company culture"
-            - For each observable moment include a relevance label and liklihood label for the observable_moment as the target and the corresponding trigger_event as the source.
+            - For each observable moment include 
+                - A relevance label (Critical|Core|Supportive|Ancillary|Out-of-scope) describing how directly this moment describes the occurance of the trigger_event and 
+                - A likelihood label (Essential|Expected|Common|Rare|Unlikely) describing how likely it is that this observable moment would be a signal for the trigger_event.
         - trigger_keywords: 6–12 normalized, lemmatized, lowercase terms to look for in an observable moment that indicate the occurrence of the event
                         each trigger keyword should be a word or short phrase - no units/direction; brand terms only if essential.
-            - For each trigger keyword include a relevance label and liklihood label for the trigger_keyword as the target and the corresponding trigger_event as the source.
+            - For each trigger keyword include 
+                - A relevance label (Critical|Core|Supportive|Ancillary|Out-of-scope) describing how directly this keyword describes the occurance of the trigger_event and
+                - A likelihood label (Essential|Expected|Common|Rare|Unlikely) describing how likely it is that this keyword would be a signal for the trigger_event.
 
         
         Guardrails:
@@ -520,8 +513,7 @@ def build_zmot_for_triggers_prompt(product_summary: str,
               "zmot_triggers": [
                 {{
                   "trigger_event": "string",
-                  "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
-                  "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
+                  "event_to_archetype_likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
                   "boost_label": "Very High|High|Medium|Low|Negligible",
                   "observable_moments": [
                     {{"observable_moment": {{"text": "string", "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope", "likelihood_label": "Essential|Expected|Common|Rare|Unlikely"}}}}
