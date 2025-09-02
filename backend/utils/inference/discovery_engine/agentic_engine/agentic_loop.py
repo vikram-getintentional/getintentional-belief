@@ -244,7 +244,7 @@ def _pending_triggers_without_edge(G, edge_type: str) -> list[str]:
 def archetype_event_discovery(
     product_subgraph: nx.DiGraph,
     context: AgentContext,
-    batch_size: int = 50,
+    batch_size: int = 500,
     max_passes: int = 20,   # safety cap to avoid infinite loops
 ) -> None:
     """

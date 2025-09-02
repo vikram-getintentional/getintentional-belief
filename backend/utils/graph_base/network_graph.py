@@ -490,7 +490,7 @@ def get_node_subgraph_to_product(
             max_depth = max(lengths.values())
             for n, d in lengths.items():
                 subG.nodes[n]["depth"] = d / max_depth if max_depth > 0 else 0.0
-                print(f"Node {n} depth set to {subG.nodes[n]['depth']}")
+                #print(f"Node {n} depth set to {subG.nodes[n]['depth']}")
     except Exception as e:
         print(f"Error computing depth: {e}")
     return subG

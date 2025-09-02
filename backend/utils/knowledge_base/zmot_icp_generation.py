@@ -49,7 +49,7 @@ def get_zmot_icp_relevance(sub_graph: nx.DiGraph, threshold = 0.0) -> list[dict]
         trigger_keywords = []
         trigger_event_node = get_node_by_id(sub_graph, zmot_triggerevent_id)
         trigger_relevance = get_cumulative_relevance_data(product_id, zmot_triggerevent_id)
-        zmot_triggerevent = trigger_event_node.get("trigger_event", "").strip().lower()
+        zmot_triggerevent = trigger_event_node.get("event", "").strip().lower()
         if trigger_relevance < threshold:
             continue
         observable_moment_ids = get_target_nodes_by_source_and_type(sub_graph, zmot_triggerevent_id, "observed_in")

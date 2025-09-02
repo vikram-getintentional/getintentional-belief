@@ -38,11 +38,11 @@ def extract_summary_and_capabilities(text: str, plg_cta_found: bool = False, foo
               2) Coverage: How often is this capability likely to be used in a typical user workflow? (Higher relevance if it is a common, essential part of user workflows)
               3) Substitutability: Is there another capability offered by this product that would still solve the same user flows if this capability did not exist? (Higher relevance if there are no substitutes for this capability within the product)
           Use the following labelling guide for your inference output:
-            - Critical: Without it, the product stops being what it is.
-            - Core: Strongly shapes the main value prop, used often.
-            - Supportive: Helps but isn’t central.
-            - Ancillary: Edge-case or rarely used.
-            - Out-of-scope: Doesn’t really belong to this product.
+            • Critical: Without the capability, the product will not deliver on its core value proposition.
+            • Core: The capability directly enables the product in most workflows; removing it would significantly weaken the usability and value of the product.
+            • Supportive: The capability contributes to the value of the product, but is not sufficient on its own.
+            • Ancillary: The capability may only add value to the product in edge cases or indirectly.
+            • Out-of-scope: The capability does not materially affect the value of the product.
 
       6. For each capability provide a label describing how likely or expected this capability is given the product category and domain as:{{"Essential","Expected","Common","Rare","Unique"}} 
           Use the following inference criteria:
@@ -50,11 +50,12 @@ def extract_summary_and_capabilities(text: str, plg_cta_found: bool = False, foo
               2) Coverage (industry-level): How frequently do competitors / peer products include it?
               3) Substitutability (external): If missing, could customers easily find it in adjacent tools?
           Use the following labelling guide for your inference output:
-            - Essential: Any product in this category would absolutely be expected to have it.
-            - Expected: Most peers have it; omission would surprise users.
-            - Common: Nice-to-have, common but not universal.
-            - Rare: Rarely expected in this category.
-            - Unique: Would be surprising/odd for this category.
+            • Essential: The need for this capability for a user alone implies the product is essential.
+            • Expected: The need for this capability frequently drives the need for the product; omission would surprise users.
+            • Common: The need for capability is a common driver for using the product, but mostly in conjunction with other capabilities.
+            • Rare: The need for this capability alone rarely drives the need for the product; it is only a minor reason among many others.
+            • Unlikely: This capability is unlikely to be a reason for using the product; it is likely solved through other means, or is a peripheral feature like "security" or "compliance" that prevents negative outcomes but does not directly enable positive outcomes.
+
       
 
       Use all available context, including main site content and footer feature hints.

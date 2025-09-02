@@ -34,35 +34,46 @@ def build_hop0_prompt(
         - Product industry: {industry}
         - Capabilities: {_fmt(caps_payload)}
 
-        Labeling guides (apply to all outputs as directed):
-        - Relevance label: How central is the source node to resolving or enabling the target node?
-        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
-        • Critical: Without the source, the target cannot be achieved.
-        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
-        • Supportive: The source contributes to the target but is not sufficient on its own.
-        • Ancillary: The source may only help in edge cases or indirectly.
-        • Out-of-scope: The source does not materially affect the target.
-
-        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
-        One of: {"Essential","Expected","Common","Rare","Unlikely"}
-        • Essential: The source is almost always the solution/enabler for the target.
-        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
-        • Common: Commonly expected, but other solutions/enablers exist.
-        • Rare: Rarely used or expected only in special cases.
-        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
+        **Key Density & Coverage Rules:**
+        - Most pains are addressed by multiple capabilities; most jobs experience multiple pains.
+        - For each pain, attempt to identify at least 2–3 capabilities that can address it (directly or indirectly).
+        - For each job, identify at least 2–4 pains that are commonly experienced during its execution.
+        - For each capability, provide at least 3 pains it addresses, and for each pain, at least 2 jobs it is felt in.
+        - Prefer pains that are addressed by multiple capabilities, and jobs that experience multiple pains.
+        - Avoid one-to-one mappings unless truly unique; justify uniqueness if it occurs.
+        - After generating candidates, consolidate into a minimal shared pool by deduping/merging near-duplicates and preferring cross-capability and cross-job coverage.
+        - Use domain expertise to infer less obvious but plausible relationships, not just the most direct or generic ones.
+        - Avoid cycles and rewording in pains, jobs, and solving pains. Ensure distinct responses with clear causal/temporal order.
 
         Instructions:
-        1) For each capability, infer 1–3 *concrete pains* it directly solves.
-        IMPORTANT:
-            Each pain must be an actual inefficiency or friction a persona faces while performing a job. Think of a pain as the reason why a persona was unable to sufficiently, efficiently, or effectively deliver the job’s outcomes.
+        1) For each capability, infer at least 3 *concrete pains* it directly solves.
+        IMPORTANT: Each pain must be an actual inefficiency or friction a persona faces while performing a job. Think of a pain as the reason why a persona was unable to sufficiently, efficiently, or effectively deliver the job’s outcomes.
         For each pain include:
         1a) the pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that blocks a persona's ability to perform a job.
-        1b) Relevance & Likelihood Labels: For each pain as the target and the corresponding capability as the source provide a relevance label and a likelihood label.
+        1b) Relevance Labels: For each pain as the target and the corresponding capability as the source provide a relevance label that describes "how relevant is this pain to the this capability?":
+        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+        • Critical: This capability completely solves this pain every time.
+        • Core: The capability adequately solves the pain in most situations, except some edge cases.
+        • Supportive: The capability solves this pain, but only in conjunction with other capabilities or external workarounds.
+        • Ancillary: The capability may only partially solve the pain in some basic situations. Users always have to rely on other capabilities or external workarounds to solve the pain fully.
+        • Out-of-scope: The capability does not materially solve the pain. Removing this capability would not affect the resolution of the pain.
+        1c) Likelihood Labels: For each pain as the target and the corresponding capability as the source provide a likelihood label as "how likely is the occurance of this pain to drive usage of this capability?":
+        One of: {"Essential","Expected","Common","Rare","Unlikely"}
+        • Essential: If this pain occurs, the capability is always expected as the resolution.
+        • Expected: This pain frequently drives the need for this capability; omission would surprise users.
+        • Common: The pain is commonly resolved through this capability in most situations except some edge cases, but mostly in conjunction with other capabilities.
+        • Rare: The occurrance of this pain does not result in the usage of this capability in most situations. Users typically use other capabilities or external workarounds. 
+        • Unlikely: This pain is unlikely to lead a user to use this capability.
 
         2) For each pain infer perceived_metrics: list ≥2 measurable indicators of the pain
             for example "data pipeline latency", "data quality issues", "data processing costs"
-            for each perceived metric as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
-        3) felt_in_jobs: For each pain infer 1–3 jobs-to-be-done that this pain is typically felt in.
+            - For each percieved metric  and the corresponding pain, provide:
+                - Relevance Labels: Describes "how relevant is this metric to this pain?" 
+                    One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                - Likelihood Labels: Describes "how likely is a change this this metric to be an indicator of this pain worsening?"
+                    One of: {"Essential","Expected","Common","Rare","Unlikely"}
+        
+        3) felt_in_jobs: For each pain infer 2–3 jobs-to-be-done that this pain is typically felt in.
         IMPORTANT: 
             The job must be the specific task or business objective that a persona performs during which this pain is felt. 
             The job must be causally upstream of the pain, meaning the pain is experienced while performing this job. If this job did not occur, this pain may never be experienced or noticed.
@@ -71,17 +82,34 @@ def build_hop0_prompt(
             The job language must be something that you might find in the typical job description for a persona in an organization.
         For each job include:
         - job_to_be_done (string): A one sentence description of the specific job that is performed by a persona during which this pain is felt.
-        - for each job_to_be_done as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
+        - for each job_to_be_done as the target and the corresponding pain as the source provide a relevance label and a likelihood label as:
+            3a) Relevance Labels: For each job as the target and the corresponding pain as the source provide a relevance label that describes "how relevant is this business pain to this job-to-be-done?":
+            One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+            • Critical: The pain is exclusively felt while performing this job. 
+            • Core: The pain occurs while performing this job in most workflows.
+            • Supportive: The pain occurs in partially when this job is performed, and often in conjunction with other jobs.
+            • Ancillary: The pain may only occur in edge cases or indirectly when this job is performed. 
+            • Out-of-scope: The pain does not occur in most typical workflows when this job is performed.
+            3b) Likelihood Labels: For each pain as the target and the corresponding capability as the source provide a likelihood label as "how likely is the this job to result in the pain being experienced?":
+            One of: {"Extremely Likely","Expected","Common","Rare","Unlikely"}
+            • Essential: This job always results in this pain being experienced. 
+            • Expected: Performing this job frequently forces a user to experience this pain.
+            • Common: The job is a common driver for the pain, but mostly in conjunction with other pains.
+            • Rare: This job alone rarely drives a user to experience this pain; it is only a minor reason among many others.
+            • Unlikely: This job is unlikely to be a reason for this pain.
         
-        4) For each job, infer 1-3 personas who would typically be responsible for performing this job in an organization.
+        4) For each job, infer 2-3 personas who would typically be responsible for performing this job in an organization.
         Ensure that each persona is an actual "job title" that exists in an organization, and the job to be done usually is part of their job description or responsibilities.
         For each persona include:
                  - "title",
                  - "department",
                  - "seniority" : "Junior|Operator|Manager|Senior|Executive",
-                 - provide a relevance label and a likelihood label for the persona as the target and the corresponding job as the source.
+                 - Relevance Labels: For each persona and the corresponding job to be done, provide a relevance label that describes "how relevant is this job to be done to this persona?" 
+                    One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                 - Likelihood Labels: For each persona and the corresponding job to be done, provide a likelihood label that describes "how likely is this persona to be responsible for performing this job?"
+                    One of: {"Essential","Expected","Common","Rare","Unlikely"}
        
-        5) For each job, infer 1-3 "solving pains" as the business pains, workflow inefficiencies or organizational issues that this job exists to solve.
+        5) For each job, infer 2-3 "solving pains" as the business pains, workflow inefficiencies or organizational issues that this job exists to solve.
         IMPORTANT:
             Each pain must be an actual business inefficiency or workflow friction that occurs in the organization.
             The "solving pain" must occur causally earlier to the job meaning the job is a response, resolution or delegation to this pain.
@@ -91,8 +119,27 @@ def build_hop0_prompt(
             The solving pain must NOT equal, paraphrase, or be the canonical equivalent of the job description or the original pain.
         For each solving pain include:
                 - pain description (string) as a one-sentence description of a specific business pain or workflow inefficiency that is solved by this job_to_be_done.
-                - for each solving pain as the target and the corresponding job as the source provide a relevance label and a likelihood label.
+                - for each solving pain provide:
+                    - Relevance Labels: For each solving pain as the target and the corresponding job as the source provide a relevance label that describes "how relevant is this job to this solving pain?":
+                        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                        • Critical: This job completely solves this pain every time.
+                        • Core: The job adequately solves the pain in most situations, except some edge cases.
+                        • Supportive: The job solves this pain, but only in conjunction with other jobs or external workarounds.
+                        • Ancillary: The job may only partially solve the pain in some basic situations. Users always have to rely on other jobs to be done, or external workarounds to solve the pain fully.
+                        • Out-of-scope: The job does not materially solve the pain. Removing this job would not affect the resolution of the pain.
+                    - Likelihood Labels: For each solving pain as the target and the corresponding job as the source provide a likelihood label as "how likely is the occurance of this pain to drive usage of this job?":
+                        One of: {"Essential","Expected","Common","Rare","Unlikely"}
+                        • Essential: If this pain occurs, the job is always expected as the resolution.
+                        • Expected: This pain frequently drives the need for this job to be done. If this pain did not occur, the job would rarely be performed.
+                        • Common: The pain is commonly resolved through this job in most situations except some edge cases, but mostly in conjunction with other jobs.
+                        • Rare: The occurrance of this pain does not result in this job in most situations. Users typically defer to other resolutions or external workarounds. 
+                        • Unlikely: This pain is unlikely to lead a user to use this job.
                 - perceived_metrics: list ≥2 "metrics"
+                    - For each percieved metric  and the corresponding pain, provide:
+                            - Relevance Labels: Describes "how relevant is this metric to this pain?" 
+                                One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                            - Likelihood Labels: Describes "how likely is a change this this metric to be an indicator of this pain worsening?"
+                                One of: {"Essential","Expected","Common","Rare","Unlikely"}
                 - pain_triggers: list 3–5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
                     - Evaluate each "pain trigger" as a response to "what must increase, scale, or significantly change for this pain to become worse?"
                     - Only return the attribute term — no units, direction, or values.
@@ -100,7 +147,11 @@ def build_hop0_prompt(
                     - Ensure that the returned output is normalized and lemmatized
                     For example, a pain in "difficulty managing data pipelines" gets worse with "analytics data sources".
                     Only return: "analytics data sources" as the pain trigger attribute. 
-                    - For each pain trigger as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
+                    - For each pain trigger and the corresponding solving pain, provide:
+                        - Relevance Labels: Describes "how relevant is this pain trigger to this pain?" 
+                            One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                        - Likelihood Labels: Describes "how likely is an increase in this pain trigger to cause or worsen this pain?"
+                            One of: {"Essential","Expected","Common","Rare","Unlikely"}
         Rules:
         1. Treat each capability independently. Do not let the context of one output bleed into another.
         2. Ensure that the output includes all capabilities provided in the input, at least 1 pain per capability, 1 job per pain, and 1 solving pain per job.
@@ -113,10 +164,6 @@ def build_hop0_prompt(
         - Build the *smallest possible* pool of distinct pains, jobs, and personas that collectively cover as many capabilities as possible.
         - Prefer pains plausibly solved by multiple capabilities, and jobs that plausibly experience multiple downstream pains.
         - HARD CONSTRAINT: Every capability must map to ≥1 pain that it resolves.
-
-        Instructions (two-phase reasoning, single JSON output):
-        1) Generate candidates independently per capability (mentally), but DO NOT output them yet.
-        2) Consolidate into a *minimal shared pool* by deduping/merging near-duplicates and preferring cross-capability coverage.
 
         Return STRICT JSON array:
         [{{
@@ -242,22 +289,16 @@ def build_hop_plus_prompt(
         - Product industry: {industry}
         - Internal pains (with anchors): {_fmt(upstream_pain_contexts)}
 
-        Labeling guides (apply to all outputs as directed):
-        - Relevance label: How central is the source node to resolving or enabling the target node?
-        One of: {{"Critical","Core","Supportive","Ancillary","Out-of-scope"}}
-        • Critical: Without the source, the target cannot be achieved.
-        • Core: The source directly enables the target in most workflows; removing it would significantly weaken the connection.
-        • Supportive: The source contributes to the target but is not sufficient on its own.
-        • Ancillary: The source may only help in edge cases or indirectly.
-        • Out-of-scope: The source does not materially affect the target.
+        **Key Density & Coverage Rules:**
+        - Most pains are felt in jobs; most jobs solve for multiple pains.
+        - For each pain, provide at least 2–3 jobs that solve for it (directly or indirectly).
+        - For each job, provide at least 2–4 pains that are commonly experienced during its execution.
+        - Prefer pains that are solved by multiple jobs, and jobs that experience multiple pains.
+        - Avoid one-to-one mappings unless truly unique; justify uniqueness if it occurs.
+        - After generating candidates, consolidate into a minimal shared pool by deduping/merging near-duplicates and preferring cross-capability and cross-job coverage.
+        - Use domain expertise to infer less obvious but plausible relationships, not just the most direct or generic ones.
+        - Avoid cycles and rewording in pains, jobs, and solving pains. Ensure distinct responses with clear causal/temporal order.
 
-        - Likelihood label: How expected is it that the source would be the solution or enabler for the target?
-        One of: {{"Essential","Expected","Common","Rare","Unlikely"}}
-        • Essential: The source is almost always the solution/enabler for the target.
-        • Expected: Frequently expected as a solution/enabler; omission would surprise users.
-        • Common: Commonly expected, but other solutions/enablers exist.
-        • Rare: Rarely used or expected only in special cases.
-        • Unlikely: Unlikely to be chosen as a solution/enabler for the target.
 
         Instructions:
         For each pain in the input, do the following:
@@ -272,7 +313,21 @@ def build_hop_plus_prompt(
             Remember not to just rephrase the downstream job description that solves for this pain, but to infer the upstream job that this pain is experienced during.
         For each job include:
         - job_to_be_done (string): A one sentence description of the specific job that is performed by a persona during which this pain is experienced.
-        - for each job_to_be_done as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
+        - for each job_to_be_done :
+            3a) Relevance Labels: Provide a relevance label that describes "how relevant is this business pain to this job-to-be-done?":
+                One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                • Critical: The pain is exclusively felt while performing this job. 
+                • Core: The pain occurs while performing this job in most workflows.
+                • Supportive: The pain occurs in partially when this job is performed, and often in conjunction with other jobs.
+                • Ancillary: The pain may only occur in edge cases or indirectly when this job is performed. 
+                • Out-of-scope: The pain does not occur in most typical workflows when this job is performed.
+            3b) Likelihood Labels: For each pain as the target and the corresponding capability as the source provide a likelihood label as "how likely is the this job to result in the pain being experienced?":
+                One of: {"Extremely Likely","Expected","Common","Rare","Unlikely"}
+                • Essential: This job always results in this pain being experienced. 
+                • Expected: Performing this job frequently forces a user to experience this pain.
+                • Common: The job is a common driver for the pain, but mostly in conjunction with other pains.
+                • Rare: This job alone rarely drives a user to experience this pain; it is only a minor reason among many others.
+                • Unlikely: This job is unlikely to be a reason for this pain.
         
         2) Why–What–Fail reasoning (for each job):
             a. Why does this job exist? (independent of the original pain; job exists as a standing responsibility)
@@ -292,7 +347,21 @@ def build_hop_plus_prompt(
                 The solving pain must be temporally earlier to the job, meaning the pain is experienced first, and the job is performed or delegated as a response to this pain.
                 The solving pain remains unsolved or gets worse if the job is not performed well or does not deliver its intended outcomes.
                 The solving pain must not be a rephrasing of the job description or the original pain. It must be a distinct causally and temporally upstream business pain. 
-            - for each solving pain as the target and the corresponding job as the source provide a relevance label and a likelihood label.
+            - for each solving pain and the corresponding job provide:
+                    - Relevance Labels: Describes "how relevant is this job to this solving pain?":
+                        One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                        • Critical: This job completely solves this pain every time.
+                        • Core: The job adequately solves the pain in most situations, except some edge cases.
+                        • Supportive: The job solves this pain, but only in conjunction with other jobs or external workarounds.
+                        • Ancillary: The job may only partially solve the pain in some basic situations. Users always have to rely on other jobs to be done, or external workarounds to solve the pain fully.
+                        • Out-of-scope: The job does not materially solve the pain. Removing this job would not affect the resolution of the pain.
+                    - Likelihood Labels: Describles "how likely is the occurance of this pain to drive usage of this job?":
+                        One of: {"Essential","Expected","Common","Rare","Unlikely"}
+                        • Essential: If this pain occurs, the job is always expected as the resolution.
+                        • Expected: This pain frequently drives the need for this job to be done. If this pain did not occur, the job would rarely be performed.
+                        • Common: The pain is commonly resolved through this job in most situations except some edge cases, but mostly in conjunction with other jobs.
+                        • Rare: The occurrance of this pain does not result in this job in most situations. Users typically defer to other resolutions or external workarounds. 
+                        • Unlikely: This pain is unlikely to lead a user to use this job.
             - pain_triggers: list 3-5 attributes (normalized, lemmatized nouns only) that, if scaled/changed, make this pain worse.
                 - Evaluate each "pain trigger" as a response to "what must increase, scale, or significantly change for this pain to become worse?"
                 - Only return the attribute term — no units, direction, or values.
@@ -300,10 +369,18 @@ def build_hop_plus_prompt(
                 - Ensure that the returned output is normalized and lemmatized
                 For example, a pain in "difficulty managing data pipelines" gets worse with "analytics data sources".
                 Only return: "analytics data sources" as the pain trigger attribute. 
-                - For each pain trigger as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
+                - For each pain trigger and the corresponding solving pain, provide:
+                        - Relevance Labels: Describes "how relevant is this pain trigger to this pain?" 
+                            One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                        - Likelihood Labels: Describes "how likely is an increase in this pain trigger to cause or worsen this pain?"
+                            One of: {"Essential","Expected","Common","Rare","Unlikely"}
             - perceived_metrics: list ≥2 measurable indicators of the pain
                 for example "data pipeline latency", "data quality issues", "data processing costs"
-                = for each perceived metric as the target and the corresponding pain as the source provide a relevance label and a likelihood label.
+                - For each percieved metric  and the corresponding pain, provide:
+                        - Relevance Labels: Describes "how relevant is this metric to this pain?" 
+                            One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                        - Likelihood Labels: Describes "how likely is a change this this metric to be an indicator of this pain worsening?"
+                            One of: {"Essential","Expected","Common","Rare","Unlikely"}
         
         4) For each job, infer 1-3 personas who would typically be responsible for performing this job in an organization.
         Ensure that each persona is an actual "job title" that exists in an organization, and the job to be done usually is part of their job description or responsibilities.
@@ -311,7 +388,10 @@ def build_hop_plus_prompt(
                  - "title",
                  - "department",
                  - "seniority" : "Junior|Operator|Manager|Senior|Executive",
-                 - provide a relevance label and a likelihood label for the persona as the target and the corresponding job as the source.
+                 - Relevance Labels: For each persona and the corresponding job to be done, provide a relevance label that describes "how relevant is this job to be done to this persona?" 
+                    One of: {"Critical","Core","Supportive","Ancillary","Out-of-scope"}
+                 - Likelihood Labels: For each persona and the corresponding job to be done, provide a likelihood label that describes "how likely is this persona to be responsible for performing this job?"
+                    One of: {"Essential","Expected","Common","Rare","Unlikely"}
        
                  
         Rules:
@@ -452,6 +532,14 @@ def build_zmot_for_triggers_prompt(product_summary: str,
         - Pain triggers with anchors: {_fmt(trigger_contexts)}
 
         For each (archetype × pain_trigger) pair, identify **(minimum) 3 to (utmost) 5** specific, discrete external events that would significantly accelerate or intensify the given pain trigger for that archetype.
+        Definition:
+        - An external event is a specific discrete occurrence or change outside the organization that is not under the organization's direct control.
+        - The event plausibly causes or accelerates the pain trigger to worsen.
+        - The event is observable or inferable through external signals or proxy data including news, hiring trends, third party websites including communities, and official and employee social media activities.
+
+        Inference Guide:
+        - "Given this pain trigger, what potential external events could cause this to accelerate or intensify for this archetype?"
+        - "What externally observable information or close proxy can signal or help infer the occurrence of this event?"
 
         For each external event include:
         - trigger_event: short, specific description of the event (e.g., "leadership change", "pricing overhaul", "market entry — APAC", "regulatory change", "compliance audit", "IPO readiness", "funding round", "merger announcement", "customer dissatisfaction", "employee churn", etc.)
@@ -491,7 +579,7 @@ def build_zmot_for_triggers_prompt(product_summary: str,
 
         
         Guardrails:
-        - IMPORTANT: Ensure all responses are in tight context of the provided product summary, domain and industry. If this is not a strongly plausible context or you find your confidence < 40% return empty results.
+        - IMPORTANT: Ensure all responses are in tight context of the provided product summary, domain and industry. 
         - Do not invent archetype IDs or trigger IDs — use exactly those given.
         - Make events specific to both the archetype and trigger context.
         - Ensure all answers are in the context of a typical organization that could potentially benefit from the provided product summary, domain, and industry.
@@ -500,7 +588,6 @@ def build_zmot_for_triggers_prompt(product_summary: str,
         Optimization goal (global across all pairs):
         - Build the smallest possible pool of distinct trigger_events that collectively cover as many (archetype × pain_trigger) pairs as possible.
         - Prefer events that plausibly accelerate multiple triggers and/or apply to multiple archetypes.
-        - Do NOT invent events: if no relevant event exists for a pair, omit that pair from coverage and state why in notes.
 
         Event normalization & reuse:
         - Normalize trigger_event as a short, lowercased noun phrase; deduplicate near-synonyms.
@@ -509,6 +596,8 @@ def build_zmot_for_triggers_prompt(product_summary: str,
 
         Coverage rules:
         - Attempt coverage for every pain_trigger; partial coverage is acceptable if justified.
+        - Every input pain trigger must be covered by ≥1 archetype.
+        - Every (archetype × pain_trigger) pair must have ≥1 event if plausible
         - Cap per-pair at 3–5 events; prioritize events by (global_coverage_rank, boost_score, match_score).
         - Provide a global "events" list and then reference by event_id in the per-pair matrix.     
               
