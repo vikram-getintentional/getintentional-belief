@@ -204,7 +204,8 @@ def recursive_agentic_traversal(product_subgraph: nx.DiGraph, context: AgentCont
 
         print(f"🪜 Hop+ on {len(hop_plus_pains)} pains…")
         print("Pain IDs:", hop_plus_pains)
-        results = process_hop_plus_gpt_cache(hop_plus_pains, product_subgraph, context)
+        #results = process_hop_plus_gpt_cache(hop_plus_pains, product_subgraph, context)
+        results = []
         
         product_subgraph = update_graph(product_subgraph)
 
@@ -244,7 +245,7 @@ def _pending_triggers_without_edge(G, edge_type: str) -> list[str]:
 def archetype_event_discovery(
     product_subgraph: nx.DiGraph,
     context: AgentContext,
-    batch_size: int = 500,
+    batch_size: int = 10,
     max_passes: int = 20,   # safety cap to avoid infinite loops
 ) -> None:
     """

@@ -320,7 +320,7 @@ def _construct_causal_flow(G_final: nx.DiGraph, product_id: str) -> None:
 
         candidate_score = cumulative_likelihood * cumulative_relevance
         G_final.nodes[node_id]["candidate_score"] = candidate_score
-        print(f"Node {node_id} assigned temporal_depth {G_final.nodes[node_id]['temporal_depth']} \n Likelihood: {cumulative_likelihood} \n Relevance: {cumulative_relevance} \n Candidate_score {G_final.nodes[node_id]['candidate_score']}")
+        
 
 
     print("Assigned temporal_depth to all nodes in graph")
@@ -370,7 +370,8 @@ def _construct_first_impact_graph(G_final: nx.DiGraph, nodes_occurrance: list[di
             if not zmot_node:
                 continue
             zmot_boost = get_edge_attribute(G_final, pain_trigger_id, zmot_id, "boost")
-        #print("ZMOT boost for pain trigger", pain_trigger_id, "is", zmot_boost)
+            print("zmot id:", zmot_id, " pain trigger id:", pain_trigger_id, "boost:", zmot_boost)
+        #print("ZMOT boost for pain trigger", pain_trigger_id,"is", zmot_boost)
         baseline_pain_trigger_likelihood = get_edge_attribute(G_final, pain_trigger_id, archetype_id, "likelihood")
         pain_trigger_likelihood = (1+ 10*zmot_boost)* baseline_pain_trigger_likelihood / (((1+ 10*zmot_boost)* baseline_pain_trigger_likelihood)+(1- baseline_pain_trigger_likelihood))
         #print("Pain trigger likelihood for", pain_trigger_id, "is", pain_trigger_likelihood)
@@ -383,8 +384,7 @@ def _construct_first_impact_graph(G_final: nx.DiGraph, nodes_occurrance: list[di
             pain_node = get_node_by_id(G_final, pain_id)
             if not pain_node:
                 continue
-            pain_node["cumulative_likelihood"] = pain_node.get("likelihood", 0.0)
-            pain_node["cumulative_likelihood"] = 1-(1- pain_trigger_likelihood* get_edge_attribute(G_final, pain_id, pain_trigger_id, "likelihood"))*(1- pain_node["cumulative_likelihood"])
+            pain_node["cumulative_likelihood"] = 1-(1- pain_trigger_likelihood* get_edge_attribute(G_final, pain_id, pain_trigger_id, "likelihood"))*(1- pain_node.get("cumulative_likelihood", 0.0))
             try:
                 path = nx.shortest_path(G_final, source = product_id,target=pain_id)
                 all_nodes.update(path)
@@ -500,6 +500,9 @@ def _calculate_cumulative_relevance(G: nx.DiGraph) -> None:
 
 def _calculate_cumulative_likelihoods(G: nx.DiGraph) -> None:
     terminal_pain_ids = get_nodes_list_ids(G, "pain", {"terminality": "terminal"})
+    retry_count = {}
+    MAX_RETRIES = 5
+    next_nodes = []
     for terminal_pain_id in terminal_pain_ids:
         terminal_pain_node = get_node_by_id(G, terminal_pain_id)
         if not terminal_pain_node:
@@ -507,26 +510,59 @@ def _calculate_cumulative_likelihoods(G: nx.DiGraph) -> None:
         if "cumulative_likelihood" not in terminal_pain_node or terminal_pain_node["cumulative_likelihood"] is None or terminal_pain_node["cumulative_likelihood"] <= 0:
             print("Terminal pain Likelihood missing or zero for", terminal_pain_id, ". Diagnose this...")
             continue
-    for node_id in G.nodes():
-        node = get_node_by_id(G, node_id)
-        if not node:
+        for predecessor in G.predecessors(terminal_pain_id):
+            if predecessor not in next_nodes:
+                next_nodes.append(predecessor)
+    print("Starting likelihood assignment for non-terminal nodes with next_nodes size:", len(next_nodes))
+    while next_nodes:
+        current_node_id = next_nodes.pop(0)
+        retry_count[current_node_id] = retry_count.get(current_node_id, 0) + 1
+        
+        current_node = get_node_by_id(G, current_node_id)
+        if not current_node:
             continue
-        if node.get("node_type") != "persona":
-            if node.get("terminality") != "terminal":
-                for terminal_pain_id in terminal_pain_ids:
-                    try:
-                        node_path_to_pain = nx.shortest_path(G, source=node_id, target=terminal_pain_id)
-                    except nx.NetworkXNoPath:
-                        # handle the missing path case here
-                        node_path_to_pain = None
-                    if node_path_to_pain and len(node_path_to_pain) > 1:
-                        cumulative_likelihood = 1.0
-                        for i in range(len(node_path_to_pain) - 1):
-                            edge_likelihood = get_edge_attribute(G, node_path_to_pain[i], node_path_to_pain[i + 1], "likelihood")
-                            cumulative_likelihood *= edge_likelihood
-                        # At this point we have boosted likelihood set for pain nodes tied to triggers
-                        cumulative_likelihood *= G.nodes[terminal_pain_id].get("cumulative_likelihood", 0.0)
-                        node["cumulative_likelihood"] = 1-(1-cumulative_likelihood)*(1-node.get("cumulative_likelihood", 0.0))
+        if current_node.get("node_type") == "persona" or current_node.get("node_type") == "perceived_metric":
+            next_nodes.remove(current_node_id)
+            continue
+        if retry_count[current_node_id] > MAX_RETRIES:
+            if "cumulative_likelihood" in current_node and current_node["cumulative_likelihood"] is not None:
+                for predecessor in G.predecessors(current_node_id):
+                    if predecessor not in next_nodes:
+                        if G.nodes[predecessor].get("node_type") == "product":
+                            print("Reached product node, stopping traversal.")
+                            continue
+                        next_nodes.append(predecessor)
+                        print(f"Node {current_node_id} hit max retries but has likelihood, moving to predecessors", predecessor)
+                        continue
+            print(f"⚠️ Node {current_node_id} exceeded max retries without likelihood. Skipping to avoid infinite loop.")
+            continue
+        
+        successor_ids = list(G.successors(current_node_id))
+        if not successor_ids or len(successor_ids) == 0:
+            continue
+        all_successors_have_likelihood = True
+        for succ_id in successor_ids:
+            succ_node = get_node_by_id(G, succ_id)
+            if not succ_node:
+                continue
+            if succ_node.get("node_type") in ["persona", "perceived_metric"]:
+                continue
+            if "cumulative_likelihood" not in succ_node or succ_node["cumulative_likelihood"] is None:
+                all_successors_have_likelihood = False
+                next_nodes.append(succ_id)
+                next_nodes.append(current_node_id)
+                continue
+            parent_cumulative_likelihood = succ_node.get("cumulative_likelihood", 0.0)
+            current_node["cumulative_likelihood"] = 1-(1-get_edge_attribute(G, current_node_id, succ_id, "likelihood")*parent_cumulative_likelihood)*(1-current_node.get("cumulative_likelihood", 0.0))
+        if not all_successors_have_likelihood:
+            continue
+        for predecessor in G.predecessors(current_node_id):
+            if predecessor not in next_nodes:
+                if G.nodes[predecessor].get("node_type") == "product":
+                    print("Reached product node, stopping traversal.")
+                    continue
+                next_nodes.append(predecessor)
+
     persona_ids = get_nodes_list_ids(G, "persona", {})
     for persona_id in persona_ids:
         persona_node = get_node_by_id(G, persona_id)

@@ -533,7 +533,7 @@ def build_zmot_for_triggers_prompt(product_summary: str,
 
         For each (archetype × pain_trigger) pair, identify **(minimum) 3 to (utmost) 5** specific, discrete external events that would significantly accelerate or intensify the given pain trigger for that archetype.
         Definition:
-        - An external event is a specific discrete occurrence or change outside the organization that is not under the organization's direct control.
+        - An external event is a specific discrete occurrence or change either (1) outside the organization and not under the organization's direct control, (2) a significant strategic initiative or directive driven by the organization but not directly tied to day-to-day operations, or (3) a major shift or unintended disruption from within the organization but outside the direct or indirect control of the pains, jobs or pain_triggers in the context.
         - The event plausibly causes or accelerates the pain trigger to worsen.
         - The event is observable or inferable through external signals or proxy data including news, hiring trends, third party websites including communities, and official and employee social media activities.
 
@@ -599,8 +599,25 @@ def build_zmot_for_triggers_prompt(product_summary: str,
         - Every input pain trigger must be covered by ≥1 archetype.
         - Every (archetype × pain_trigger) pair must have ≥1 event if plausible
         - Cap per-pair at 3–5 events; prioritize events by (global_coverage_rank, boost_score, match_score).
-        - Provide a global "events" list and then reference by event_id in the per-pair matrix.     
-              
+        - Provide a global "events" list and then reference by event_id in the per-pair matrix.
+        - IMPORTANT: If you cannot find a strongly plausible event, propose the most likely external event that could even indirectly accelerate or worsen this pain trigger. Only leave a pair empty if it is truly impossible.    
+
+        Few Short Examples:
+        - Pain Trigger = manual data entry; External event = Vendor system update; Context = External vendor changes force new manual entry
+        - Pain Trigger = system synchronization delays; External event = Partner system migration; Context = Partner changes system, causing sync delays
+        - Pain Trigger = ambiguous testing goals; External event = Industry standard update; Context = New standards require new testing protocols
+        - Pain Trigger = insufficient participant profiles; External event = Privacy law change; Context = New privacy laws restrict available participant data
+        - Pain Trigger = stakeholder communication gaps; External event = Board/leadership change; Context = New leadership requires new reporting/communication structures
+        - Pain Trigger = unclear product vision; External event = Market disruption by competitor; Context = Competitor launches new product, forcing vision rethink
+        - Pain Trigger = conflicting priorities; External event = Major customer contract win/loss; Context = New customer needs shift priorities
+        - Pain Trigger = offboarding complexity; External event = Acquisition/merger; Context = M&A activity triggers mass offboarding or new compliance needs
+        - Pain Trigger = offboarding complexity; External event = Layoffs; Context = Company-wide layoffs trigger need mass offboarding
+        - Pain Trigger = budget constraints; External event = Economic downturn; Context = Recession forces
+        - Pain Trigger = escalation of support tickets; External event = Product outage; Context = Product downtime spikes customers raising support tickets
+        - Pain Trigger = escalation of support tickets; External event = New pricing; Context = Pricing changes confuse customers, raising support tickets
+        - Pain Trigger = escalation of support tickets; External event = New product launch; Context = New product bugs/features raise support tickets
+
+
         Return STRICT JSON only:
         {{
           "zmot_matrix": [

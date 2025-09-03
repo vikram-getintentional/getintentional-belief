@@ -96,7 +96,6 @@ def _causal_timeline_builder(G: nx.DiGraph):
         step = {"time_step": f"T-{d}", "events": []}
         for pain_id in pains:
             pain_desc = G.nodes[pain_id].get("description", "")
-            print(f"At time T-{d}, processing pain: {pain_id} - {pain_desc}")
             solving_node_ids = get_source_nodes_by_target_and_type(G, pain_id, "solves")
             for node_id in solving_node_ids:
                 node = get_node_by_id(G, node_id)
@@ -111,7 +110,7 @@ def _causal_timeline_builder(G: nx.DiGraph):
                     capability_desc = node.get("description", "")
                     capability_name = node.get("name", "")
                     step["events"].append({
-                        "context": {"input_pain": pain_id, "pain_description": pain_desc},
+                        "context": {"input_pain": pain_id, "pain_description": pain_desc, "likelihood": G.nodes[pain_id].get("cumulative_likelihood", 0.0), "relevance": G.nodes[pain_id].get("cumulative_relevance", 0.0)},
                         "action": {
                             "capability": capability_id,
                             "capability_name": capability_name,
@@ -123,7 +122,7 @@ def _causal_timeline_builder(G: nx.DiGraph):
                     
                     continue
                 elif node.get("node_type") == "job":
-                    print("Found job node:", node_id, " - ", node.get("description", ""))
+                    
                     job_desc = node.get("description", "")
                     persona_ids = get_target_nodes_by_source_and_type(G, node_id, "performed_by")
                     personas = []
@@ -133,7 +132,9 @@ def _causal_timeline_builder(G: nx.DiGraph):
                         personas.append({
                             "id": persona_id,
                             "title": persona_title,
-                            "candidate_score": persona_candidate_score
+                            "candidate_score": persona_candidate_score,
+                            "likelihood": G.nodes[persona_id].get("cumulative_likelihood", 0.0),
+                            "relevance": G.nodes[persona_id].get("cumulative_relevance", 0.0)
                         })
 
                     next_pain_ids = get_source_nodes_by_target_and_type(G, node_id, "felt_in")
@@ -143,14 +144,18 @@ def _causal_timeline_builder(G: nx.DiGraph):
                         next_pains.append({
                             "id": next_pain_id,
                             "description": next_pain_desc,
-                            "candidate_score": G.nodes[next_pain_id].get("candidate_score", 0.0)
+                            "candidate_score": G.nodes[next_pain_id].get("candidate_score", 0.0),
+                            "likelihood": G.nodes[next_pain_id].get("cumulative_likelihood", 0.0),
+                            "relevance": G.nodes[next_pain_id].get("cumulative_relevance", 0.0)
                         })
                     step["events"].append({
-                        "context": {"input_pain": pain_id, "pain_description": pain_desc},
+                        "context": {"input_pain": pain_id, "pain_description": pain_desc, "likelihood": G.nodes[pain_id].get("cumulative_likelihood", 0.0), "relevance": G.nodes[pain_id].get("cumulative_relevance", 0.0)},
                         "action": {
                             "job": node_id,
                             "job_description": job_desc,
                             "job_candidate_score": node_candidate_score,
+                            "likelihood": node.get("cumulative_likelihood", 0.0),
+                            "relevance": node.get("cumulative_relevance", 0.0),
                             "personas": personas
                         },
                         "results": next_pains   
