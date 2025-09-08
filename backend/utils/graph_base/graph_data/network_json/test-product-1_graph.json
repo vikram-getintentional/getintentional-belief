@@ -1,0 +1,15 @@
+{
+  "graph": {"product_lookup_id": "test-product-1"},
+  "nodes": [
+    {
+      "id": "product:test-product-1",
+      "node_type": "product",
+      "type": "product",
+      "id_alias": "test-product-1",
+      "summary": "Test Product",
+      "domain": "example.com",
+      "industry": "software"
+    }
+  ],
+  "edges": []
+}

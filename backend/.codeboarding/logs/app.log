@@ -1,0 +1,8 @@
+2025-08-23 13:01:33 INFO     [root:24] [StructureGraphBuilder] Running pyreverse…
+2025-08-23 13:01:34 INFO     [root:44] [StructureGraphBuilder] Saved structure graph to structure.dot
+2025-08-23 13:01:38 INFO     [root:106] [CallGraphBuilder] Building ASTs
+2025-08-23 13:01:40 INFO     [root:118] [CallGraphBuilder] Call‑graph built: 405 nodes, 2482 edges.
+2025-08-23 13:01:55 INFO     [root:24] [StructureGraphBuilder] Running pyreverse…
+2025-08-23 13:01:56 INFO     [root:44] [StructureGraphBuilder] Saved structure graph to structure.dot
+2025-08-23 13:02:00 INFO     [root:106] [CallGraphBuilder] Building ASTs
+2025-08-23 13:02:02 INFO     [root:118] [CallGraphBuilder] Call‑graph built: 405 nodes, 2482 edges.

@@ -1,0 +1,41 @@
+#+TITLE: Meta – Reflection, Reviews, and Process
+#+AUTHOR: Project Ops
+#+SEQ_TODO: TODO(t) ACTIVE(a) REVIEW(r) BLOCKED(b) | DONE(d) CANCELLED(c)
+#+ARCHIVE: %s_archive::* Archive
+
+* Weekly Review Template
+** Weekly Review <%<%Y-%m-%d %a>>
+   - What did I accomplish this week?
+     - 
+   - What went well and why?
+     - 
+   - What were my biggest challenges or blockers?
+     - 
+   - Where did I spend more time than anticipated? Why?
+     - 
+   - Are my goals and deadlines still realistic? What needs to be adjusted?
+     - 
+   - Top 1–3 priorities for next week
+     - 
+
+* Time Reports
+** This Week by Day
+#+BEGIN: clocktable :scope agenda :block thisweek :step day :fileskip0 t
+#+END:
+
+** Hour Balance (target 20h last 7 days)
+#+BEGIN: hour-balance :tstart "<-1w>" :tend "<now>" :target 20
+#+END:
+
+* Cognitive Bias Guardrails
+** Outside View – Question Set
+   - If a colleague with similar skills were assigned this task, what would my estimate be for them?
+   - What data from archived tasks contradicts my current estimate?
+   - What is the worst-case scenario and buffer?
+   - Am I making a promise or a hope? What changes make it a promise?
+
+** Pre-Mortem Checklist
+   - [ ] Imagine failure; write plausible causes.
+   - [ ] Prioritize top 3–5 risks.
+   - [ ] Create mitigation TODOs in project file.
+

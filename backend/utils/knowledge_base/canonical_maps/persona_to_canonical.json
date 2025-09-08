@@ -5157,5 +5157,125 @@
     "title": "sales manager",
     "department": "sales",
     "seniority": "Operator"
+  },
+  "{'title': 'Billing Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Accountant', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Success Manager', 'department': 'Customer Success', 'seniority': 'Manager'}": {
+    "title": "customer success manager",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Revenue Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Pricing Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Manager', 'department': 'Product', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Financial Controller', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "financial controller",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Audit Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "audit manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Analyst', 'department': 'Analytics', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Analyst', 'department': 'Strategy', 'seniority': 'Operator'}": {
+    "title": "pricing analyst",
+    "department": "strategy",
+    "seniority": "Operator"
+  },
+  "{'title': 'Strategy Manager', 'department': 'Strategy', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Security Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it security specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Chief Information Security Officer', 'department': 'IT', 'seniority': 'Executive'}": {
+    "title": "it security specialist",
+    "department": "it",
+    "seniority": "Executive"
+  },
+  "{'title': 'Accounts Receivable Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "accounts receivable manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Success Manager', 'department': 'Customer Service', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "customer service",
+    "seniority": "Manager"
+  },
+  "{'title': 'Subscription Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Compliance Officer', 'department': 'Legal', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Manager"
+  },
+  "{'title': 'Chief Strategy Officer', 'department': 'Executive', 'seniority': 'Executive'}": {
+    "title": "chief strategy officer",
+    "department": "executive",
+    "seniority": "Executive"
+  },
+  "{'title': 'Compliance Manager', 'department': 'Legal', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Manager"
+  },
+  "{'title': 'Accounts Receivable Clerk', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "accounts receivable clerk",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Account Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "accountant",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Accountant', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Analyst', 'department': 'Analytics', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Scientist', 'department': 'Analytics', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
   }
 }

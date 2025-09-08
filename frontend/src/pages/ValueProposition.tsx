@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import ValuePropCard from "../components/ValuePropCard";
 import CapabilityCard from "../components/CapabilityCard";
+import CapabilityEditor from "../components/CapabilityEditor";
+import PainFamilyEditor from "../components/PainFamilyEditor";
+import PersonaJobAnchor from "../components/PersonaJobAnchor";
 
 type Capability = {
   coreness: number;
@@ -131,6 +134,17 @@ const ValueProposition = () => {
               <div className="text-gray-400">No capabilities found.</div>
             )}
           </div>
+
+          {/* Editor */}
+          {selectedProductId && (
+            <CapabilityEditor productId={selectedProductId} />
+          )}
+          {selectedProductId && (
+            <PainFamilyEditor productId={selectedProductId} />
+          )}
+          {selectedProductId && (
+            <PersonaJobAnchor productId={selectedProductId} />
+          )}
         </div>
       )}
     </div>

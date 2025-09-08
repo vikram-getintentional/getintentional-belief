@@ -1,0 +1,38 @@
+[
+  {
+    "id": "044da882-e03a-43dd-8005-d0900e44216e",
+    "text": "number of security vulnerabilities detected"
+  },
+  {
+    "id": "b32f0dda-d27f-4064-a3b5-1ad597c2fe63",
+    "text": "average pr review time"
+  },
+  {
+    "id": "cc927854-5feb-48fd-b79e-489a79284561",
+    "text": "increased code bugs"
+  },
+  {
+    "id": "2aa51386-970f-47d6-8270-fa836b6f9346",
+    "text": "number of communication gaps"
+  },
+  {
+    "id": "99dbc817-ee7b-4459-8187-a78b01a89dbb",
+    "text": "increased project delays"
+  },
+  {
+    "id": "2a6ae97c-6bce-4c9f-8adf-f9c873115d98",
+    "text": "number of unresolved issues"
+  },
+  {
+    "id": "7738d3ce-3d4f-4e65-964d-529cc6da7fda",
+    "text": "number of missed deadlines"
+  },
+  {
+    "id": "a642ca24-7567-4ca2-9771-f1477962e650",
+    "text": "number of prs"
+  },
+  {
+    "id": "732ef3c4-c96a-48f7-93ac-1cb6c89d137a",
+    "text": "increased time to market"
+  }
+]

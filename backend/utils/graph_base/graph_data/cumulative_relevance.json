@@ -886,5 +886,1631 @@
       "node_id": "b063a597-8115-40e9-9939-719423f50f48",
       "cumulative_relevance": 0.6786856280504779
     }
+  ],
+  "product:a714e02a4b69272c": [
+    {
+      "node_id": "capability:8dda04b1577980fe",
+      "cumulative_relevance": 0.9499983768359375
+    },
+    {
+      "node_id": "capability:8dde85f56e4bbfa9",
+      "cumulative_relevance": 0.7499987185546875
+    },
+    {
+      "node_id": "capability:10c8cf521ff14859",
+      "cumulative_relevance": 0.7499987185546875
+    },
+    {
+      "node_id": "capability:5b07a29c0104c018",
+      "cumulative_relevance": 0.7499987185546875
+    },
+    {
+      "node_id": "capability:2ba60638630e7721",
+      "cumulative_relevance": 0.59999897484375
+    },
+    {
+      "node_id": "capability:2181c8bfb82483e7",
+      "cumulative_relevance": 0.39999931656250004
+    },
+    {
+      "node_id": "product:cd7c5e9cf3eae003",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:7ec8445d135a07dc",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:c7eb78b46314b0ab",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:2c256d2fc149170e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:3fabae62b295d564",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:58ae0904e9e14e92",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:ca2e5c6d1c9b5627",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "job:a6b3dce336031874",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:b7d4e331238cb7ab",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:2bbb4000fae13098",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:c63e2579f7b70ab4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:d81f1be1bd8bc14d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:22f22a1195c64977",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:9edfb746d12f5842",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:f24aec2787a264b7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:aa4f4147666c4c81",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:8fac95afde8d1fef",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:08a449716315dd36",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:fc33b9b5d8ace987",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:7c7d7f11b9f39ef0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:e96fa5451acc3159",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:05c2bdef228cb2cf",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:aa69a153d4dd6b9f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:874c53ff07279884",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:dc36e793fd9a05ae",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:21985add1ae849b7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:f096d3dbbc42af7b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:70f90edbe76021c8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "job:16ebe61027fc00b4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:63e16ee76e5ad350",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:4f4ec80a157813fb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:8d82e9601b316d4c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:35de2f7a51388b3f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:285d384b41c06910",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:1971bb4be4b80bc5",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:a5b48d522a51747c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:742be2cedacc2aaa",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:e3b13b00616b31fc",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:ea0217c6d29afdbb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:ebf1976a8ba6355d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "job:54b36007a9b340d0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:9501bf84a96deb3d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:80eb908fff7c49d8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:071f7da14e913de6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:d3e811084a3b9fd9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:8cafb84ba9337d6c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "job:bb442e9a619c365d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:f6e9d257ec86e4ad",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:d64c8134c438baed",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:48adc0f36c582a11",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:2eb5c9a4834be82f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:9c40f117f2814f0a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "job:849b0f56daa1d102",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:04af9cd5553e31f9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:dedcd6c2aafcc2ff",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:80e6db9f553863a7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:0fdcee9f5744cc61",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain:a3409c89e628ccf8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:9b09b5aadf7c5e3f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "perceived_metric:75cb960f9562dfcb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:ea17418b6e137e2f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "pain_trigger:8fe432624596ae89",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "job:3a766ea39337de7c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:ddd0c12cb856d50f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "persona:8d476bc7b5ada107",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:a82898bb70233573",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:3eac8c2f2f902c5e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:5198c65e0d511b10",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:5fed65699b76890b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:15a5ccac58372514",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:56f18b23b13806ae",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:7d51c57b895b04b9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:215e082bb8822a53",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:04be1c5a8bec5e81",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:8f047099c2cac836",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:0388e39e6d55f2ac",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:cc397b0b4c6e0f8c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:798e30c26219e240",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "archetype:6be12cabb4d1818a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:011f9d69945e9b21",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:09d6c0482bd0f61e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:dd177965e766499a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:7b4c90a8bdb79fb7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:5d33567cf52d72a3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ebdf09152a308bce",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ef92edb50fae6063",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:89cda02305172da7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:28b20e12b2def077",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:e2a6b4fdad1a8fa2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:76769eb0d0e07a2d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d4bdeee7dd9a7a4b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:0c3fc378b511f18d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:fb6a1ccafd5777e2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:706cbb5db4bc9158",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:324d3b55b7c9740e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:19640a3b0c825c72",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:b33768831ccb52c4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:fb5a98f007240730",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:2b084cb91822cfa1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:0d41c967c4d2a12f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c7b5e07c8d85337d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:b249a4ec6f859e88",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:51f36151ac48ab63",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:842862bc5104c913",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d42844c6da4f47bb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:ce394b9b00918868",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:44c8f87926d20fa6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:01150905d15d44e1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:65f076a7a2346a16",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:4787520535fce59d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:05a2f65844631738",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:44eacba2b39d5b5b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:c98ddadb8bbce3d1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:6d2ceb1e398b715e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:83346084b1c1e484",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:7e13d5d839c74256",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3ea5792956dc7569",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:5d6d04a1b4e8bdb4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:be8eb80548d3dbe2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:ba8082ee6acfdb67",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:cfc9bdb33f83b690",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:388aa714ffa09e86",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:d68b1d0254a06cb1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:b860c035149d174e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:7f42179e589eec32",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:2d8abb15a8a07315",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:961b1cab88833ff3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:348a413c4f5556d0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:257578ca9fa499f4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:c1ae4fe97e0b61c9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:8896b2f0ef7978d3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:aafef9d4986f7df2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:11b35e3950130b5b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3f380d4b6a2c6383",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:6a23ed6e438dab14",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:d16059ee7af69a57",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:f2dfb509cf6154a5",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:d9fb0abd41fdb030",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:f8d3d59bff2a61c5",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:691d024d99b1422e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:0c8e90b6e72e6cb6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:e9a483ce1aa6bf8c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:4243b4b274740096",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:8949673230866c28",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:7f6809bcd25f51cd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:2c0a2ef02e1875bd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:c3093597f1c00423",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:beb5e89a12cf1d3b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c5a42ed0607624e7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:660cdda7dc6eff44",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:f969290b70ec2654",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:28deb93a86c62e13",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:8992596c748b0103",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8ac4ef30a05fd43f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:31e21266e4d93cd4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:cfd50ef6ff00e962",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:ce047d1ce6a55161",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:f9fccaaa03bf5e15",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:d4f0c8baea263c67",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:615e445a52e1427f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:4fc19d2d85f213c0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3c563093c6d1a60f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:88bd716a834d9085",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:edc27f3b280b4a9b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8ea6fba5c26844e2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:b39a4b5189a50099",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:c4c2d03d6144c776",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:cc168d7d15366cec",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c3c4ef782dd13cd7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:bc913b3939aa2be4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:4e33e37047138c9c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:baf2d41ec3b3ff25",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:b166b2be75b14976",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:a1793cf998418273",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ae1a2ab0746015eb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:9605e6e5e84e507a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:fd3b2f787573ee8d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:ba02f5e66f73b913",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:2d41b4dab12e4f58",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:6a5195b6aaecbce0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:5f2fdc1c59649a7c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:1325182f51f8b004",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:015caaa1f7c5ed31",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:f3e55f6be5731758",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:95e90b7001133b7d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:86c9ae322327db99",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:2f2c755c8368c4dc",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:6bac5132c200096f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8ead9b5c56c966d8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:cd28d8cb6558b48e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:15d5508d45458f7b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:fbf89ed2d8650559",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:2f06a50f90f5d1ef",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:bc549c25b6ce5c1a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:14bdbda8a96184a6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:5498920dd01ff296",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:e5da6ade1cc2aaf4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:d99ddbb872230c6b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:5e7b65fc2de46539",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8396df252f92b4be",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:390cb58a41abc0b5",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:ed7f1a25badfee8b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:550cedba7c03420c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:efff204358328c42",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:3ae7526e616c2952",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:63072c6e9a38996c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:f73948269b2ac53e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:5fea2515ec87ded2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:4db3780de69fe6b1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:5b3cd67dca06d43b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c1eae167359146f9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:53288297dd6efea9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:83536bd3fbe2bc64",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:f080f2c31fe8540c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:17ff49049157c136",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:bf24c794aea79100",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:5e9091e5596f4594",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:aef64b70a12d6c77",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:b167d0c18fa08e93",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:2e3a47c561fc2e0c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:6303a7e6284fe539",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:9b863151a1fd246e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:619620ad6d45585f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:34f4fe7dd05d8807",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:432cf15725c1af21",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:6b069a86750f9a69",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:2addcc042d75563e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3306dc16e5c937ee",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:0375ac11f57e9e96",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:e2ef56023b7d4806",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:c7b252b4d89f0c5d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:551f15958ecef6e4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:897838a9baba1a6d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8ccd632e7e98c099",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:bc3292ee33bd6102",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:785ef79ac63bd3a1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:0dde10fd219b7a75",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:4dff98dd6f08c425",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:e78ec82381142207",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3509a29b897e13a7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:3afcf01a24a53620",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:68a950b4c1a8d1f3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:7e135e633c1350dd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3e9bc240400c8884",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:79531141c19b5cb9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:c7ba85fe8616a5ba",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:811dc6717786e5f0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:7ff6f572ca214284",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:bde10453d2c4da0a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:829fa6c0608695dc",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:5400dcbfab0c0334",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:bd8db33376f446c0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:d2b091b963d5fd97",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ed168009c81dfa7e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:06b2da1722365dfd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:0461c0c6b2aa28ba",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:cc5b41e42d42e559",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:6dbb67c71dbe012f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:73fff64486013b0a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:e842df899c0d3828",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:6ecfe7ee5537147d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:fae351ca31aaa0ec",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:313d6999fc497439",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:a2cdc94c4057ea9a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:6ec8e8a160d7d0b9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:10bf66758cf921e3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:50f89c39cca4c425",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:fda030168b27f33a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8dc80c5b80e2239b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:a5e475074a502d45",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:afa81ea20dc3d743",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:cc08c0ab252b50f6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:757fd2210b8848b7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:91b16da9a6c75319",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:ecd88db34c886290",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:dc1160ff04a51d8b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:fc2781f0f4f3bbf6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:b0489871dc66cc28",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:070cb26a2a292750",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d4339c19b5c060d6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:844b68ee1eb233f7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:76bfedf053f14321",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:266924dea0894420",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:11d31f59162ae4e7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d7b048877a25f139",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d821fb37a62ff993",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:8be63c202ec904c3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:99841e55bba178d6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:47e8ba78c99d6a5b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:4318eff74ca2fee9",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:53d9631284db3228",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:e9b515388a9c9db8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:f1f99a90f318f30b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:34a1fc9a7f88eca7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:07b7276b4f68bbf4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:a559deeaaff97dcf",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:c77d36edfec0e128",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:61fc9fc6af1d5dc1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c894c93abd231dcd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:db72f567fb5168ef",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:f03f890702816867",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:783268762e9fa54f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:f9edc954c13a09d2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:aa1548c358aebaaf",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8a278f1f696ece7f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:efc6ff6a368b675d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:dab1dee260c8845d",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:9b489ee9f245b43c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c98b869501d2a7b8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d80ba6d921f08b7f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:4fa0ea0b5a110c90",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c06e167f32e03aed",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:a4ddbb88f82a1bfb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:e523625ea645e2ff",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:a8bc7e99e20fc792",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:b9936c6a87a933a4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3800bfb012e8f83f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:6b3aa401b47c800f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:776135abc64816cd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:b79137ca277c5f7e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:95f49bdf6ceb2101",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:6517ce6b186f9c46",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:f9e030b4644b3a60",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:32515dca886f473e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:10cc52c14ca7fee8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:5e73ee7529982093",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:9c8fc5f683a64760",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:708048f73bcb9ae1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:94ebd349e17beebd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:278dac662f675343",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:1be0d4421fbd646a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:db49f7d21c878f84",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:062af98e19a3a8f3",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:6c1b0e605ddf0264",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:e14f3072278c9ae4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:24d44593764416f0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:62dff7ffee8f4c58",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:1a04810664942116",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:440ef9a857e018ac",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:324a5f118d680c3a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:abc782dca70428a5",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:4fd7485a78be7da2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:6e80a46b28178311",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:d1059c8fdd85833e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:60caa37afaf22dde",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:9300009057154eba",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:990d6edd7a8dcc58",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:1ca9c1d0ee090ad4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:69f376b7199da984",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:8a6bbfae5ad084b8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c392524088bacdc6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:efb56761b217cb3a",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:f4e8cad3f18b95fd",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:a2c6e139576fccb6",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:eb31dabf9e05b7f8",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:0f866c5aa917da4f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:a7850276e35a5344",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:eb07e7776242229b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:54116a17c7f9f7eb",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:e4416225cb706e40",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:8511d938811d3603",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:2d3ba703e10f864c",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:32d776045be4d08e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ccc6c07c591c2420",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:4b7d91ef8ae5c31f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:572f7aa95dc019a7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:434b47de30dad2ab",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:33c088890ff554a0",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:a3415d8dc2f978d7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:e574bd39c037b10b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:e7ff3917560321c1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:289b85d1487dfc46",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:c2fa6244a7f11d5b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:3193739800794610",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:9cf3340ed9e9aa10",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:42275c5e764d87da",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:43e91c5487b2d277",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:0c37c293bd8c04d7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:f3640aba5c193122",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ea4d6f258d82cfdc",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "zmot_event:32eaa32bdfa8e6ca",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c3fe99bb6bb55dad",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:43d1427bb071f973",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:9a8628e3616d2e95",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:ebccc2c1756578b7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:2e83f9d7c10feeb2",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:bd67c0f2118c30bc",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:2df492948c755680",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:1d645715933a9cb7",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:17386fcf7afdffc4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:9487419b6b2d7863",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "observable_moment:c10f54de81108f9b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:3b047c2bec8cc0d4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:57f3aff1f2639f8e",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:385ffa0b8f894afe",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:cca16cbf006323d1",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:80620fe7aa5de86b",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:62081b3994c7e7b4",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:8543f601ed81773f",
+      "cumulative_relevance": 0.0
+    },
+    {
+      "node_id": "keyword:9116d18cc2e70d1d",
+      "cumulative_relevance": 0.0
+    }
   ]
 }
