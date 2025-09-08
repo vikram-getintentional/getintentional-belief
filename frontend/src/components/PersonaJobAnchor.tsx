@@ -125,6 +125,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
   };
 
   return (
+    <div>
     <section className="mt-12">
       <div className="mb-4">
         <h3 className="text-xl font-semibold text-slate-800">Persona & Job Anchors</h3>
@@ -140,7 +141,15 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
               <div key={p.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="text-xs text-slate-400">{p.id}</div>
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{[p.department, p.seniority].filter(Boolean).join(" • ") || '—'}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{[p.department, p.seniority].filter(Boolean).join(" • ") || '—'}</span>
+                    <button
+                      onClick={() => previewDelete('persona', p.id)}
+                      className="rounded border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
                 <div className="text-sm font-medium text-slate-800">{p.title || p.label}</div>
                 <div className="mt-3">
@@ -183,6 +192,14 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
               <div key={j.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="text-xs text-slate-400">{j.id}</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => previewDelete('job', j.id)}
+                      className="rounded border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
                 <div className="text-sm font-medium text-slate-800">{j.label}</div>
                 <div className="mt-3">
@@ -271,5 +288,6 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
         </div>
       </div>
     )}
+    </div>
   );
 }
