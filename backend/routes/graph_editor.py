@@ -16,6 +16,7 @@ from backend.utils.graph_base.network_graph import (
     get_target_nodes_by_source_and_type,
     get_edge_attribute,
     get_edge_weight,
+    get_product_id_from_subgraph,
 )
 from backend.utils.graph_base.agent_graph_builder import (
     _capability,
@@ -77,9 +78,10 @@ def create_capability(payload: Dict[str, Any], request: Request, db: Session = D
     buying = _norm_likelihood(payload.get("buying_likelihood"))
 
     G = build_product_graph(product_id)
+    product_node_id = get_product_id_from_subgraph(G)
     cap_id = _capability(G, name=name, description=description)
     # Attach to product with edge attributes
-    _upsert_edge(G, product_id, "offers", cap_id, weight=1.0, attrs={
+    _upsert_edge(G, product_node_id, "offers", cap_id, weight=1.0, attrs={
         "coreness": coreness,
         "buying_likelihood": buying,
     })
@@ -125,7 +127,8 @@ def update_capability(capability_id: str, payload: Dict[str, Any], request: Requ
     if buying is not None:
         attrs["buying_likelihood"] = _norm_likelihood(buying)
     if attrs:
-        _upsert_edge(G, product_id, "offers", capability_id, weight=1.0, attrs=attrs)
+        product_node_id = get_product_id_from_subgraph(G)
+        _upsert_edge(G, product_node_id, "offers", capability_id, weight=1.0, attrs=attrs)
     # Mirror coreness to node numeric for legacy views
     node = get_node_by_id(G, capability_id)
     if node is not None and "coreness" in attrs:

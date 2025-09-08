@@ -158,7 +158,7 @@
      - Lists personas and jobs; inline LinkedIn URL edit.
      - Save updates via PUT /graph/persona/{id} and PUT /graph/job/{id}.
      - Preview links open in a new tab; minimal validations applied.
-** TODO Tests: capability CRUD + merge + pain_family + nodes [#A]
+** DONE Tests: capability CRUD + merge + pain_family + nodes [#A]
    :PROPERTIES:
    :CUSTOM_ID: be-tests
    :BLOCKER: id:be-cap-create id:be-cap-update id:be-cap-delete id:be-cap-merge id:be-get-nodes id:be-painfam-create
