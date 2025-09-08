@@ -19,6 +19,14 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<{
+    open: boolean;
+    nodeType?: 'job' | 'persona';
+    targetId?: string;
+    preview?: { counts: Record<string, number>; nodes: { id: string; node_type: string; label: string }[] } | null;
+    loading?: boolean;
+    error?: string | null;
+  }>({ open: false, preview: null, loading: false, error: null });
 
   const isLikelyLinkedIn = (url?: string) => !!url && /https?:\/\/(www\.)?linkedin\.com\//i.test(url);
 
@@ -80,6 +88,42 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
   const setPersonaField = (id: string, value: string) => setPersonas(prev => prev.map(p => p.id === id ? { ...p, linkedin_url: value } : p));
   const setJobField = (id: string, value: string) => setJobs(prev => prev.map(j => j.id === id ? { ...j, linkedin_url: value } : j));
 
+  const previewDelete = async (nodeType: 'job' | 'persona', id: string) => {
+    setConfirm({ open: true, nodeType, targetId: id, preview: null, loading: true, error: null });
+    try {
+      const url = new URL(`http://localhost:8000/graph/${nodeType}/${encodeURIComponent(id)}/orphan-preview`);
+      url.searchParams.set("product_id", productId);
+      const res = await fetch(url.toString(), { headers: auth });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Preview failed');
+      setConfirm({ open: true, nodeType, targetId: id, preview: { counts: data.counts || {}, nodes: data.nodes || [] }, loading: false, error: null });
+    } catch (_e) {
+      setConfirm(c => ({ ...c, loading: false, error: 'Could not load orphan preview. You can still proceed.' }));
+    }
+  };
+
+  const performDelete = async () => {
+    if (!confirm.targetId || !confirm.nodeType) { setConfirm({ open: false, preview: null, loading: false, error: null }); return; }
+    try {
+      const url = new URL(`http://localhost:8000/graph/${confirm.nodeType}/${encodeURIComponent(confirm.targetId)}`);
+      url.searchParams.set("product_id", productId);
+      if (confirm.preview && (confirm.preview.nodes || []).length > 0) url.searchParams.set("force", "true");
+      const res = await fetch(url.toString(), { method: 'DELETE', headers: auth });
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}));
+        const detail = data?.detail || data;
+        setConfirm(c => ({ ...c, preview: { counts: detail.counts || {}, nodes: detail.nodes || [] }, loading: false }));
+        return;
+      }
+      if (!res.ok) throw new Error(await res.text());
+      await fetchData();
+      setConfirm({ open: false, preview: null, loading: false, error: null });
+      setNotice(`${confirm.nodeType === 'job' ? 'Job' : 'Persona'} deleted`);
+    } catch (_e) {
+      setError(`Failed to delete ${confirm.nodeType}`);
+    }
+  };
+
   return (
     <section className="mt-12">
       <div className="mb-4">
@@ -112,7 +156,13 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                     <span className={`text-xs ${isLikelyLinkedIn(p.linkedin_url) ? 'text-emerald-600' : 'text-slate-400'}`}>{isLikelyLinkedIn(p.linkedin_url) ? 'Looks valid' : 'Enter a LinkedIn URL'}</span>
                   </div>
                 </div>
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => previewDelete('persona', p.id)}
+                    className="rounded-md border border-red-900 bg-red-800 px-3 py-2 text-sm font-medium text-white hover:bg-red-900"
+                  >
+                    Delete
+                  </button>
                   <button
                     onClick={() => updatePersona(p)}
                     disabled={saving === p.id}
@@ -148,7 +198,13 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                     <span className={`text-xs ${isLikelyLinkedIn(j.linkedin_url) ? 'text-emerald-600' : 'text-slate-400'}`}>{isLikelyLinkedIn(j.linkedin_url) ? 'Looks valid' : 'Enter a LinkedIn URL'}</span>
                   </div>
                 </div>
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => previewDelete('job', j.id)}
+                    className="rounded-md border border-red-900 bg-red-800 px-3 py-2 text-sm font-medium text-white hover:bg-red-900"
+                  >
+                    Delete
+                  </button>
                   <button
                     onClick={() => updateJob(j)}
                     disabled={saving === j.id}
@@ -164,5 +220,56 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
         </div>
       </div>
     </section>
+    {confirm.open && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setConfirm({ open: false, preview: null, loading: false, error: null })} />
+        <div className="relative mx-4 w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+          <div className="border-b border-slate-200 bg-slate-50 px-5 py-3">
+            <h4 className="text-lg font-semibold text-slate-800">Delete {confirm.nodeType}</h4>
+            <p className="text-sm text-slate-600">Review impacted nodes before confirming.</p>
+          </div>
+          <div className="max-h-[60vh] overflow-auto px-5 py-4">
+            {confirm.loading && <div className="text-slate-500">Loading impact…</div>}
+            {confirm.error && <div className="mb-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">{confirm.error}</div>}
+            {!confirm.loading && (
+              <div className="space-y-3">
+                {Object.values(confirm.preview?.counts || {}).reduce((a: any, b: any) => (a as number) + (b as number), 0) > 0 ? (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                    <div className="mb-1 font-medium">This delete will orphan nodes:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(confirm.preview?.counts || {}).map(([k, v]) => (
+                        <span key={k} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{k}: {v as number}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">No downstream nodes will be orphaned.</div>
+                )}
+                {(confirm.preview?.nodes || []).length > 0 && (
+                  <div>
+                    <div className="mb-2 text-sm font-medium text-slate-700">Impacted nodes</div>
+                    <ul className="divide-y divide-slate-200 rounded-md border border-slate-200">
+                      {confirm.preview?.nodes?.map(n => (
+                        <li key={n.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-slate-800">{n.label}</div>
+                            <div className="truncate text-xs text-slate-500">{n.id}</div>
+                          </div>
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{n.node_type}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
+            <button onClick={() => setConfirm({ open: false, preview: null, loading: false, error: null })} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Cancel</button>
+            <button onClick={performDelete} className="rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-800">Delete anyway</button>
+          </div>
+        </div>
+      </div>
+    )}
   );
 }
