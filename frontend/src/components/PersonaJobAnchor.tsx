@@ -89,6 +89,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
   const setJobField = (id: string, value: string) => setJobs(prev => prev.map(j => j.id === id ? { ...j, linkedin_url: value } : j));
 
   const previewDelete = async (nodeType: 'job' | 'persona', id: string) => {
+    console.log('[Anchor] previewDelete', nodeType, id);
     setConfirm({ open: true, nodeType, targetId: id, preview: null, loading: true, error: null });
     try {
       const url = new URL(`http://localhost:8000/graph/${nodeType}/${encodeURIComponent(id)}/orphan-preview`);
@@ -98,6 +99,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
       if (!res.ok) throw new Error(data?.detail || 'Preview failed');
       setConfirm({ open: true, nodeType, targetId: id, preview: { counts: data.counts || {}, nodes: data.nodes || [] }, loading: false, error: null });
     } catch (_e) {
+      console.error('[Anchor] previewDelete error', _e);
       setConfirm(c => ({ ...c, loading: false, error: 'Could not load orphan preview. You can still proceed.' }));
     }
   };
@@ -105,6 +107,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
   const performDelete = async () => {
     if (!confirm.targetId || !confirm.nodeType) { setConfirm({ open: false, preview: null, loading: false, error: null }); return; }
     try {
+      console.log('[Anchor] performDelete', confirm.nodeType, confirm.targetId, 'force?', !!(confirm.preview && (confirm.preview.nodes || []).length));
       const url = new URL(`http://localhost:8000/graph/${confirm.nodeType}/${encodeURIComponent(confirm.targetId)}`);
       url.searchParams.set("product_id", productId);
       if (confirm.preview && (confirm.preview.nodes || []).length > 0) url.searchParams.set("force", "true");
@@ -120,6 +123,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
       setConfirm({ open: false, preview: null, loading: false, error: null });
       setNotice(`${confirm.nodeType === 'job' ? 'Job' : 'Persona'} deleted`);
     } catch (_e) {
+      console.error('[Anchor] performDelete error', _e);
       setError(`Failed to delete ${confirm.nodeType}`);
     }
   };
@@ -143,7 +147,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                   <div className="text-xs text-slate-400">{p.id}</div>
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{[p.department, p.seniority].filter(Boolean).join(" • ") || '—'}</span>
-                    <button
+                    <button type="button"
                       onClick={() => previewDelete('persona', p.id)}
                       className="rounded border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 hover:bg-red-100"
                     >
@@ -166,13 +170,13 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <button
+                  <button type="button"
                     onClick={() => previewDelete('persona', p.id)}
                     className="rounded-md border border-red-900 bg-red-800 px-3 py-2 text-sm font-medium text-white hover:bg-red-900"
                   >
                     Delete
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => updatePersona(p)}
                     disabled={saving === p.id}
                     className={`rounded-md px-3 py-2 text-sm font-medium !text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition ${saving === p.id ? '!bg-indigo-400 cursor-wait focus:ring-indigo-300' : '!bg-indigo-600 hover:!bg-indigo-700 focus:ring-indigo-500'} disabled:opacity-60 disabled:cursor-not-allowed`}
@@ -193,7 +197,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                 <div className="mb-2 flex items-center justify-between">
                   <div className="text-xs text-slate-400">{j.id}</div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                       onClick={() => previewDelete('job', j.id)}
                       className="rounded border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 hover:bg-red-100"
                     >
@@ -216,13 +220,13 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <button
+                  <button type="button"
                     onClick={() => previewDelete('job', j.id)}
                     className="rounded-md border border-red-900 bg-red-800 px-3 py-2 text-sm font-medium text-white hover:bg-red-900"
                   >
                     Delete
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => updateJob(j)}
                     disabled={saving === j.id}
                     className={`rounded-md px-3 py-2 text-sm font-medium !text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition ${saving === j.id ? '!bg-indigo-400 cursor-wait focus:ring-indigo-300' : '!bg-indigo-600 hover:!bg-indigo-700 focus:ring-indigo-500'} disabled:opacity-60 disabled:cursor-not-allowed`}
