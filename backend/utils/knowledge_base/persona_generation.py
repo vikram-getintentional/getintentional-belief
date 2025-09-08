@@ -110,7 +110,8 @@ def get_persona_relevance(sub_graph: nx.DiGraph) -> list[dict]:
                 "Pains:", len(persona["pains"])
               )
 
-    aggregated_personas = aggregated_personas_map(sub_graph, personas, threshold=0.2)
+    # Use a permissive threshold so initial personas are shown even when relevance is low.
+    aggregated_personas = aggregated_personas_map(sub_graph, personas, threshold=0.0)
     return aggregated_personas
 
 
@@ -167,5 +168,4 @@ def aggregated_personas_map(sub_graph: nx.DiGraph, match_results: list[dict], th
     final.sort(key=lambda x: x["max_relevance"], reverse=True)
     print("Aggregate - final output:", final)
     return final
-
 
