@@ -55,6 +55,46 @@
       "title": "Head of RevOps",
       "department": "Revenue",
       "seniority": "Director"
+    },
+    {
+      "id": "capability:084b1ada780b136e",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Temp Cap",
+      "description": "temp",
+      "buying_likelihood": 0.0
+    },
+    {
+      "id": "pain:0ca9da00325df138",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Orphan test pain"
+    },
+    {
+      "id": "job:3da458c07beb5119",
+      "type": "job",
+      "node_type": "job",
+      "description": "Orphan test job"
+    },
+    {
+      "id": "persona:b5002422e16bc1b6",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "Orphan Persona",
+      "department": "Ops",
+      "seniority": "IC"
+    },
+    {
+      "id": "pain:1db0f342734422ab",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Orphan test pain 2"
+    },
+    {
+      "id": "job:d9209a01ce071c31",
+      "type": "job",
+      "node_type": "job",
+      "description": "Orphan test job 2"
     }
   ],
   "edges": [
@@ -69,6 +109,14 @@
     {
       "source": "product:681ae0a2d24ccf61",
       "target": "capability:074b9a7b8618b99c",
+      "type": "offers",
+      "weight": 1.0,
+      "coreness": "",
+      "buying_likelihood": 0.0
+    },
+    {
+      "source": "product:681ae0a2d24ccf61",
+      "target": "capability:084b1ada780b136e",
       "type": "offers",
       "weight": 1.0,
       "coreness": "",
@@ -93,6 +141,46 @@
       "type": "performed_by",
       "weight": 72.0,
       "likelihood": 72.0
+    },
+    {
+      "source": "capability:084b1ada780b136e",
+      "target": "pain:0ca9da00325df138",
+      "type": "solves",
+      "weight": 0.8,
+      "relevance": 0.8
+    },
+    {
+      "source": "capability:084b1ada780b136e",
+      "target": "pain:1db0f342734422ab",
+      "type": "solves",
+      "weight": 0.8,
+      "relevance": 0.8
+    },
+    {
+      "source": "pain:0ca9da00325df138",
+      "target": "job:3da458c07beb5119",
+      "type": "felt_in",
+      "weight": 1.0
+    },
+    {
+      "source": "job:3da458c07beb5119",
+      "target": "persona:b5002422e16bc1b6",
+      "type": "performed_by",
+      "weight": 50.0,
+      "likelihood": 50.0
+    },
+    {
+      "source": "pain:1db0f342734422ab",
+      "target": "job:d9209a01ce071c31",
+      "type": "felt_in",
+      "weight": 1.0
+    },
+    {
+      "source": "job:d9209a01ce071c31",
+      "target": "persona:b5002422e16bc1b6",
+      "type": "performed_by",
+      "weight": 60.0,
+      "likelihood": 60.0
     }
   ]
 }

@@ -32,6 +32,14 @@ export default function PainFamilyEditor({ productId }: { productId: string }) {
   const [likelihood, setLikelihood] = useState<number>(50);
   const [error, setError] = useState<string| null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<{
+    open: boolean;
+    nodeType?: 'job' | 'persona';
+    targetId?: string;
+    preview?: { counts: Record<string, number>; nodes: { id: string; node_type: string; label: string }[] } | null;
+    loading?: boolean;
+    error?: string | null;
+  }>({ open: false, preview: null, loading: false, error: null });
 
   const fetchCaps = async () => {
     const res = await fetch(`http://localhost:8000/graph/nodes/capability?product_id=${encodeURIComponent(productId)}`, { headers: auth });
@@ -104,6 +112,43 @@ export default function PainFamilyEditor({ productId }: { productId: string }) {
     }
   };
 
+  const previewDelete = async (nodeType: 'job' | 'persona', id: string) => {
+    setConfirm({ open: true, nodeType, targetId: id, preview: null, loading: true, error: null });
+    try {
+      const url = new URL(`http://localhost:8000/graph/${nodeType}/${encodeURIComponent(id)}/orphan-preview`);
+      url.searchParams.set("product_id", productId);
+      const res = await fetch(url.toString(), { headers: auth });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Preview failed');
+      setConfirm({ open: true, nodeType, targetId: id, preview: { counts: data.counts || {}, nodes: data.nodes || [] }, loading: false, error: null });
+    } catch (e) {
+      setConfirm(c => ({ ...c, loading: false, error: 'Could not load orphan preview. You can still proceed.' }));
+    }
+  };
+
+  const performDelete = async () => {
+    if (!confirm.targetId || !confirm.nodeType) { setConfirm({ open: false, preview: null, loading: false, error: null }); return; }
+    try {
+      const url = new URL(`http://localhost:8000/graph/${confirm.nodeType}/${encodeURIComponent(confirm.targetId)}`);
+      url.searchParams.set("product_id", productId);
+      if (confirm.preview && (confirm.preview.nodes || []).length > 0) url.searchParams.set("force", "true");
+      const res = await fetch(url.toString(), { method: 'DELETE', headers: auth });
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}));
+        const detail = data?.detail || data;
+        setConfirm(c => ({ ...c, preview: { counts: detail.counts || {}, nodes: detail.nodes || [] }, loading: false }));
+        return;
+      }
+      if (!res.ok) throw new Error(await res.text());
+      await fetchDropdowns();
+      await fetchFamilies();
+      setConfirm({ open: false, preview: null, loading: false, error: null });
+      setNotice(`${confirm.nodeType === 'job' ? 'Job' : 'Persona'} deleted`);
+    } catch (e) {
+      setError(`Failed to delete ${confirm.nodeType}`);
+    }
+  };
+
   const updateFamily = async (item: FamilyItem, rel?: string, lk?: number) => {
     const parts = (item.id || "").split("|");
     const pfid = parts.join("|") || "pf"; // path param is unused server-side
@@ -155,6 +200,46 @@ export default function PainFamilyEditor({ productId }: { productId: string }) {
           </div>
         ))}
         {families.length === 0 && <div className="text-gray-400">No pain families yet for this capability.</div>}
+      </div>
+
+      {/* Manage Jobs & Personas */}
+      <div className="p-4 border rounded bg-white">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="font-medium text-indigo-600">Manage Jobs & Personas</h4>
+          <div className="text-xs text-slate-500">Delete nodes with orphan preview</div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="mb-2 text-sm font-medium text-slate-700">Jobs</div>
+            <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-slate-50">
+              {jobs.map(j => (
+                <li key={j.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-slate-800">{j.label || j.id}</div>
+                    <div className="truncate text-xs text-slate-500">{j.id}</div>
+                  </div>
+                  <button onClick={() => previewDelete('job', j.id)} className="rounded-md border border-red-900 bg-red-800 px-2 py-1 text-xs font-medium text-white hover:bg-red-900">Delete</button>
+                </li>
+              ))}
+              {jobs.length === 0 && (<li className="px-3 py-2 text-sm text-slate-500">No jobs.</li>)}
+            </ul>
+          </div>
+          <div>
+            <div className="mb-2 text-sm font-medium text-slate-700">Personas</div>
+            <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-slate-50">
+              {personas.map(p => (
+                <li key={p.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-slate-800">{p.label || p.id}</div>
+                    <div className="truncate text-xs text-slate-500">{p.id}</div>
+                  </div>
+                  <button onClick={() => previewDelete('persona', p.id)} className="rounded-md border border-red-900 bg-red-800 px-2 py-1 text-xs font-medium text-white hover:bg-red-900">Delete</button>
+                </li>
+              ))}
+              {personas.length === 0 && (<li className="px-3 py-2 text-sm text-slate-500">No personas.</li>)}
+            </ul>
+          </div>
+        </div>
       </div>
 
       {/* Create new family */}
@@ -219,7 +304,59 @@ export default function PainFamilyEditor({ productId }: { productId: string }) {
         <div className="mt-3">
           <button onClick={addFamily} className="px-3 py-1 rounded bg-indigo-600 text-white text-sm">Add Pain Family</button>
         </div>
+    </div>
+    {/* Modal */}
+    {confirm.open && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setConfirm({ open: false, preview: null, loading: false, error: null })} />
+        <div className="relative mx-4 w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+          <div className="border-b border-slate-200 bg-slate-50 px-5 py-3">
+            <h4 className="text-lg font-semibold text-slate-800">Delete {confirm.nodeType}</h4>
+            <p className="text-sm text-slate-600">Review impacted nodes before confirming.</p>
+          </div>
+          <div className="max-h-[60vh] overflow-auto px-5 py-4">
+            {confirm.loading && <div className="text-slate-500">Loading impact…</div>}
+            {confirm.error && <div className="mb-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">{confirm.error}</div>}
+            {!confirm.loading && (
+              <div className="space-y-3">
+                {Object.values(confirm.preview?.counts || {}).reduce((a: any, b: any) => (a as number) + (b as number), 0) > 0 ? (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                    <div className="mb-1 font-medium">This delete will orphan nodes:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(confirm.preview?.counts || {}).map(([k, v]) => (
+                        <span key={k} className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{k}: {v as number}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">No downstream nodes will be orphaned.</div>
+                )}
+                {(confirm.preview?.nodes || []).length > 0 && (
+                  <div>
+                    <div className="mb-2 text-sm font-medium text-slate-700">Impacted nodes</div>
+                    <ul className="divide-y divide-slate-200 rounded-md border border-slate-200">
+                      {confirm.preview?.nodes?.map(n => (
+                        <li key={n.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-slate-800">{n.label}</div>
+                            <div className="truncate text-xs text-slate-500">{n.id}</div>
+                          </div>
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{n.node_type}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
+            <button onClick={() => setConfirm({ open: false, preview: null, loading: false, error: null })} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Cancel</button>
+            <button onClick={performDelete} className="rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-800">Delete anyway</button>
+          </div>
+        </div>
       </div>
+    )}
     </section>
   );
 }

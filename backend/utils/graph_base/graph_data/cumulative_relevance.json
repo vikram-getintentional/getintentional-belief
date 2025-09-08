@@ -2516,23 +2516,47 @@
   "product:681ae0a2d24ccf61": [
     {
       "node_id": "capability:674b41ebf66a68c0",
-      "cumulative_relevance": 0.9999999999995621
+      "cumulative_relevance": 0.9999999999999986
     },
     {
       "node_id": "capability:074b9a7b8618b99c",
-      "cumulative_relevance": 0.9999999999995621
+      "cumulative_relevance": 0.9999999999999986
     },
     {
       "node_id": "pain:73e3ded6bebd02fa",
-      "cumulative_relevance": 0.7999999999698729
+      "cumulative_relevance": 0.7999999999998783
     },
     {
       "node_id": "job:2353e652b5a067c9",
-      "cumulative_relevance": 0.7999999987887271
+      "cumulative_relevance": 0.7999999999940695
     },
     {
       "node_id": "persona:004f17404c8e0386",
-      "cumulative_relevance": 57.5999978245226
+      "cumulative_relevance": 57.59999998693327
+    },
+    {
+      "node_id": "capability:084b1ada780b136e",
+      "cumulative_relevance": 0.9999999999999986
+    },
+    {
+      "node_id": "pain:0ca9da00325df138",
+      "cumulative_relevance": 0.7999999999998783
+    },
+    {
+      "node_id": "job:3da458c07beb5119",
+      "cumulative_relevance": 0.7999999999940695
+    },
+    {
+      "node_id": "persona:b5002422e16bc1b6",
+      "cumulative_relevance": -1831.9999991509962
+    },
+    {
+      "node_id": "pain:1db0f342734422ab",
+      "cumulative_relevance": 0.7999999999998783
+    },
+    {
+      "node_id": "job:d9209a01ce071c31",
+      "cumulative_relevance": 0.7999999999940695
     }
   ]
 }

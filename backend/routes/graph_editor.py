@@ -18,6 +18,7 @@ from backend.utils.graph_base.network_graph import (
     get_edge_weight,
     get_product_id_from_subgraph,
     compute_orphans_if_remove_capability,
+    compute_orphans_if_remove_node,
 )
 from backend.utils.graph_base.agent_graph_builder import (
     _capability,
@@ -207,6 +208,108 @@ def preview_capability_delete_orphans(capability_id: str, product_id: str, reque
             "label": label,
         })
     return {"capability_id": capability_id, "counts": counts, "nodes": items}
+
+
+@router.get("/graph/job/{job_id}/orphan-preview")
+def preview_job_delete_orphans(job_id: str, product_id: str, request: Request, db: Session = Depends(get_db)):
+    _require_auth_company(request)
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    node = get_node_by_id(G, job_id)
+    if not node or node.get("node_type") != "job":
+        raise HTTPException(status_code=404, detail="Job not found")
+    orphan_ids = compute_orphans_if_remove_node(G, job_id)
+    counts: Dict[str, int] = {}
+    items: List[Dict[str, Any]] = []
+    for oid in orphan_ids:
+        n = get_node_by_id(G, oid) or {}
+        ntype = n.get("node_type") or n.get("type") or "node"
+        label = n.get("name") or n.get("description") or n.get("title") or n.get("id")
+        counts[ntype] = counts.get(ntype, 0) + 1
+        items.append({"id": oid, "node_type": ntype, "label": label})
+    return {"job_id": job_id, "counts": counts, "nodes": items}
+
+
+@router.delete("/graph/job/{job_id}")
+def delete_job(job_id: str, product_id: str, request: Request, db: Session = Depends(get_db), force: bool = False):
+    _require_auth_company(request)
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    node = get_node_by_id(G, job_id)
+    if not node or node.get("node_type") != "job":
+        raise HTTPException(status_code=404, detail="Job not found")
+    orphan_ids = compute_orphans_if_remove_node(G, job_id)
+    if orphan_ids and not force:
+        preview = []
+        counts: Dict[str, int] = {}
+        for oid in orphan_ids:
+            n = get_node_by_id(G, oid) or {}
+            ntype = n.get("node_type") or n.get("type") or "node"
+            label = n.get("name") or n.get("description") or n.get("title") or n.get("id")
+            counts[ntype] = counts.get(ntype, 0) + 1
+            preview.append({"id": oid, "node_type": ntype, "label": label})
+        raise HTTPException(status_code=409, detail={
+            "message": "Deleting this job will orphan nodes",
+            "job_id": job_id,
+            "counts": counts,
+            "nodes": preview,
+        })
+    G.remove_node(job_id)
+    update_graph(G)
+    return {"message": "Job deleted", "id": job_id}
+
+
+@router.get("/graph/persona/{persona_id}/orphan-preview")
+def preview_persona_delete_orphans(persona_id: str, product_id: str, request: Request, db: Session = Depends(get_db)):
+    _require_auth_company(request)
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    node = get_node_by_id(G, persona_id)
+    if not node or node.get("node_type") != "persona":
+        raise HTTPException(status_code=404, detail="Persona not found")
+    orphan_ids = compute_orphans_if_remove_node(G, persona_id)
+    counts: Dict[str, int] = {}
+    items: List[Dict[str, Any]] = []
+    for oid in orphan_ids:
+        n = get_node_by_id(G, oid) or {}
+        ntype = n.get("node_type") or n.get("type") or "node"
+        label = n.get("name") or n.get("description") or n.get("title") or n.get("id")
+        counts[ntype] = counts.get(ntype, 0) + 1
+        items.append({"id": oid, "node_type": ntype, "label": label})
+    return {"persona_id": persona_id, "counts": counts, "nodes": items}
+
+
+@router.delete("/graph/persona/{persona_id}")
+def delete_persona(persona_id: str, product_id: str, request: Request, db: Session = Depends(get_db), force: bool = False):
+    _require_auth_company(request)
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    node = get_node_by_id(G, persona_id)
+    if not node or node.get("node_type") != "persona":
+        raise HTTPException(status_code=404, detail="Persona not found")
+    orphan_ids = compute_orphans_if_remove_node(G, persona_id)
+    if orphan_ids and not force:
+        preview = []
+        counts: Dict[str, int] = {}
+        for oid in orphan_ids:
+            n = get_node_by_id(G, oid) or {}
+            ntype = n.get("node_type") or n.get("type") or "node"
+            label = n.get("name") or n.get("description") or n.get("title") or n.get("id")
+            counts[ntype] = counts.get(ntype, 0) + 1
+            preview.append({"id": oid, "node_type": ntype, "label": label})
+        raise HTTPException(status_code=409, detail={
+            "message": "Deleting this persona will orphan nodes",
+            "persona_id": persona_id,
+            "counts": counts,
+            "nodes": preview,
+        })
+    G.remove_node(persona_id)
+    update_graph(G)
+    return {"message": "Persona deleted", "id": persona_id}
 
 
 @router.post("/graph/capability/merge")

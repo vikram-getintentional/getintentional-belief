@@ -90,6 +90,26 @@ def compute_orphans_if_remove_capability(G: nx.DiGraph, capability_id: str) -> l
     orphans.discard(capability_id)
     return list(orphans)
 
+def compute_orphans_if_remove_node(G: nx.DiGraph, node_id: str) -> list[str]:
+    """
+    Generic variant: simulate removing any node and return nodes that would
+    become unreachable from the product (excluding the product and the node itself).
+    """
+    if node_id not in G:
+        return []
+    before = _reachable_from_product(G)
+    H = G.copy()
+    try:
+        H.remove_node(node_id)
+    except Exception:
+        return []
+    after = _reachable_from_product(H)
+    orphans = (before - after)
+    product_id = get_product_id_from_subgraph(G)
+    orphans.discard(product_id)
+    orphans.discard(node_id)
+    return list(orphans)
+
 def get_node_by_id(G, node_id: str) -> dict:
     """
     Retrieves a node from the node registry by its ID.
