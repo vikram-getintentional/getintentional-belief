@@ -156,61 +156,76 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
   };
 
   return (
-    <div className="mt-10">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold text-indigo-700">Capability Editor</h3>
-        <button onClick={addCapability} className="px-3 py-1 rounded bg-indigo-600 text-white text-sm">+ Add Capability</button>
+    <div className="mt-12">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-xl font-semibold text-slate-800">Capability Editor</h3>
+          <p className="text-sm text-slate-500">Review, edit, and refine your product capabilities. Use coreness to indicate strategic importance.</p>
+        </div>
+        <button onClick={addCapability} className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <span className="text-lg leading-none">＋</span> Add Capability
+        </button>
       </div>
-      {loading && <div className="text-gray-500">Loading…</div>}
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      <div className="space-y-3">
+      {loading && <div className="text-slate-500">Loading…</div>}
+      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700">{error}</div>}
+      <div className="grid grid-cols-1 gap-4">
         {caps.map((cap) => (
-          <div key={cap.id} className="p-3 border rounded bg-white">
-            <div className="text-xs text-gray-400 mb-1">{cap.id}</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium">Name</label>
-                <input className="w-full border rounded px-2 py-1" value={cap.name} onChange={(e) => updateField(cap.id, "name", e.target.value)} />
+          <div key={cap.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-2 flex items-center justify-between">
+              <div className="text-xs text-slate-400">{cap.id}</div>
+              {cap.coreness && (
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                  {cap.coreness}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="md:col-span-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                <input className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" value={cap.name} onChange={(e) => updateField(cap.id, "name", e.target.value)} />
               </div>
-              <div>
-                <label className="block text-sm font-medium">Coreness</label>
-                <select className="w-full border rounded px-2 py-1" value={cap.coreness} onChange={(e) => updateField(cap.id, "coreness", e.target.value)}>
+              <div className="md:col-span-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">Coreness</label>
+                <select className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" value={cap.coreness} onChange={(e) => updateField(cap.id, "coreness", e.target.value)}>
                   <option value="">Select…</option>
                   {CORENESS_OPTIONS.map((o) => (
                     <option key={o} value={o}>{o}</option>
                   ))}
                 </select>
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium">Description</label>
-                <textarea className="w-full border rounded px-2 py-1" rows={2} value={cap.description} onChange={(e) => updateField(cap.id, "description", e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium">Buying Likelihood: {cap.buyingLikelihood}</label>
-                <input type="range" min={0} max={100} value={cap.buyingLikelihood} onChange={(e) => updateField(cap.id, "buyingLikelihood", Number(e.target.value))} />
-              </div>
-              <div className="flex items-end gap-2">
-                <button onClick={() => saveCapability(cap)} className="px-3 py-1 rounded bg-green-600 text-white text-sm">Save</button>
-                <button onClick={() => deleteCapability(cap.id)} className="px-3 py-1 rounded bg-red-600 text-white text-sm">Delete</button>
-              </div>
-              <div className="flex items-end gap-2">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium">Merge into</label>
-                  <select className="w-full border rounded px-2 py-1"
-                          value={mergeTarget[cap.id] || ""}
-                          onChange={(e) => setMergeTarget((m) => ({ ...m, [cap.id]: e.target.value }))}>
-                    <option value="">Select target…</option>
-                    {caps.filter((c) => c.id !== cap.id).map((c) => (
-                      <option key={c.id} value={c.id}>{c.name || c.id}</option>
-                    ))}
-                  </select>
+              <div className="md:col-span-1">
+                <label className="mb-1 block text-sm font-medium text-slate-700">Buying Likelihood <span className="ml-1 text-xs text-slate-400">({cap.buyingLikelihood})</span></label>
+                <input type="range" min={0} max={100} value={cap.buyingLikelihood} onChange={(e) => updateField(cap.id, "buyingLikelihood", Number(e.target.value))} className="w-full accent-indigo-600" />
+                <div className="mt-1 h-1 w-full rounded bg-slate-200">
+                  <div className="h-1 rounded bg-gradient-to-r from-sky-400 via-indigo-500 to-fuchsia-500" style={{ width: `${cap.buyingLikelihood}%` }} />
                 </div>
-                <button onClick={() => mergeCapability(cap.id)} className="px-3 py-1 rounded bg-gray-700 text-white text-sm">Merge</button>
+              </div>
+              <div className="md:col-span-3">
+                <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+                <textarea className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" rows={2} value={cap.description} onChange={(e) => updateField(cap.id, "description", e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <button onClick={() => saveCapability(cap)} className="inline-flex items-center rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">Save</button>
+              <button onClick={() => deleteCapability(cap.id)} className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Delete</button>
+              <div className="ml-auto flex items-center gap-2">
+                <label className="text-sm text-slate-600">Merge into</label>
+                <select className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        value={mergeTarget[cap.id] || ""}
+                        onChange={(e) => setMergeTarget((m) => ({ ...m, [cap.id]: e.target.value }))}>
+                  <option value="">Select target…</option>
+                  {caps.filter((c) => c.id !== cap.id).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name || c.id}</option>
+                  ))}
+                </select>
+                <button onClick={() => mergeCapability(cap.id)} className="inline-flex items-center rounded-md bg-slate-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-600">Merge</button>
               </div>
             </div>
           </div>
         ))}
-        {caps.length === 0 && !loading && <div className="text-gray-400">No capabilities yet. Add one to get started.</div>}
+        {caps.length === 0 && !loading && (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-slate-500">No capabilities yet. Click “Add Capability” to get started.</div>
+        )}
       </div>
     </div>
   );
