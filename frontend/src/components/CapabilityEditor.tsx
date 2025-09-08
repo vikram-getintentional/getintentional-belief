@@ -212,44 +212,59 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
                 <textarea className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" rows={2} value={cap.description} onChange={(e) => updateField(cap.id, "description", e.target.value)} />
               </div>
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => saveCapability(cap)}
-                disabled={saving === cap.id}
-                className={[
-                  "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2",
-                  saving === cap.id
-                    ? "bg-green-400 cursor-wait focus:ring-green-300"
-                    : justSaved[cap.id]
-                      ? "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
-                      : "bg-green-600 hover:bg-green-700 focus:ring-green-500",
-                ].join(" ")}
-              >
-                {saving === cap.id && (
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle>
-                    <path className="opacity-75" d="M4 12a8 8 0 018-8" strokeWidth="4" strokeLinecap="round"></path>
-                  </svg>
-                )}
-                {justSaved[cap.id] && saving !== cap.id && (
-                  <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.778 7.778a1 1 0 01-1.414 0L3.293 10.95a1 1 0 011.414-1.414l3.01 3.01 7.071-7.071a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-                {saving === cap.id ? "Saving…" : justSaved[cap.id] ? "Saved" : "Save"}
-              </button>
-              <button onClick={() => deleteCapability(cap.id)} className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Delete</button>
-              <div className="ml-auto flex items-center gap-2">
-                <label className="text-sm text-slate-600">Merge into</label>
-                <select className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                        value={mergeTarget[cap.id] || ""}
-                        onChange={(e) => setMergeTarget((m) => ({ ...m, [cap.id]: e.target.value }))}>
-                  <option value="">Select target…</option>
-                  {caps.filter((c) => c.id !== cap.id).map((c) => (
-                    <option key={c.id} value={c.id}>{c.name || c.id}</option>
-                  ))}
-                </select>
-                <button onClick={() => mergeCapability(cap.id)} className="inline-flex items-center rounded-md bg-slate-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-600">Merge</button>
+            <div className="mt-4 -mx-4 rounded-b-lg border-t border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => saveCapability(cap)}
+                    disabled={saving === cap.id}
+                    className={[
+                      "rounded-md px-3 py-2 text-sm font-medium !text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition",
+                      saving === cap.id
+                        ? "!bg-green-500 cursor-wait focus:ring-green-300"
+                        : justSaved[cap.id]
+                          ? "!bg-emerald-600 hover:!bg-emerald-700 focus:ring-emerald-500"
+                          : "!bg-green-700 hover:!bg-green-800 focus:ring-green-600",
+                      saving === cap.id ? "opacity-90" : "",
+                      "disabled:opacity-60 disabled:cursor-not-allowed",
+                    ].join(" ")}
+                  >
+                    {saving === cap.id ? "Saving…" : justSaved[cap.id] ? "Saved" : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteCapability(cap.id)}
+                    className="appearance-none rounded-md border border-red-900 !bg-red-800 px-3 py-2 text-sm font-medium !text-white shadow-sm transition-colors hover:!bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800"
+                  >
+                    Delete
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-slate-600">Merge into</label>
+                  <select
+                    className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    value={mergeTarget[cap.id] || ""}
+                    onChange={(e) => setMergeTarget((m) => ({ ...m, [cap.id]: e.target.value }))}
+                  >
+                    <option value="">Select target…</option>
+                    {caps
+                      .filter((c) => c.id !== cap.id)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name || c.id}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    onClick={() => mergeCapability(cap.id)}
+                    className="inline-flex items-center gap-2 rounded-md bg-slate-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-600 transition"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M5 3a1 1 0 00-1 1v4a3 3 0 003 3h2v2a1 1 0 102 0v-2h2a3 3 0 003-3V4a1 1 0 10-2 0v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4a1 1 0 00-1-1H5z" />
+                    </svg>
+                    Merge
+                  </button>
+                </div>
               </div>
             </div>
           </div>
