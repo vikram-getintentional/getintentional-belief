@@ -57,6 +57,39 @@ def get_product_id_from_subgraph(G) -> str:
             return node_id
     raise ValueError("No product node found in subgraph.")
 
+def _reachable_from_product(G: nx.DiGraph) -> set:
+    """
+    Return the set of node IDs reachable from the product node, including the product itself.
+    """
+    product_id = get_product_id_from_subgraph(G)
+    return set(nx.descendants(G, product_id)) | {product_id}
+
+def compute_orphans_if_remove_capability(G: nx.DiGraph, capability_id: str) -> list[str]:
+    """
+    Simulate removing a capability node and return the list of node IDs that
+    would become unreachable from the product as a result (excluding the product
+    itself and the capability being removed).
+
+    This helps warn users about nodes that would be left disconnected by a delete.
+    """
+    if capability_id not in G:
+        return []
+    before = _reachable_from_product(G)
+    H = G.copy()
+    try:
+        H.remove_node(capability_id)
+    except Exception:
+        # If removal fails for any reason, conservatively return empty set
+        return []
+    after = _reachable_from_product(H)
+    # Orphans are nodes that were reachable before but not after
+    orphans = (before - after)
+    # Exclude the product node and the deleted capability itself
+    product_id = get_product_id_from_subgraph(G)
+    orphans.discard(product_id)
+    orphans.discard(capability_id)
+    return list(orphans)
+
 def get_node_by_id(G, node_id: str) -> dict:
     """
     Retrieves a node from the node registry by its ID.

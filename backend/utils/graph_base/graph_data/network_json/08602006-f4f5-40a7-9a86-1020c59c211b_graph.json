@@ -1,0 +1,98 @@
+{
+  "graph": {
+    "product_lookup_id": "08602006-f4f5-40a7-9a86-1020c59c211b",
+    "sample_metadata": {
+      "personas": {},
+      "pains": {},
+      "jobs": {},
+      "trigger_events": {}
+    }
+  },
+  "nodes": [
+    {
+      "id": "product:681ae0a2d24ccf61",
+      "type": "product",
+      "node_type": "product",
+      "company_id": "acme-co",
+      "url": "https://example.com",
+      "summary": "Could not analyze site",
+      "domain": "",
+      "industry": "",
+      "plg_flag": false
+    },
+    {
+      "id": "capability:674b41ebf66a68c0",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Cap A",
+      "description": "Alpha",
+      "buying_likelihood": 0.0
+    },
+    {
+      "id": "capability:074b9a7b8618b99c",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Cap B",
+      "description": "Beta",
+      "buying_likelihood": 0.0
+    },
+    {
+      "id": "pain:73e3ded6bebd02fa",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Manual reporting takes days"
+    },
+    {
+      "id": "job:2353e652b5a067c9",
+      "type": "job",
+      "node_type": "job",
+      "description": "Consolidate revenue metrics"
+    },
+    {
+      "id": "persona:004f17404c8e0386",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "Head of RevOps",
+      "department": "Revenue",
+      "seniority": "Director"
+    }
+  ],
+  "edges": [
+    {
+      "source": "product:681ae0a2d24ccf61",
+      "target": "capability:674b41ebf66a68c0",
+      "type": "offers",
+      "weight": 1.0,
+      "coreness": "",
+      "buying_likelihood": 0.0
+    },
+    {
+      "source": "product:681ae0a2d24ccf61",
+      "target": "capability:074b9a7b8618b99c",
+      "type": "offers",
+      "weight": 1.0,
+      "coreness": "",
+      "buying_likelihood": 0.0
+    },
+    {
+      "source": "capability:674b41ebf66a68c0",
+      "target": "pain:73e3ded6bebd02fa",
+      "type": "solves",
+      "weight": 0.8,
+      "relevance": 0.8
+    },
+    {
+      "source": "pain:73e3ded6bebd02fa",
+      "target": "job:2353e652b5a067c9",
+      "type": "felt_in",
+      "weight": 1.0
+    },
+    {
+      "source": "job:2353e652b5a067c9",
+      "target": "persona:004f17404c8e0386",
+      "type": "performed_by",
+      "weight": 72.0,
+      "likelihood": 72.0
+    }
+  ]
+}

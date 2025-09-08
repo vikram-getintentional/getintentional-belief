@@ -1,0 +1,169 @@
+* Orphan-Guard Test Report
+
+This report documents the cURL steps to reproduce orphan detection and force-delete guard behavior. It includes purpose, commands, and example results. You can paste these directly into a shell. `jq` is optional for pretty-printing.
+
+** Prerequisites
+- Backend running at `http://localhost:8000` (FastAPI app in this repo)
+- The backend uses JWTs signed with secret `super-secret-key` (see `backend/auth/jwt_handler.py`).
+- Optional: `jq` for JSON formatting
+
+Set a long-lived JWT (exp in year 2100) with `company_id=acme-co`:
+
+#+begin_src sh
+export TOKEN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55X2lkIjoiYWNtZS1jbyIsImV4cCI6NDEwMjQ0NDgwMH0.yd95ZU8gpzw5jxKVjJFo8kGBqMo-4hqrb8FBzburwiM'
+AUTH_HEADER="Authorization: Bearer $TOKEN"
+#+end_src
+
+Verify backend is reachable:
+
+#+begin_src sh
+curl -s http://localhost:8000/openapi.json | head -n 1
+#+end_src
+
+Expected: a JSON line starting with `{`.
+
+** 1) Seed a product graph (analyze)
+Purpose: Ensure a product graph and lookup ID exist for the company.
+
+#+begin_src sh
+curl -s -X POST http://localhost:8000/analyze \
+ -H "$AUTH_HEADER" -H 'Content-Type: application/json' \
+ -d '{"url":"https://example.com","text":"Example product","plg_cta_found":false,"footer_features":[]}' | jq -c .
+#+end_src
+
+Example result:
+
+#+begin_example
+{"product_node_id":"product:681ae0a2d24ccf61","summary":"Could not analyze site","domain":"","industry":"","plg_flag":false,"capabilities":[]}
+#+end_example
+
+Fetch product lookup ID for this company:
+
+#+begin_src sh
+curl -s http://localhost:8000/get-products/acme-co -H "$AUTH_HEADER" | jq -c .
+#+end_src
+
+Example result (note the products[0].id below as PRODUCT_ID):
+
+#+begin_example
+{"products":[{"id":"08602006-f4f5-40a7-9a86-1020c59c211b","domain":"","industry":"","summary":"Could not analyze site","url":"https://example.com"}]}
+#+end_example
+
+Export the product ID for convenience:
+
+#+begin_src sh
+export PRODUCT_ID='08602006-f4f5-40a7-9a86-1020c59c211b'
+#+end_src
+
+** 2) Create capabilities
+Purpose: Add two capabilities; we’ll attach downstream nodes only to the first.
+
+#+begin_src sh
+CAP1=$(curl -s -X POST http://localhost:8000/graph/capability \
+  -H "$AUTH_HEADER" -H 'Content-Type: application/json' \
+  -d '{"product_id":"'$PRODUCT_ID'","name":"Cap A","description":"Alpha"}')
+CAP2=$(curl -s -X POST http://localhost:8000/graph/capability \
+  -H "$AUTH_HEADER" -H 'Content-Type: application/json' \
+  -d '{"product_id":"'$PRODUCT_ID'","name":"Cap B","description":"Beta"}')
+echo "$CAP1" | jq -c .
+echo "$CAP2" | jq -c .
+export CAP1_ID=$(echo "$CAP1" | jq -r .id)
+export CAP2_ID=$(echo "$CAP2" | jq -r .id)
+#+end_src
+
+Example result:
+
+#+begin_example
+{"id":"capability:674b41ebf66a68c0","name":"Cap A","description":"Alpha","coreness":"","buying_likelihood":0}
+{"id":"capability:074b9a7b8618b99c","name":"Cap B","description":"Beta","coreness":"","buying_likelihood":0}
+#+end_example
+
+** 3) Create a pain family under Cap A
+Purpose: Attach a pain, job, persona to Cap A to produce downstream nodes that could be orphaned.
+
+#+begin_src sh
+curl -s -X POST http://localhost:8000/graph/pain_family \
+  -H "$AUTH_HEADER" -H 'Content-Type: application/json' \
+  -d '{
+    "product_id":"'$PRODUCT_ID'",
+    "capability_id":"'$CAP1_ID'",
+    "pain":"Manual reporting takes days",
+    "job":"Consolidate revenue metrics",
+    "persona": {"title":"Head of RevOps","department":"Revenue","seniority":"Director"},
+    "relevance":"Core",
+    "likelihood": 72
+  }' | jq -c .
+#+end_src
+
+Example result:
+
+#+begin_example
+{"pain_id":"pain:73e3ded6bebd02fa","job_id":"job:2353e652b5a067c9","persona_id":"persona:004f17404c8e0386","relevance":0.8,"likelihood":72}
+#+end_example
+
+** 4) Orphan preview for Cap A
+Purpose: List nodes that would become unreachable if Cap A is deleted.
+
+#+begin_src sh
+curl -s "http://localhost:8000/graph/capability/$CAP1_ID/orphan-preview?product_id=$PRODUCT_ID" \
+  -H "$AUTH_HEADER" | jq -c .
+#+end_src
+
+Expected (example counts and nodes):
+
+#+begin_example
+{"capability_id":"capability:674b41ebf66a68c0","counts":{"pain":1,"job":1,"persona":1},"nodes":[
+  {"id":"pain:73e3ded6bebd02fa","node_type":"pain","label":"Manual reporting takes days"},
+  {"id":"job:2353e652b5a067c9","node_type":"job","label":"Consolidate revenue metrics"},
+  {"id":"persona:004f17404c8e0386","node_type":"persona","label":"Head of RevOps"}
+]}
+#+end_example
+
+** 5) Delete Cap A without force (expect 409)
+Purpose: Show the server blocks deletion and returns impact payload.
+
+#+begin_src sh
+curl -s -o /tmp/delete_cap1.json -w "HTTP:%{http_code}\n" \
+  -X DELETE "http://localhost:8000/graph/capability/$CAP1_ID?product_id=$PRODUCT_ID" \
+  -H "$AUTH_HEADER"
+cat /tmp/delete_cap1.json | jq -c .
+#+end_src
+
+Example result:
+
+#+begin_example
+HTTP:409
+{"detail":{"message":"Deleting this capability will orphan nodes","capability_id":"capability:674b41ebf66a68c0","counts":{"pain":1,"job":1,"persona":1},"nodes":[{"id":"pain:73e3ded6bebd02fa","node_type":"pain","label":"Manual reporting takes days"},{"id":"job:2353e652b5a067c9","node_type":"job","label":"Consolidate revenue metrics"},{"id":"persona:004f17404c8e0386","node_type":"persona","label":"Head of RevOps"}]}}
+#+end_example
+
+** 6) Force delete Cap A (succeeds)
+Purpose: Proceed with deletion after reviewing impact.
+
+#+begin_src sh
+curl -s -X DELETE "http://localhost:8000/graph/capability/$CAP1_ID?product_id=$PRODUCT_ID&force=true" \
+  -H "$AUTH_HEADER" | jq -c .
+#+end_src
+
+Example result:
+
+#+begin_example
+{"message":"Capability deleted","id":"capability:674b41ebf66a68c0"}
+#+end_example
+
+** 7) Orphan preview for Cap B (should be empty)
+Purpose: Demonstrate preview returns empty when no downstream nodes would be orphaned.
+
+#+begin_src sh
+curl -s "http://localhost:8000/graph/capability/$CAP2_ID/orphan-preview?product_id=$PRODUCT_ID" \
+  -H "$AUTH_HEADER" | jq -c .
+#+end_src
+
+Example result:
+
+#+begin_example
+{"capability_id":"capability:074b9a7b8618b99c","counts":{},"nodes":[]}
+#+end_example
+
+** Notes
+- The long-lived JWT is safe for local testing only; do not use in production.
+- If you re-run this script, capability IDs will differ; always capture the new IDs from the API responses.

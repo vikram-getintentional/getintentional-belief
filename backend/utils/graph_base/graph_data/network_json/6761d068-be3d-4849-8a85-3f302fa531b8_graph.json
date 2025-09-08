@@ -113,7 +113,8 @@
       "node_type": "persona",
       "title": "accountant",
       "department": "finance",
-      "seniority": "Operator"
+      "seniority": "Operator",
+      "linkedin_url": "https://www.linkedin.com/in/manas-jayanth/"
     },
     {
       "id": "persona:2bbb4000fae13098",

@@ -2512,5 +2512,27 @@
       "node_id": "keyword:9116d18cc2e70d1d",
       "cumulative_relevance": 0.0
     }
+  ],
+  "product:681ae0a2d24ccf61": [
+    {
+      "node_id": "capability:674b41ebf66a68c0",
+      "cumulative_relevance": 0.9999999999995621
+    },
+    {
+      "node_id": "capability:074b9a7b8618b99c",
+      "cumulative_relevance": 0.9999999999995621
+    },
+    {
+      "node_id": "pain:73e3ded6bebd02fa",
+      "cumulative_relevance": 0.7999999999698729
+    },
+    {
+      "node_id": "job:2353e652b5a067c9",
+      "cumulative_relevance": 0.7999999987887271
+    },
+    {
+      "node_id": "persona:004f17404c8e0386",
+      "cumulative_relevance": 57.5999978245226
+    }
   ]
 }

@@ -18,6 +18,12 @@ type CapRow = {
   buyingLikelihood: number; // 0-100
 };
 
+type OrphanPreview = {
+  capability_id: string;
+  counts: Record<string, number>;
+  nodes: { id: string; node_type: string; label: string }[];
+};
+
 const CORENESS_OPTIONS = ["Critical", "Core", "Supportive", "Ancillary"] as const;
 
 const numericToCorenessLabel = (n?: number | null): string => {
@@ -39,6 +45,13 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState<Record<string, boolean>>({});
+  const [confirm, setConfirm] = useState<{
+    open: boolean;
+    targetId?: string;
+    preview?: OrphanPreview | null;
+    loading?: boolean;
+    error?: string | null;
+  }>({ open: false, preview: null, loading: false, error: null });
 
   const fetchCapabilities = async () => {
     setLoading(true);
@@ -131,16 +144,46 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
     }
   };
 
-  const deleteCapability = async (id: string) => {
+  const performDelete = async (id: string, force = false) => {
     setError(null);
     try {
       const url = new URL(`http://localhost:8000/graph/capability/${id}`);
       url.searchParams.set("product_id", productId);
+      if (force) url.searchParams.set("force", "true");
       const res = await fetch(url, { method: "DELETE", headers: auth });
+      if (res.status === 409) {
+        // backend returns preview payload in detail
+        const data = await res.json().catch(() => ({}));
+        const detail = data?.detail || data; // fastapi packs under detail
+        setConfirm({ open: true, targetId: id, preview: detail, loading: false, error: null });
+        return;
+      }
       if (!res.ok) throw new Error(await res.text());
       setCaps((prev) => prev.filter((c) => c.id !== id));
+      setConfirm({ open: false, preview: null, loading: false, error: null });
     } catch (e) {
       setError("Failed to delete capability");
+    }
+  };
+
+  const requestOrphanPreview = async (id: string) => {
+    setConfirm({ open: true, targetId: id, preview: null, loading: true, error: null });
+    try {
+      const url = new URL(`http://localhost:8000/graph/capability/${id}/orphan-preview`);
+      url.searchParams.set("product_id", productId);
+      const res = await fetch(url, { headers: auth });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || "Preview failed");
+      const preview: OrphanPreview = data;
+      if (!preview.nodes || preview.nodes.length === 0) {
+        // nothing to warn about; delete immediately
+        await performDelete(id, false);
+        return;
+      }
+      setConfirm({ open: true, targetId: id, preview, loading: false, error: null });
+    } catch (e: any) {
+      // Fallback: try delete; backend may still block with 409 which we handle
+      setConfirm((c) => ({ ...c, loading: false, error: "Could not load orphan preview. You can still proceed." }));
     }
   };
 
@@ -233,7 +276,7 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => deleteCapability(cap.id)}
+                    onClick={() => requestOrphanPreview(cap.id)}
                     className="appearance-none rounded-md border border-red-900 !bg-red-800 px-3 py-2 text-sm font-medium !text-white shadow-sm transition-colors hover:!bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800"
                   >
                     Delete
@@ -272,6 +315,92 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
         {caps.length === 0 && !loading && (
           <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-slate-500">No capabilities yet. Click “Add Capability” to get started.</div>
         )}
+      </div>
+      <OrphanConfirmModal
+        open={confirm.open}
+        preview={confirm.preview}
+        loading={confirm.loading}
+        error={confirm.error || null}
+        onCancel={() => setConfirm({ open: false, preview: null, loading: false, error: null })}
+        onConfirm={() => confirm.targetId ? performDelete(confirm.targetId, true) : undefined}
+      />
+    </div>
+  );
+}
+
+function Badge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+      {children}
+    </span>
+  );
+}
+
+export function OrphanConfirmModal({
+  open,
+  preview,
+  onCancel,
+  onConfirm,
+  loading,
+  error,
+}: {
+  open: boolean;
+  preview: OrphanPreview | null | undefined;
+  loading?: boolean;
+  error?: string | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  if (!open) return null;
+  const countTotal = Object.values(preview?.counts || {}).reduce((a, b) => a + b, 0);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative mx-4 w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-3">
+          <h4 className="text-lg font-semibold text-slate-800">Delete Capability</h4>
+          <p className="text-sm text-slate-600">Review impacted nodes before confirming.</p>
+        </div>
+        <div className="max-h-[60vh] overflow-auto px-5 py-4">
+          {loading && <div className="text-slate-500">Loading impact…</div>}
+          {error && <div className="mb-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">{error}</div>}
+          {!loading && preview && (
+            <div className="space-y-3">
+              {countTotal > 0 ? (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                  <div className="mb-1 font-medium">This delete will orphan {countTotal} node{countTotal === 1 ? '' : 's'}:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(preview.counts).map(([k, v]) => (
+                      <Badge key={k}>{k}: {v}</Badge>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">No downstream nodes will be orphaned.</div>
+              )}
+              {preview.nodes && preview.nodes.length > 0 && (
+                <div>
+                  <div className="mb-2 text-sm font-medium text-slate-700">Impacted nodes</div>
+                  <ul className="divide-y divide-slate-200 rounded-md border border-slate-200">
+                    {preview.nodes.map((n) => (
+                      <li key={n.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium text-slate-800">{n.label}</div>
+                          <div className="truncate text-xs text-slate-500">{n.id}</div>
+                        </div>
+                        <Badge>{n.node_type}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
+          <button onClick={onCancel} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300">Cancel</button>
+          <button onClick={onConfirm} className="rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-600">Delete anyway</button>
+        </div>
       </div>
     </div>
   );

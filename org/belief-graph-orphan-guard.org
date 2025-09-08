@@ -1,0 +1,39 @@
+* Belief Graph Orphan Guard
+
+** Summary
+This change adds an orphan-detection workflow when deleting a capability. The backend can preview which nodes would get disconnected from the product if a capability is removed. The frontend shows a Tailwind modal detailing the impact and requires explicit confirmation to proceed. The DELETE route also implements a force-delete guard that returns a 409 conflict with the same preview payload unless `force=true` is provided.
+
+** Design
+- Directionality: The graph edges point outward from the product (Product → Capability → Pain → Job → Persona). A node is “connected” if it’s reachable from the product node in the directed graph.
+- Orphan definition: Nodes that are currently reachable from the product but would not be reachable if a specific capability is removed.
+- Approach: Compute the set of nodes reachable from the product before and after simulating the removal of the capability; the set difference are the would-be orphans (excluding the product and the capability itself).
+
+** Backend API
+- Helper: `compute_orphans_if_remove_capability(G, capability_id)` in `backend/utils/graph_base/network_graph.py`.
+  - Returns list of node IDs that become unreachable if the capability is removed.
+- Preview endpoint: `GET /graph/capability/{capability_id}/orphan-preview?product_id=...`
+  - Auth required.
+  - Returns `{ capability_id, counts: {node_type: n}, nodes: [{id, node_type, label}] }`.
+- Force delete guard: `DELETE /graph/capability/{capability_id}?product_id=...&force=true|false`
+  - If `force=false` (default) and orphans exist, responds 409 with `{ message, capability_id, counts, nodes }` in `detail`.
+  - If `force=true` or no orphans, deletes as usual.
+
+** Frontend UX
+- Component: `frontend/src/components/CapabilityEditor.tsx`
+  - Delete button calls orphan preview.
+  - If orphans exist, shows a Tailwind modal summarizing counts and listing impacted nodes.
+  - “Delete anyway” proceeds with `force=true`.
+  - Modal is compact, readable, and keyboard-/mouse-friendly.
+
+** TODOs [5/5]
+- [X] Add orphan-detection helper in backend.
+- [X] Add preview endpoint returning grouped counts and nodes.
+- [X] Add force-delete guard to capability DELETE.
+- [X] Integrate frontend modal (Tailwind) with preview + confirm flow.
+- [X] Document approach and tasks in org-mode.
+
+** Progress Log
+- Implemented `compute_orphans_if_remove_capability` using reachability sets.
+- Added `GET /graph/capability/{id}/orphan-preview` and updated `DELETE` to guard with 409.
+- Upgraded `CapabilityEditor.tsx` to fetch preview, display modal, and honor `force=true`.
+- Verified code paths for attribute labeling consistency with existing list nodes route.

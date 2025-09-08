@@ -17,6 +17,7 @@ from backend.utils.graph_base.network_graph import (
     get_edge_attribute,
     get_edge_weight,
     get_product_id_from_subgraph,
+    compute_orphans_if_remove_capability,
 )
 from backend.utils.graph_base.agent_graph_builder import (
     _capability,
@@ -152,16 +153,60 @@ def update_capability(capability_id: str, payload: Dict[str, Any], request: Requ
 
 
 @router.delete("/graph/capability/{capability_id}")
-def delete_capability(capability_id: str, product_id: str, request: Request, db: Session = Depends(get_db)):
+def delete_capability(capability_id: str, product_id: str, request: Request, db: Session = Depends(get_db), force: bool = False):
     _require_auth_company(request)
     if not product_id:
         raise HTTPException(status_code=400, detail="product_id is required")
     G = build_product_graph(product_id)
     if not get_node_by_id(G, capability_id):
         raise HTTPException(status_code=404, detail="Capability not found")
+    # Check for orphans if not forced
+    orphan_ids = compute_orphans_if_remove_capability(G, capability_id)
+    if orphan_ids and not force:
+        # Build preview payload
+        preview = []
+        counts: Dict[str, int] = {}
+        for oid in orphan_ids:
+            node = get_node_by_id(G, oid) or {}
+            ntype = node.get("node_type") or node.get("type") or "node"
+            label = node.get("name") or node.get("description") or node.get("title") or node.get("id")
+            counts[ntype] = counts.get(ntype, 0) + 1
+            preview.append({"id": oid, "node_type": ntype, "label": label})
+        raise HTTPException(status_code=409, detail={
+            "message": "Deleting this capability will orphan nodes",
+            "capability_id": capability_id,
+            "counts": counts,
+            "nodes": preview,
+        })
     G.remove_node(capability_id)
     update_graph(G)
     return {"message": "Capability deleted", "id": capability_id}
+
+
+@router.get("/graph/capability/{capability_id}/orphan-preview")
+def preview_capability_delete_orphans(capability_id: str, product_id: str, request: Request, db: Session = Depends(get_db)):
+    """Preview which nodes would be orphaned if this capability were deleted."""
+    _require_auth_company(request)
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    node = get_node_by_id(G, capability_id)
+    if not node or node.get("node_type") != "capability":
+        raise HTTPException(status_code=404, detail="Capability not found")
+    orphan_ids = compute_orphans_if_remove_capability(G, capability_id)
+    counts: Dict[str, int] = {}
+    items: List[Dict[str, Any]] = []
+    for oid in orphan_ids:
+        n = get_node_by_id(G, oid) or {}
+        ntype = n.get("node_type") or n.get("type") or "node"
+        label = n.get("name") or n.get("description") or n.get("title") or n.get("id")
+        counts[ntype] = counts.get(ntype, 0) + 1
+        items.append({
+            "id": oid,
+            "node_type": ntype,
+            "label": label,
+        })
+    return {"capability_id": capability_id, "counts": counts, "nodes": items}
 
 
 @router.post("/graph/capability/merge")
