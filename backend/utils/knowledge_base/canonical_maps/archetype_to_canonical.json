@@ -1,0 +1,114 @@
+{
+  "{\"employee_range\": \"50\\u2013200\", \"funding_stage\": \"Series A\", \"geography\": \"North America\", \"industry\": \"SaaS\", \"revenue_range\": \"$10\\u201350M\"}": {
+    "industry": "saas",
+    "revenue_range": "10-50m",
+    "employee_range": "50-200",
+    "funding_stage": "seriesa",
+    "geography": "northamerica"
+  },
+  "{\"employee_range\": \"200\\u20131k\", \"funding_stage\": \"growth\", \"geography\": \"Europe\", \"industry\": \"FinTech\", \"revenue_range\": \"$50\\u2013200M\"}": {
+    "industry": "fintech",
+    "revenue_range": "50-200m",
+    "employee_range": "200-1k",
+    "funding_stage": "growth",
+    "geography": "Europe"
+  },
+  "{\"employee_range\": \"1k\\u20135k\", \"funding_stage\": \"public\", \"geography\": \"Asia-Pacific\", \"industry\": \"Healthcare\", \"revenue_range\": \"$200M\\u2013$1B\"}": {
+    "industry": "healthcare",
+    "revenue_range": "200m-1b",
+    "employee_range": "1k-5k",
+    "funding_stage": "Public",
+    "geography": "asia-pacific"
+  },
+  "{\"employee_range\": \"<50\", \"funding_stage\": \"bootstrapped\", \"geography\": \"Latin America\", \"industry\": \"Retail\", \"revenue_range\": \"<$10M\"}": {
+    "industry": "retail",
+    "revenue_range": "<10m",
+    "employee_range": "<50",
+    "funding_stage": "bootstrapped",
+    "geography": "latinamerica"
+  },
+  "{\"employee_range\": \">5k\", \"funding_stage\": \"public\", \"geography\": \"North America\", \"industry\": \"Manufacturing\", \"revenue_range\": \">$1B\"}": {
+    "industry": "manufacturing",
+    "revenue_range": ">1b",
+    "employee_range": ">5k",
+    "funding_stage": "Public",
+    "geography": "northamerica"
+  },
+  "{\"employee_range\": \"200\\u20131k\", \"funding_stage\": \"Series B\", \"geography\": \"Europe\", \"industry\": \"SaaS\", \"revenue_range\": \"$50\\u2013200M\"}": {
+    "industry": "saas",
+    "revenue_range": "50-200m",
+    "employee_range": "200-1k",
+    "funding_stage": "seriesb",
+    "geography": "Europe"
+  },
+  "{\"employee_range\": \"1k\\u20135k\", \"funding_stage\": \"growth\", \"geography\": \"North America\", \"industry\": \"FinTech\", \"revenue_range\": \"$200M\\u2013$1B\"}": {
+    "industry": "fintech",
+    "revenue_range": "200m-1b",
+    "employee_range": "1k-5k",
+    "funding_stage": "growth",
+    "geography": "northamerica"
+  },
+  "{\"employee_range\": \"50\\u2013200\", \"funding_stage\": \"Series A\", \"geography\": \"Middle East & Africa\", \"industry\": \"Healthcare\", \"revenue_range\": \"$10\\u201350M\"}": {
+    "industry": "healthcare",
+    "revenue_range": "10-50m",
+    "employee_range": "50-200",
+    "funding_stage": "seriesa",
+    "geography": "middleeast&africa"
+  },
+  "{\"employee_range\": \"50\\u2013200\", \"funding_stage\": \"Series A\", \"geography\": \"Asia-Pacific\", \"industry\": \"FinTech\", \"revenue_range\": \"$10\\u201350M\"}": {
+    "industry": "fintech",
+    "revenue_range": "10-50m",
+    "employee_range": "50-200",
+    "funding_stage": "seriesa",
+    "geography": "asia-pacific"
+  },
+  "{\"employee_range\": \"1k\\u20135k\", \"funding_stage\": \"growth\", \"geography\": \"Middle East & Africa\", \"industry\": \"Healthcare\", \"revenue_range\": \"$200M\\u2013$1B\"}": {
+    "industry": "healthcare",
+    "revenue_range": "200m-1b",
+    "employee_range": "1k-5k",
+    "funding_stage": "growth",
+    "geography": "middleeast&africa"
+  },
+  "{\"employee_range\": \"1k\\u20135k\", \"funding_stage\": \"public\", \"geography\": \"North America\", \"industry\": \"Healthcare\", \"revenue_range\": \"$200M\\u2013$1B\"}": {
+    "industry": "healthcare",
+    "revenue_range": "200m-1b",
+    "employee_range": "1k-5k",
+    "funding_stage": "Public",
+    "geography": "northamerica"
+  },
+  "{\"employee_range\": \"200\\u20131k\", \"funding_stage\": \"growth\", \"geography\": \"Asia-Pacific\", \"industry\": \"Manufacturing\", \"revenue_range\": \"$50\\u2013200M\"}": {
+    "industry": "manufacturing",
+    "revenue_range": "50-200m",
+    "employee_range": "200-1k",
+    "funding_stage": "growth",
+    "geography": "asia-pacific"
+  },
+  "{\"employee_range\": \"50\\u2013200\", \"funding_stage\": \"Series B\", \"geography\": \"Latin America\", \"industry\": \"Retail\", \"revenue_range\": \"$10\\u201350M\"}": {
+    "industry": "retail",
+    "revenue_range": "10-50m",
+    "employee_range": "50-200",
+    "funding_stage": "seriesb",
+    "geography": "latinamerica"
+  },
+  "{\"employee_range\": \"1k\\u20135k\", \"funding_stage\": \"public\", \"geography\": \"Europe\", \"industry\": \"SaaS\", \"revenue_range\": \"$200M\\u2013$1B\"}": {
+    "industry": "saas",
+    "revenue_range": "200m-1b",
+    "employee_range": "1k-5k",
+    "funding_stage": "Public",
+    "geography": "Europe"
+  },
+  "{\"employee_range\": \">5k\", \"funding_stage\": \"public\", \"geography\": \"North America\", \"industry\": \"FinTech\", \"revenue_range\": \">$1B\"}": {
+    "industry": "fintech",
+    "revenue_range": ">1b",
+    "employee_range": ">5k",
+    "funding_stage": "Public",
+    "geography": "northamerica"
+  },
+  "{\"employee_range\": \"50\\u2013200\", \"funding_stage\": \"Series A\", \"geography\": \"Asia-Pacific\", \"industry\": \"Healthcare\", \"revenue_range\": \"$10\\u201350M\"}": {
+    "industry": "healthcare",
+    "revenue_range": "10-50m",
+    "employee_range": "50-200",
+    "funding_stage": "seriesa",
+    "geography": "asia-pacific"
+  }
+}

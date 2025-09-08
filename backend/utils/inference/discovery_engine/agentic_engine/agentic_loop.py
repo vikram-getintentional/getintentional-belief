@@ -120,7 +120,16 @@ def agentic_inference(product_subgraph: nx.DiGraph, context: AgentContext | None
             print(f"⚠️ Missing pain node: {pain_id}")
             continue
 
-        pain_source = (pain_node.get("pain_source") or "").strip().lower()
+        # Normalize pain_source to a lowercase string; handle bad types defensively
+        raw_src = pain_node.get("pain_source")
+        if isinstance(raw_src, str):
+            pain_source = raw_src.strip().lower()
+        elif isinstance(raw_src, dict):
+            # Try common keys if a dict slipped in
+            val = raw_src.get("pain_source") or raw_src.get("source") or raw_src.get("value") or ""
+            pain_source = val.strip().lower() if isinstance(val, str) else ""
+        else:
+            pain_source = ""
         print("pain source:", pain_source)
         if pain_source not in {"terminal", "non-terminal"}:
             # missing classification → infer later
@@ -321,7 +330,6 @@ def archetype_event_discovery(
 
     if pass_num >= max_passes:
         print("⛔ Reached max_passes without clearing all pending work. You may increase max_passes or inspect inputs.")
-
 
 
 

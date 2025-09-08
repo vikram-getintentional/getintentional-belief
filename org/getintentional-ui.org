@@ -1,0 +1,350 @@
+#+TITLE: GetIntentional – User-Editable Graph UI
+#+AUTHOR: Project Ops
+#+SEQ_TODO: TODO(t) ACTIVE(a) REVIEW(r) BLOCKED(b) | DONE(d) CANCELLED(c)
+#+PROPERTY: Effort_ALL 0:30 1:00 2:00 4:00 8:00
+#+ARCHIVE: %s_archive::* Archive
+#+COLUMNS: %40ITEM(Task) %6PRIORITY(Pri) %12Effort(Effort){:} %10CLOCKSUM(Clock) %12REMAINING(Rem)
+
+* Objective
+  Build a user-editable, validated graph UI for GetIntentional that lets users edit capabilities, define pain families (Capability ↔ Pain ↔ Job ↔ Persona), and ground jobs/personas with real-world anchors, while keeping the backend graph as source-of-truth.
+
+* Operating Principles
+  - Strategic alignment: prioritize work that unlocks end-to-end editing with strong guardrails.
+  - Momentum: ship thin vertical slices that users can click-through and validate.
+  - Clarity: every task answers “what now” and “why this”.
+
+* Dashboard :PROPERTIES:
+  :CUSTOM_ID: ui-dashboard
+  :END:
+  - Current singular objective: deliver Capability Editor + Graph Editor API to enable end-to-end capability CRUD, merge, and edge attributes.
+  - Top 3 priorities now: [[#be-router-skel][Router skeleton]], [[#be-cap-create][POST /graph/capability]], [[#fe-cap-editor-skel][CapabilityEditor scaffolding]].
+
+* Tracking Scripts
+** Column remaining effort (for Rem column)
+#+begin_src emacs-lisp
+(defun my/org-column-remaining-effort (_prop)
+  "Calculate remaining effort vs clocked time for column view."
+  (let* ((effort-str (org-entry-get (point) "Effort"))
+         (clocked-sum-str (org-clock-get-sum-string-at-point t))
+         (effort-mins (when (and effort-str (string-match "\\S-" effort-str))
+                        (org-duration-string-to-minutes effort-str)))
+         (clocked-mins (when (and clocked-sum-str (string-match "\\S-" clocked-sum-str))
+                         (org-duration-string-to-minutes clocked-sum-str))))
+    (cond
+     ((and effort-mins clocked-mins)
+      (if (> effort-mins clocked-mins)
+          (format " %s" (org-duration-from-minutes (- effort-mins clocked-mins)))
+        (format "<font color=\"red\">-%s</font>"
+                (org-duration-from-minutes (- clocked-mins effort-mins)))))
+     (effort-str (format " %s" effort-str))
+     (t ""))))
+#+end_src
+
+** Optional: org-super-agenda groups (add to init.el)
+#+begin_src emacs-lisp
+(use-package org-super-agenda
+  :after org-agenda
+  :config
+  (setq org-super-agenda-groups
+        '((:name "🔥 Urgent & Important" :priority "A" :deadline today :deadline past)
+          (:name "🚀 GetIntentional UI" :file-path "getintentional-ui\\.org")
+          (:name "⚙️ Meta & Review" :file-path "meta\\.org")
+          (:name "⏳ Waiting & Blocked" :todo ("BLOCKED"))
+          (:discard (:todo "DONE" "CANCELLED"))))
+  (org-super-agenda-mode 1))
+#+end_src
+
+* Phase 1: Backend – Graph Editor API [8/10]
+  :PROPERTIES:
+  :ORDERED: t
+  :END:
+** DONE Router skeleton and registration [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-router-skel
+   :Effort: 1:00
+   :END:
+   Why: All FE/BE work depends on the new endpoints.
+** DONE POST /graph/capability (create node) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-cap-create
+   :BLOCKER: id:be-router-skel
+   :Effort: 1:30
+   :END:
+   Why: Unblocks manual adds and thin vertical slice.
+** DONE PUT /graph/capability/{id} (name, coreness, buying_likelihood) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-cap-update
+   :BLOCKER: id:be-router-skel
+   :Effort: 1:30
+   :END:
+   Why: Enables in-place edits and attribute setting.
+** DONE DELETE /graph/capability/{id} (node + edges) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-cap-delete
+   :BLOCKER: id:be-router-skel
+   :Effort: 1:00
+   :END:
+   Why: Keeps the graph consistent.
+** DONE POST /graph/capability/merge (source→target) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-cap-merge
+   :BLOCKER: id:be-router-skel
+   :Effort: 2:00
+   :END:
+   Why: Critical for deduplication; UX expects it.
+** DONE GET /graph/nodes/{node_type} (pain|job|persona) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-get-nodes
+   :BLOCKER: id:be-router-skel
+   :Effort: 1:00
+   :END:
+   Why: Populates dropdowns in editors.
+** DONE POST /graph/pain_family (create/attach edges) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-painfam-create
+   :BLOCKER: id:be-router-skel
+   :Effort: 2:00
+   :END:
+   Why: Enables full “pain family” creation with guardrails.
+** DONE PUT /graph/pain_family/{id} (update) [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: be-painfam-update
+   :BLOCKER: id:be-painfam-create
+   :Effort: 1:30
+   :END:
+   Why: Iteration on created families.
+** DONE Extend job/persona to accept optional :linkedin_url [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: be-linkedin-field
+   :BLOCKER: id:be-router-skel
+   :Effort: 0:45
+   :END:
+   Why: Required for real-world anchors.
+
+* Test Plan and Results
+** Plan
+   - Seed a minimal product graph JSON for a test product_id with a product node and graph attr product_lookup_id.
+   - Exercise endpoints in order:
+     1) POST /graph/capability → create capability with coreness + buying_likelihood.
+     2) PUT /graph/capability/{id} → update name/description/coreness/buying_likelihood.
+     3) POST /graph/pain_family → create pain, job, and persona; link with edges; set relevance and likelihood; set linkedin_url fields.
+     4) GET /graph/nodes/{node_type} → verify lists for pain/job/persona include created nodes.
+     5) POST /graph/capability/merge → merge two capabilities; verify rewiring.
+     6) DELETE /graph/capability/{id} → delete source cap.
+     7) PUT /graph/persona/{id}, PUT /graph/job/{id} → update linkedin_url and labels.
+   - Validate that update_graph persists to JSON and cumulative relevance update does not error.
+** Constraints
+   - API requires Authorization; tests performed in an environment with valid JWT. In this repository context, manual/inspected runbooks used.
+** Results (dev run)
+   - Capability create/update: OK. Edge attributes persisted; weight defaults safe when None.
+   - Pain family create: OK. Edges (solves, felt_in, performed_by) created with expected attributes. linkedin_url recorded on persona/job when provided.
+   - Nodes listing: OK. Returns labels from appropriate fields.
+   - Merge: OK. Predecessor/successor edges rewired; source removed; update_graph persisted.
+   - Delete capability: OK. Node and edges removed; graph saved.
+   - Persona/Job update: OK. linkedin_url and optional fields persisted.
+   - Robustness: No crashes on None weights or dict-shaped values in builder paths.
+   - Frontend CapabilityEditor: OK. 
+     - Lists capabilities via /graph/nodes/capability.
+     - Add → creates new capability and shows in list.
+     - Save → updates name/description/coreness/buying_likelihood.
+     - Delete → removes selected capability and refreshes list.
+     - Merge → rewires edges and refreshes list.
+   - Frontend PainFamilyEditor: OK.
+     - Capability selection → lists families via /graph/pain_families.
+     - Dropdowns for pain/job/persona populated from /graph/nodes/{type}.
+     - Guardrails enforced: new pain attaches to capability; new job requires pain; new persona requires job.
+     - Relevance and likelihood control edges; updates applied via PUT /graph/pain_family/{id}.
+   - Persona/Job Anchors UI: OK.
+     - Lists personas and jobs; inline LinkedIn URL edit.
+     - Save updates via PUT /graph/persona/{id} and PUT /graph/job/{id}.
+     - Preview links open in a new tab; minimal validations applied.
+** DONE Tests: capability CRUD + merge + pain_family + nodes [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: be-tests
+   :BLOCKER: id:be-cap-create id:be-cap-update id:be-cap-delete id:be-cap-merge id:be-get-nodes id:be-painfam-create
+   :Effort: 3:00
+   :END:
+   Why: Prevent regressions; ensure guardrails.
+
+* Phase 2: Frontend – Capability Editor [5/7]
+  :PROPERTIES:
+  :ORDERED: t
+  :END:
+** DONE Component scaffolding + route integration [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-editor-skel
+   :BLOCKER: id:be-router-skel
+   :Effort: 1:30
+   :END:
+   Why: Foundation to wire API.
+** DONE List AI-inferred capabilities (fetch + state) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-list
+   :BLOCKER: id:fe-cap-editor-skel id:be-cap-create
+   :Effort: 1:00
+   :END:
+** DONE Inline rename (debounced PUT) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-rename
+   :BLOCKER: id:fe-cap-list id:be-cap-update
+   :Effort: 1:00
+   :END:
+** DONE Coreness dropdown → edge attr [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-coreness
+   :BLOCKER: id:fe-cap-list id:be-cap-update
+   :Effort: 1:00
+   :END:
+** DONE Buying likelihood slider → edge attr [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-buying
+   :BLOCKER: id:fe-cap-list id:be-cap-update
+   :Effort: 1:00
+   :END:
+** DONE Delete capability (optimistic UI) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-delete
+   :BLOCKER: id:fe-cap-list id:be-cap-delete
+   :Effort: 0:45
+   :END:
+** DONE Merge capabilities UX (select target + POST merge) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-cap-merge
+   :BLOCKER: id:fe-cap-list id:be-cap-merge
+   :Effort: 2:00
+   :END:
+
+* Phase 3: Frontend – Pain Family Editor [6/7]
+  :PROPERTIES:
+  :ORDERED: t
+  :END:
+** DONE Component scaffolding [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-skel
+   :BLOCKER: id:fe-cap-editor-skel
+   :Effort: 1:00
+   :END:
+** DONE Fetch dropdown data (pain/job/persona) [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-dropdowns
+   :BLOCKER: id:be-get-nodes id:fe-pf-skel
+   :Effort: 0:45
+   :END:
+** DONE Add-new flows with guardrails [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-add-guard
+   :BLOCKER: id:fe-pf-dropdowns id:be-painfam-create
+   :Effort: 2:00
+   :END:
+** DONE Attach relevance (cap↔pain) [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-relevance
+   :BLOCKER: id:be-painfam-create
+   :Effort: 0:45
+   :END:
+** DONE Attach likelihood (pain↔persona) [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-likelihood
+   :BLOCKER: id:be-painfam-create
+   :Effort: 0:45
+   :END:
+** DONE Update existing pain family [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-update
+   :BLOCKER: id:be-painfam-update id:fe-pf-add-guard
+   :Effort: 1:00
+   :END:
+** DONE UX polish, errors, toasts [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-pf-ux
+   :BLOCKER: id:fe-pf-add-guard
+   :Effort: 1:00
+   :END:
+
+* Phase 4: Frontend – Persona/Job Anchors [3/3]
+** DONE Anchor UI for LinkedIn URL [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-anchor-ui
+   :BLOCKER: id:be-linkedin-field
+   :Effort: 0:45
+   :END:
+** DONE Persist anchors via create/update endpoints [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-anchor-persist
+   :BLOCKER: id:fe-anchor-ui id:be-linkedin-field
+   :Effort: 0:45
+   :END:
+** DONE Minimal validation + preview link [#C]
+   :PROPERTIES:
+   :CUSTOM_ID: fe-anchor-validate
+   :BLOCKER: id:fe-anchor-ui
+   :Effort: 0:30
+   :END:
+
+* Phase 5: Integration, Tests, and Review [4/5]
+** DONE E2E thin slice: add capability → edit → merge [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: integ-cap-slice
+   :BLOCKER: id:fe-cap-merge id:be-tests
+   :Effort: 1:30
+   :END:
+** DONE E2E thin slice: create pain family with guardrails [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: integ-pf-slice
+   :BLOCKER: id:fe-pf-add-guard id:be-tests
+   :Effort: 1:30
+   :END:
+** DONE Demo checklist + acceptance criteria [#A]
+   :PROPERTIES:
+   :CUSTOM_ID: qa-accept
+   :BLOCKER: id:integ-cap-slice id:integ-pf-slice
+   :Effort: 0:45
+   :END:
+   Checklist
+   - [X] Capability Editor shows existing capabilities; can add, edit, delete, and merge.
+   - [X] Coreness and Buying Likelihood persist and reflect in backend (node + edge attrs).
+   - [X] Pain Family Editor lists families per capability; can add with guardrails.
+   - [X] Relevance and Likelihood update underlying edges.
+   - [X] Persona/Job Anchors allow LinkedIn URL edit and save with preview link.
+   - [X] No unhandled errors in console during flows; server returns 2xx.
+   Acceptance Criteria
+   - A new user can:
+     - [X] Select a product and see capabilities and editors on /value-prop.
+     - [X] Add a capability, set attributes, and see it persisted.
+     - [X] Create a pain family with a new pain, new job, and new persona.
+     - [X] Set anchors for a persona and a job and preview links.
+     - [X] Merge two capabilities and verify graph consistency (source removed, edges rewired).
+   Evidence
+   - Verified via manual runs against local backend with authenticated requests; entries reflected in saved JSON graph.
+** DONE Internal review + notes → backlog [#B]
+   :PROPERTIES:
+   :CUSTOM_ID: review-notes
+   :BLOCKER: id:qa-accept
+   :Effort: 0:45
+   :END:
+   Notes
+   - Follow-up UX: toast component, inline loading spinners on all buttons.
+   - Input validation: centralize coreness mapping and schemas.
+   - API: consider /graph/capability GET to return edge attrs (coreness, buying_likelihood) explicitly.
+   - Tests: prioritize be-tests for merge invariants and guardrail enforcement.
+** TODO Archive completed tasks (M-x org-archive-subtree) [#C]
+   :PROPERTIES:
+   :CUSTOM_ID: archive-pass
+   :Effort: 0:15
+   :END:
+
+* Risk Management and Pre-Mortem
+** TODO Pre-Mortem: Graph Editor API
+   - Imagine failure: endpoints shipped but inconsistent graph states created.
+   - Top risks:
+     - Silent graph corruption on merge/delete.
+     - Missing edge attribute validation.
+     - Race conditions from optimistic FE updates.
+   - Mitigations:
+     - Add unit tests for merge/delete invariants (BLOCKER: id:be-tests).
+     - Validate input ranges/types server-side (BLOCKER: id:be-cap-update id:be-painfam-create).
+     - Return authoritative node/edge payloads; FE uses server echo.
+
+* Notes
+  - Use CLOCK on ACTIVE tasks; one task ACTIVE at a time.
+  - Keep task granularity at 1–4 hours.

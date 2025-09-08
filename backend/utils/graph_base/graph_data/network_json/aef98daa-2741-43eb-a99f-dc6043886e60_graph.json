@@ -1,0 +1,4224 @@
+{
+  "graph": {
+    "product_lookup_id": "aef98daa-2741-43eb-a99f-dc6043886e60"
+  },
+  "nodes": [
+    {
+      "id": "product:d74a7365c0b9f1ea",
+      "type": "product",
+      "node_type": "product",
+      "company_id": "90586212-021a-44d7-b15d-a3edc9734d24",
+      "url": "https://chargebee.com",
+      "summary": "Chargebee is a robust subscription management and recurring billing platform that helps businesses automate their subscription workflow, manage customer churn, and scale globally. It offers a suite of features including usage-based pricing, payment retries and collections, trial and self-serve options, and advanced reporting and analytics.",
+      "domain": "B2B SaaS",
+      "industry": "Subscription Management and Billing",
+      "plg_flag": true
+    },
+    {
+      "id": "capability:ddcffb62ec34b2da",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Subscription Management",
+      "description": "Allows businesses to manage and automate their subscription workflows.",
+      "coreness": 1.0
+    },
+    {
+      "id": "capability:251f0cdee7cf1afe",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Usage-based Pricing",
+      "description": "Enables businesses to implement and manage usage-based pricing models.",
+      "coreness": 0.9
+    },
+    {
+      "id": "capability:d2f4d1a57219b1b7",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Payment Retries and Collections",
+      "description": "Automates the process of retrying failed payments and collecting due payments.",
+      "coreness": 0.8
+    },
+    {
+      "id": "capability:d07a27ec7240d167",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Trial & Self-serve",
+      "description": "Provides options for customers to try the service and manage their subscriptions independently.",
+      "coreness": 0.8
+    },
+    {
+      "id": "capability:5d49573d2feb1bdb",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Reporting and Analytics",
+      "description": "Offers advanced reporting and analytics to help businesses understand their performance and make informed decisions.",
+      "coreness": 0.9
+    },
+    {
+      "id": "capability:c59319863f7c69bc",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Customer Retention",
+      "description": "Predicts churn, deflects cancellation attempts, and helps grow customer lifetime value (CLTV).",
+      "coreness": 0.9
+    },
+    {
+      "id": "capability:ba720a2e64ce5ae1",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Revenue Recognition",
+      "description": "Helps recognize revenue accurately, ensuring GAAP-compliance and audit readiness.",
+      "coreness": 0.8
+    },
+    {
+      "id": "capability:bada94d63be26a9b",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "60+ Integrations",
+      "description": "Offers extensive integration options to seamlessly connect with other tools and platforms.",
+      "coreness": 0.7
+    },
+    {
+      "id": "product:d74a7365c0b9f1ea",
+      "type": "product",
+      "node_type": "product"
+    },
+    {
+      "id": "pain:70987863e11a5895",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "High error rates in manual billing processes.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:c7eb78b46314b0ab",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "billing error rate"
+    },
+    {
+      "id": "perceived_metric:61c17f59254fa497",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "time spent on subscription management"
+    },
+    {
+      "id": "pain_trigger:0241eb04d40699e2",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "subscription volume"
+    },
+    {
+      "id": "pain_trigger:d95b0a1e468a5233",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "customer base size"
+    },
+    {
+      "id": "pain_trigger:e1b74ac50faad46b",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "plan complexity"
+    },
+    {
+      "id": "job:179e30b169cd44bf",
+      "type": "job",
+      "node_type": "job",
+      "description": "Manage customer subscriptions and billing cycles."
+    },
+    {
+      "id": "persona:352cf6ccca62af39",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "billing specialist",
+      "department": "finance",
+      "seniority": "Operator"
+    },
+    {
+      "id": "persona:b16659185e556b5f",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "subscription manager",
+      "department": "operations",
+      "seniority": "Manager"
+    },
+    {
+      "id": "pain:c667f9f43a8a8b2a",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Inability to accurately charge customers based on usage.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:26bc42d8ca45f913",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "pricing model errors"
+    },
+    {
+      "id": "perceived_metric:d45ca2a6269ab8a9",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "customer complaints"
+    },
+    {
+      "id": "pain_trigger:3fabae62b295d564",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "data volume"
+    },
+    {
+      "id": "pain_trigger:c35387ea65d0419b",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "service quality"
+    },
+    {
+      "id": "job:42ebab7fba17f51b",
+      "type": "job",
+      "node_type": "job",
+      "description": "Design and implement pricing strategies."
+    },
+    {
+      "id": "persona:1ad7186d48b81f99",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "data analyst",
+      "department": "finance",
+      "seniority": "Manager"
+    },
+    {
+      "id": "persona:f396023a2996c8d7",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "it manager",
+      "department": "product",
+      "seniority": "Manager"
+    },
+    {
+      "id": "pain:fed78b27abe281c9",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Delayed revenue collection due to failed payments.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:f84da7713b9d7c72",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "revenue growth"
+    },
+    {
+      "id": "pain_trigger:e0ca11825b82f310",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "payment method diversity"
+    },
+    {
+      "id": "pain_trigger:b1400fa778e3e97e",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "customer churn"
+    },
+    {
+      "id": "job:31224696946182c7",
+      "type": "job",
+      "node_type": "job",
+      "description": "Ensure accurate revenue recognition and compliance."
+    },
+    {
+      "id": "persona:765857fd4cef3aae",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "revenue accountant",
+      "department": "finance",
+      "seniority": "Manager"
+    },
+    {
+      "id": "pain:e59425f979ae6285",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Limited options for customers to trial and manage subscriptions independently.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:e18ee6823b429a36",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "customer onboarding time"
+    },
+    {
+      "id": "perceived_metric:e02bfeb4466a2655",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "trial-to-paid conversion rate"
+    },
+    {
+      "id": "pain_trigger:7d631e96b308da06",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "self-service feature availability"
+    },
+    {
+      "id": "pain_trigger:a40825ab947984eb",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "trial conversion rate"
+    },
+    {
+      "id": "persona:7c7922faf77cb947",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "it manager",
+      "department": "customer success",
+      "seniority": "Manager"
+    },
+    {
+      "id": "persona:abf290edebe173ce",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "it manager",
+      "department": "support",
+      "seniority": "Operator"
+    },
+    {
+      "id": "pain:daa4244f6d497ca4",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "High customer support load due to lack of self-service options.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:28749f913c906473",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "support response time"
+    },
+    {
+      "id": "perceived_metric:844496fec312a24c",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "customer satisfaction"
+    },
+    {
+      "id": "pain:1351f4793a6b0e53",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Inability to make data-driven decisions due to lack of insights.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:ee385dc38400434a",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "report generation time"
+    },
+    {
+      "id": "perceived_metric:6d9e379f356bc569",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "decision accuracy"
+    },
+    {
+      "id": "pain_trigger:8713051a70390c94",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "reporting frequency"
+    },
+    {
+      "id": "pain_trigger:04bd7d0154fe5fdb",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "metric diversity"
+    },
+    {
+      "id": "job:63f413e26b61bf87",
+      "type": "job",
+      "node_type": "job",
+      "description": "Analyze business performance and generate reports."
+    },
+    {
+      "id": "persona:a023044052f70ae6",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "data analyst",
+      "department": "analytics",
+      "seniority": "Manager"
+    },
+    {
+      "id": "persona:f6e9d257ec86e4ad",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "data analyst",
+      "department": "analytics",
+      "seniority": "Operator"
+    },
+    {
+      "id": "pain:e4c62c053daf8ede",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Loss of revenue due to high customer churn.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:8fac95afde8d1fef",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "churn rate"
+    },
+    {
+      "id": "perceived_metric:285d384b41c06910",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "customer lifetime value"
+    },
+    {
+      "id": "pain_trigger:33bf5df0df6a59dd",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "competitive pressure"
+    },
+    {
+      "id": "pain:9a9cba75bd0ebb1a",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Inaccurate revenue recognition leading to compliance issues.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:409ae8b859cb4db1",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "audit discrepancies"
+    },
+    {
+      "id": "perceived_metric:c1a2d1a838a6fe1e",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "financial statement accuracy"
+    },
+    {
+      "id": "pain_trigger:ea0217c6d29afdbb",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "regulatory changes"
+    },
+    {
+      "id": "persona:a840ae46503166fd",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "compliance officer",
+      "department": "legal",
+      "seniority": "Manager"
+    },
+    {
+      "id": "pain:d2e704ebe8c0fe8a",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Risk of non-compliance with financial regulations.",
+      "pain_source": "terminal"
+    },
+    {
+      "id": "perceived_metric:7b9e531300a337d5",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "regulatory fines"
+    },
+    {
+      "id": "pain:7d3e7fc860c9fe4f",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Difficulty integrating with multiple platforms causing workflow disruptions.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:58b0e70cad70f2ec",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "integration downtime"
+    },
+    {
+      "id": "perceived_metric:ccef043bdc2a4e71",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "workflow efficiency"
+    },
+    {
+      "id": "pain_trigger:c0c50871eb0e4024",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "integration complexity"
+    },
+    {
+      "id": "pain_trigger:3ea61882623921bc",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "API changes"
+    },
+    {
+      "id": "job:6b91f30a3402bfc4",
+      "type": "job",
+      "node_type": "job",
+      "description": "Integrate business systems with external platforms."
+    },
+    {
+      "id": "persona:4699b3c1f0276889",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "compliance officer",
+      "department": "it",
+      "seniority": "Operator"
+    },
+    {
+      "id": "persona:8f28b67c110cf7d8",
+      "type": "persona",
+      "node_type": "persona",
+      "title": "it manager",
+      "department": "it",
+      "seniority": "Manager"
+    },
+    {
+      "id": "pain:3f3ee46101c533f4",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Operational inefficiencies due to disconnected systems.",
+      "pain_source": "non-terminal"
+    },
+    {
+      "id": "perceived_metric:cdecb38aa7caa7ab",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "system uptime"
+    },
+    {
+      "id": "perceived_metric:f75bf35be50ff429",
+      "type": "perceived_metric",
+      "node_type": "perceived_metric",
+      "metric": "operational cost"
+    },
+    {
+      "id": "pain_trigger:049862ba5a7f4187",
+      "type": "pain_trigger",
+      "node_type": "pain_trigger",
+      "attribute": "system update frequency"
+    },
+    {
+      "id": "archetype:a82898bb70233573",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "saas",
+      "revenue_range": "10-50m",
+      "employee_range": "50-200",
+      "funding_stage": "seriesa",
+      "geography": "northamerica",
+      "gpt_archetype_id": "arch_1"
+    },
+    {
+      "id": "archetype:3eac8c2f2f902c5e",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "fintech",
+      "revenue_range": "50-200m",
+      "employee_range": "200-1k",
+      "funding_stage": "growth",
+      "geography": "Europe",
+      "gpt_archetype_id": "arch_2"
+    },
+    {
+      "id": "archetype:5198c65e0d511b10",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "healthcare",
+      "revenue_range": "200m-1b",
+      "employee_range": "1k-5k",
+      "funding_stage": "Public",
+      "geography": "asia-pacific",
+      "gpt_archetype_id": "arch_3"
+    },
+    {
+      "id": "archetype:5fed65699b76890b",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "retail",
+      "revenue_range": "<10m",
+      "employee_range": "<50",
+      "funding_stage": "bootstrapped",
+      "geography": "latinamerica",
+      "gpt_archetype_id": "arch_4"
+    },
+    {
+      "id": "archetype:15a5ccac58372514",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "manufacturing",
+      "revenue_range": ">1b",
+      "employee_range": ">5k",
+      "funding_stage": "Public",
+      "geography": "northamerica",
+      "gpt_archetype_id": "arch_5"
+    },
+    {
+      "id": "archetype:56f18b23b13806ae",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "saas",
+      "revenue_range": "50-200m",
+      "employee_range": "200-1k",
+      "funding_stage": "seriesb",
+      "geography": "Europe",
+      "gpt_archetype_id": "arch_6"
+    },
+    {
+      "id": "archetype:1ec3c519944ff77e",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "fintech",
+      "revenue_range": "200m-1b",
+      "employee_range": "1k-5k",
+      "funding_stage": "growth",
+      "geography": "northamerica",
+      "gpt_archetype_id": "arch_7"
+    },
+    {
+      "id": "archetype:6fecf083f6bcbe65",
+      "type": "archetype",
+      "node_type": "archetype",
+      "industry": "healthcare",
+      "revenue_range": "10-50m",
+      "employee_range": "50-200",
+      "funding_stage": "seriesa",
+      "geography": "middleeast&africa",
+      "gpt_archetype_id": "arch_8"
+    },
+    {
+      "id": "zmot_event:0d41c967c4d2a12f",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "customer dissatisfaction"
+    },
+    {
+      "id": "observable_moment:a0e33ebcbec6db57",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "app store reviews"
+    },
+    {
+      "id": "observable_moment:45837b651b21e1f5",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "investment forums"
+    },
+    {
+      "id": "keyword:51f36151ac48ab63",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "negative feedback"
+    },
+    {
+      "id": "keyword:17ff49049157c136",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "poor service"
+    },
+    {
+      "id": "zmot_event:89cda02305172da7",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "market entry \u2014 apac"
+    },
+    {
+      "id": "observable_moment:28b20e12b2def077",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "job postings in apac"
+    },
+    {
+      "id": "observable_moment:83346084b1c1e484",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "financial news"
+    },
+    {
+      "id": "observable_moment:f2dfb509cf6154a5",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry blogs"
+    },
+    {
+      "id": "keyword:9b863151a1fd246e",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "expansion"
+    },
+    {
+      "id": "keyword:14bdbda8a96184a6",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "new market"
+    },
+    {
+      "id": "keyword:2f26735c9769637e",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "apac launch"
+    },
+    {
+      "id": "zmot_event:fb6a1ccafd5777e2",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "pricing overhaul"
+    },
+    {
+      "id": "observable_moment:dab1dee260c8845d",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "audit reports"
+    },
+    {
+      "id": "keyword:0dde10fd219b7a75",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "price change"
+    },
+    {
+      "id": "zmot_event:011f9d69945e9b21",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "regulatory change"
+    },
+    {
+      "id": "observable_moment:09d6c0482bd0f61e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "government publications"
+    },
+    {
+      "id": "observable_moment:efff204358328c42",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "legal forums"
+    },
+    {
+      "id": "keyword:7e13d5d839c74256",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "compliance check"
+    },
+    {
+      "id": "keyword:7d835d45043165c6",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "new regulation"
+    },
+    {
+      "id": "keyword:6303a7e6284fe539",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "policy change"
+    },
+    {
+      "id": "zmot_event:5d6d04a1b4e8bdb4",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "compliance audit"
+    },
+    {
+      "id": "observable_moment:32515dca886f473e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "compliance news"
+    },
+    {
+      "id": "keyword:34f4fe7dd05d8807",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "audit"
+    },
+    {
+      "id": "zmot_event:ce394b9b00918868",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "merger announcement"
+    },
+    {
+      "id": "keyword:348a413c4f5556d0",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "merger"
+    },
+    {
+      "id": "keyword:d4339c19b5c060d6",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "acquisition"
+    },
+    {
+      "id": "zmot_event:88bd716a834d9085",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "funding round"
+    },
+    {
+      "id": "observable_moment:81e27f02cc83fd72",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "startup blogs"
+    },
+    {
+      "id": "keyword:8396df252f92b4be",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "investment"
+    },
+    {
+      "id": "keyword:390cb58a41abc0b5",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "capital raise"
+    },
+    {
+      "id": "keyword:6dbb67c71dbe012f",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "series funding"
+    },
+    {
+      "id": "zmot_event:91b16da9a6c75319",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "leadership change"
+    },
+    {
+      "id": "observable_moment:1be0d4421fbd646a",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "executive interviews"
+    },
+    {
+      "id": "keyword:b0489871dc66cc28",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "new ceo"
+    },
+    {
+      "id": "keyword:9796476ac2aa745e",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "leadership transition"
+    },
+    {
+      "id": "zmot_event:432cf15725c1af21",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "ipo readiness"
+    },
+    {
+      "id": "keyword:29425764d1aba1ba",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "stock listing"
+    },
+    {
+      "id": "keyword:2addcc042d75563e",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "ipo"
+    },
+    {
+      "id": "observable_moment:6d2ceb1e398b715e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry forums"
+    },
+    {
+      "id": "keyword:01a2add2ae0abbe8",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "negative review"
+    },
+    {
+      "id": "keyword:733ccc73bed34197",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "dissatisfied customer"
+    },
+    {
+      "id": "observable_moment:dd177965e766499a",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry news"
+    },
+    {
+      "id": "keyword:5e7b65fc2de46539",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "series a"
+    },
+    {
+      "id": "keyword:794ff2773fbf2427",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "APAC region"
+    },
+    {
+      "id": "observable_moment:da7e093a401ed3cb",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "customer feedback"
+    },
+    {
+      "id": "keyword:df5aebba45515279",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "new pricing"
+    },
+    {
+      "id": "observable_moment:478d0d0c4719a619",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "legal bulletins"
+    },
+    {
+      "id": "keyword:5d33567cf52d72a3",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "regulation update"
+    },
+    {
+      "id": "keyword:890f90c67df12cdc",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "new law"
+    },
+    {
+      "id": "observable_moment:a00fe852495b4e01",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "company filings"
+    },
+    {
+      "id": "observable_moment:179b51ea496f1833",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "market analysis"
+    },
+    {
+      "id": "zmot_event:27315953d896199d",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "competitive pressure"
+    },
+    {
+      "id": "keyword:8147164aae32109b",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "competition"
+    },
+    {
+      "id": "keyword:99b39d490c35e3f4",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "industry rivalry"
+    },
+    {
+      "id": "zmot_event:f43f7810d93923a8",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "service quality decline"
+    },
+    {
+      "id": "keyword:efc6ff6a368b675d",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "unhappy customer"
+    },
+    {
+      "id": "observable_moment:ba8082ee6acfdb67",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "press releases"
+    },
+    {
+      "id": "observable_moment:44eacba2b39d5b5b",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry conferences"
+    },
+    {
+      "id": "keyword:6f9a924d9e07a41e",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "compliance"
+    },
+    {
+      "id": "observable_moment:b79137ca277c5f7e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "stock market analysis"
+    },
+    {
+      "id": "keyword:257578ca9fa499f4",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "consolidation"
+    },
+    {
+      "id": "keyword:c30efd654ddef243",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "fundraising"
+    },
+    {
+      "id": "keyword:c4c2d03d6144c776",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "capital injection"
+    },
+    {
+      "id": "observable_moment:5e9091e5596f4594",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "customer emails"
+    },
+    {
+      "id": "keyword:4dff98dd6f08c425",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "rate adjustment"
+    },
+    {
+      "id": "keyword:1c51fb7a7816cc66",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "rival"
+    },
+    {
+      "id": "observable_moment:b249a4ec6f859e88",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "support ticket volume"
+    },
+    {
+      "id": "observable_moment:17386fcf7afdffc4",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "social media mentions"
+    },
+    {
+      "id": "keyword:0d04cd47a651d53d",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "quality drop"
+    },
+    {
+      "id": "keyword:c835a0f24cb18e24",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "support problem"
+    },
+    {
+      "id": "keyword:c196d051ae474e36",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "apac"
+    },
+    {
+      "id": "observable_moment:8c03b0a1f42cbe0e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "legal news sites"
+    },
+    {
+      "id": "observable_moment:324d3b55b7c9740e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "customer newsletters"
+    },
+    {
+      "id": "keyword:d80ba6d921f08b7f",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "regulation"
+    },
+    {
+      "id": "keyword:b0501942a269ad7d",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "policy update"
+    },
+    {
+      "id": "zmot_event:fd9e896c91a00890",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "system integration"
+    },
+    {
+      "id": "observable_moment:897838a9baba1a6d",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "partnership announcements"
+    },
+    {
+      "id": "observable_moment:e215476126322672",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "integration case studies"
+    },
+    {
+      "id": "observable_moment:aafef9d4986f7df2",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "tech blogs"
+    },
+    {
+      "id": "keyword:7aa672635912bb83",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "integration"
+    },
+    {
+      "id": "keyword:e9b515388a9c9db8",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "system update"
+    },
+    {
+      "id": "keyword:06bbb527d8d91827",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "platform compatibility"
+    },
+    {
+      "id": "observable_moment:ce047d1ce6a55161",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "investment news"
+    },
+    {
+      "id": "observable_moment:57a05374ce3b057e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "startup databases"
+    },
+    {
+      "id": "observable_moment:38e6ae664b996e40",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "market analysis reports"
+    },
+    {
+      "id": "keyword:2dc50892596dcea0",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "industry leader"
+    },
+    {
+      "id": "keyword:b33768831ccb52c4",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "pricing change"
+    },
+    {
+      "id": "observable_moment:95400ba8e6c5d1b0",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "press releases announcing funding"
+    },
+    {
+      "id": "observable_moment:da359b2c74ab4e99",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "linkedin profile updates of senior management"
+    },
+    {
+      "id": "observable_moment:9902041b24e1f5b6",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry news articles on executive changes"
+    },
+    {
+      "id": "keyword:2b8bf774cfbcaae1",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "executive appointment"
+    },
+    {
+      "id": "observable_moment:83536bd3fbe2bc64",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "negative reviews on software review sites"
+    },
+    {
+      "id": "observable_moment:6fd12d921137366a",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "customer complaints on social media"
+    },
+    {
+      "id": "observable_moment:6538f0369b2ec090",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "support ticket volume increase"
+    },
+    {
+      "id": "observable_moment:d5bc27658d80843c",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "government publications on new regulations"
+    },
+    {
+      "id": "observable_moment:4468701ce54984b3",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry webinars on compliance updates"
+    },
+    {
+      "id": "observable_moment:73b5c2b33e5bcf8e",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "legal firm newsletters"
+    },
+    {
+      "id": "keyword:9605e6e5e84e507a",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "compliance update"
+    },
+    {
+      "id": "zmot_event:d68b1d0254a06cb1",
+      "type": "zmot_event",
+      "node_type": "zmot_event",
+      "event": "market_expansion"
+    },
+    {
+      "id": "observable_moment:f88e8213970f120c",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "job postings for sales roles in new regions"
+    },
+    {
+      "id": "observable_moment:dc7b1beffa8cc622",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "industry reports on market growth"
+    },
+    {
+      "id": "keyword:d4bdeee7dd9a7a4b",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "new market entry"
+    },
+    {
+      "id": "keyword:8ccd632e7e98c099",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "geographic growth"
+    },
+    {
+      "id": "observable_moment:56f441d33947f854",
+      "type": "observable_moment",
+      "node_type": "observable_moment",
+      "text": "startup news websites"
+    },
+    {
+      "id": "keyword:b39a4b5189a50099",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "investment round"
+    },
+    {
+      "id": "keyword:0e50518e0666a455",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "feature request"
+    },
+    {
+      "id": "keyword:82d9b5af5c6df59c",
+      "type": "keyword",
+      "node_type": "keyword",
+      "text": "funding"
+    }
+  ],
+  "edges": [
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:ddcffb62ec34b2da",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:251f0cdee7cf1afe",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:d2f4d1a57219b1b7",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:d07a27ec7240d167",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:5d49573d2feb1bdb",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:c59319863f7c69bc",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:ba720a2e64ce5ae1",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "product:d74a7365c0b9f1ea",
+      "target": "capability:bada94d63be26a9b",
+      "type": "offers",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ddcffb62ec34b2da",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:251f0cdee7cf1afe",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d2f4d1a57219b1b7",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:d07a27ec7240d167",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:5d49573d2feb1bdb",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:c59319863f7c69bc",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "capability:ba720a2e64ce5ae1",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:70987863e11a5895",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:c667f9f43a8a8b2a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:fed78b27abe281c9",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:e59425f979ae6285",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:1351f4793a6b0e53",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:e4c62c053daf8ede",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:9a9cba75bd0ebb1a",
+      "type": "solves",
+      "weight": 0.0
+    },
+    {
+      "source": "capability:bada94d63be26a9b",
+      "target": "pain:7d3e7fc860c9fe4f",
+      "type": "solves",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:70987863e11a5895",
+      "target": "perceived_metric:c7eb78b46314b0ab",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:70987863e11a5895",
+      "target": "perceived_metric:61c17f59254fa497",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:70987863e11a5895",
+      "target": "pain_trigger:0241eb04d40699e2",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:70987863e11a5895",
+      "target": "pain_trigger:d95b0a1e468a5233",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:70987863e11a5895",
+      "target": "pain_trigger:e1b74ac50faad46b",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:70987863e11a5895",
+      "target": "job:179e30b169cd44bf",
+      "type": "felt_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:88bd716a834d9085",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.85
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:91b16da9a6c75319",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:432cf15725c1af21",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.75
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "accelerated_by",
+      "weight": 0.7,
+      "boost_score": 0.7,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:27315953d896199d",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:89cda02305172da7",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:d68b1d0254a06cb1",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.75
+    },
+    {
+      "source": "pain_trigger:0241eb04d40699e2",
+      "target": "zmot_event:ce394b9b00918868",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.75
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:d95b0a1e468a5233",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain_trigger:e1b74ac50faad46b",
+      "target": "zmot_event:88bd716a834d9085",
+      "type": "accelerated_by",
+      "weight": 0.75,
+      "boost_score": 0.75,
+      "match_score": 0.8
+    },
+    {
+      "source": "job:179e30b169cd44bf",
+      "target": "persona:352cf6ccca62af39",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "job:179e30b169cd44bf",
+      "target": "persona:b16659185e556b5f",
+      "type": "performed_by",
+      "weight": 0.9
+    },
+    {
+      "source": "job:179e30b169cd44bf",
+      "target": "persona:7c7922faf77cb947",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "job:179e30b169cd44bf",
+      "target": "persona:abf290edebe173ce",
+      "type": "performed_by",
+      "weight": 0.6
+    },
+    {
+      "source": "job:179e30b169cd44bf",
+      "target": "pain:daa4244f6d497ca4",
+      "type": "solves",
+      "weight": 0.7
+    },
+    {
+      "source": "job:179e30b169cd44bf",
+      "target": "persona:f396023a2996c8d7",
+      "type": "performed_by",
+      "weight": 0.9
+    },
+    {
+      "source": "pain:c667f9f43a8a8b2a",
+      "target": "perceived_metric:26bc42d8ca45f913",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:c667f9f43a8a8b2a",
+      "target": "perceived_metric:d45ca2a6269ab8a9",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:c667f9f43a8a8b2a",
+      "target": "pain_trigger:e1b74ac50faad46b",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:c667f9f43a8a8b2a",
+      "target": "pain_trigger:3fabae62b295d564",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:c667f9f43a8a8b2a",
+      "target": "pain_trigger:c35387ea65d0419b",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:c667f9f43a8a8b2a",
+      "target": "job:42ebab7fba17f51b",
+      "type": "felt_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "zmot_event:fd9e896c91a00890",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.9
+    },
+    {
+      "source": "pain_trigger:3fabae62b295d564",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "zmot_event:27315953d896199d",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.85
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "zmot_event:f43f7810d93923a8",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:c35387ea65d0419b",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.7
+    },
+    {
+      "source": "job:42ebab7fba17f51b",
+      "target": "persona:1ad7186d48b81f99",
+      "type": "performed_by",
+      "weight": 0.7
+    },
+    {
+      "source": "job:42ebab7fba17f51b",
+      "target": "persona:f396023a2996c8d7",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "pain:fed78b27abe281c9",
+      "target": "perceived_metric:c7eb78b46314b0ab",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:fed78b27abe281c9",
+      "target": "perceived_metric:f84da7713b9d7c72",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:fed78b27abe281c9",
+      "target": "pain_trigger:e0ca11825b82f310",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:fed78b27abe281c9",
+      "target": "pain_trigger:3fabae62b295d564",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:fed78b27abe281c9",
+      "target": "pain_trigger:b1400fa778e3e97e",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:fed78b27abe281c9",
+      "target": "job:31224696946182c7",
+      "type": "felt_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "zmot_event:5d6d04a1b4e8bdb4",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.75
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "zmot_event:ce394b9b00918868",
+      "type": "accelerated_by",
+      "weight": 0.75,
+      "boost_score": 0.75,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain_trigger:e0ca11825b82f310",
+      "target": "zmot_event:fd9e896c91a00890",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:b1400fa778e3e97e",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "job:31224696946182c7",
+      "target": "persona:352cf6ccca62af39",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "job:31224696946182c7",
+      "target": "persona:765857fd4cef3aae",
+      "type": "performed_by",
+      "weight": 0.9
+    },
+    {
+      "source": "job:31224696946182c7",
+      "target": "persona:a840ae46503166fd",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "job:31224696946182c7",
+      "target": "pain:d2e704ebe8c0fe8a",
+      "type": "solves",
+      "weight": 0.9
+    },
+    {
+      "source": "pain:e59425f979ae6285",
+      "target": "perceived_metric:e18ee6823b429a36",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e59425f979ae6285",
+      "target": "perceived_metric:e02bfeb4466a2655",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e59425f979ae6285",
+      "target": "pain_trigger:d95b0a1e468a5233",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e59425f979ae6285",
+      "target": "pain_trigger:7d631e96b308da06",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e59425f979ae6285",
+      "target": "pain_trigger:a40825ab947984eb",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e59425f979ae6285",
+      "target": "job:179e30b169cd44bf",
+      "type": "felt_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.75
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "zmot_event:89cda02305172da7",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "zmot_event:f43f7810d93923a8",
+      "type": "accelerated_by",
+      "weight": 0.85,
+      "boost_score": 0.85,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:7d631e96b308da06",
+      "target": "zmot_event:91b16da9a6c75319",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "accelerated_by",
+      "weight": 0.9,
+      "boost_score": 0.9,
+      "match_score": 0.8
+    },
+    {
+      "source": "pain_trigger:a40825ab947984eb",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "accelerated_by",
+      "weight": 0.8,
+      "boost_score": 0.8,
+      "match_score": 0.7
+    },
+    {
+      "source": "pain:daa4244f6d497ca4",
+      "target": "perceived_metric:28749f913c906473",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:daa4244f6d497ca4",
+      "target": "perceived_metric:844496fec312a24c",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:daa4244f6d497ca4",
+      "target": "pain_trigger:0241eb04d40699e2",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:daa4244f6d497ca4",
+      "target": "pain_trigger:b1400fa778e3e97e",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:1351f4793a6b0e53",
+      "target": "perceived_metric:ee385dc38400434a",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:1351f4793a6b0e53",
+      "target": "perceived_metric:6d9e379f356bc569",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:1351f4793a6b0e53",
+      "target": "pain_trigger:3fabae62b295d564",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:1351f4793a6b0e53",
+      "target": "pain_trigger:8713051a70390c94",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:1351f4793a6b0e53",
+      "target": "pain_trigger:04bd7d0154fe5fdb",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:1351f4793a6b0e53",
+      "target": "job:63f413e26b61bf87",
+      "type": "felt_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:8713051a70390c94",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:04bd7d0154fe5fdb",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "job:63f413e26b61bf87",
+      "target": "persona:a023044052f70ae6",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "job:63f413e26b61bf87",
+      "target": "persona:f6e9d257ec86e4ad",
+      "type": "performed_by",
+      "weight": 0.7
+    },
+    {
+      "source": "pain:e4c62c053daf8ede",
+      "target": "perceived_metric:8fac95afde8d1fef",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e4c62c053daf8ede",
+      "target": "perceived_metric:285d384b41c06910",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e4c62c053daf8ede",
+      "target": "pain_trigger:c35387ea65d0419b",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e4c62c053daf8ede",
+      "target": "pain_trigger:33bf5df0df6a59dd",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:e4c62c053daf8ede",
+      "target": "job:179e30b169cd44bf",
+      "type": "felt_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:33bf5df0df6a59dd",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain:9a9cba75bd0ebb1a",
+      "target": "perceived_metric:409ae8b859cb4db1",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:9a9cba75bd0ebb1a",
+      "target": "perceived_metric:c1a2d1a838a6fe1e",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:9a9cba75bd0ebb1a",
+      "target": "pain_trigger:3fabae62b295d564",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:9a9cba75bd0ebb1a",
+      "target": "pain_trigger:ea0217c6d29afdbb",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:9a9cba75bd0ebb1a",
+      "target": "pain_trigger:e1b74ac50faad46b",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:9a9cba75bd0ebb1a",
+      "target": "job:31224696946182c7",
+      "type": "felt_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:ea0217c6d29afdbb",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain:d2e704ebe8c0fe8a",
+      "target": "perceived_metric:409ae8b859cb4db1",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:d2e704ebe8c0fe8a",
+      "target": "perceived_metric:7b9e531300a337d5",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:d2e704ebe8c0fe8a",
+      "target": "pain_trigger:ea0217c6d29afdbb",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:d2e704ebe8c0fe8a",
+      "target": "pain_trigger:8713051a70390c94",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:7d3e7fc860c9fe4f",
+      "target": "perceived_metric:58b0e70cad70f2ec",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:7d3e7fc860c9fe4f",
+      "target": "perceived_metric:ccef043bdc2a4e71",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:7d3e7fc860c9fe4f",
+      "target": "pain_trigger:c0c50871eb0e4024",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:7d3e7fc860c9fe4f",
+      "target": "pain_trigger:04bd7d0154fe5fdb",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:7d3e7fc860c9fe4f",
+      "target": "pain_trigger:3ea61882623921bc",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:7d3e7fc860c9fe4f",
+      "target": "job:6b91f30a3402bfc4",
+      "type": "felt_in",
+      "weight": 0.8
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.9
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:c0c50871eb0e4024",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.5
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.1
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.6
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:3ea61882623921bc",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "job:6b91f30a3402bfc4",
+      "target": "persona:4699b3c1f0276889",
+      "type": "performed_by",
+      "weight": 0.8
+    },
+    {
+      "source": "job:6b91f30a3402bfc4",
+      "target": "persona:8f28b67c110cf7d8",
+      "type": "performed_by",
+      "weight": 0.7
+    },
+    {
+      "source": "job:6b91f30a3402bfc4",
+      "target": "pain:3f3ee46101c533f4",
+      "type": "solves",
+      "weight": 0.8
+    },
+    {
+      "source": "pain:3f3ee46101c533f4",
+      "target": "perceived_metric:cdecb38aa7caa7ab",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:3f3ee46101c533f4",
+      "target": "perceived_metric:f75bf35be50ff429",
+      "type": "expressed_as",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:3f3ee46101c533f4",
+      "target": "pain_trigger:049862ba5a7f4187",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain:3f3ee46101c533f4",
+      "target": "pain_trigger:c0c50871eb0e4024",
+      "type": "triggered_by",
+      "weight": 1.0
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:a82898bb70233573",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:3eac8c2f2f902c5e",
+      "type": "prevalent_in",
+      "weight": 0.2
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:5198c65e0d511b10",
+      "type": "prevalent_in",
+      "weight": 0.7
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:5fed65699b76890b",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:15a5ccac58372514",
+      "type": "prevalent_in",
+      "weight": 0.4
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:56f18b23b13806ae",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:1ec3c519944ff77e",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "pain_trigger:049862ba5a7f4187",
+      "target": "archetype:6fecf083f6bcbe65",
+      "type": "prevalent_in",
+      "weight": 0.3
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:88bd716a834d9085",
+      "type": "relevant_event",
+      "weight": 0.85,
+      "match_score": 0.85
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:91b16da9a6c75319",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:432cf15725c1af21",
+      "type": "relevant_event",
+      "weight": 0.75,
+      "match_score": 0.75
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:27315953d896199d",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:d68b1d0254a06cb1",
+      "type": "relevant_event",
+      "weight": 0.75,
+      "match_score": 0.75
+    },
+    {
+      "source": "archetype:a82898bb70233573",
+      "target": "zmot_event:ce394b9b00918868",
+      "type": "relevant_event",
+      "weight": 0.75,
+      "match_score": 0.75
+    },
+    {
+      "source": "archetype:3eac8c2f2f902c5e",
+      "target": "zmot_event:fd9e896c91a00890",
+      "type": "relevant_event",
+      "weight": 0.9,
+      "match_score": 0.9
+    },
+    {
+      "source": "archetype:3eac8c2f2f902c5e",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:5198c65e0d511b10",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:5198c65e0d511b10",
+      "target": "zmot_event:5d6d04a1b4e8bdb4",
+      "type": "relevant_event",
+      "weight": 0.75,
+      "match_score": 0.75
+    },
+    {
+      "source": "archetype:5198c65e0d511b10",
+      "target": "zmot_event:ce394b9b00918868",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:5198c65e0d511b10",
+      "target": "zmot_event:fd9e896c91a00890",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:5fed65699b76890b",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:5fed65699b76890b",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:15a5ccac58372514",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "relevant_event",
+      "weight": 0.75,
+      "match_score": 0.75
+    },
+    {
+      "source": "archetype:15a5ccac58372514",
+      "target": "zmot_event:89cda02305172da7",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:15a5ccac58372514",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:15a5ccac58372514",
+      "target": "zmot_event:f43f7810d93923a8",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:15a5ccac58372514",
+      "target": "zmot_event:91b16da9a6c75319",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:56f18b23b13806ae",
+      "target": "zmot_event:27315953d896199d",
+      "type": "relevant_event",
+      "weight": 0.85,
+      "match_score": 0.85
+    },
+    {
+      "source": "archetype:56f18b23b13806ae",
+      "target": "zmot_event:f43f7810d93923a8",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:56f18b23b13806ae",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:56f18b23b13806ae",
+      "target": "zmot_event:0d41c967c4d2a12f",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:1ec3c519944ff77e",
+      "target": "zmot_event:fb6a1ccafd5777e2",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:1ec3c519944ff77e",
+      "target": "zmot_event:011f9d69945e9b21",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:1ec3c519944ff77e",
+      "target": "zmot_event:88bd716a834d9085",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "archetype:6fecf083f6bcbe65",
+      "target": "zmot_event:89cda02305172da7",
+      "type": "relevant_event",
+      "weight": 0.7,
+      "match_score": 0.7
+    },
+    {
+      "source": "archetype:6fecf083f6bcbe65",
+      "target": "zmot_event:88bd716a834d9085",
+      "type": "relevant_event",
+      "weight": 0.8,
+      "match_score": 0.8
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:a0e33ebcbec6db57",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:45837b651b21e1f5",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "keyword:51f36151ac48ab63",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "keyword:17ff49049157c136",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:6d2ceb1e398b715e",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "keyword:01a2add2ae0abbe8",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "keyword:733ccc73bed34197",
+      "type": "associated_with",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "keyword:efc6ff6a368b675d",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:83536bd3fbe2bc64",
+      "type": "observed_in",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:6fd12d921137366a",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:6538f0369b2ec090",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "observable_moment:efff204358328c42",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:0d41c967c4d2a12f",
+      "target": "keyword:0e50518e0666a455",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "observable_moment:28b20e12b2def077",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "observable_moment:83346084b1c1e484",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "observable_moment:f2dfb509cf6154a5",
+      "type": "observed_in",
+      "weight": 0.65
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "keyword:9b863151a1fd246e",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "keyword:14bdbda8a96184a6",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "keyword:2f26735c9769637e",
+      "type": "associated_with",
+      "weight": 0.65
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "observable_moment:dd177965e766499a",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "keyword:5e7b65fc2de46539",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "keyword:794ff2773fbf2427",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "observable_moment:ba8082ee6acfdb67",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "observable_moment:44eacba2b39d5b5b",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:89cda02305172da7",
+      "target": "keyword:c196d051ae474e36",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:83346084b1c1e484",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:dab1dee260c8845d",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:f2dfb509cf6154a5",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "keyword:0dde10fd219b7a75",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:dd177965e766499a",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:da7e093a401ed3cb",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "keyword:df5aebba45515279",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:5e9091e5596f4594",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:81e27f02cc83fd72",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "keyword:4dff98dd6f08c425",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:ba8082ee6acfdb67",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:324d3b55b7c9740e",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "observable_moment:6d2ceb1e398b715e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fb6a1ccafd5777e2",
+      "target": "keyword:b33768831ccb52c4",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:09d6c0482bd0f61e",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:efff204358328c42",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:f2dfb509cf6154a5",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:7e13d5d839c74256",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:7d835d45043165c6",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:6303a7e6284fe539",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:dd177965e766499a",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:478d0d0c4719a619",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:5d33567cf52d72a3",
+      "type": "associated_with",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:890f90c67df12cdc",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:6f9a924d9e07a41e",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:8c03b0a1f42cbe0e",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:324d3b55b7c9740e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:d80ba6d921f08b7f",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:b0501942a269ad7d",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:d5bc27658d80843c",
+      "type": "observed_in",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:4468701ce54984b3",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "observable_moment:73b5c2b33e5bcf8e",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:011f9d69945e9b21",
+      "target": "keyword:9605e6e5e84e507a",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "observable_moment:dab1dee260c8845d",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "observable_moment:32515dca886f473e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "observable_moment:efff204358328c42",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "keyword:34f4fe7dd05d8807",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "keyword:7e13d5d839c74256",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "keyword:7d835d45043165c6",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "observable_moment:a00fe852495b4e01",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "observable_moment:6d2ceb1e398b715e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "keyword:5d33567cf52d72a3",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "keyword:6f9a924d9e07a41e",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:5d6d04a1b4e8bdb4",
+      "target": "keyword:01a2add2ae0abbe8",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:83346084b1c1e484",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:f2dfb509cf6154a5",
+      "type": "observed_in",
+      "weight": 0.65
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "keyword:348a413c4f5556d0",
+      "type": "associated_with",
+      "weight": 0.65
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "keyword:d4339c19b5c060d6",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:dd177965e766499a",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:dab1dee260c8845d",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:179b51ea496f1833",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:ba8082ee6acfdb67",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "observable_moment:b79137ca277c5f7e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:ce394b9b00918868",
+      "target": "keyword:257578ca9fa499f4",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:83346084b1c1e484",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:81e27f02cc83fd72",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:dab1dee260c8845d",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:8396df252f92b4be",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:390cb58a41abc0b5",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:6dbb67c71dbe012f",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:dd177965e766499a",
+      "type": "observed_in",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:6d2ceb1e398b715e",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:14bdbda8a96184a6",
+      "type": "associated_with",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:5e7b65fc2de46539",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:c30efd654ddef243",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:c4c2d03d6144c776",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:ba8082ee6acfdb67",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:ce047d1ce6a55161",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:57a05374ce3b057e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:95400ba8e6c5d1b0",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:56f441d33947f854",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:b39a4b5189a50099",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "observable_moment:efff204358328c42",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:88bd716a834d9085",
+      "target": "keyword:82d9b5af5c6df59c",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "observable_moment:83346084b1c1e484",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "observable_moment:1be0d4421fbd646a",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "keyword:b0489871dc66cc28",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "keyword:6303a7e6284fe539",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "keyword:9796476ac2aa745e",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "observable_moment:95400ba8e6c5d1b0",
+      "type": "observed_in",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "observable_moment:da359b2c74ab4e99",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "observable_moment:9902041b24e1f5b6",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:91b16da9a6c75319",
+      "target": "keyword:2b8bf774cfbcaae1",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:432cf15725c1af21",
+      "target": "observable_moment:dab1dee260c8845d",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:432cf15725c1af21",
+      "target": "observable_moment:83346084b1c1e484",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:432cf15725c1af21",
+      "target": "observable_moment:45837b651b21e1f5",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:432cf15725c1af21",
+      "target": "keyword:14bdbda8a96184a6",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:432cf15725c1af21",
+      "target": "keyword:29425764d1aba1ba",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:432cf15725c1af21",
+      "target": "keyword:2addcc042d75563e",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:dab1dee260c8845d",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:179b51ea496f1833",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:dd177965e766499a",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "keyword:8147164aae32109b",
+      "type": "associated_with",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "keyword:14bdbda8a96184a6",
+      "type": "associated_with",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "keyword:99b39d490c35e3f4",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:b79137ca277c5f7e",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:ba8082ee6acfdb67",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:6d2ceb1e398b715e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "keyword:1c51fb7a7816cc66",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "observable_moment:38e6ae664b996e40",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:27315953d896199d",
+      "target": "keyword:2dc50892596dcea0",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "observable_moment:a0e33ebcbec6db57",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "observable_moment:6d2ceb1e398b715e",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "keyword:51f36151ac48ab63",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "keyword:17ff49049157c136",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "keyword:efc6ff6a368b675d",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "observable_moment:5e9091e5596f4594",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "observable_moment:b249a4ec6f859e88",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "observable_moment:17386fcf7afdffc4",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "keyword:0d04cd47a651d53d",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:f43f7810d93923a8",
+      "target": "keyword:c835a0f24cb18e24",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:fd9e896c91a00890",
+      "target": "observable_moment:897838a9baba1a6d",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:fd9e896c91a00890",
+      "target": "observable_moment:e215476126322672",
+      "type": "observed_in",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fd9e896c91a00890",
+      "target": "observable_moment:aafef9d4986f7df2",
+      "type": "observed_in",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:fd9e896c91a00890",
+      "target": "keyword:7aa672635912bb83",
+      "type": "associated_with",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:fd9e896c91a00890",
+      "target": "keyword:e9b515388a9c9db8",
+      "type": "associated_with",
+      "weight": 0.75
+    },
+    {
+      "source": "zmot_event:fd9e896c91a00890",
+      "target": "keyword:06bbb527d8d91827",
+      "type": "associated_with",
+      "weight": 0.7
+    },
+    {
+      "source": "zmot_event:d68b1d0254a06cb1",
+      "target": "observable_moment:f88e8213970f120c",
+      "type": "observed_in",
+      "weight": 0.85
+    },
+    {
+      "source": "zmot_event:d68b1d0254a06cb1",
+      "target": "observable_moment:95400ba8e6c5d1b0",
+      "type": "observed_in",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:d68b1d0254a06cb1",
+      "target": "observable_moment:dc7b1beffa8cc622",
+      "type": "observed_in",
+      "weight": 0.8
+    },
+    {
+      "source": "zmot_event:d68b1d0254a06cb1",
+      "target": "keyword:d4bdeee7dd9a7a4b",
+      "type": "associated_with",
+      "weight": 0.9
+    },
+    {
+      "source": "zmot_event:d68b1d0254a06cb1",
+      "target": "keyword:8ccd632e7e98c099",
+      "type": "associated_with",
+      "weight": 0.8
+    }
+  ]
+}

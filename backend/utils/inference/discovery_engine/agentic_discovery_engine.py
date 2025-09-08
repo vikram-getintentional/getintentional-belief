@@ -86,6 +86,7 @@ def _gather_pain_contexts(G, pain_ids: List[str]) -> List[Dict[str, Any]]:
             continue
         # solving jobs
         jobs = []
+        personas = []  # accumulate personas across all jobs for this pain
         for jid in get_source_nodes_by_target_and_type(G, pid, "solves") or []:
             jn = get_node_by_id(G, jid)
             if not jn: 
@@ -101,7 +102,6 @@ def _gather_pain_contexts(G, pain_ids: List[str]) -> List[Dict[str, Any]]:
             })
 
             # personas (via job -> performed_by)
-            personas = []
             for per_id in get_target_nodes_by_source_and_type(G, jid, "performed_by") or []:
                 per = get_node_by_id(G, per_id)
                 if not per: 
@@ -537,7 +537,14 @@ def pain_source_inference(G, pain_ids: list[str], context, enrich_pains: bool = 
     for row in rows:
         print("Processing row:", row)
         pid = row.get("pain_id")
-        src = (row.get("pain_source") or "").strip().lower()
+        raw_src = row.get("pain_source")
+        if isinstance(raw_src, str):
+            src = raw_src.strip().lower()
+        elif isinstance(raw_src, dict):
+            v = raw_src.get("pain_source") or raw_src.get("source") or raw_src.get("value") or ""
+            src = v.strip().lower() if isinstance(v, str) else ""
+        else:
+            src = ""
         if pid and src in {"terminal", "non-terminal"}:
             n = get_node_by_id(G, pid)
             if n is not None:

@@ -108,12 +108,37 @@ def _upsert_edge(
         first_key = next(iter(edata.keys()))
         edata = edata[first_key]
     edata["type"] = type
-    edata["weight"] = float(weight)
+    # Safely coerce weight to float; default to 0.0 for None/invalid
+    try:
+        edata["weight"] = float(0.0 if weight is None else weight)
+    except Exception:
+        edata["weight"] = 0.0
     if attrs:
         for k, v in attrs.items():
             if v is None:
                 continue
             edata[k] = v
+
+
+def _to_text(value: Any, preferred_key: Optional[str] = None) -> str:
+    """Safely coerce various JSON shapes to a trimmed string.
+
+    - If value is a string, returns value.strip().
+    - If value is a dict, tries preferred_key first (if provided and is a string),
+      else tries common keys like "text", "name", "value", "label", falling back to "".
+    - Otherwise returns "".
+    """
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        if preferred_key and isinstance(value.get(preferred_key), str):
+            return value.get(preferred_key, "").strip()
+        for k in ("text", "name", "value", "label"):
+            v = value.get(k)
+            if isinstance(v, str):
+                return v.strip()
+        return ""
+    return ""
 
 
 # canonical node constructors (use canonical strings/fields)
@@ -215,13 +240,13 @@ class CanonManager:
         self._current_product_id = product_id
         for cap in hop0_json or []:
             for p in cap.get("pains", []) or []:
-                self.buf["pain"].add(p.get("pain","").strip())
+                self.buf["pain"].add(_to_text(p.get("pain"), "pain"))
                 for m in p.get("perceived_metrics", []) or []:
-                    self.buf["perceived_metric"].add(m.strip())
+                    self.buf["perceived_metric"].add(_to_text(m, "metric"))
                 for t in p.get("pain_triggers", []) or []:
-                    self.buf["pain_trigger"].add(t.strip())
+                    self.buf["pain_trigger"].add(_to_text(t, "attribute"))
                 for j in p.get("felt_in_jobs", []) or []:
-                    self.buf["job"].add(j.get("job_to_be_done","").strip())
+                    self.buf["job"].add(_to_text(j.get("job_to_be_done")))
                     for pr in j.get("personas", []) or []:
                         self.buf["persona"].append({
                             "title": pr.get("title",""),
@@ -229,11 +254,11 @@ class CanonManager:
                             "seniority": pr.get("seniority","")
                         })
                     for sp in j.get("solving_pains", []) or []:
-                        self.buf["pain"].add(sp.get("pain","").strip())
+                        self.buf["pain"].add(_to_text(sp.get("pain"), "pain"))
                         for sm in sp.get("perceived_metrics", []) or []:
-                            self.buf["perceived_metric"].add(sm.strip())
+                            self.buf["perceived_metric"].add(_to_text(sm, "metric"))
                         for st in sp.get("pain_triggers", []) or []:
-                            self.buf["pain_trigger"].add(st.strip())
+                            self.buf["pain_trigger"].add(_to_text(st, "attribute"))
         self.plan.append(("hop0", {"hop0_json": hop0_json, "capability_ids": capability_ids, "product_id": product_id}))
 
     def ingest_hop_plus(self, gpt_outputs: List[Dict[str, Any]], product_id: str):
@@ -242,7 +267,7 @@ class CanonManager:
         self._current_product_id = product_id
         for item in gpt_outputs or []:
             for sj in item.get("felt_in_jobs", []) or []:
-                self.buf["job"].add(sj.get("job_to_be_done","").strip())
+                self.buf["job"].add(_to_text(sj.get("job_to_be_done")))
                 for pr in sj.get("personas", []) or []:
                     self.buf["persona"].append({
                             "title": pr.get("title",""),
@@ -250,11 +275,11 @@ class CanonManager:
                             "seniority": pr.get("seniority","")
                         })
                 for dp in sj.get("solving_pains", []) or []:
-                    self.buf["pain"].add(dp.get("pain","").strip())
+                    self.buf["pain"].add(_to_text(dp.get("pain"), "pain"))
                     for m in dp.get("perceived_metrics", []) or []:
-                        self.buf["perceived_metric"].add(m.strip())
+                        self.buf["perceived_metric"].add(_to_text(m, "metric"))
                     for t in dp.get("pain_triggers", []) or []:
-                        self.buf["pain_trigger"].add(t.strip())
+                        self.buf["pain_trigger"].add(_to_text(t, "attribute"))
         self.plan.append(("hop_plus", {"gpt_outputs": gpt_outputs, "product_id": product_id}))
 
     def ingest_zmot(self, results: Dict[str, Any], product_id: str):
@@ -281,13 +306,13 @@ class CanonManager:
 
         for item in rows:
             for z in item.get("zmot_triggers", []) or []:
-                ev = (z.get("trigger_event") or "").strip()
+                ev = _to_text(z.get("trigger_event"), "trigger_event")
                 if ev: self.buf["zmot_event"].add(ev)
                 for om in z.get("observable_moments", []) or []:
-                    omt = (om.get("observable_moment") or "").strip()
+                    omt = _to_text(om.get("observable_moment"), "observable_moment")
                     if omt: self.buf["observable_moment"].add(omt)
                 for kw in z.get("trigger_keywords", []) or []:
-                    k = (kw.get("keyword") or "").strip()
+                    k = _to_text(kw.get("keyword"), "keyword")
                     if k: self.buf["keyword"].add(k)
 
         # Enqueue ONE op that the emitter understands
@@ -398,7 +423,7 @@ class CanonManager:
             for p in cap_obj.get("pains", []) or []:
                 print("Processing pains...")
                 print("pain content:", p, "of type:", type(p))
-                pain_raw = p.get("pain","").strip()
+                pain_raw = _to_text(p.get("pain"), "pain")
                 pain_can = self.canon["pain"].get(pain_raw, {"canonical_label": pain_raw})
                 if isinstance(pain_can, dict):
                     pain_id = _pain(G, pain_can.get("canonical_label", pain_raw), p.get("pain_source"))
@@ -414,14 +439,16 @@ class CanonManager:
 
                 for metric in p.get("perceived_metrics", []) or []:
                     print("Processing perceived metrics...")
-                    can_metric = self.canon["perceived_metric"].get(metric.strip(), metric.strip())
+                    metric_txt = _to_text(metric, "metric")
+                    can_metric = self.canon["perceived_metric"].get(metric_txt, metric_txt)
                     m_id = _metric(G, can_metric)
                     _upsert_edge(G, pain_id, "expressed_as", m_id)
                 print("Pain-Metric Nodes and Edges Added")
 
                 for attr in p.get("pain_triggers", []) or []:
                     print("Processing pain triggers...")
-                    can_attr = self.canon["pain_trigger"].get(attr.strip(), attr.strip())
+                    attr_txt = _to_text(attr, "attribute")
+                    can_attr = self.canon["pain_trigger"].get(attr_txt, attr_txt)
                     t_id = _trigger(G, can_attr)
                     touched.append(t_id)
                     _upsert_edge(G, pain_id, "triggered_by", t_id)
@@ -429,7 +456,7 @@ class CanonManager:
 
                 for j in p.get("felt_in_jobs", []) or []:
                     print("Processing felt_in_jobs...")
-                    job_raw = j.get("job_to_be_done","").strip()
+                    job_raw = _to_text(j.get("job_to_be_done"))
                     job_can = self.canon["job"].get(job_raw, {"canonical_label": job_raw})
                     if isinstance(job_can, dict):
                         job_id = _job(G, job_can.get("canonical_label"))
@@ -452,7 +479,7 @@ class CanonManager:
                     
                     for sp in j.get("solving_pains", []) or []:
                         print("Solving Pain nodes started")
-                        pain_raw = sp.get("pain","").strip()
+                        pain_raw = _to_text(sp.get("pain"), "pain")
                         pain_can = self.canon["pain"].get(pain_raw, {"canonical_label": pain_raw})
                         if isinstance(pain_can, dict):
                             sp_id = _pain(G, pain_can.get("canonical_label"), sp.get("pain_source"))
@@ -465,13 +492,15 @@ class CanonManager:
                         touched.append(sp_id)
 
                         for metric in sp.get("perceived_metrics", []) or []:
-                            can_metric = self.canon["perceived_metric"].get(metric.strip(), metric.strip())
+                            metric_txt = _to_text(metric, "metric")
+                            can_metric = self.canon["perceived_metric"].get(metric_txt, metric_txt)
                             m_id = _metric(G, can_metric)
                             _upsert_edge(G, sp_id, "expressed_as", m_id)
                         print("Pain-Metric Nodes and Edges Added")
 
                         for attr in sp.get("pain_triggers", []) or []:
-                            can_attr = self.canon["pain_trigger"].get(attr.strip(), attr.strip())
+                            attr_txt = _to_text(attr, "attribute")
+                            can_attr = self.canon["pain_trigger"].get(attr_txt, attr_txt)
                             t_id = _trigger(G, can_attr)
                             touched.append(t_id)
                             _upsert_edge(G, sp_id, "triggered_by", t_id)
@@ -502,12 +531,12 @@ class CanonManager:
 
             for sj in item.get("felt_in_jobs", []) or []:
                 print("Processing felt_in_jobs...")
-                job_raw = sj.get("job_to_be_done","").strip()
-                job_can = self.canon["job"].get(job_raw, {"canonical_label": job_raw})
-                if isinstance(job_can, dict):
-                    job_id = _job(G, job_can.get("canonical_label"))
-                else:
-                    job_id = _job(G, job_can)
+            job_raw = _to_text(sj.get("job_to_be_done"))
+            job_can = self.canon["job"].get(job_raw, {"canonical_label": job_raw})
+            if isinstance(job_can, dict):
+                job_id = _job(G, job_can.get("canonical_label"))
+            else:
+                job_id = _job(G, job_can)
                 touched.append(job_id)
                 _upsert_edge(G, orig_pain_id, "felt_in", job_id, weight=sj.get("severity"))
                 
@@ -525,13 +554,13 @@ class CanonManager:
 
                 for dp in sj.get("solving_pains", []) or []:
                     print("Processing solving pains...")
-                    pain_raw = dp.get("pain","").strip()
-                    pain_can = self.canon["pain"].get(pain_raw, {"canonical_label": pain_raw})
-                    pain_source = dp.get("pain_source")
-                    if isinstance(pain_can, dict):
-                        dp_id = _pain(G, pain_can.get("canonical_label"), pain_source)
-                    else:
-                        dp_id = _pain(G, pain_can, pain_source)
+                pain_raw = _to_text(dp.get("pain"), "pain")
+                pain_can = self.canon["pain"].get(pain_raw, {"canonical_label": pain_raw})
+                pain_source = dp.get("pain_source")
+                if isinstance(pain_can, dict):
+                    dp_id = _pain(G, pain_can.get("canonical_label"), pain_source)
+                else:
+                    dp_id = _pain(G, pain_can, pain_source)
                     touched.append(dp_id)
                     if dp_id == orig_pain_id:
                         print("Solving pain is the same as original pain. Skipping.")
@@ -539,13 +568,15 @@ class CanonManager:
                     _upsert_edge(G, job_id, "solves", dp_id, weight=dp.get("criticality"))
 
                     for metric in dp.get("perceived_metrics", []) or []:
-                        can_metric = self.canon["perceived_metric"].get(metric.strip(), metric.strip())
+                        metric_txt = _to_text(metric, "metric")
+                        can_metric = self.canon["perceived_metric"].get(metric_txt, metric_txt)
                         m_id = _metric(G, can_metric)
                         _upsert_edge(G, dp_id, "expressed_as", m_id)
                     print("Pain-Metric Nodes and Edges Added")
 
                     for attr in dp.get("pain_triggers", []) or []:
-                        can_attr = self.canon["pain_trigger"].get(attr.strip(), attr.strip())
+                        attr_txt = _to_text(attr, "attribute")
+                        can_attr = self.canon["pain_trigger"].get(attr_txt, attr_txt)
                         t_id = _trigger(G, can_attr)
                         touched.append(t_id)
                         _upsert_edge(G, dp_id, "triggered_by", t_id)
@@ -570,8 +601,8 @@ class CanonManager:
         canon_kw = self.canon.get("keyword", {}) or {}
 
         for item in rows:
-            trig_id = (item.get("original_pain_trigger_id") or "").strip()
-            arch_id = (item.get("archetype_id") or "").strip()
+            trig_id = _to_text(item.get("original_pain_trigger_id"))
+            arch_id = _to_text(item.get("archetype_id"))
 
             if not trig_id:
                 print("⚠️ Missing original_pain_trigger_id; skipping row.")
@@ -584,7 +615,7 @@ class CanonManager:
 
             for z in item.get("zmot_triggers", []) or []:
                 print("Processing ZMOT trigger…")
-                ev_raw = (z.get("trigger_event") or "").strip()
+                ev_raw = _to_text(z.get("trigger_event"), "trigger_event")
                 if not ev_raw:
                     print("⚠️ Missing trigger_event; skipping this zmot_trigger.")
                     continue
@@ -616,7 +647,7 @@ class CanonManager:
 
                 # ZMOT → observed_in → ObservableMoment(s)
                 for om in z.get("observable_moments", []) or []:
-                    om_raw = (om.get("observable_moment") or "").strip()
+                    om_raw = _to_text(om.get("observable_moment"), "observable_moment")
                     if not om_raw:
                         continue
                     om_can = canon_om.get(om_raw, {"canonical_label": om_raw})
@@ -626,7 +657,7 @@ class CanonManager:
 
                 # ZMOT → associated_with → Keyword(s)
                 for kw in z.get("trigger_keywords", []) or []:
-                    kw_raw = (kw.get("keyword") or "").strip()
+                    kw_raw = _to_text(kw.get("keyword"), "keyword")
                     if not kw_raw:
                         continue
                     kw_can = canon_kw.get(kw_raw, {"canonical_label": kw_raw})

@@ -78,9 +78,16 @@ def load_product_graph_from_folder(product_id: str, folder_path: str = GRAPH_DAT
             elif nt == "pain":
                 # NEW builder uses "description"; old dumps used "text"
                 value = (node.get("description") or node.get("text") or "").strip().lower()
-                # Keep pain_source if present (new builder sets it)
+                # Keep pain_source if present (new builder sets it). Be defensive about types.
                 if "pain_source" in node:
-                    node["pain_source"] = (node.get("pain_source") or "").strip().lower()
+                    ps = node.get("pain_source")
+                    if isinstance(ps, str):
+                        node["pain_source"] = ps.strip().lower()
+                    elif isinstance(ps, dict):
+                        v = ps.get("pain_source") or ps.get("source") or ps.get("value") or ""
+                        node["pain_source"] = v.strip().lower() if isinstance(v, str) else ""
+                    else:
+                        node["pain_source"] = ""
             elif nt == "job":
                 value = (node.get("description") or "").strip().lower()
             elif nt == "capability":
