@@ -37,6 +37,8 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
   const [mergeTarget, setMergeTarget] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [justSaved, setJustSaved] = useState<Record<string, boolean>>({});
 
   const fetchCapabilities = async () => {
     setLoading(true);
@@ -82,6 +84,7 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
   const saveCapability = async (cap: CapRow) => {
     setError(null);
     try {
+      setSaving(cap.id);
       const res = await fetch(`http://localhost:8000/graph/capability/${cap.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...auth },
@@ -94,8 +97,12 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
         }),
       });
       if (!res.ok) throw new Error(await res.text());
+      setJustSaved(prev => ({ ...prev, [cap.id]: true }));
+      setTimeout(() => setJustSaved(prev => ({ ...prev, [cap.id]: false })), 1500);
     } catch (e) {
       setError("Failed to save capability");
+    } finally {
+      setSaving(null);
     }
   };
 
@@ -206,7 +213,31 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
               </div>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <button onClick={() => saveCapability(cap)} className="inline-flex items-center rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">Save</button>
+              <button
+                onClick={() => saveCapability(cap)}
+                disabled={saving === cap.id}
+                className={[
+                  "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2",
+                  saving === cap.id
+                    ? "bg-green-400 cursor-wait focus:ring-green-300"
+                    : justSaved[cap.id]
+                      ? "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
+                      : "bg-green-600 hover:bg-green-700 focus:ring-green-500",
+                ].join(" ")}
+              >
+                {saving === cap.id && (
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle>
+                    <path className="opacity-75" d="M4 12a8 8 0 018-8" strokeWidth="4" strokeLinecap="round"></path>
+                  </svg>
+                )}
+                {justSaved[cap.id] && saving !== cap.id && (
+                  <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.778 7.778a1 1 0 01-1.414 0L3.293 10.95a1 1 0 011.414-1.414l3.01 3.01 7.071-7.071a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {saving === cap.id ? "Saving…" : justSaved[cap.id] ? "Saved" : "Save"}
+              </button>
               <button onClick={() => deleteCapability(cap.id)} className="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Delete</button>
               <div className="ml-auto flex items-center gap-2">
                 <label className="text-sm text-slate-600">Merge into</label>
