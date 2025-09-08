@@ -171,7 +171,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <button type="button"
-                    onClick={() => previewDelete('persona', p.id)}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); previewDelete('persona', p.id); }}
                     className="rounded-md border border-red-900 bg-red-800 px-3 py-2 text-sm font-medium text-white hover:bg-red-900"
                   >
                     Delete
@@ -221,7 +221,7 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <button type="button"
-                    onClick={() => previewDelete('job', j.id)}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); previewDelete('job', j.id); }}
                     className="rounded-md border border-red-900 bg-red-800 px-3 py-2 text-sm font-medium text-white hover:bg-red-900"
                   >
                     Delete
