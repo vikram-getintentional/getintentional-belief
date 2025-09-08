@@ -5,6 +5,9 @@ type CapabilityNode = {
   label: string;
   name?: string;
   description?: string;
+  coreness?: number | string;
+  coreness_label?: string;
+  buying_likelihood?: number;
 };
 
 type CapRow = {
@@ -15,7 +18,16 @@ type CapRow = {
   buyingLikelihood: number; // 0-100
 };
 
-const CORENESS_OPTIONS = ["Critical", "Core", "Supportive", "Ancillary"];
+const CORENESS_OPTIONS = ["Critical", "Core", "Supportive", "Ancillary"] as const;
+
+const numericToCorenessLabel = (n?: number | null): string => {
+  if (n == null) return "";
+  if (n >= 0.99) return "Critical";
+  if (n >= 0.79) return "Core";
+  if (n >= 0.59) return "Supportive";
+  if (n > 0) return "Ancillary";
+  return "";
+};
 
 export default function CapabilityEditor({ productId }: { productId: string }) {
   const token = localStorage.getItem("token");
@@ -37,13 +49,19 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
         { headers: auth }
       );
       const data = await res.json();
-      const rows: CapRow[] = (data.nodes || []).map((n: CapabilityNode) => ({
-        id: n.id,
-        name: (n as any).name || n.label || "",
-        description: (n as any).description || "",
-        coreness: "", // unknown from list; will be set when saved
-        buyingLikelihood: 0,
-      }));
+      const rows: CapRow[] = (data.nodes || []).map((n: CapabilityNode) => {
+        const name = (n as any).name || n.label || "";
+        const description = (n as any).description || "";
+        const buying = typeof n.buying_likelihood === "number" ? n.buying_likelihood : 0;
+        const label = (n.coreness_label as string) || numericToCorenessLabel(typeof n.coreness === "number" ? n.coreness : undefined);
+        return {
+          id: n.id,
+          name,
+          description,
+          coreness: label || "",
+          buyingLikelihood: buying,
+        };
+      });
       setCaps(rows);
     } catch (e) {
       setError("Failed to load capabilities");
@@ -197,4 +215,3 @@ export default function CapabilityEditor({ productId }: { productId: string }) {
     </div>
   );
 }
-

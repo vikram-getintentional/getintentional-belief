@@ -25,7 +25,8 @@
       "type": "capability",
       "node_type": "capability",
       "name": "Subscription Managementsssss",
-      "description": "Allows businesses to manage and automate their subscription billing processes."
+      "description": "Allows businesses to manage and automate their subscription billing processes.",
+      "buying_likelihood": 14.0
     },
     {
       "id": "capability:8dde85f56e4bbfa9",
