@@ -87,8 +87,11 @@ def create_capability(payload: Dict[str, Any], request: Request, db: Session = D
     })
     # Mirror coreness to node numeric for legacy views
     node = get_node_by_id(G, cap_id)
-    if node is not None and coreness:
-        node["coreness"] = _coreness_to_numeric(coreness)
+    if node is not None:
+        if coreness:
+            node["coreness"] = _coreness_to_numeric(coreness)
+        # also mirror buying_likelihood to node for easier UI reads
+        node["buying_likelihood"] = buying
     G = update_graph(G)
     node = get_node_by_id(G, cap_id)
     if not node:
@@ -129,10 +132,13 @@ def update_capability(capability_id: str, payload: Dict[str, Any], request: Requ
     if attrs:
         product_node_id = get_product_id_from_subgraph(G)
         _upsert_edge(G, product_node_id, "offers", capability_id, weight=1.0, attrs=attrs)
-    # Mirror coreness to node numeric for legacy views
-    node = get_node_by_id(G, capability_id)
-    if node is not None and "coreness" in attrs:
-        node["coreness"] = _coreness_to_numeric(attrs["coreness"]) if attrs.get("coreness") else node.get("coreness", 0.0)
+        # Mirror attributes to node for easier reads
+        node = get_node_by_id(G, capability_id)
+        if node is not None:
+            if "coreness" in attrs:
+                node["coreness"] = _coreness_to_numeric(attrs["coreness"]) if attrs.get("coreness") else node.get("coreness", 0.0)
+            if "buying_likelihood" in attrs:
+                node["buying_likelihood"] = _norm_likelihood(attrs["buying_likelihood"]) if attrs.get("buying_likelihood") is not None else node.get("buying_likelihood", 0.0)
 
     G = update_graph(G)
     node = get_node_by_id(G, capability_id)
@@ -201,9 +207,26 @@ def list_nodes(node_type: str, product_id: str, request: Request, db: Session = 
             continue
         label = data.get("name") or data.get("description") or data.get("title") or data.get("id")
         # Include common fields for UI
-        include_keys = {"title", "department", "seniority", "description", "linkedin_url"}
+        include_keys = {"title", "department", "seniority", "description", "linkedin_url", "coreness", "buying_likelihood"}
         extras = {k: v for k, v in data.items() if k in include_keys}
-        out.append({"id": nid, "label": label, **extras})
+        row = {"id": nid, "label": label, **extras}
+        # For capabilities, also reflect edge attributes (coreness label, buying_likelihood) from product edge
+        if node_type == "capability":
+            try:
+                product_node_id = get_product_id_from_subgraph(G)
+                edata = G[product_node_id][nid]
+                if isinstance(edata, dict) and "type" not in edata:
+                    # normalize possible multigraph-like structure
+                    edata = edata[next(iter(edata.keys()))]
+                if isinstance(edata, dict):
+                    if "buying_likelihood" in edata and row.get("buying_likelihood") is None:
+                        row["buying_likelihood"] = edata.get("buying_likelihood")
+                    if "coreness" in edata and row.get("coreness") in (None, 0, 0.0, ""):
+                        # keep node numeric coreness; still provide label here if present
+                        row["coreness_label"] = edata.get("coreness")
+            except Exception:
+                pass
+        out.append(row)
     return {"nodes": out}
 
 

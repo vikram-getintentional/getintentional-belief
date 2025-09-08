@@ -54,6 +54,9 @@ def test_graph_editor_e2e(client: TestClient):
     assert resp.status_code == 200
     nodes = resp.json().get("nodes", [])
     assert any(n["id"] == cap_id for n in nodes)
+    # Buying likelihood reflected via node or edge readout
+    node = next(n for n in nodes if n["id"] == cap_id)
+    assert (node.get("buying_likelihood") is not None) and (float(node.get("buying_likelihood")) >= 0)
 
     # 3b) Create a second capability to exercise merge
     resp2 = client.post(
@@ -148,4 +151,3 @@ def test_graph_editor_e2e(client: TestClient):
     )
     # allow either 200 or 404 depending on merge removal timing
     assert resp.status_code in (200, 404)
-
