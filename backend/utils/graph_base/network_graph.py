@@ -17,6 +17,11 @@ def build_product_graph(product_lookup_id: str):
     Build a NetworkX DiGraph for the given product_id using your internal graph data.
     """
     product_graph = load_graph_from_json(product_lookup_id)
+    # Ensure the lookup id is stamped on the graph for persistence
+    try:
+        product_graph.graph["product_lookup_id"] = product_lookup_id
+    except Exception:
+        pass
     return product_graph
 
 def update_graph(product_subgraph): 
@@ -29,8 +34,10 @@ def update_graph(product_subgraph):
     # Load the latest product graph
     latest_graph = build_product_graph(product_lookup_id)
 
-    # Merge the new graph into the existing subgraph
-    product_subgraph = nx.compose(product_subgraph, latest_graph)
+    # Merge latest disk graph with in-memory edits. Favor in-memory edits.
+    # In NetworkX compose(G, H), attributes from H override G on conflicts.
+    # We want product_subgraph (edits) to override latest_graph (disk).
+    product_subgraph = nx.compose(latest_graph, product_subgraph)
 
     print("Graph updated successfully.")
 
