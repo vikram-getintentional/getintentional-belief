@@ -318,41 +318,7 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
         </div>
       )}
 
-      {persona.jobs.length > 0 && (
-        <div className="space-y-2 mt-3">
-          <strong>Jobs:</strong>
-          <div className="flex flex-wrap mt-1">
-            {jobsToShow.map((jobStr, jdx) => {
-              const jobObj = parseItem(jobStr);
-              return (
-                <Pill key={jdx} label={jobObj.description} score={jobObj.relevance} />
-              );
-            })}
-            {!showAllJobs && persona.jobs.length > 3 && (
-              <button
-                className="text-xs text-indigo-600 underline ml-2"
-                onClick={e => {
-                  e.stopPropagation();
-                  setShowAllJobs(true);
-                }}
-              >
-                <span className="text-lg font-bold">▼</span>
-              </button>
-            )}
-            {showAllJobs && persona.jobs.length > 3 && (
-              <button
-                className="text-xs text-indigo-600 underline ml-2"
-                onClick={e => {
-                  e.stopPropagation();
-                  setShowAllJobs(false);
-                }}
-              >
-                <span className="text-lg font-bold">▲</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Jobs summary pills removed for streamlined UI */}
 
       {persona.pains.length > 0 && (
         <div className="mt-3">
