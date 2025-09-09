@@ -14,6 +14,7 @@ from backend.utils.graph_base.network_graph import (
     get_node_id,
     get_nodes_list_ids,
     get_target_nodes_by_source_and_type,
+    get_source_nodes_by_target_and_type,
     get_edge_attribute,
     get_edge_weight,
     get_product_id_from_subgraph,
@@ -310,6 +311,29 @@ def delete_persona(persona_id: str, product_id: str, request: Request, db: Sessi
     G.remove_node(persona_id)
     update_graph(G)
     return {"message": "Persona deleted", "id": persona_id}
+
+
+@router.get("/graph/persona/{persona_id}/jobs")
+def list_jobs_for_persona(persona_id: str, product_id: str, request: Request, db: Session = Depends(get_db)):
+    """Return jobs that have an edge Job --performed_by--> Persona."""
+    _require_auth_company(request)
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    node = get_node_by_id(G, persona_id)
+    if not node or node.get("node_type") != "persona":
+        raise HTTPException(status_code=404, detail="Persona not found")
+    job_ids = get_source_nodes_by_target_and_type(G, persona_id, "performed_by") or []
+    out: list[dict] = []
+    for jid in job_ids:
+        jn = get_node_by_id(G, jid) or {}
+        out.append({
+            "id": jid,
+            "label": jn.get("description") or jn.get("name") or jid,
+            "description": jn.get("description"),
+            "linkedin_url": jn.get("linkedin_url"),
+        })
+    return {"jobs": out}
 
 
 @router.post("/graph/capability/merge")

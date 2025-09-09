@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getCardClass } from "./interfaceElements/cardUtils";
 import Pill from "./interfaceElements/pillbox";
 
@@ -39,6 +39,9 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
   }>({ open: false, preview: null, loading: false, error: null });
   const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
   const [editState, setEditState] = useState<Record<string, { title: string; department: string; linkedin_url: string; relevance_hint: number }>>({});
+  const auth = useMemo(() => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }), [token]);
+  type JobNode = { id: string; label?: string; description?: string; linkedin_url?: string };
+  const [jobsByPersona, setJobsByPersona] = useState<Record<string, JobNode[]>>({});
 
   if (!persona) return null;
 
@@ -80,6 +83,85 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
       if (!res.ok) throw new Error(await res.text());
     } catch (e) {
       console.error('Failed to update persona', e);
+    }
+  };
+
+  const fetchJobsForPersona = async (pid: string) => {
+    if (!productId) return;
+    try {
+      const url = new URL(`http://localhost:8000/graph/persona/${encodeURIComponent(pid)}/jobs`);
+      url.searchParams.set('product_id', productId);
+      const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Fetch jobs failed');
+      setJobsByPersona(prev => ({ ...prev, [pid]: (data.jobs || []) }));
+    } catch (e) {
+      console.error('Failed to load jobs for persona', pid, e);
+      setJobsByPersona(prev => ({ ...prev, [pid]: [] }));
+    }
+  };
+
+  useEffect(() => {
+    if (!productId || !persona.persona_ids) return;
+    Promise.all((persona.persona_ids || []).map(pid => fetchJobsForPersona(pid))).then(() => void 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId, JSON.stringify(persona.persona_ids)]);
+
+  const updateJob = async (jobId: string, linkedin_url: string) => {
+    if (!productId) return;
+    try {
+      const res = await fetch(`http://localhost:8000/graph/job/${encodeURIComponent(jobId)}`, {
+        method: 'PUT',
+        headers: auth,
+        body: JSON.stringify({ product_id: productId, linkedin_url })
+      });
+      if (!res.ok) throw new Error(await res.text());
+    } catch (e) {
+      console.error('Failed to update job', e);
+    }
+  };
+
+  const previewDeleteJob = async (jobId: string) => {
+    if (!productId) return;
+    setConfirm({ open: true, targetId: jobId, preview: null, loading: true, error: null });
+    try {
+      const url = new URL(`http://localhost:8000/graph/job/${encodeURIComponent(jobId)}/orphan-preview`);
+      url.searchParams.set('product_id', productId);
+      const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Preview failed');
+      setConfirm({ open: true, targetId: jobId, preview: { counts: data.counts || {}, nodes: data.nodes || [] }, loading: false, error: null });
+    } catch (e) {
+      console.error('Job preview failed', e);
+      setConfirm(c => ({ ...c, loading: false, error: 'Could not load orphan preview. You can still proceed.' }));
+    }
+  };
+
+  const performDeleteJob = async () => {
+    if (!productId || !confirm.targetId) { setConfirm({ open: false, preview: null, loading: false, error: null }); return; }
+    try {
+      const url = new URL(`http://localhost:8000/graph/job/${encodeURIComponent(confirm.targetId)}`);
+      url.searchParams.set('product_id', productId);
+      if (confirm.preview && (confirm.preview.nodes || []).length > 0) url.searchParams.set('force', 'true');
+      const res = await fetch(url.toString(), { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}));
+        const detail = data?.detail || data;
+        setConfirm(c => ({ ...c, preview: { counts: detail.counts || {}, nodes: detail.nodes || [] }, loading: false }));
+        return;
+      }
+      if (!res.ok) throw new Error(await res.text());
+      // refresh job lists
+      const tid = confirm.targetId;
+      setConfirm({ open: false, preview: null, loading: false, error: null });
+      // Remove deleted job from any persona mappings
+      setJobsByPersona(prev => {
+        const next = { ...prev };
+        Object.keys(next).forEach(pid => { next[pid] = (next[pid] || []).filter(j => j.id !== tid); });
+        return next;
+      });
+    } catch (e) {
+      console.error('Job delete failed', e);
     }
   };
 
@@ -157,6 +239,33 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-700">LinkedIn URL</label>
                   <input className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="https://www.linkedin.com/in/..." value={editState[pid]?.linkedin_url || ''} onChange={e => setEditState(s => ({ ...s, [pid]: { ...(s[pid]||{title:'',department:'',linkedin_url:'',relevance_hint:0}), linkedin_url: e.target.value } }))} />
+                </div>
+                {/* Jobs for this persona */}
+                <div className="mt-1">
+                  <div className="mb-1 block text-xs font-medium text-slate-700">Jobs for this persona</div>
+                  <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
+                    {(jobsByPersona[pid] || []).map(j => (
+                      <li key={j.id} className="px-2 py-2">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium text-slate-800 truncate mr-3">{j.label || j.description || j.id}</div>
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => previewDeleteJob(j.id)} className="inline-flex items-center gap-1.5 rounded-md border border-red-600 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">Delete</button>
+                          </div>
+                        </div>
+                        <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+                          <div className="md:col-span-2">
+                            <input className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="https://www.linkedin.com/in/..." value={j.linkedin_url || ''} onChange={e => setJobsByPersona(prev => ({ ...prev, [pid]: (prev[pid] || []).map(x => x.id === j.id ? { ...x, linkedin_url: e.target.value } : x) }))} />
+                          </div>
+                          <div className="flex items-center justify-end">
+                            <button type="button" onClick={() => updateJob(j.id, (jobsByPersona[pid] || []).find(x => x.id === j.id)?.linkedin_url || '')} className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700">Save</button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                    {(jobsByPersona[pid] || []).length === 0 && (
+                      <li className="px-2 py-2 text-xs text-slate-500">No jobs linked to this persona.</li>
+                    )}
+                  </ul>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-700">Relevance</label>
@@ -264,7 +373,7 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setConfirm({ open: false, preview: null, loading: false, error: null })} />
           <div className="relative mx-4 w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
             <div className="border-b border-slate-200 bg-slate-50 px-5 py-3">
-              <h4 className="text-lg font-semibold text-slate-800">Delete Persona</h4>
+              <h4 className="text-lg font-semibold text-slate-800">Delete</h4>
               <p className="text-sm text-slate-600">Review impacted nodes before confirming.</p>
             </div>
             <div className="max-h-[60vh] overflow-auto px-5 py-4">
@@ -305,7 +414,7 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
             </div>
             <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
               <button onClick={() => setConfirm({ open: false, preview: null, loading: false, error: null })} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50">Cancel</button>
-              <button onClick={performDelete} className="rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-800">Delete anyway</button>
+              <button onClick={() => (confirm.targetId && confirm.targetId.startsWith('job:')) ? performDeleteJob() : performDelete()} className="rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-800">Delete anyway</button>
             </div>
           </div>
         </div>
