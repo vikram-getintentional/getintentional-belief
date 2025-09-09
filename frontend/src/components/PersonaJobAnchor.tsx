@@ -97,7 +97,27 @@ export default function PersonaJobAnchor({ productId }: { productId: string }) {
       const res = await fetch(url.toString(), { headers: auth });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Preview failed');
-      setConfirm({ open: true, nodeType, targetId: id, preview: { counts: data.counts || {}, nodes: data.nodes || [] }, loading: false, error: null });
+      const counts = data.counts || {};
+      const nodes = data.nodes || [];
+      // If there are no orphans, proceed to delete immediately (non-forced)
+      if (!nodes || nodes.length === 0) {
+        const del = new URL(`http://localhost:8000/graph/${nodeType}/${encodeURIComponent(id)}`);
+        del.searchParams.set('product_id', productId);
+        const dres = await fetch(del.toString(), { method: 'DELETE', headers: auth });
+        if (dres.status === 409) {
+          const ddata = await dres.json().catch(() => ({}));
+          const detail = ddata?.detail || ddata || {};
+          setConfirm({ open: true, nodeType, targetId: id, preview: { counts: detail.counts || {}, nodes: detail.nodes || [] }, loading: false, error: null });
+          return;
+        }
+        if (!dres.ok) throw new Error(await dres.text());
+        await fetchData();
+        setConfirm({ open: false, preview: null, loading: false, error: null });
+        setNotice(`${nodeType === 'job' ? 'Job' : 'Persona'} deleted`);
+        return;
+      }
+      // Otherwise show the modal with preview
+      setConfirm({ open: true, nodeType, targetId: id, preview: { counts, nodes }, loading: false, error: null });
     } catch (_e) {
       console.error('[Anchor] previewDelete error', _e);
       setConfirm(c => ({ ...c, loading: false, error: 'Could not load orphan preview. You can still proceed.' }));

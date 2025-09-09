@@ -108,23 +108,6 @@
       "description": "Coordinate subscription renewals"
     },
     {
-      "id": "persona:b7d4e331238cb7ab",
-      "type": "persona",
-      "node_type": "persona",
-      "title": "accountant",
-      "department": "finance",
-      "seniority": "Operator",
-      "linkedin_url": "https://www.linkedin.com/in/manas-jayanth/"
-    },
-    {
-      "id": "persona:2bbb4000fae13098",
-      "type": "persona",
-      "node_type": "persona",
-      "title": "accounts receivable clerk",
-      "department": "finance",
-      "seniority": "Junior"
-    },
-    {
       "id": "pain:c63e2579f7b70ab4",
       "type": "pain",
       "node_type": "pain",
@@ -178,22 +161,6 @@
       "type": "pain_trigger",
       "node_type": "pain_trigger",
       "attribute": "service feedback"
-    },
-    {
-      "id": "persona:7c7d7f11b9f39ef0",
-      "type": "persona",
-      "node_type": "persona",
-      "title": "product manager",
-      "department": "customer service",
-      "seniority": "Manager"
-    },
-    {
-      "id": "persona:e96fa5451acc3159",
-      "type": "persona",
-      "node_type": "persona",
-      "title": "accountant",
-      "department": "sales",
-      "seniority": "Manager"
     },
     {
       "id": "pain:05c2bdef228cb2cf",
@@ -2986,32 +2953,8 @@
     },
     {
       "source": "job:a6b3dce336031874",
-      "target": "persona:b7d4e331238cb7ab",
-      "type": "performed_by",
-      "weight": 0.0
-    },
-    {
-      "source": "job:a6b3dce336031874",
-      "target": "persona:2bbb4000fae13098",
-      "type": "performed_by",
-      "weight": 0.0
-    },
-    {
-      "source": "job:a6b3dce336031874",
       "target": "pain:c63e2579f7b70ab4",
       "type": "solves",
-      "weight": 0.0
-    },
-    {
-      "source": "job:a6b3dce336031874",
-      "target": "persona:7c7d7f11b9f39ef0",
-      "type": "performed_by",
-      "weight": 0.0
-    },
-    {
-      "source": "job:a6b3dce336031874",
-      "target": "persona:e96fa5451acc3159",
-      "type": "performed_by",
       "weight": 0.0
     },
     {
@@ -3808,12 +3751,6 @@
     },
     {
       "source": "job:54b36007a9b340d0",
-      "target": "persona:b7d4e331238cb7ab",
-      "type": "performed_by",
-      "weight": 0.0
-    },
-    {
-      "source": "job:54b36007a9b340d0",
       "target": "pain:80eb908fff7c49d8",
       "type": "solves",
       "weight": 0.0
@@ -3989,12 +3926,6 @@
     {
       "source": "job:bb442e9a619c365d",
       "target": "persona:f6e9d257ec86e4ad",
-      "type": "performed_by",
-      "weight": 0.0
-    },
-    {
-      "source": "job:bb442e9a619c365d",
-      "target": "persona:7c7d7f11b9f39ef0",
       "type": "performed_by",
       "weight": 0.0
     },

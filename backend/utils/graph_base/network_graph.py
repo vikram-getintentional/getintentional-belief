@@ -35,8 +35,16 @@ def update_graph(product_subgraph):
     latest_graph = build_product_graph(product_lookup_id)
 
     # Merge latest disk graph with in-memory edits. Favor in-memory edits.
-    # In NetworkX compose(G, H), attributes from H override G on conflicts.
-    # We want product_subgraph (edits) to override latest_graph (disk).
+    # NOTE: compose() cannot represent deletions. If a node was removed from
+    # product_subgraph, we must drop it from latest_graph before composing,
+    # otherwise compose() will re-introduce it from latest_graph.
+    try:
+        to_remove_nodes = set(latest_graph.nodes()) - set(product_subgraph.nodes())
+        if to_remove_nodes:
+            latest_graph.remove_nodes_from(to_remove_nodes)
+    except Exception:
+        pass
+    # Now compose: in-memory edits override disk on conflicts
     product_subgraph = nx.compose(latest_graph, product_subgraph)
 
     print("Graph updated successfully.")

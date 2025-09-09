@@ -2557,6 +2557,22 @@
     {
       "node_id": "job:d9209a01ce071c31",
       "cumulative_relevance": 0.7999999999940695
+    },
+    {
+      "node_id": "capability:5c39311f5a5f4090",
+      "cumulative_relevance": 0.9999999999999986
+    },
+    {
+      "node_id": "pain:9ac393dc630e32da",
+      "cumulative_relevance": 0.7999999999998783
+    },
+    {
+      "node_id": "job:44084044ae03a66a",
+      "cumulative_relevance": 0.7999999999940695
+    },
+    {
+      "node_id": "persona:3691c369939100eb",
+      "cumulative_relevance": 39.99999999092588
     }
   ]
 }

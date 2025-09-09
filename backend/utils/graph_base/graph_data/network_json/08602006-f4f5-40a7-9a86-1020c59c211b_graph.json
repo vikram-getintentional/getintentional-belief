@@ -95,6 +95,26 @@
       "type": "job",
       "node_type": "job",
       "description": "Orphan test job 2"
+    },
+    {
+      "id": "capability:5c39311f5a5f4090",
+      "type": "capability",
+      "node_type": "capability",
+      "name": "Anchor Test Cap",
+      "description": "temp",
+      "buying_likelihood": 0.0
+    },
+    {
+      "id": "pain:9ac393dc630e32da",
+      "type": "pain",
+      "node_type": "pain",
+      "description": "Anchor test pain"
+    },
+    {
+      "id": "job:44084044ae03a66a",
+      "type": "job",
+      "node_type": "job",
+      "description": "Anchor test job"
     }
   ],
   "edges": [
@@ -117,6 +137,14 @@
     {
       "source": "product:681ae0a2d24ccf61",
       "target": "capability:084b1ada780b136e",
+      "type": "offers",
+      "weight": 1.0,
+      "coreness": "",
+      "buying_likelihood": 0.0
+    },
+    {
+      "source": "product:681ae0a2d24ccf61",
+      "target": "capability:5c39311f5a5f4090",
       "type": "offers",
       "weight": 1.0,
       "coreness": "",
@@ -181,6 +209,19 @@
       "type": "performed_by",
       "weight": 60.0,
       "likelihood": 60.0
+    },
+    {
+      "source": "capability:5c39311f5a5f4090",
+      "target": "pain:9ac393dc630e32da",
+      "type": "solves",
+      "weight": 0.8,
+      "relevance": 0.8
+    },
+    {
+      "source": "pain:9ac393dc630e32da",
+      "target": "job:44084044ae03a66a",
+      "type": "felt_in",
+      "weight": 1.0
     }
   ]
 }
