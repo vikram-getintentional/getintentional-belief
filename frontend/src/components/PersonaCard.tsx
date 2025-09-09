@@ -43,6 +43,8 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
   const auth = useMemo(() => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }), [token]);
   type JobNode = { id: string; label?: string; description?: string; linkedin_url?: string };
   const [jobsByPersona, setJobsByPersona] = useState<Record<string, JobNode[]>>({});
+  const [jobCatalog, setJobCatalog] = useState<Array<{ id: string; label: string; description?: string }>>([]);
+  const [addJobUI, setAddJobUI] = useState<Record<string, { open: boolean; selectedJobId?: string; description: string; linkedin_url: string; likelihood: number; saving?: boolean; error?: string | null }>>({});
 
   if (!persona) return null;
 
@@ -99,6 +101,50 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
     } catch (e) {
       console.error('Failed to load jobs for persona', pid, e);
       setJobsByPersona(prev => ({ ...prev, [pid]: [] }));
+    }
+  };
+
+  const ensureJobCatalog = async () => {
+    if (!productId || jobCatalog.length > 0) return;
+    try {
+      const url = new URL(`http://localhost:8000/graph/nodes/job`);
+      url.searchParams.set('product_id', productId);
+      const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Fetch jobs catalog failed');
+      const items = (data.nodes || []).map((n: any) => ({ id: n.id, label: n.label || n.description || n.id, description: n.description }));
+      setJobCatalog(items);
+    } catch (e) {
+      console.error('Failed to load job catalog', e);
+    }
+  };
+
+  const addJobToPersona = async (pid: string) => {
+    const ui = addJobUI[pid];
+    if (!ui) return;
+    const body: any = { product_id: productId, likelihood: ui.likelihood };
+    if (ui.selectedJobId) body.job_id = ui.selectedJobId;
+    else if (ui.description) {
+      body.description = ui.description;
+      if (ui.linkedin_url) body.linkedin_url = ui.linkedin_url;
+    } else {
+      setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), error: 'Select an existing job or enter a description.' } }));
+      return;
+    }
+    setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), saving: true, error: null } }));
+    try {
+      const res = await fetch(`http://localhost:8000/graph/persona/${encodeURIComponent(pid)}/jobs`, {
+        method: 'POST',
+        headers: auth,
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Add job failed');
+      const job = data.job as JobNode;
+      setJobsByPersona(prev => ({ ...prev, [pid]: [ ...(prev[pid] || []), job ] }));
+      setAddJobUI(s => ({ ...s, [pid]: { open: false, description: '', linkedin_url: '', likelihood: 50, selectedJobId: undefined, saving: false, error: null } }));
+    } catch (e: any) {
+      setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), saving: false, error: String(e?.message || e) } }));
     }
   };
 
@@ -240,6 +286,89 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-700">LinkedIn URL</label>
                   <input className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="https://www.linkedin.com/in/..." value={editState[pid]?.linkedin_url || ''} onChange={e => setEditState(s => ({ ...s, [pid]: { ...(s[pid]||{title:'',department:'',linkedin_url:'',relevance_hint:0}), linkedin_url: e.target.value } }))} />
+                </div>
+                {/* Add Job UI */}
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick={async () => {
+                      await ensureJobCatalog();
+                      setAddJobUI(s => ({ ...s, [pid]: s[pid] ? { ...s[pid], open: !s[pid].open } : { open: true, description: '', linkedin_url: '', likelihood: 50 } }));
+                    }}
+                  >
+                    Add Job
+                  </button>
+                  {addJobUI[pid]?.open && (
+                    <div className="mt-2 bg-white p-3">
+                      <div className="text-xs font-medium text-slate-700">Select existing job</div>
+                      <select
+                        className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
+                        value={addJobUI[pid]?.selectedJobId || ''}
+                        onChange={e => setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), selectedJobId: e.target.value || undefined } }))}
+                      >
+                        <option value="">-- Choose a job --</option>
+                        {jobCatalog.map(j => (
+                          <option key={j.id} value={j.id}>{j.label}</option>
+                        ))}
+                      </select>
+
+                      <div className="my-2 text-center text-[10px] uppercase tracking-wide text-slate-400">or</div>
+
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-700">Job description</label>
+                        <input
+                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
+                          placeholder="e.g., Define product roadmap and coordinate releases"
+                          value={addJobUI[pid]?.description || ''}
+                          onChange={e => setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), description: e.target.value } }))}
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <label className="mb-1 block text-xs font-medium text-slate-700">LinkedIn URL (optional)</label>
+                        <input
+                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
+                          placeholder="https://www.linkedin.com/in/..."
+                          value={addJobUI[pid]?.linkedin_url || ''}
+                          onChange={e => setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), linkedin_url: e.target.value } }))}
+                        />
+                      </div>
+
+                      <div className="mt-2">
+                        <label className="mb-1 block text-xs font-medium text-slate-700">Job importance (0–100)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
+                          value={addJobUI[pid]?.likelihood ?? 50}
+                          onChange={e => setAddJobUI(s => ({ ...s, [pid]: { ...(s[pid]||{open:true, description:'', linkedin_url:'', likelihood:50}), likelihood: Math.max(0, Math.min(100, Number(e.target.value || 0))) } }))}
+                        />
+                      </div>
+
+                      {addJobUI[pid]?.error && (
+                        <div className="mt-2 text-xs text-red-600">{addJobUI[pid]?.error}</div>
+                      )}
+
+                      <div className="mt-3 text-right">
+                        <button
+                          type="button"
+                          className="mr-2 inline-flex items-center gap-1.5 rounded-md border border-red-600 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                          onClick={() => setAddJobUI(s => ({ ...s, [pid]: { open: false, description: '', linkedin_url: '', likelihood: 50, selectedJobId: undefined, error: null } }))}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60"
+                          disabled={!!addJobUI[pid]?.saving}
+                          onClick={() => addJobToPersona(pid)}
+                        >
+                          {addJobUI[pid]?.saving ? 'Adding…' : 'Add'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {/* Linked jobs */}
                 <LinkedJobsList

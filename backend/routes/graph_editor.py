@@ -336,6 +336,56 @@ def list_jobs_for_persona(persona_id: str, product_id: str, request: Request, db
     return {"jobs": out}
 
 
+@router.post("/graph/persona/{persona_id}/jobs")
+def add_job_to_persona(persona_id: str, payload: Dict[str, Any], request: Request, db: Session = Depends(get_db)):
+    """Link an existing or new job to a persona with an optional likelihood.
+
+    Payload accepts either `job_id` or `description` (to create a new job).
+    Optional fields: `linkedin_url`, `likelihood` (0-100).
+    """
+    _require_auth_company(request)
+    product_id = payload.get("product_id")
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    G = build_product_graph(product_id)
+    per_node = get_node_by_id(G, persona_id)
+    if not per_node or per_node.get("node_type") != "persona":
+        raise HTTPException(status_code=404, detail="Persona not found")
+
+    job_id = payload.get("job_id")
+    description = payload.get("description") or payload.get("job")
+    if not job_id and not description:
+        raise HTTPException(status_code=400, detail="Provide job_id or description")
+
+    if job_id:
+        job_node = get_node_by_id(G, job_id)
+        if not job_node or job_node.get("node_type") != "job":
+            raise HTTPException(status_code=404, detail="Job not found")
+    else:
+        job_id = _job(G, description)
+        if payload.get("linkedin_url"):
+            G.nodes[job_id]["linkedin_url"] = str(payload.get("linkedin_url"))
+        # Also persist the label/description if provided
+        G.nodes[job_id]["description"] = description
+
+    # Create or update performed_by edge with likelihood
+    lk = _norm_likelihood(payload.get("likelihood"))
+    _upsert_edge(G, job_id, "performed_by", persona_id, weight=lk, attrs={"likelihood": lk})
+
+    update_graph(G)
+    jn = get_node_by_id(G, job_id) or {}
+    return {
+        "message": "Linked job to persona",
+        "job": {
+            "id": job_id,
+            "label": jn.get("description") or jn.get("name") or job_id,
+            "description": jn.get("description"),
+            "linkedin_url": jn.get("linkedin_url"),
+        },
+        "likelihood": lk,
+    }
+
+
 @router.post("/graph/capability/merge")
 def merge_capabilities(payload: Dict[str, Any], request: Request, db: Session = Depends(get_db)):
     _require_auth_company(request)
