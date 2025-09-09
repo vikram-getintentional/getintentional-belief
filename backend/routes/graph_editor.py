@@ -529,11 +529,18 @@ def update_persona(persona_id: str, payload: Dict[str, Any], request: Request, d
     node = get_node_by_id(G, persona_id)
     if not node or node.get("node_type") != "persona":
         raise HTTPException(status_code=404, detail="Persona not found")
+    # Update string attributes
     for k in ("title", "department", "seniority", "linkedin_url"):
         if payload.get(k) is not None:
             node[k] = str(payload.get(k))
+    # Optional numeric hint for UI-driven relevance adjustments (does not affect algo)
+    if payload.get("relevance_hint") is not None:
+        try:
+            node["relevance_hint"] = float(payload.get("relevance_hint"))
+        except Exception:
+            node["relevance_hint"] = 0.0
     update_graph(G)
-    return {"message": "Persona updated", "id": persona_id, **{k: node.get(k) for k in ("title", "department", "seniority", "linkedin_url")}}
+    return {"message": "Persona updated", "id": persona_id, **{k: node.get(k) for k in ("title", "department", "seniority", "linkedin_url", "relevance_hint")}}
 
 
 @router.put("/graph/job/{job_id}")

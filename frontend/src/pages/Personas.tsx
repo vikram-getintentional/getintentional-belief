@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import PersonaCard from "../components/PersonaCard";
 import PersonaBuilder from "../components/PersonaBuilder";
-import PersonaJobAnchor from "../components/PersonaJobAnchor";
 
 const Personas = () => {
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -11,6 +10,7 @@ const Personas = () => {
   const [showBuilder, setShowBuilder] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const token = localStorage.getItem("token");
+  const [personaNodesById, setPersonaNodesById] = useState<Record<string, any>>({});
 
   // 1. Get company ID on mount
   useEffect(() => {
@@ -90,6 +90,26 @@ const Personas = () => {
     fetchPersonas();
   }, [selectedProductId]);
 
+  // 5b. Load raw persona graph nodes for editing (anchors, delete, etc.)
+  useEffect(() => {
+    const loadPersonaNodes = async () => {
+      if (!selectedProductId) return;
+      try {
+        const res = await fetch(
+          `http://localhost:8000/graph/nodes/persona?product_id=${encodeURIComponent(selectedProductId)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        const map: Record<string, any> = {};
+        (data.nodes || []).forEach((n: any) => { map[n.id] = n; });
+        setPersonaNodesById(map);
+      } catch (_e) {
+        // non-fatal
+      }
+    };
+    loadPersonaNodes();
+  }, [selectedProductId, token]);
+
   return (
     <div className="p-8">
       
@@ -113,7 +133,7 @@ const Personas = () => {
       {/* 4. If no products, show message */}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
     
-      {/* 5. Show personas if they exist */}
+      {/* 5. Show personas if they exist (editable cards) */}
       {personas.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {personas.map((p, i) => (
@@ -123,15 +143,12 @@ const Personas = () => {
                 persona={p}
                 isSelected={true}
                 onToggle={() => {}}
+                productId={selectedProductId as string}
+                personaNodesById={personaNodesById}
               />
             ) : null
           ))}
         </div>
-      )}
-
-      {/* Anchors editor moved from Value Proposition to Personas */}
-      {selectedProductId && (
-        <PersonaJobAnchor productId={selectedProductId} />
       )}
 
      {personas.length > 0 && (
