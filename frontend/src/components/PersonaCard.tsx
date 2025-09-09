@@ -242,6 +242,7 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
                 </div>
                 {/* Jobs for this persona */}
                 <div className="mt-1">
+                  <div className="mb-1 block text-xs font-medium text-slate-700">Jobs for this persona</div>
                   <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
                     {(jobsByPersona[pid] || []).map(j => (
                       <li key={j.id} className="px-2 py-2">
