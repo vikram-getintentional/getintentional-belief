@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getCardClass } from "./interfaceElements/cardUtils";
 import Pill from "./interfaceElements/pillbox";
+import LinkedJobsList from "./LinkedJobsList";
 
 export type PersonaSuggestion = {
   persona_title: string;
