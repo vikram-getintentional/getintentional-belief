@@ -213,14 +213,6 @@
       "description": "Develop competitive pricing strategies"
     },
     {
-      "id": "persona:63e16ee76e5ad350",
-      "type": "persona",
-      "node_type": "persona",
-      "title": "data analyst",
-      "department": "finance",
-      "seniority": "Operator"
-    },
-    {
       "id": "persona:4f4ec80a157813fb",
       "type": "persona",
       "node_type": "persona",
@@ -3405,12 +3397,6 @@
       "source": "pain_trigger:70f90edbe76021c8",
       "target": "archetype:215e082bb8822a53",
       "type": "prevalent_in",
-      "weight": 0.0
-    },
-    {
-      "source": "job:16ebe61027fc00b4",
-      "target": "persona:63e16ee76e5ad350",
-      "type": "performed_by",
       "weight": 0.0
     },
     {

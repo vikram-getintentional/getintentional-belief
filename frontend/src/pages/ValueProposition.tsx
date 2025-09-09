@@ -3,7 +3,6 @@ import ValuePropCard from "../components/ValuePropCard";
 import CapabilityCard from "../components/CapabilityCard";
 import CapabilityEditor from "../components/CapabilityEditor";
 import PainFamilyEditor from "../components/PainFamilyEditor";
-import PersonaJobAnchor from "../components/PersonaJobAnchor";
 
 type Capability = {
   coreness: number;
@@ -141,9 +140,6 @@ const ValueProposition = () => {
           )}
           {selectedProductId && (
             <PainFamilyEditor productId={selectedProductId} />
-          )}
-          {selectedProductId && (
-            <PersonaJobAnchor productId={selectedProductId} />
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PersonaCard from "../components/PersonaCard";
 import PersonaBuilder from "../components/PersonaBuilder";
+import PersonaJobAnchor from "../components/PersonaJobAnchor";
 
 const Personas = () => {
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -126,6 +127,11 @@ const Personas = () => {
             ) : null
           ))}
         </div>
+      )}
+
+      {/* Anchors editor moved from Value Proposition to Personas */}
+      {selectedProductId && (
+        <PersonaJobAnchor productId={selectedProductId} />
       )}
 
      {personas.length > 0 && (
