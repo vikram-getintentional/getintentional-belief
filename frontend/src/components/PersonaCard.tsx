@@ -248,6 +248,9 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
                       <li key={j.id} className="px-2 py-2">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                           <div className="md:col-span-2">
+                            <div className="mb-1 truncate text-xs font-medium text-slate-600">
+                              {(j.label || j.description) ? (j.label || j.description) : j.id}
+                            </div>
                             <input
                               className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                               placeholder="https://www.linkedin.com/in/..."
