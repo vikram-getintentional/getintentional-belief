@@ -240,66 +240,13 @@ const PersonaCard = ({ persona, isSelected, onToggle, productId, personaNodesByI
                   <label className="mb-1 block text-xs font-medium text-slate-700">LinkedIn URL</label>
                   <input className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="https://www.linkedin.com/in/..." value={editState[pid]?.linkedin_url || ''} onChange={e => setEditState(s => ({ ...s, [pid]: { ...(s[pid]||{title:'',department:'',linkedin_url:'',relevance_hint:0}), linkedin_url: e.target.value } }))} />
                 </div>
-                {/* Jobs for this persona */}
-                <div className="mt-3">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Linked Jobs</div>
-                  <ul className="space-y-3">
-                    {(jobsByPersona[pid] || []).map(j => (
-		      /* Linked Jobs */
-                      <li key={j.id} className="">
-                        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm ring-1 ring-transparent transition hover:shadow-md hover:ring-indigo-100">
-                          <div className="mb-3 flex items-center justify-between">
-                            <div className="min-w-0">
-                              <div className="truncate text-sm font-medium text-slate-800">{(j.label || j.description) ? (j.label || j.description) : j.id}</div>
-                              <div className="truncate text-[10px] text-slate-400">{j.id}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {j.linkedin_url ? (
-                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">Linked ✓</span>
-                              ) : (
-                                <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">Not linked</span>
-                              )}
-                              {j.linkedin_url && (
-                                <a href={j.linkedin_url} target="_blank" rel="noreferrer" className="text-[10px] font-medium text-indigo-600 hover:text-indigo-700">Open</a>
-                              )}
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-                            <div className="md:col-span-4">
-                              <label className="mb-1 block text-xs font-medium text-slate-700">LinkedIn URL</label>
-                              <input
-                                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                                placeholder="https://www.linkedin.com/in/..."
-                                value={j.linkedin_url || ''}
-                                onChange={e => setJobsByPersona(prev => ({ ...prev, [pid]: (prev[pid] || []).map(x => x.id === j.id ? { ...x, linkedin_url: e.target.value } : x) }))}
-                              />
-                              <p className="mt-1 text-[11px] text-slate-500">Optional. Anchors this job to a real profile for validation.</p>
-                            </div>
-                            <div className="flex items-end justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => previewDeleteJob(j.id)}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-red-600 bg-white px-3 py-2 text-xs font-medium text-red-700 shadow-sm transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                              >
-                                Delete
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateJob(j.id, (jobsByPersona[pid] || []).find(x => x.id === j.id)?.linkedin_url || '')}
-                                className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                              >
-                                Save
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                    {(jobsByPersona[pid] || []).length === 0 && (
-                      <li className="px-2 py-2 text-xs text-slate-500">No jobs linked to this persona.</li>
-                    )}
-                  </ul>
-                </div>
+                {/* Linked jobs */}
+                <LinkedJobsList
+                  jobs={jobsByPersona[pid] || []}
+                  onChange={(jid, url) => setJobsByPersona(prev => ({ ...prev, [pid]: (prev[pid] || []).map(x => x.id === jid ? { ...x, linkedin_url: url } : x) }))}
+                  onDelete={(jid) => previewDeleteJob(jid)}
+                  onSave={(jid) => updateJob(jid, (jobsByPersona[pid] || []).find(x => x.id === jid)?.linkedin_url || '')}
+                />
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-700">Relevance</label>
                   <input type="range" min={0} max={100} value={editState[pid]?.relevance_hint ?? 0} onChange={e => setEditState(s => ({ ...s, [pid]: { ...(s[pid]||{title:'',department:'',linkedin_url:'',relevance_hint:0}), relevance_hint: Number(e.target.value) } }))} className="w-full accent-indigo-600" />
