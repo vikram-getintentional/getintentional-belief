@@ -12,6 +12,7 @@ import Personas from './pages/Personas';
 import Zmot from './pages/Zmot'; 
 import ValueProp from './pages/ValueProposition';
 import ReverseCaseStudies from './pages/ReverseCaseStudies'
+import CRMUpload from './pages/CRMUpload.tsx'
 import './output.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -28,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/personas" element={<Personas />} />
           <Route path="/zmot" element={<Zmot />} />
           <Route path="/reverse-case-studies" element={<ReverseCaseStudies />} />
+          <Route path="/crm-upload" element={<CRMUpload />} />
           {/* Add other routes here */}
           
 

@@ -1,4 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import ForceGraph2D from "react-force-graph-2d";
+import * as d3 from "d3";
+
+
 
 type Archetype = {
   archetype_id: string;
@@ -43,6 +47,126 @@ type RCSScaffold = {
 function clsx(...xs: (string | false | null | undefined)[]) {
   return xs.filter(Boolean).join(" ");
 }
+type GraphNode = Omit<d3.SimulationNodeDatum, 'fx' | 'fy'> & {
+  fx?: number;
+  fy?: number;
+  node_type?: string;
+  label?: string;
+  id?: string;
+  type?: string;
+  temporal_depth?: number;
+  candidate_score?: number;
+};
+
+function MyNetworkGraph({ graphData }: { graphData: { nodes: GraphNode[]; links: any[] } }) {
+  const fgRef = useRef<any>(null);
+  const [highlightedNodes, setHighlightedNodes] = React.useState<string[]>([]);
+  const [highlightedLinks, setHighlightedLinks] = React.useState<string[]>([]);
+
+  useEffect(() => {
+    if (fgRef.current) {
+      // Map temporal_depth to y position (higher depth = lower on screen)
+      fgRef.current.d3Force('y', d3.forceY().strength((node: any) => 2)
+        .y((node: any) => {
+          // Adjust these numbers as needed for your layout
+          const baseY = 0;
+          const scale = -20; // pixels per depth unit
+          // If you want higher depth lower, use +scale; if higher depth higher, use -scale
+          return baseY + (node.temporal_depth || 0) * scale;
+        })
+      );
+    }
+  }, [graphData]);
+
+  function getCausalChain(nodeId: string, nodes: GraphNode[], links: any[]) {
+    const nodeIds = new Set<string>();
+    const linkIds = new Set<string>();
+
+    // BFS for successors
+    let queue = [nodeId];
+    while (queue.length) {
+      const current = queue.pop()!;
+      nodeIds.add(current);
+      links.forEach(link => {
+        if (link.source === current && !nodeIds.has(link.target)) {
+          queue.push(link.target);
+          linkIds.add(`${link.source}->${link.target}`);
+        }
+      });
+    }
+
+    // BFS for predecessors
+    queue = [nodeId];
+    while (queue.length) {
+      const current = queue.pop()!;
+      nodeIds.add(current);
+      links.forEach(link => {
+        if (link.target === current && !nodeIds.has(link.source)) {
+          queue.push(link.source);
+          linkIds.add(`${link.source}->${link.target}`);
+        }
+      });
+    }
+
+    return {
+      nodeIds: Array.from(nodeIds),
+      linkIds: Array.from(linkIds)
+    };
+  }
+
+  return (
+    <ForceGraph2D
+      ref={fgRef}
+      graphData={graphData}
+      nodeAutoColorBy="type"
+      linkDirectionalParticles={0.5}
+      nodeLabel={node =>
+        `${node.label || node.id}
+        ${node.type ? `Type: ${node.type}` : ""}
+        ${node.temporal_depth ? `Temporal Depth: ${node.temporal_depth}` : ""}
+        ${node.cumulative_likelihood ? `Cumulative Likelihood: ${node.cumulative_likelihood}` : ""}
+        ${node.candidate_score ? `Score: ${node.candidate_score}` : ""}`
+      }
+      linkWidth={link => link.candidate_score ? Math.max(1, link.candidate_score * 100) : 1}
+      onNodeClick={node => {
+        if (!node.id) return;
+        const { nodeIds, linkIds } = getCausalChain(node.id, graphData.nodes, graphData.links);
+        setHighlightedNodes(nodeIds);
+        setHighlightedLinks(linkIds);
+      }}
+      nodeCanvasObject={(node, ctx, globalScale) => {
+        const isHighlighted = highlightedNodes.includes(node.id ?? "");
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(node.x ?? 0, node.y ?? 0, isHighlighted ? 12 : 8, 0, 2 * Math.PI, false);
+        ctx.fillStyle = isHighlighted ? "orange" : node.color || "#888";
+        ctx.fill();
+        ctx.font = `${Math.max(12, 4 / globalScale)}px Sans-Serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = isHighlighted ? "black" : "#333";
+        ctx.restore();
+      }}
+      linkCanvasObject={(link, ctx) => {
+        const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+        const targetId = typeof link.target === "object" ? link.target.id : link.target;
+        const isHighlighted = highlightedLinks.includes(`${sourceId}->${targetId}`);
+        const sourceNode = typeof link.source === "object" ? link.source : graphData.nodes.find(n => n.id === link.source);
+        const targetNode = typeof link.target === "object" ? link.target : graphData.nodes.find(n => n.id === link.target);
+        if (sourceNode && targetNode) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(sourceNode.x ?? 0, sourceNode.y ?? 0);
+          ctx.lineTo(targetNode.x ?? 0, targetNode.y ?? 0);
+          ctx.strokeStyle = isHighlighted ? "orange" : "#999";
+          ctx.lineWidth = isHighlighted ? 4 : 1;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }}
+    />
+  );
+}
 
 export default function RCSArchetypePicker({
   selectedProductId,
@@ -54,6 +178,7 @@ export default function RCSArchetypePicker({
   const [archetypes, setArchetypes] = React.useState<Archetype[]>([]);
   const [selectedArch, setSelectedArch] = React.useState<string>("");
   const [rcs, setRcs] = React.useState<RCSScaffold | null>(null);
+  const [rcsGraph, setRcsGraph] = React.useState<any>(null);
   const [loadingList, setLoadingList] = React.useState(false);
   const [loadingRCS, setLoadingRCS] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -124,15 +249,13 @@ export default function RCSArchetypePicker({
 
   // Fetch RCS scaffold on any relevant change
   React.useEffect(() => {
-    if (!selectedArch) {
-      setRcs(null);
-      return;
-    }
+    
     setLoadingRCS(true);
     setError(null);
     (async () => {
       try {
-        const payload: any = { archetype_id: selectedArch };
+        const payload: any = {};
+        if (selectedArch) payload.archetype_id = selectedArch;
         if (selectedZmotEvent) payload.zmot_event_id = selectedZmotEvent;
         if (selectedEngagementMeta) payload.engagement_meta = selectedEngagementMeta;
         const res = await fetch(`http://localhost:8000/get-reverse-case-study/${selectedProductId}`, {
@@ -146,7 +269,8 @@ export default function RCSArchetypePicker({
         if (!res.ok) throw new Error(`Failed to get reverse case study (${res.status})`);
         const data = await res.json();
         console.log("RCS response:", data);
-        setRcs(data);
+        setRcs(data.output);
+        setRcsGraph(data.graph);
       } catch (e: any) {
         setError(e.message || "Failed to load reverse case study");
         setRcs(null);
@@ -165,7 +289,19 @@ export default function RCSArchetypePicker({
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">Reverse Case Studies Generator (RCS)</h1>
-
+      {rcsGraph && (
+        <div
+          style={{
+            height: "60vh",
+            maxHeight: "60vh", 
+            position: "relative",
+            overflow: "hidden",
+            padding: 5,
+          }}
+        >
+          <MyNetworkGraph graphData={rcsGraph || {nodes: [], links: []}} />
+        </div>
+      )}
       {/* Archetype Picker */}
       <div className="bg-white border rounded-2xl p-4 shadow-sm">
         <label className="block text-sm font-medium mb-2">Select archetype</label>
@@ -200,7 +336,7 @@ export default function RCSArchetypePicker({
             value={selectedZmotEvent}
             onChange={e => setSelectedZmotEvent(e.target.value)}
           >
-            <option value="" disabled>Choose a ZMOT event…</option>
+            <option value="">No ZMOT filter</option>
             {zmotEvents.map(ev => (
               <option key={ev.zmot_event_id} value={ev.zmot_event_id}>{ev.zmot_event}</option>
             ))}
@@ -214,6 +350,7 @@ export default function RCSArchetypePicker({
           {error}
         </div>
       )}
+      
 
       {/* RCS Scaffold */}
       {rcs && (

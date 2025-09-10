@@ -115,6 +115,44 @@ def _upsert_edge(
                 continue
             edata[k] = v
 
+# Relevance Labels to Floats:
+RELEVANCE_LABEL_MAP = {
+    "Critical": 1.0,
+    "Core": 0.8,
+    "Supportive": 0.6,
+    "Ancillary": 0.4,
+    "Out-of-scope": 0.0,
+}
+
+LIKELIHOOD_LABEL_MAP = {
+    "Essential": 0.95,
+    "Expected": 0.75,
+    "Common": 0.6,
+    "Rare": 0.4,
+    "Unlikely": 0.2,
+}
+
+BOOST_LABEL_MAP = {
+    "Very High": 0.95,
+    "High": 0.75,
+    "Medium": 0.5,
+    "Low": 0.3,
+    "Negligible": 0.1,
+}
+
+def label_to_float(label: str, label_type: str = "relevance") -> float:
+    """
+    Maps a relevance or likelihood label to a float value.
+    label_type: "relevance" or "likelihood"
+    """
+    if label_type == "relevance":
+        return RELEVANCE_LABEL_MAP.get(label, 0.0)
+    elif label_type == "likelihood":
+        return LIKELIHOOD_LABEL_MAP.get(label, 0.0)
+    elif label_type == "boost":
+        return BOOST_LABEL_MAP.get(label, 0.0)
+    else:
+        raise ValueError(f"Unknown label_type: {label_type}")
 
 # canonical node constructors (use canonical strings/fields)
 
@@ -217,9 +255,9 @@ class CanonManager:
             for p in cap.get("pains", []) or []:
                 self.buf["pain"].add(p.get("pain","").strip())
                 for m in p.get("perceived_metrics", []) or []:
-                    self.buf["perceived_metric"].add(m.strip())
-                for t in p.get("pain_triggers", []) or []:
-                    self.buf["pain_trigger"].add(t.strip())
+                    text = m.get("text","").strip() if isinstance(m, dict) else (m or "").strip()
+                    self.buf["perceived_metric"].add(text)
+                
                 for j in p.get("felt_in_jobs", []) or []:
                     self.buf["job"].add(j.get("job_to_be_done","").strip())
                     for pr in j.get("personas", []) or []:
@@ -231,9 +269,11 @@ class CanonManager:
                     for sp in j.get("solving_pains", []) or []:
                         self.buf["pain"].add(sp.get("pain","").strip())
                         for sm in sp.get("perceived_metrics", []) or []:
-                            self.buf["perceived_metric"].add(sm.strip())
+                            text = sm.get("text","").strip() if isinstance(sm, dict) else (sm or "").strip()
+                            self.buf["perceived_metric"].add(text)
                         for st in sp.get("pain_triggers", []) or []:
-                            self.buf["pain_trigger"].add(st.strip())
+                            text = st.get("text","").strip() if isinstance(st, dict) else (st or "").strip()
+                            self.buf["pain_trigger"].add(text)
         self.plan.append(("hop0", {"hop0_json": hop0_json, "capability_ids": capability_ids, "product_id": product_id}))
 
     def ingest_hop_plus(self, gpt_outputs: List[Dict[str, Any]], product_id: str):
@@ -252,9 +292,13 @@ class CanonManager:
                 for dp in sj.get("solving_pains", []) or []:
                     self.buf["pain"].add(dp.get("pain","").strip())
                     for m in dp.get("perceived_metrics", []) or []:
-                        self.buf["perceived_metric"].add(m.strip())
+                        text = m.get("text","").strip() if isinstance(m, dict) else (m or "").strip()
+                        if text:
+                            self.buf["perceived_metric"].add(text)
                     for t in dp.get("pain_triggers", []) or []:
-                        self.buf["pain_trigger"].add(t.strip())
+                        text = t.get("text","").strip() if isinstance(t, dict) else (t or "").strip()
+                        if text:
+                            self.buf["pain_trigger"].add(text)
         self.plan.append(("hop_plus", {"gpt_outputs": gpt_outputs, "product_id": product_id}))
 
     def ingest_zmot(self, results: Dict[str, Any], product_id: str):
@@ -284,11 +328,15 @@ class CanonManager:
                 ev = (z.get("trigger_event") or "").strip()
                 if ev: self.buf["zmot_event"].add(ev)
                 for om in z.get("observable_moments", []) or []:
-                    omt = (om.get("observable_moment") or "").strip()
-                    if omt: self.buf["observable_moment"].add(omt)
+                    omt = om.get("observable_moment")
+                    if isinstance(om, dict):
+                        text = omt.get("text", "").strip() if isinstance(omt, dict) else (omt or "").strip()
+                        self.buf["observable_moment"].add(text)
                 for kw in z.get("trigger_keywords", []) or []:
-                    k = (kw.get("keyword") or "").strip()
-                    if k: self.buf["keyword"].add(k)
+                    k = (kw.get("keyword"))
+                    if isinstance(kw, dict):
+                        text = kw.get("text", "").strip()
+                        self.buf["keyword"].add(text)
 
         # Enqueue ONE op that the emitter understands
         self.plan.append(("zmot", {"results": results, "product_id": product_id}))
@@ -405,27 +453,27 @@ class CanonManager:
                 else:
                     pain_id = _pain(G, pain_can, p.get("pain_source"))
                 touched.append(pain_id)
-                relevance = p.get("relevance", [])
-                for idx, cap in enumerate(caps_list):
-                    if idx < len(relevance):
-                        _upsert_edge(G, cap, "solves", pain_id, weight = relevance[idx])       
+                relevance_label = p.get("relevance_label", "")
+                likelihood_label = p.get("likelihood_label", "")
+                relevance = label_to_float(relevance_label, "relevance")
+                likelihood = label_to_float(likelihood_label, "likelihood")
+                
+                _upsert_edge(G, cap_id, "solves", pain_id, weight = relevance, attrs={"relevance": relevance, "likelihood": likelihood})       
                 print("Capability-Pain Nodes and Edges Added")
                     
 
                 for metric in p.get("perceived_metrics", []) or []:
                     print("Processing perceived metrics...")
-                    can_metric = self.canon["perceived_metric"].get(metric.strip(), metric.strip())
+                    text = metric.get("text", "").strip() if isinstance(metric, dict) else (metric or "").strip()
+                    can_metric = self.canon["perceived_metric"].get(text, text)
                     m_id = _metric(G, can_metric)
-                    _upsert_edge(G, pain_id, "expressed_as", m_id)
+                    relevance = label_to_float(metric.get("relevance_label", ""), "relevance") if isinstance(metric, dict) else 0.0
+                    likelihood = label_to_float(metric.get("likelihood_label", ""), "likelihood") if isinstance(metric, dict) else 0.0
+                    _upsert_edge(G, pain_id, "expressed_as", m_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                    touched.append(m_id)
                 print("Pain-Metric Nodes and Edges Added")
 
-                for attr in p.get("pain_triggers", []) or []:
-                    print("Processing pain triggers...")
-                    can_attr = self.canon["pain_trigger"].get(attr.strip(), attr.strip())
-                    t_id = _trigger(G, can_attr)
-                    touched.append(t_id)
-                    _upsert_edge(G, pain_id, "triggered_by", t_id)
-                print("Pain-Trigger Nodes and Edges Added")
+                
 
                 for j in p.get("felt_in_jobs", []) or []:
                     print("Processing felt_in_jobs...")
@@ -435,10 +483,11 @@ class CanonManager:
                         job_id = _job(G, job_can.get("canonical_label"))
                     else:
                         job_id = _job(G, job_can)
+                    relevance = label_to_float(j.get("relevance_label", ""), "relevance")
+                    likelihood = label_to_float(j.get("likelihood_label", ""), "likelihood")
+                    _upsert_edge(G, pain_id, "felt_in", job_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
                     touched.append(job_id)
-                    _upsert_edge(G, pain_id, "felt_in", job_id, weight=j.get("impact"))
-                    
-
+                    print("Pain-Job Nodes and Edges Added")
                     for pr in j.get("personas", []) or []:
                         key = {
                             "title": pr.get("title",""),
@@ -447,7 +496,10 @@ class CanonManager:
                         }
                         pr_can = self.canon["persona"].get(str(key), key)
                         persona_id = _persona(G, pr_can["title"], pr_can["department"], pr_can["seniority"])
-                        _upsert_edge(G, job_id, "performed_by", persona_id, weight = pr.get("job_importance"))
+                        relevance = label_to_float(pr.get("relevance_label", ""), "relevance") if isinstance(pr, dict) else 0.0
+                        likelihood = label_to_float(pr.get("likelihood_label", ""), "likelihood") if isinstance(pr, dict) else 0.0
+                        _upsert_edge(G, job_id, "performed_by", persona_id, weight = relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                        touched.append(persona_id)
                     print("Persona nodes added")
                     
                     for sp in j.get("solving_pains", []) or []:
@@ -461,20 +513,30 @@ class CanonManager:
                         if sp_id == pain_id:
                             print("Solving pain is the same as original pain. Skipping.")
                             continue
-                        _upsert_edge(G, job_id, "solves", sp_id, weight=sp.get("criticality"))
+                        relevance = label_to_float(sp.get("relevance_label", ""), "relevance")
+                        likelihood = label_to_float(sp.get("likelihood_label", ""), "likelihood")
+                        _upsert_edge(G, job_id, "solves", sp_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
                         touched.append(sp_id)
 
                         for metric in sp.get("perceived_metrics", []) or []:
-                            can_metric = self.canon["perceived_metric"].get(metric.strip(), metric.strip())
+                            text = metric.get("text", "").strip() if isinstance(metric, dict) else (metric or "").strip()
+                            can_metric = self.canon["perceived_metric"].get(text, text)
                             m_id = _metric(G, can_metric)
-                            _upsert_edge(G, sp_id, "expressed_as", m_id)
+                            relevance = label_to_float(metric.get("relevance_label", ""), "relevance") if isinstance(metric, dict) else 0.0
+                            likelihood = label_to_float(metric.get("likelihood_label", ""), "likelihood") if isinstance(metric, dict) else 0.0
+                            _upsert_edge(G, sp_id, "expressed_as", m_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                            touched.append(m_id) 
                         print("Pain-Metric Nodes and Edges Added")
 
                         for attr in sp.get("pain_triggers", []) or []:
-                            can_attr = self.canon["pain_trigger"].get(attr.strip(), attr.strip())
+                            print("Processing pain triggers...")
+                            text = attr.get("text", "").strip() if isinstance(attr, dict) else (attr or "").strip()
+                            can_attr = self.canon["pain_trigger"].get(text, text)
                             t_id = _trigger(G, can_attr)
+                            relevance = label_to_float(attr.get("relevance_label", ""), "relevance") if isinstance(attr, dict) else 0.0
+                            likelihood = label_to_float(attr.get("likelihood_label", ""), "likelihood") if isinstance(attr, dict) else 0.0
+                            _upsert_edge(G, sp_id, "triggered_by", t_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
                             touched.append(t_id)
-                            _upsert_edge(G, sp_id, "triggered_by", t_id)
                         print("Pain-Trigger Nodes and Edges Added")
                         print("Solving Pain - Trigger Nodes added")
                     print("Solving pain nodes completed")
@@ -508,8 +570,11 @@ class CanonManager:
                     job_id = _job(G, job_can.get("canonical_label"))
                 else:
                     job_id = _job(G, job_can)
+                relevance = label_to_float(sj.get("relevance_label", ""), "relevance")
+                likelihood = label_to_float(sj.get("likelihood_label", ""), "likelihood")
                 touched.append(job_id)
-                _upsert_edge(G, orig_pain_id, "felt_in", job_id, weight=sj.get("severity"))
+                _upsert_edge(G, orig_pain_id, "felt_in", job_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                print("Pain-Job Nodes and Edges Added")
                 
 
                 for pr in sj.get("personas", []) or []:
@@ -521,7 +586,11 @@ class CanonManager:
                     }
                     pr_can = self.canon["persona"].get(str(key), key)
                     persona_id = _persona(G, pr_can["title"], pr_can["department"], pr_can["seniority"])
-                    _upsert_edge(G, job_id, "performed_by", persona_id, weight=pr.get("job_importance"))
+                    relevance = label_to_float(pr.get("relevance_label", ""), "relevance") if isinstance(pr, dict) else 0.0
+                    likelihood = label_to_float(pr.get("likelihood_label", ""), "likelihood") if isinstance(pr, dict) else 0.0
+                    touched.append(persona_id)
+                    _upsert_edge(G, job_id, "performed_by", persona_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                print("Persona nodes added")
 
                 for dp in sj.get("solving_pains", []) or []:
                     print("Processing solving pains...")
@@ -536,19 +605,29 @@ class CanonManager:
                     if dp_id == orig_pain_id:
                         print("Solving pain is the same as original pain. Skipping.")
                         continue
-                    _upsert_edge(G, job_id, "solves", dp_id, weight=dp.get("criticality"))
+                    relevance = label_to_float(dp.get("relevance_label", ""), "relevance")
+                    likelihood = label_to_float(dp.get("likelihood_label", ""), "likelihood")
+                    _upsert_edge(G, job_id, "solves", dp_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                    
 
                     for metric in dp.get("perceived_metrics", []) or []:
-                        can_metric = self.canon["perceived_metric"].get(metric.strip(), metric.strip())
+                        text = metric.get("text", "").strip() if isinstance(metric, dict) else (metric or "").strip()
+                        can_metric = self.canon["perceived_metric"].get(text, text)
                         m_id = _metric(G, can_metric)
-                        _upsert_edge(G, dp_id, "expressed_as", m_id)
+                        relevance = label_to_float(metric.get("relevance_label", ""), "relevance") if isinstance(metric, dict) else 0.0
+                        likelihood = label_to_float(metric.get("likelihood_label", ""), "likelihood") if isinstance(metric, dict) else 0.0
+                        _upsert_edge(G, dp_id, "expressed_as", m_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
                     print("Pain-Metric Nodes and Edges Added")
 
                     for attr in dp.get("pain_triggers", []) or []:
-                        can_attr = self.canon["pain_trigger"].get(attr.strip(), attr.strip())
+                        print("Processing pain triggers...")
+                        text = attr.get("text", "").strip() if isinstance(attr, dict) else (attr or "").strip()
+                        can_attr = self.canon["pain_trigger"].get(text, text)
                         t_id = _trigger(G, can_attr)
+                        relevance = label_to_float(attr.get("relevance_label", ""), "relevance") if isinstance(attr, dict) else 0.0
+                        likelihood = label_to_float(attr.get("likelihood_label", ""), "likelihood") if isinstance(attr, dict) else 0.0
+                        _upsert_edge(G, dp_id, "triggered_by", t_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
                         touched.append(t_id)
-                        _upsert_edge(G, dp_id, "triggered_by", t_id)
                     print("Pain-Trigger Nodes and Edges Added")
         print("Hop+ Emission completed")        
 
@@ -595,44 +674,56 @@ class CanonManager:
                 touched.append(zmot_id)
 
                 # PainTrigger → accelerated_by → ZMOT
-                boost = z.get("boost_score")
-                match = z.get("match_score")
+                likelihood = label_to_float(z.get("event_to_archetype_likelihood_label", ""), "likelihood")
+                boost = label_to_float(z.get("boost_label", ""), "boost")
+                
+
+                
+                if not arch_id or arch_id not in G:
+                    print(f"⚠️ Missing or unknown archetype_id '{arch_id}'; skipping archetype↔event edge.")
+                    continue
+                _upsert_edge(
+                    G, arch_id, "relevant_event", zmot_id,
+                    weight=likelihood if likelihood is not None else 0.0,
+                    attrs={"boost": boost, "likelihood": likelihood}
+                )
                 _upsert_edge(
                     G, trig_id, "accelerated_by", zmot_id,
-                    weight=float(boost if boost is not None else (match or 0.0)),
-                    attrs={"boost_score": boost, "match_score": match}
+                    weight=likelihood if likelihood is not None else 0.0,
+                    attrs={"archetype_id": arch_id, "likelihood": likelihood, "boost": boost}
                 )
-
-                # (Optional) Archetype → relevant_event → ZMOT
-                if arch_id and arch_id in G:
-                    _upsert_edge(
-                        G, arch_id, "relevant_event", zmot_id,
-                        weight=float(match or 0.0),
-                        attrs={"match_score": match}
-                    )
-                    touched.append(arch_id)
-                elif arch_id:
-                    print(f"ℹ️ Archetype {arch_id} not found; skipping archetype↔event edge.")
+                touched.append(arch_id)
 
                 # ZMOT → observed_in → ObservableMoment(s)
                 for om in z.get("observable_moments", []) or []:
-                    om_raw = (om.get("observable_moment") or "").strip()
+                    om_raw = om.get("observable_moment")
                     if not om_raw:
                         continue
-                    om_can = canon_om.get(om_raw, {"canonical_label": om_raw})
-                    om_label = om_can.get("canonical_label", om_raw) if isinstance(om_can, dict) else om_can
+                    om_text = om_raw.get("text", "").strip() if isinstance(om_raw, dict) else (om_raw or "").strip()
+                    if not om_text:
+                        print("⚠️ Missing observable_moment text; skipping this observable moment.")
+                        continue
+
+                    om_can = canon_om.get(om_text, {"canonical_label": om_text})
+                    om_label = om_can.get("canonical_label", om_text) if isinstance(om_can, dict) else om_can
                     om_id = _observable(G, om_label)
-                    _upsert_edge(G, zmot_id, "observed_in", om_id, weight=float(om.get("match_score") or 0.0))
+                    relevance = label_to_float(om_raw.get("relevance_label", ""), "relevance") if isinstance(om_raw, dict) else 0.0
+                    likelihood = label_to_float(om_raw.get("likelihood_label", ""), "likelihood") if isinstance(om_raw, dict) else 0.0
+                    _upsert_edge(G, zmot_id, "observed_in", om_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
 
                 # ZMOT → associated_with → Keyword(s)
                 for kw in z.get("trigger_keywords", []) or []:
-                    kw_raw = (kw.get("keyword") or "").strip()
+                    kw_raw = kw.get("keyword")
                     if not kw_raw:
                         continue
-                    kw_can = canon_kw.get(kw_raw, {"canonical_label": kw_raw})
-                    kw_label = kw_can.get("canonical_label", kw_raw) if isinstance(kw_can, dict) else kw_can
+                    kw_text = kw_raw.get("text", "").strip() if isinstance(kw_raw, dict) else (kw_raw or "").strip()
+                    kw_can = canon_kw.get(kw_text, {"canonical_label": kw_text})
+                    kw_label = kw_can.get("canonical_label", kw_text) if isinstance(kw_can, dict) else kw_can
                     kw_id = _keyword(G, kw_label)
-                    _upsert_edge(G, zmot_id, "associated_with", kw_id, weight=float(kw.get("match_score") or 0.0))
+                    relevance = label_to_float(kw_raw.get("relevance_label", ""), "relevance") if isinstance(kw_raw, dict) else 0.0
+                    likelihood = label_to_float(kw_raw.get("likelihood_label", ""), "likelihood") if isinstance(kw_raw, dict) else 0.0
+                    touched.append(kw_id)
+                    _upsert_edge(G, zmot_id, "associated_with", kw_id, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
 
         print("ZMOT Emission completed")
         return list(dict.fromkeys(touched))  # unique
@@ -676,6 +767,7 @@ class CanonManager:
 
 
         for row in data.get("relevance_matrix", []) or []:
+            
             print("Processing relevance matrix...")
             arch_ref = row.get("archetype_ref")
             if not arch_ref:
@@ -693,9 +785,11 @@ class CanonManager:
                 if pain_trigger_id not in G:
                     print(f"Pain trigger ID {pain_trigger_id} not found in graph. Skipping.")
                     continue
-                relevance = float(ts.get("relevance", 0.0)) or 0.0
-                _upsert_edge(G, pain_trigger_id, "prevalent_in", arch_node, weight=relevance)
+                relevance = label_to_float(ts.get("relevance_label", ""), "relevance") if isinstance(ts, dict) else 0.0
+                likelihood = label_to_float(ts.get("likelihood_label", ""), "likelihood") if isinstance(ts, dict) else 0.0
+                _upsert_edge(G, pain_trigger_id, "prevalent_in", arch_node, weight=relevance, attrs={"relevance": relevance, "likelihood": likelihood})
                 touched.append(pain_trigger_id)
+                
 
         print("Archetype Emission completed")
         return touched

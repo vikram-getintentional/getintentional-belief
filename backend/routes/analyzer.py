@@ -459,9 +459,8 @@ async def get_reverse_case_study(product_id: str, payload:dict, request: Request
 
         # 🧠 Inference
         product_subgraph = build_product_graph(product_id)
-        archetype_id = payload.get("archetype_id")
-        if not archetype_id:
-            raise HTTPException(status_code=400, detail="Archetype ID is required.")
+        archetype_id = payload.get("archetype_id", None)
+        
         zmot_event = payload.get("zmot_event_id", None)
         engagement_meta = payload.get("engagement_meta", None)
         print("Calling RCS Simulator")
@@ -476,4 +475,49 @@ async def get_reverse_case_study(product_id: str, payload:dict, request: Request
         print("❌ Get Reverse Case Studies error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve Reverse Case Studies")
     
+
+#Post /save/save-target-account-list/{product_id}
+@router.post("save/save-target-account-list/{product_id}")
+async def save_target_account_list(product_id: str, payload:dict, request: Request):
+    print("Saving target account list for product_id:", product_id)
+    """
+    Saves the target account list for the product_id.
+    Expects payload with:
+    - accounts: list of {account_name, domain, notes}
+    """
+    try:
+        # 🔐 Auth
+        auth_header = request.headers.get("authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+        token = auth_header.split(" ")[1]
+        decoded = decode_token(token)
+        company_id = decoded.get("company_id")
+
+        if not company_id:
+            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+        
+        accounts = payload.get("accounts", [])
+        if not accounts:
+            raise HTTPException(status_code=400, detail="Accounts list is required.")
+
+        # Here you would save the accounts to your database or data store
+        print(f"Received {len(accounts)} accounts to save for product_id {product_id}")
+        
+
+        # 1. Create a target-account-list table if not exists
+        # 2. Insert or update the "accounts" information for the given product_id as: "product_id (foreign key)" "account uuid (primary key)" "account name", "domain", "industry", "revenue range", "employee range", "funding stage", "geography"
+        # 3. Create a Personas table if not exists.
+        # 4. For each account, create a persona entry as: "account uuid (foreign key)" "product_id (foreign key)" "persona_id (primary key)" "persona name", "role", "department", "seniority", "job description"
+        # 5. Return success message
+
+
+
+        return {"message": f"Successfully saved {len(accounts)} accounts."}
+    except Exception as e:
+        print("❌ Save Target Account List error:", e)
+        raise HTTPException(status_code=500, detail="Could not save target account list")
     
+        

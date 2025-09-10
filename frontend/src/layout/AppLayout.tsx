@@ -32,7 +32,7 @@ const navSections = [
     {
       title: 'Setup',
       items: [
-        { name: 'CRM Setup', path: '/crm-setup' },
+        { name: 'CRM Upload', path: '/crm-upload' },
         { name: 'Engagements Setup', path: '/engagements-setup' },
         { name: 'Target Accounts', path: '/target-accounts' },
       ],
