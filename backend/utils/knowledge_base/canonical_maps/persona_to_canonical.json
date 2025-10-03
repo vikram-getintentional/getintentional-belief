@@ -1672,8 +1672,8 @@
     "seniority": "Senior"
   },
   "{'title': 'CFO', 'department': 'Finance', 'seniority': 'Senior'}": {
-    "title": "CFO",
-    "department": "Finance",
+    "title": "cfo",
+    "department": "finance",
     "seniority": "Senior"
   },
   "{'title': 'CEO', 'department': 'Executive', 'seniority': 'Top'}": {
@@ -2112,9 +2112,9 @@
     "seniority": "Senior"
   },
   "{'title': 'CFO', 'department': 'Finance', 'seniority': 'Executive'}": {
-    "title": "CFO",
-    "department": "Finance",
-    "seniority": "Senior"
+    "title": "cfo",
+    "department": "finance",
+    "seniority": "Executive"
   },
   "{'title': 'CEO', 'department': 'Executive', 'seniority': 'Top-level'}": {
     "title": "CEO",
@@ -2142,9 +2142,9 @@
     "seniority": "senior"
   },
   "{'title': 'HR Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
-    "title": "CHRO",
-    "department": "Human Resources",
-    "seniority": "Top Level"
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Manager"
   },
   "{'title': 'Head of Compliance', 'department': 'Compliance', 'seniority': 'Senior Management'}": {
     "title": "compliance officer",
@@ -3500,8 +3500,13 @@
   },
   "data analyst|data science|Operator": "data analyst|data science|Operator",
   "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'Operator'}": {
+<<<<<<< Updated upstream
     "title": "data analyst",
     "department": "data science",
+=======
+    "title": "financial analyst",
+    "department": "business intelligence",
+>>>>>>> Stashed changes
     "seniority": "Operator"
   },
   "{'title': 'data analyst', 'department': 'data science', 'seniority': 'Operator'}": {
@@ -3627,9 +3632,9 @@
   },
   "business analyst|analytics|Operator": "business analyst|analytics|Operator",
   "{'title': 'business analyst', 'department': 'analytics', 'seniority': 'Operator'}": {
-    "title": "data analyst",
+    "title": "business analyst",
     "department": "analytics",
-    "seniority": "Junior"
+    "seniority": "Operator"
   },
   "{'title': 'app developer', 'department': 'product development', 'seniority': 'Operator'}": {
     "title": "app developer",
@@ -3694,9 +3699,13 @@
     "seniority": "Operator"
   },
   "{'title': 'finance manager', 'department': 'finance', 'seniority': 'Operator'}": {
+<<<<<<< Updated upstream
     "title": "accountant",
+=======
+    "title": "account manager",
+>>>>>>> Stashed changes
     "department": "finance",
-    "seniority": "Junior"
+    "seniority": "Operator"
   },
   "{'title': 'customer success manager', 'department': 'customer service', 'seniority': 'Operator'}": {
     "title": "subscription manager",
@@ -3835,7 +3844,7 @@
     "seniority": "Operator"
   },
   "{'title': 'accounts receivable specialist', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "accountant",
+    "title": "accounts receivable specialist",
     "department": "finance",
     "seniority": "Operator"
   },
@@ -3871,7 +3880,7 @@
     "seniority": "Operator"
   },
   "{'title': 'it specialist', 'department': 'it', 'seniority': 'Operator'}": {
-    "title": "it manager",
+    "title": "it specialist",
     "department": "it",
     "seniority": "Operator"
   },
@@ -4420,7 +4429,11 @@
   },
   "billing specialist|finance|Operator": "billing specialist|finance|Operator",
   "{'title': 'billing specialist', 'department': 'finance', 'seniority': 'Operator'}": {
+<<<<<<< Updated upstream
     "title": "accountant",
+=======
+    "title": "finance analyst",
+>>>>>>> Stashed changes
     "department": "finance",
     "seniority": "Operator"
   },
@@ -4779,7 +4792,7 @@
     "seniority": "Operator"
   },
   "{'title': 'data analyst', 'department': 'it', 'seniority': 'Operator'}": {
-    "title": "data manager",
+    "title": "data analyst",
     "department": "it",
     "seniority": "Operator"
   },
@@ -4958,8 +4971,23 @@
     "department": "it",
     "seniority": "Operator"
   },
+<<<<<<< Updated upstream
   "{'title': 'payment operations manager', 'department': 'finance', 'seniority': 'Operator'}": {
     "title": "accountant",
+=======
+  "{'title': 'support team lead', 'department': 'customer support', 'seniority': 'Operator'}": {
+    "title": "support team lead",
+    "department": "customer support",
+    "seniority": "Operator"
+  },
+  "{'title': 'business process analyst', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "company secretary",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'internal auditor', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "internal auditor",
+>>>>>>> Stashed changes
     "department": "finance",
     "seniority": "Operator"
   },
@@ -5043,9 +5071,3005 @@
     "department": "finance",
     "seniority": "Junior"
   },
+<<<<<<< Updated upstream
   "{'title': 'subscription manager', 'department': 'customer success', 'seniority': 'Operator'}": {
     "title": "subscription manager",
     "department": "customer success",
+=======
+  "{'title': 'sales operations manager', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
     "seniority": "Operator"
+  },
+  "{'title': 'ux designer', 'department': 'design', 'seniority': 'Operator'}": {
+    "title": "design lead",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'crm administrator', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "sales manager",
+    "department": "sales",
+>>>>>>> Stashed changes
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Analyst', 'department': 'Analytics', 'seniority': 'Manager'}": {
+    "title": "business analyst",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Operations Manager', 'department': 'Operations', 'seniority': 'Senior'}": {
+    "title": "operations manager",
+    "department": "operations",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Scientist', 'department': 'Data Science', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Software Developer', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "software developer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Visualization Specialist', 'department': 'Analytics', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Analyst', 'department': 'Analytics', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Engineer', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "data manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Intelligence Analyst', 'department': 'Business Intelligence', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Visualization Specialist', 'department': 'Analytics', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Chief Data Officer', 'department': 'Executive', 'seniority': 'Executive'}": {
+    "title": "data analyst",
+    "department": "executive",
+    "seniority": "Executive"
+  },
+  "{'title': 'Business Intelligence Analyst', 'department': 'Analytics', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Analyst', 'department': 'Business Intelligence', 'seniority': 'Manager'}": {
+    "title": "pricing analyst",
+    "department": "business intelligence",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Scientist', 'department': 'Data Science', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Engineer', 'department': 'Engineering', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "design",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Analyst', 'department': 'Analytics', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Project Manager', 'department': 'Operations', 'seniority': 'Senior'}": {
+    "title": "project manager",
+    "department": "operations",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Strategist', 'department': 'Strategy', 'seniority': 'Executive'}": {
+    "title": "data strategist",
+    "department": "strategy",
+    "seniority": "Executive"
+  },
+  "{'title': 'Data Engineer', 'department': 'Engineering', 'seniority': 'Senior'}": {
+    "title": "data engineer",
+    "department": "engineering",
+    "seniority": "Senior"
+  },
+  "{'title': 'Quality Assurance Analyst', 'department': 'Quality Assurance', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "quality assurance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Scientist', 'department': 'Data Science', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "Manager"
+  },
+  "{'title': 'Software Developer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "software developer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Financial Analyst', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "business analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Chief Data Officer', 'department': 'Data', 'seniority': 'Executive'}": {
+    "title": "data analyst",
+    "department": "data",
+    "seniority": "Executive"
+  },
+  "{'title': 'AI Strategist', 'department': 'Strategy', 'seniority': 'Executive'}": {
+    "title": "ai strategist",
+    "department": "strategy",
+    "seniority": "Executive"
+  },
+  "{'title': 'Data Integration Specialist', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Scientist', 'department': 'Analytics', 'seniority': 'Senior'}": {
+    "title": "data scientist",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Visualization Specialist', 'department': 'Analytics', 'seniority': 'Operator'}": {
+    "title": "data manager",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Intelligence Analyst', 'department': 'Analytics', 'seniority': 'Senior'}": {
+    "title": "business analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Engineer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Scientist', 'department': 'R&D', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "r&d",
+    "seniority": "Manager"
+  },
+  "{'title': 'Software Developer', 'department': 'Engineering', 'seniority': 'Operator'}": {
+    "title": "software developer",
+    "department": "engineering",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Analyst', 'department': 'Business Intelligence', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'UI/UX Designer', 'department': 'Design', 'seniority': 'Senior'}": {
+    "title": "ui/ux designer",
+    "department": "design",
+    "seniority": "Senior"
+  },
+  "{'title': 'AI Engineer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "ai engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Engineer', 'department': 'Data Science', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Intelligence Analyst', 'department': 'Business Intelligence', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Chief Data Officer', 'department': 'Data Management', 'seniority': 'Executive'}": {
+    "title": "data engineer",
+    "department": "analytics",
+    "seniority": "Executive"
+  },
+  "{'title': 'Subscription Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "subscription manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Success Manager', 'department': 'Customer Success', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Sales Operations Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "vp of sales",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Analyst', 'department': 'Analytics', 'seniority': 'Senior'}": {
+    "title": "business analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Accounts Receivable Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accounts payable clerk",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'E-commerce Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "e-commerce manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Integration Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it integration specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Subscription Manager', 'department': 'Customer Success', 'seniority': 'Manager'}": {
+    "title": "subscription manager",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Pricing Analyst', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Collections Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "billing specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Retention Analyst', 'department': 'Customer Success', 'seniority': 'Manager'}": {
+    "title": "pricing analyst",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Revenue Accountant', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Business Analyst', 'department': 'Strategy', 'seniority': 'Manager'}": {
+    "title": "business analyst",
+    "department": "strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'Compliance Officer', 'department': 'Legal', 'seniority': 'Executive'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Executive"
+  },
+  "{'title': 'IT Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Retention Analyst', 'department': 'Marketing', 'seniority': 'Manager'}": {
+    "title": "pricing analyst",
+    "department": "marketing",
+    "seniority": "Manager"
+  },
+  "{'title': 'Financial Controller', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "controller",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Analyst', 'department': 'Business Intelligence', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "business intelligence",
+    "seniority": "Operator"
+  },
+  "{'title': 'Chief Information Security Officer', 'department': 'IT', 'seniority': 'Executive'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Executive"
+  },
+  "{'title': 'Integration Engineer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "integration engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Financial Controller', 'department': 'Finance', 'seniority': 'Executive'}": {
+    "title": "financial controller",
+    "department": "finance",
+    "seniority": "Executive"
+  },
+  "{'title': 'Business Analyst', 'department': 'Strategy', 'seniority': 'Senior'}": {
+    "title": "business analyst",
+    "department": "strategy",
+    "seniority": "Senior"
+  },
+  "{'title': 'Integration Specialist', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Product Manager', 'department': 'Product', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Pricing Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "finance manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Integration Engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "integration engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Security Officer', 'department': 'IT Security', 'seniority': 'Senior'}": {
+    "title": "security officer",
+    "department": "it security",
+    "seniority": "Senior"
+  },
+  "{'title': 'Revenue Accountant', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Success Manager', 'department': 'Customer Success', 'seniority': 'Senior'}": {
+    "title": "subscription manager",
+    "department": "customer success",
+    "seniority": "Senior"
+  },
+  "{'title': 'AI Product Manager', 'department': 'Product', 'seniority': 'Manager'}": {
+    "title": "ai product manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'Security Officer', 'department': 'IT', 'seniority': 'Executive'}": {
+    "title": "security officer",
+    "department": "it",
+    "seniority": "Executive"
+  },
+  "{'title': 'Subscription Manager', 'department': 'Operations', 'seniority': 'Manager'}": {
+    "title": "account manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'Financial Controller', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "budget manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Analyst', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "pricing analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Integration Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "software engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'AI Product Manager', 'department': 'Product', 'seniority': 'Senior'}": {
+    "title": "ai product manager",
+    "department": "product",
+    "seniority": "Senior"
+  },
+  "{'title': 'Compliance Officer', 'department': 'Legal', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "legal",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Analyst', 'department': 'Analytics', 'seniority': 'Operator'}": {
+    "title": "pricing analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Pricing Analyst', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "market analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Financial Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Integration Specialist', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "compliance officer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Compliance Officer', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Billing Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "finance manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Security Analyst', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "pricing analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Revenue Manager', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "revenue manager",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Market Research Analyst', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "business analyst",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Analyst', 'department': 'Operations', 'seniority': 'Operator'}": {
+    "title": "pricing analyst",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Success Specialist', 'department': 'Customer Success', 'seniority': 'Operator'}": {
+    "title": "billing analyst",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'Billing Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "finance manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Revenue Operations Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Retention Specialist', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "billing analyst",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'Chief Marketing Officer', 'department': 'Marketing', 'seniority': 'Executive'}": {
+    "title": "chief financial officer",
+    "department": "product",
+    "seniority": "Executive"
+  },
+  "{'title': 'IT Security Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it security manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Compliance Specialist', 'department': 'Legal', 'seniority': 'Operator'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Analyst', 'department': 'Strategy', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "strategy",
+    "seniority": "Operator"
+  },
+  "{'title': 'Chief Financial Officer', 'department': 'Finance', 'seniority': 'Executive'}": {
+    "title": "business analyst",
+    "department": "finance",
+    "seniority": "Executive"
+  },
+  "{'title': 'Systems Integrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "systems integrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Project Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it project manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Revenue Assurance Analyst', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "business analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Systems Integration Specialist', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "systems integration specialist",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Billing Strategy Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "billing strategy manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Infrastructure Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "data operations manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Systems Administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it systems administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Billing Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Systems Administrator', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it systems administrator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'finance coordinator', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "finance coordinator",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration specialist', 'department': 'business intelligence', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "business intelligence",
+    "seniority": "Operator"
+  },
+  "{'title': 'system performance analyst', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "system performance analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT auditor', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it auditor",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data engineer', 'department': 'business intelligence', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "business intelligence",
+    "seniority": "Operator"
+  },
+  "{'title': 'it systems administrator', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it systems administrator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Intelligence Analyst', 'department': 'Business Intelligence', 'seniority': 'Operator'}": {
+    "title": "business analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Analyst', 'department': 'Business Intelligence', 'seniority': 'Operator'}": {
+    "title": "pricing analyst",
+    "department": "data science",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Marketing Analyst', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "marketing manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "data manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Database Administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "database administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Intelligence Developer', 'department': 'Business Intelligence', 'seniority': 'Operator'}": {
+    "title": "business analyst",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Support Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "training specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'project manager', 'department': 'analytics', 'seniority': 'Manager'}": {
+    "title": "project manager",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'data governance officer', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "data architect",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data governance manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data architect', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'project manager', 'department': 'project management', 'seniority': 'Manager'}": {
+    "title": "project manager",
+    "department": "project management",
+    "seniority": "Manager"
+  },
+  "{'title': 'data governance officer', 'department': 'compliance', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'project coordinator', 'department': 'project management', 'seniority': 'Operator'}": {
+    "title": "project coordinator",
+    "department": "project management",
+    "seniority": "Operator"
+  },
+  "{'title': 'compliance officer', 'department': 'compliance', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'data governance manager', 'department': 'compliance', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Compensation Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Sales Director', 'department': 'Sales', 'seniority': 'Senior'}": {
+    "title": "vp of sales",
+    "department": "sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'Revenue Operations Manager', 'department': 'Operations', 'seniority': 'Manager'}": {
+    "title": "vp of sales",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Intelligence Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Security Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Sales Strategist', 'department': 'Sales', 'seniority': 'Senior'}": {
+    "title": "vp of sales",
+    "department": "sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'Chief Revenue Officer', 'department': 'Executive', 'seniority': 'Executive'}": {
+    "title": "vp of sales",
+    "department": "executive",
+    "seniority": "Executive"
+  },
+  "{'title': 'IT Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Implementation Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "compliance officer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Success Manager', 'department': 'Customer Service', 'seniority': 'Manager'}": {
+    "title": "subscription manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Sales Performance Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "vp of sales",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'VP of Sales', 'department': 'Sales', 'seniority': 'Executive'}": {
+    "title": "vp of sales",
+    "department": "sales",
+    "seniority": "Executive"
+  },
+  "{'title': 'it manager', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'vp of sales', 'department': 'sales', 'seniority': 'Senior'}": {
+    "title": "vp of sales",
+    "department": "sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'data engineer', 'department': 'analytics', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'systems architect', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "systems architect",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'business intelligence analyst', 'department': 'analytics', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'data architect', 'department': 'analytics', 'seniority': 'Manager'}": {
+    "title": "data architect",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT infrastructure manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it infrastructure manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data pipeline engineer', 'department': 'analytics', 'seniority': 'Operator'}": {
+    "title": "data architect",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'data pipeline developer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'it infrastructure manager', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it infrastructure manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data integration specialist', 'department': 'analytics', 'seniority': 'Operator'}": {
+    "title": "data pipeline engineer",
+    "department": "analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'data pipeline engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data pipeline engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Project Manager', 'department': 'Operations', 'seniority': 'Mid-level', 'evidence': 'The project manager found the tool essential for keeping the team aligned.'}": {
+    "title": "project manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Project Manager', 'department': 'Operations', 'seniority': 'Mid-level', 'evidence': 'The project manager found it essential for keeping the team aligned.'}": {
+    "title": "project manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Support Manager', 'department': 'Support', 'seniority': 'Mid-level', 'evidence': 'The Customer Support Manager noted improved response times after implementing the solution.'}": {
+    "title": "customer support manager",
+    "department": "support",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Support Manager', 'department': 'Support', 'seniority': 'Mid-level', 'evidence': 'The Customer Support Manager noted improved efficiency in handling customer queries.'}": {
+    "title": "customer support manager",
+    "department": "support",
+    "seniority": "Operator"
+  },
+  "{'title': 'Project Manager', 'department': 'Operations', 'seniority': 'Mid-level', 'evidence': 'The project manager found the tool essential for tracking project timelines.'}": {
+    "title": "project manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Project Manager', 'evidence': '\"I need a tool that helps me keep track of multiple projects at once.\"'}": {
+    "title": "project manager",
+    "department": "",
+    "seniority": "Operator"
+  },
+  "{'title': 'Team Lead', 'evidence': '\"Collaboration is key for my team, and we need a platform that supports that.\"'}": {
+    "title": "team lead",
+    "department": "",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Administrator', 'evidence': '\"Managing user access and permissions is crucial for our security protocols.\"'}": {
+    "title": "it administrator",
+    "department": "",
+    "seniority": "Operator"
+  },
+  "{'title': 'Sales Manager', 'department': 'Sales', 'seniority': 'Mid-level'}": {
+    "title": "it manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Sales Operations Manager', 'department': 'Sales', 'seniority': 'Mid-level'}": {
+    "title": "it manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Manager', 'department': 'IT', 'seniority': 'Mid-level'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Billing Manager', 'department': 'Finance', 'seniority': 'Mid-level'}": {
+    "title": "it manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Manager', 'department': 'Information Technology', 'seniority': 'Mid-level'}": {
+    "title": "it manager",
+    "department": "information technology",
+    "seniority": "Operator"
+  },
+  "{'title': 'Revenue Accountant', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "finance manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Payment Integration Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "billing specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Security Officer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "security officer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Finance Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Finance Director', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Security Analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "policy analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Intelligence Manager', 'department': 'Analytics', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Revenue Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "revenue manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Scientist', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "data scientist",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'finance manager', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "account manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Integration Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Integration Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Financial Systems Analyst', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "financial systems analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Software Engineer', 'department': 'Engineering', 'seniority': 'Junior'}": {
+    "title": "software engineer",
+    "department": "engineering",
+    "seniority": "Junior"
+  },
+  "{'title': 'Integration Engineer', 'department': 'Engineering', 'seniority': 'Operator'}": {
+    "title": "integration engineer",
+    "department": "engineering",
+    "seniority": "Operator"
+  },
+  "{'title': 'Payment Operations Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "revenue manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Payment Integration Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "payment integration specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Software Engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "software engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Retention Specialist', 'department': 'Marketing', 'seniority': 'Manager'}": {
+    "title": "customer success manager",
+    "department": "marketing",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Analyst', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Retention Specialist', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "it specialist",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'Compliance Manager', 'department': 'Legal', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Manager"
+  },
+  "{'title': 'subscription manager', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "subscription manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'system administrator', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "system administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration specialist', 'department': 'data', 'seniority': 'Operator'}": {
+    "title": "financial data analyst",
+    "department": "data",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial data analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT infrastructure manager', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it infrastructure manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'financial systems analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial systems analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'network operations center (NOC) engineer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "network operations center (noc) engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT systems administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it systems administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration specialist', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial controller', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "financial controller",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT operations manager', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it operations manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'accounting clerk', 'department': 'finance', 'seniority': 'Junior'}": {
+    "title": "accounting clerk",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'financial data coordinator', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial controller",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT security analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it security analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'security auditor', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "security auditor",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT compliance officer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it compliance officer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Subscription Specialist', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "marketing specialist",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'Marketing Specialist', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "brand manager",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'Collections Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "collections manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'systems integrator', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "systems integrator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'billing coordinator', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "billing coordinator",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial data specialist', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT systems analyst', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it systems analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'it systems analyst', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it systems analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Architect', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "it architect",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'IT Business Analyst', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it architect",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'it architect', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "it architect",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'it architect', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it architect",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Infrastructure Engineer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "it strategy manager",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Financial Data Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "financial data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Strategy Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it strategy manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Infrastructure Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "infrastructure manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'System Administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "system administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Infrastructure Engineer', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "infrastructure engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'system administrator', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "system administrator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Infrastructure Analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "infrastructure analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Payroll Administrator', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "payroll administrator",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Recruitment Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Talent Acquisition Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "talent acquisition manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Analyst', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Business Partner', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Employee Engagement Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "employee engagement specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Coordinator', 'department': 'Human Resources', 'seniority': 'Junior'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Junior"
+  },
+  "{'title': 'HR Operations Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr coordinator",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Chief Human Resources Officer', 'department': 'Human Resources', 'seniority': 'Executive'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Executive"
+  },
+  "{'title': 'Payroll Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "payroll manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Workforce Planning Analyst', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr specialist",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Employee Engagement Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "employee engagement manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Analyst', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Project Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr specialist",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Project Coordinator', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr project coordinator",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Resource Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr resource manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Analyst', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "hr analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Workforce Planning Specialist', 'department': 'human resources', 'seniority': 'Manager'}": {
+    "title": "hr analyst",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Workforce Planning Specialist', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "workforce planning specialist",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Data Analyst', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr data analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Data Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr data specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Integration Specialist', 'department': 'Information Technology', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "information technology",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Systems Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr systems specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Manager', 'department': 'Information Technology', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "information security",
+    "seniority": "Manager"
+  },
+  "{'title': 'Chief Information Security Officer', 'department': 'Information Security', 'seniority': 'Executive'}": {
+    "title": "it manager",
+    "department": "information security",
+    "seniority": "Executive"
+  },
+  "{'title': 'UX Designer', 'department': 'Product Development', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "product development",
+    "seniority": "Operator"
+  },
+  "{'title': 'Payroll Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "payroll manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Talent Acquisition Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "talent acquisition specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Coordinator', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr coordinator",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Director', 'department': 'Human Resources', 'seniority': 'Senior'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Senior"
+  },
+  "{'title': 'IT Security Manager', 'department': 'Information Technology', 'seniority': 'Manager'}": {
+    "title": "it security manager",
+    "department": "information technology",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Business Partner', 'department': 'Human Resources', 'seniority': 'Senior'}": {
+    "title": "hr coordinator",
+    "department": "human resources",
+    "seniority": "Senior"
+  },
+  "{'title': 'Recruitment Coordinator', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "recruitment coordinator",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Remote Work Coordinator', 'department': 'Human Resources', 'seniority': 'Senior'}": {
+    "title": "recruitment coordinator",
+    "department": "human resources",
+    "seniority": "Senior"
+  },
+  "{'title': 'HR Process Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr specialist",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Remote Team Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "remote team manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Generalist', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "hr generalist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Recruitment Manager', 'department': 'human resources', 'seniority': 'Manager'}": {
+    "title": "recruitment manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Support Specialist', 'department': 'information technology', 'seniority': 'Operator'}": {
+    "title": "it support specialist",
+    "department": "information technology",
+    "seniority": "Operator"
+  },
+  "{'title': 'Recruitment Analyst', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "recruitment analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Systems Analyst', 'department': 'Information Technology', 'seniority': 'Operator'}": {
+    "title": "it systems analyst",
+    "department": "information technology",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Systems Administrator', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr systems administrator",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Infrastructure Manager', 'department': 'Information Technology', 'seniority': 'Manager'}": {
+    "title": "it infrastructure manager",
+    "department": "information technology",
+    "seniority": "Manager"
+  },
+  "{'title': 'data integration specialist', 'department': 'information technology', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "information technology",
+    "seniority": "Operator"
+  },
+  "{'title': 'talent acquisition specialist', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "talent acquisition specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'it project manager', 'department': 'information technology', 'seniority': 'Manager'}": {
+    "title": "it project manager",
+    "department": "information technology",
+    "seniority": "Manager"
+  },
+  "{'title': 'systems analyst', 'department': 'information technology', 'seniority': 'Operator'}": {
+    "title": "systems analyst",
+    "department": "information technology",
+    "seniority": "Operator"
+  },
+  "{'title': 'recruitment data analyst', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "recruitment data analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'technology solutions manager', 'department': 'information technology', 'seniority': 'Manager'}": {
+    "title": "technology solutions manager",
+    "department": "information technology",
+    "seniority": "Manager"
+  },
+  "{'title': 'recruitment coordinator', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "recruitment coordinator",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT infrastructure manager', 'department': 'information technology', 'seniority': 'Manager'}": {
+    "title": "it infrastructure manager",
+    "department": "information technology",
+    "seniority": "Manager"
+  },
+  "{'title': 'it infrastructure manager', 'department': 'information technology', 'seniority': 'Manager'}": {
+    "title": "it infrastructure manager",
+    "department": "information technology",
+    "seniority": "Manager"
+  },
+  "{'title': 'Subscription Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "subscription manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Accounts Receivable Clerk', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accounts receivable clerk",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'security analyst', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "security analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'security engineer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "security engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration specialist', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "data integration specialist",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data architect', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Auditor', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it auditor",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Security Analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Integration Engineer', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "integration engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'network analyst', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "network analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data engineer', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'network administrator', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "network administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Network Engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "network engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Network Administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "network administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Revenue Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Marketing Director', 'department': 'Marketing', 'seniority': 'Senior'}": {
+    "title": "marketing director",
+    "department": "product",
+    "seniority": "Senior"
+  },
+  "{'title': 'Systems Architect', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "it specialist",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'Customer Experience Manager', 'department': 'Customer Success', 'seniority': 'Manager'}": {
+    "title": "customer success manager",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Global Billing Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "billing specialist",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'International Operations Director', 'department': 'Operations', 'seniority': 'Senior'}": {
+    "title": "marketing director",
+    "department": "operations",
+    "seniority": "Senior"
+  },
+  "{'title': 'financial analyst', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "financial analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'systems administrator', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "systems administrator",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'IT infrastructure manager', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "it infrastructure manager",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'systems administrator', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "systems administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Infrastructure Analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it infrastructure analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Infrastructure Engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "infrastructure engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Accounts Receivable Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "accounts receivable manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Payment Operations Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "customer data specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Controller', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "controller",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Strategic Planner', 'department': 'Strategy', 'seniority': 'Manager'}": {
+    "title": "strategic planner",
+    "department": "strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Retention Specialist', 'department': 'Customer Success', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'Marketing Manager', 'department': 'Marketing', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'finance analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'strategic planner', 'department': 'strategy', 'seniority': 'Manager'}": {
+    "title": "strategic planner",
+    "department": "strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'integration engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "integration engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT support specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it support specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration specialist', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'software architect', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "devops engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'it support specialist', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it support specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'technical lead', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "technical lead",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'project manager', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "project manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'business analyst', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "business analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'devops engineer', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "devops engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'requirements analyst', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "requirements analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'solution architect', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "project manager",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'strategy manager', 'department': 'business development', 'seniority': 'Senior'}": {
+    "title": "strategy manager",
+    "department": "business development",
+    "seniority": "Senior"
+  },
+  "{'title': 'project coordinator', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "project coordinator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'communications manager', 'department': 'corporate communications', 'seniority': 'Manager'}": {
+    "title": "project manager",
+    "department": "corporate communications",
+    "seniority": "Manager"
+  },
+  "{'title': 'market analyst', 'department': 'business development', 'seniority': 'Senior'}": {
+    "title": "market analyst",
+    "department": "business development",
+    "seniority": "Senior"
+  },
+  "{'title': 'UI/UX Designer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "ui/ux designer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'hr coordinator', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "hr analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'hr analyst', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "hr analyst",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'ui/ux designer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "ui/ux designer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'UX Researcher', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "ux researcher",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'HR Assistant', 'department': 'Human Resources', 'seniority': 'Junior'}": {
+    "title": "hr assistant",
+    "department": "human resources",
+    "seniority": "Junior"
+  },
+  "{'title': 'Product Owner', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "product owner",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'UX Designer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Operations Manager', 'department': 'Operations', 'seniority': 'Manager'}": {
+    "title": "finance manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Financial Analyst', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "business analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Strategy Manager', 'department': 'Corporate Strategy', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "corporate strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'Systems Analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "systems analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Communications Specialist', 'department': 'Corporate Communications', 'seniority': 'Operator'}": {
+    "title": "training specialist",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'Application Developer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "application developer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Manager', 'department': 'Product Development', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "product development",
+    "seniority": "Manager"
+  },
+  "{'title': 'Workflow Designer', 'department': 'Operations', 'seniority': 'Operator'}": {
+    "title": "process engineer",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Process Engineer', 'department': 'Engineering', 'seniority': 'Senior'}": {
+    "title": "process engineer",
+    "department": "engineering",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Steward', 'department': 'Data Management', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Business Intelligence Developer', 'department': 'Business Intelligence', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Governance Specialist', 'department': 'Data Management', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Team Lead', 'department': 'Data Science', 'seniority': 'Manager'}": {
+    "title": "data team lead",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Project Manager', 'department': 'Project Management', 'seniority': 'Senior'}": {
+    "title": "it manager",
+    "department": "project management",
+    "seniority": "Senior"
+  },
+  "{'title': 'Training Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "training specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Analytics Manager', 'department': 'Analytics', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'operations manager', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "operations manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'strategic analyst', 'department': 'corporate strategy', 'seniority': 'Senior'}": {
+    "title": "strategic analyst",
+    "department": "corporate strategy",
+    "seniority": "Senior"
+  },
+  "{'title': 'workflow specialist', 'department': 'engineering', 'seniority': 'Senior'}": {
+    "title": "operations manager",
+    "department": "engineering",
+    "seniority": "Senior"
+  },
+  "{'title': 'operations analyst', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "operations analyst",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'process coordinator', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "process coordinator",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'data scientist', 'department': 'corporate strategy', 'seniority': 'Senior'}": {
+    "title": "data scientist",
+    "department": "corporate strategy",
+    "seniority": "Senior"
+  },
+  "{'title': 'market research analyst', 'department': 'corporate strategy', 'seniority': 'Manager'}": {
+    "title": "data scientist",
+    "department": "corporate strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'data analyst', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'strategic planner', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "strategic planner",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'corporate strategy', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "corporate strategy",
+    "seniority": "Senior"
+  },
+  "{'title': 'market analyst', 'department': 'corporate strategy', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "corporate strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'strategic coordinator', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "strategic coordinator",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'corporate strategy', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "corporate strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'strategic planner', 'department': 'corporate strategy', 'seniority': 'Manager'}": {
+    "title": "strategic planner",
+    "department": "corporate strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'data integration specialist', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'strategy coordinator', 'department': 'corporate strategy', 'seniority': 'Manager'}": {
+    "title": "strategy coordinator",
+    "department": "corporate strategy",
+    "seniority": "Manager"
+  },
+  "{'title': 'data integration manager', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "data integration manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'business intelligence analyst', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "business intelligence analyst",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'data governance specialist', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'it', 'seniority': 'Senior'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'data analyst', 'department': 'business intelligence', 'seniority': 'Senior'}": {
+    "title": "data analyst",
+    "department": "business intelligence",
+    "seniority": "Senior"
+  },
+  "{'title': 'business analyst', 'department': 'business intelligence', 'seniority': 'Manager'}": {
+    "title": "data analyst",
+    "department": "business intelligence",
+    "seniority": "Manager"
+  },
+  "{'title': 'data pipeline engineer', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "business intelligence",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'business intelligence', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "business intelligence",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'compliance', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'data architect', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "data engineer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'data governance officer', 'department': 'Compliance', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'data engineer', 'department': 'Business Intelligence', 'seniority': 'Manager'}": {
+    "title": "data engineer",
+    "department": "business intelligence",
+    "seniority": "Manager"
+  },
+  "{'title': 'Accounting Manager', 'department': 'Finance', 'seniority': 'Mid-level'}": {
+    "title": "accounting manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Accountant', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Analyst', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Security Specialist', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it specialist",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'CISO', 'department': 'IT', 'seniority': 'Executive'}": {
+    "title": "ciso",
+    "department": "it",
+    "seniority": "Executive"
+  },
+  "{'title': 'Project Manager', 'department': 'Operations', 'seniority': 'Manager'}": {
+    "title": "project manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'Team Lead', 'department': 'Operations', 'seniority': 'Senior'}": {
+    "title": "team lead",
+    "department": "operations",
+    "seniority": "Senior"
+  },
+  "{'title': 'cfo', 'department': 'finance', 'seniority': 'Executive'}": {
+    "title": "cfo",
+    "department": "finance",
+    "seniority": "Executive"
+  },
+  "{'title': 'financial reporting manager', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "financial analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'compliance officer', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "compliance officer",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial reporting specialist', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial systems analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'regulatory analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "financial analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Support Manager', 'department': 'Customer Service', 'seniority': 'Manager'}": {
+    "title": "marketing manager",
+    "department": "customer service",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Experience Specialist', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "marketing manager",
+    "department": "customer service",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Scientist', 'department': 'Data Analytics', 'seniority': 'Senior'}": {
+    "title": "data manager",
+    "department": "data analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'Customer Experience Designer', 'department': 'Customer Experience', 'seniority': 'Manager'}": {
+    "title": "marketing manager",
+    "department": "customer service",
+    "seniority": "Manager"
+  },
+  "{'title': 'UX Designer', 'department': 'Product', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'CRM Specialist', 'department': 'Sales', 'seniority': 'Operator'}": {
+    "title": "crm specialist",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Security Analyst', 'department': 'IT Security', 'seniority': 'Operator'}": {
+    "title": "security analyst",
+    "department": "it security",
+    "seniority": "Operator"
+  },
+  "{'title': 'Fraud Prevention Specialist', 'department': 'Risk Management', 'seniority': 'Manager'}": {
+    "title": "crm specialist",
+    "department": "risk management",
+    "seniority": "Manager"
+  },
+  "{'title': 'Digital Marketing Specialist', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "marketing manager",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Communication Coordinator', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "operations manager",
+    "department": "customer service",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Service Representative', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "billing coordinator",
+    "department": "customer service",
+    "seniority": "Operator"
+  },
+  "{'title': 'Support Team Lead', 'department': 'Customer Service', 'seniority': 'Manager'}": {
+    "title": "support team lead",
+    "department": "customer service",
+    "seniority": "Manager"
+  },
+  "{'title': 'customer service manager', 'department': 'customer service', 'seniority': 'Manager'}": {
+    "title": "customer service manager",
+    "department": "marketing",
+    "seniority": "Manager"
+  },
+  "{'title': 'training coordinator', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "knowledge manager",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'marketing strategist', 'department': 'marketing', 'seniority': 'Manager'}": {
+    "title": "content marketer",
+    "department": "marketing",
+    "seniority": "Manager"
+  },
+  "{'title': 'data analyst', 'department': 'data analytics', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "data analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'market researcher', 'department': 'marketing', 'seniority': 'Operator'}": {
+    "title": "market researcher",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'content marketer', 'department': 'marketing', 'seniority': 'Operator'}": {
+    "title": "content marketer",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer insights manager', 'department': 'marketing', 'seniority': 'Manager'}": {
+    "title": "customer insights manager",
+    "department": "marketing",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Specialist', 'department': 'human resources', 'seniority': 'Operator'}": {
+    "title": "hr specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Competitive Intelligence Analyst', 'department': 'marketing', 'seniority': 'Operator'}": {
+    "title": "competitive intelligence analyst",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Integration Specialist', 'department': 'data analytics', 'seniority': 'Operator'}": {
+    "title": "data integration specialist",
+    "department": "data analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Customer Experience Specialist', 'department': 'marketing', 'seniority': 'Manager'}": {
+    "title": "hr specialist",
+    "department": "marketing",
+    "seniority": "Manager"
+  },
+  "{'title': 'market research analyst', 'department': 'marketing', 'seniority': 'Operator'}": {
+    "title": "market research analyst",
+    "department": "marketing",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration manager', 'department': 'data analytics', 'seniority': 'Manager'}": {
+    "title": "data integration manager",
+    "department": "data analytics",
+    "seniority": "Manager"
+  },
+  "{'title': 'Market Analyst', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "market analyst",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Coordinator', 'department': 'Data Analytics', 'seniority': 'Operator'}": {
+    "title": "data coordinator",
+    "department": "data analytics",
+    "seniority": "Operator"
+  },
+  "{'title': 'Credit Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "credit analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'ERP Administrator', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "erp administrator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Finance Systems Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "credit analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Treasury Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "credit analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Credit Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "credit analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Risk Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "risk manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Accounts Receivable Clerk', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "accounts receivable clerk",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Customer Support Specialist', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "billing coordinator",
+    "department": "customer service",
+    "seniority": "Operator"
+  },
+  "{'title': 'Billing Coordinator', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "payroll manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Accounts Payable Clerk', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "accounts payable clerk",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Finance Assistant', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "credit analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'compliance officer', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'ERP Integration Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "erp integration specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Data Quality Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data quality analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Financial Reporting Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "financial reporting manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Compliance Auditor', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "compliance auditor",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'data integration engineer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data integration engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial data coordinator', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data integration engineer",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'financial reporting analyst', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "financial data coordinator",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'compliance officer', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'financial data coordinator', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "data integration engineer",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'data integration engineer', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "data integration engineer",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Compliance Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "compliance manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Operations Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "data operations manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Compliance Officer', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "compliance officer",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'IT Integration Specialist', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it integration specialist",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Tax Accountant', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "audit manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Finance Manager', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Payroll Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "hr specialist",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Finance Analyst', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Finance Controller', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Audit Manager', 'department': 'Audit', 'seniority': 'Manager'}": {
+    "title": "audit manager",
+    "department": "audit",
+    "seniority": "Manager"
+  },
+  "{'title': 'Payroll Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr specialist",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Document Controller', 'department': 'Administration', 'seniority': 'Operator'}": {
+    "title": "document controller",
+    "department": "administration",
+    "seniority": "Operator"
+  },
+  "{'title': 'Office Manager', 'department': 'Administration', 'seniority': 'Manager'}": {
+    "title": "hr specialist",
+    "department": "administration",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Administrator', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it administrator",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Protection Officer', 'department': 'IT', 'seniority': 'Senior'}": {
+    "title": "compliance officer",
+    "department": "it",
+    "seniority": "Senior"
+  },
+  "{'title': 'audit manager', 'department': 'audit', 'seniority': 'Manager'}": {
+    "title": "audit manager",
+    "department": "audit",
+    "seniority": "Manager"
+  },
+  "{'title': 'document controller', 'department': 'administration', 'seniority': 'Operator'}": {
+    "title": "document controller",
+    "department": "administration",
+    "seniority": "Operator"
+  },
+  "{'title': 'finance analyst', 'department': 'finance', 'seniority': 'Senior'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'audit coordinator', 'department': 'audit', 'seniority': 'Manager'}": {
+    "title": "audit coordinator",
+    "department": "audit",
+    "seniority": "Manager"
+  },
+  "{'title': 'records manager', 'department': 'administration', 'seniority': 'Operator'}": {
+    "title": "records manager",
+    "department": "administration",
+    "seniority": "Operator"
+  },
+  "{'title': 'tax compliance officer', 'department': 'finance', 'seniority': 'Senior'}": {
+    "title": "audit coordinator",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'document control specialist', 'department': 'administration', 'seniority': 'Operator'}": {
+    "title": "document control specialist",
+    "department": "administration",
+    "seniority": "Operator"
+  },
+  "{'title': 'compliance officer', 'department': 'finance', 'seniority': 'Senior'}": {
+    "title": "compliance officer",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Content Creator', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "content creator",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Trainer', 'department': 'Customer Success', 'seniority': 'Manager'}": {
+    "title": "product trainer",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Technical Writer', 'department': 'Product', 'seniority': 'Operator'}": {
+    "title": "technical writer",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Knowledge Manager', 'department': 'Operations', 'seniority': 'Manager'}": {
+    "title": "knowledge manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'Content Specialist', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "content creator",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Training Coordinator', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "knowledge manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Learning and Development Specialist', 'department': 'Human Resources', 'seniority': 'Operator'}": {
+    "title": "knowledge manager",
+    "department": "human resources",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Specialist', 'department': 'Sales', 'seniority': 'Operator'}": {
+    "title": "product trainer",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Onboarding Specialist', 'department': 'Customer Success', 'seniority': 'Operator'}": {
+    "title": "onboarding specialist",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'Partner Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "partner manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Channel Sales Specialist', 'department': 'Sales', 'seniority': 'Operator'}": {
+    "title": "product trainer",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'content strategist', 'department': 'marketing', 'seniority': 'Manager'}": {
+    "title": "content strategist",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'technical writer', 'department': 'product', 'seniority': 'Operator'}": {
+    "title": "technical writer",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'knowledge manager', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "knowledge manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'onboarding specialist', 'department': 'customer success', 'seniority': 'Operator'}": {
+    "title": "onboarding specialist",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'customer success manager', 'department': 'customer success', 'seniority': 'Manager'}": {
+    "title": "customer success manager",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'partner manager', 'department': 'sales', 'seniority': 'Manager'}": {
+    "title": "partner manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'communications manager', 'department': 'marketing', 'seniority': 'Manager'}": {
+    "title": "communications manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'product analyst', 'department': 'product', 'seniority': 'Operator'}": {
+    "title": "product analyst",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'information architect', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "information architect",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'training coordinator', 'department': 'HR', 'seniority': 'Manager'}": {
+    "title": "training coordinator",
+    "department": "hr",
+    "seniority": "Manager"
+  },
+  "{'title': 'customer success analyst', 'department': 'customer success', 'seniority': 'Operator'}": {
+    "title": "product analyst",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'user experience researcher', 'department': 'product', 'seniority': 'Operator'}": {
+    "title": "user experience researcher",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'content manager', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "content manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'partner training manager', 'department': 'hr', 'seniority': 'Manager'}": {
+    "title": "partner training manager",
+    "department": "hr",
+    "seniority": "Manager"
+  },
+  "{'title': 'communications manager', 'department': 'product', 'seniority': 'Manager'}": {
+    "title": "communications manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'communications manager', 'department': 'customer success', 'seniority': 'Manager'}": {
+    "title": "communications manager",
+    "department": "customer success",
+    "seniority": "Manager"
+  },
+  "{'title': 'Design Lead', 'department': 'Design', 'seniority': 'Senior'}": {
+    "title": "design lead",
+    "department": "design",
+    "seniority": "Senior"
+  },
+  "{'title': 'Product Manager', 'department': 'Product', 'seniority': 'Mid-level'}": {
+    "title": "product manager",
+    "department": "product",
+    "seniority": "Operator"
+  },
+  "{'title': 'Front-end Developer', 'department': 'Engineering', 'seniority': 'Mid-level'}": {
+    "title": "front-end developer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Design Manager', 'department': 'Design', 'seniority': 'Manager'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Manager"
+  },
+  "{'title': 'Product Designer', 'department': 'Design', 'seniority': 'Senior'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Senior"
+  },
+  "{'title': 'UX Designer', 'department': 'Design', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Frontend Developer', 'department': 'Engineering', 'seniority': 'Operator'}": {
+    "title": "web developer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'UI Developer', 'department': 'Engineering', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Graphic Designer', 'department': 'Design', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Illustrator', 'department': 'Design', 'seniority': 'Operator'}": {
+    "title": "illustrator",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Brand Manager', 'department': 'Marketing', 'seniority': 'Manager'}": {
+    "title": "brand manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'Web Developer', 'department': 'Engineering', 'seniority': 'Operator'}": {
+    "title": "web developer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Content Manager', 'department': 'Marketing', 'seniority': 'Manager'}": {
+    "title": "content manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'UI Designer', 'department': 'Design', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'ux researcher', 'department': 'design', 'seniority': 'Operator'}": {
+    "title": "ux researcher",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'product manager', 'department': 'product', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'design lead', 'department': 'design', 'seniority': 'Manager'}": {
+    "title": "design lead",
+    "department": "design",
+    "seniority": "Manager"
+  },
+  "{'title': 'technical writer', 'department': 'documentation', 'seniority': 'Operator'}": {
+    "title": "technical writer",
+    "department": "documentation",
+    "seniority": "Operator"
+  },
+  "{'title': 'product owner', 'department': 'product', 'seniority': 'Manager'}": {
+    "title": "product owner",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'UX Researcher', 'department': 'Design', 'seniority': 'Operator'}": {
+    "title": "ux designer",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Owner', 'department': 'Product', 'seniority': 'Manager'}": {
+    "title": "product owner",
+    "department": "product",
+    "seniority": "Manager"
+  },
+  "{'title': 'Design Lead', 'department': 'Design', 'seniority': 'Manager'}": {
+    "title": "design lead",
+    "department": "design",
+    "seniority": "Manager"
+  },
+  "{'title': 'user researcher', 'department': 'design', 'seniority': 'Operator'}": {
+    "title": "user researcher",
+    "department": "design",
+    "seniority": "Operator"
+  },
+  "{'title': 'design operations manager', 'department': 'design', 'seniority': 'Manager'}": {
+    "title": "product manager",
+    "department": "design",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it administrator",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'design coordinator', 'department': 'design', 'seniority': 'Manager'}": {
+    "title": "design coordinator",
+    "department": "design",
+    "seniority": "Manager"
+  },
+  "{'title': 'design lead', 'department': 'design', 'seniority': 'Senior'}": {
+    "title": "design lead",
+    "department": "design",
+    "seniority": "Senior"
+  },
+  "{'title': 'it governance officer', 'department': 'it', 'seniority': 'Manager'}": {
+    "title": "it governance officer",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'it auditor', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "it auditor",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'business analyst', 'department': 'project management', 'seniority': 'Operator'}": {
+    "title": "business analyst",
+    "department": "project management",
+    "seniority": "Operator"
+  },
+  "{'title': 'compliance officer', 'department': 'legal', 'seniority': 'Manager'}": {
+    "title": "compliance officer",
+    "department": "legal",
+    "seniority": "Manager"
+  },
+  "{'title': 'Data Analyst', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Performance Manager', 'department': 'Human Resources', 'seniority': 'Manager'}": {
+    "title": "hr manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'Tax Specialist', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "tax specialist",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Accounts Payable Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "payroll manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Contractor Manager', 'department': 'Operations', 'seniority': 'Manager'}": {
+    "title": "hr manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'IT Administrator', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'Compliance Officer', 'department': 'Compliance', 'seniority': 'Manager'}": {
+    "title": "global hr manager",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'User Experience Designer', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "user experience designer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'System Administrator', 'department': 'IT', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "it",
+    "seniority": "Manager"
+  },
+  "{'title': 'Expense Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "budget manager",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Accounts Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "payroll manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Process Analyst', 'department': 'Operations', 'seniority': 'Operator'}": {
+    "title": "policy analyst",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Compliance Manager', 'department': 'Compliance', 'seniority': 'Manager'}": {
+    "title": "global hr manager",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Policy Analyst', 'department': 'Compliance', 'seniority': 'Operator'}": {
+    "title": "policy analyst",
+    "department": "compliance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Global HR Manager', 'department': 'HR', 'seniority': 'Manager'}": {
+    "title": "global hr manager",
+    "department": "hr",
+    "seniority": "Manager"
+  },
+  "{'title': 'HR Compliance Officer', 'department': 'HR', 'seniority': 'Operator'}": {
+    "title": "global hr manager",
+    "department": "hr",
+    "seniority": "Operator"
+  },
+  "{'title': 'Budget Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "budget manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'hr manager', 'department': 'human resources', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "human resources",
+    "seniority": "Manager"
+  },
+  "{'title': 'team lead', 'department': 'operations', 'seniority': 'Senior'}": {
+    "title": "team lead",
+    "department": "operations",
+    "seniority": "Senior"
+  },
+  "{'title': 'tax specialist', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "tax specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'hr manager', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'global hr manager', 'department': 'compliance', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'it manager', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'policy analyst', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'software engineer', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "software engineer",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'it manager', 'department': 'compliance', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "compliance",
+    "seniority": "Manager"
+  },
+  "{'title': 'data analyst', 'department': 'operations', 'seniority': 'Operator'}": {
+    "title": "data analyst",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Account Manager', 'department': 'Sales', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "sales",
+    "seniority": "Manager"
+  },
+  "{'title': 'Subscription Specialist', 'department': 'Operations', 'seniority': 'Operator'}": {
+    "title": "account manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Finance Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "finance analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Product Manager', 'department': 'Product', 'seniority': 'Senior'}": {
+    "title": "revenue manager",
+    "department": "product",
+    "seniority": "Senior"
+  },
+  "{'title': 'Business Strategist', 'department': 'Strategy', 'seniority': 'Senior'}": {
+    "title": "market analyst",
+    "department": "strategy",
+    "seniority": "Senior"
+  },
+  "{'title': 'Accountant', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "accountant",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Account Manager', 'department': 'Sales', 'seniority': 'Senior'}": {
+    "title": "account manager",
+    "department": "sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'Support Specialist', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "support specialist",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Operations Director', 'department': 'Operations', 'seniority': 'Senior'}": {
+    "title": "it manager",
+    "department": "operations",
+    "seniority": "Senior"
+  },
+  "{'title': 'CTO', 'department': 'Technology', 'seniority': 'Executive'}": {
+    "title": "cto",
+    "department": "technology",
+    "seniority": "Executive"
+  },
+  "{'title': 'CEO', 'department': 'Executive', 'seniority': 'Executive'}": {
+    "title": "ceo",
+    "department": "executive",
+    "seniority": "Executive"
+  },
+  "{'title': 'Revenue Analyst', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "revenue analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Account Executive', 'department': 'Sales', 'seniority': 'Senior'}": {
+    "title": "account executive",
+    "department": "sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'Subscription Manager', 'department': 'Operations', 'seniority': 'Operator'}": {
+    "title": "subscription manager",
+    "department": "operations",
+    "seniority": "Operator"
+  },
+  "{'title': 'Retention Specialist', 'department': 'Customer Service', 'seniority': 'Operator'}": {
+    "title": "retention specialist",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Revenue Operations Analyst', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "revenue analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Business Analyst', 'department': 'Finance', 'seniority': 'Junior'}": {
+    "title": "business analyst",
+    "department": "finance",
+    "seniority": "Junior"
+  },
+  "{'title': 'Customer Service Representative', 'department': 'Customer Support', 'seniority': 'Operator'}": {
+    "title": "billing specialist",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Process Analyst', 'department': 'Operations', 'seniority': 'Junior'}": {
+    "title": "business analyst",
+    "department": "operations",
+    "seniority": "Junior"
+  },
+  "{'title': 'Accounting Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "account manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Retention Specialist', 'department': 'Customer Success', 'seniority': 'Operator'}": {
+    "title": "compliance officer",
+    "department": "customer success",
+    "seniority": "Operator"
+  },
+  "{'title': 'Revenue Assurance Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "customer data specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Audit Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "risk manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Retention Analyst', 'department': 'Marketing', 'seniority': 'Operator'}": {
+    "title": "retention analyst",
+    "department": "sales",
+    "seniority": "Operator"
+  },
+  "{'title': 'Treasury Manager', 'department': 'Finance', 'seniority': 'Manager'}": {
+    "title": "treasury manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'Cash Flow Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Recovery Specialist', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "recovery specialist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'CIO', 'department': 'IT', 'seniority': 'Executive'}": {
+    "title": "cio",
+    "department": "it",
+    "seniority": "Executive"
+  },
+  "{'title': 'Budget Analyst', 'department': 'Finance', 'seniority': 'Operator'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'Business Development Executive', 'department': 'Sales', 'seniority': 'Executive'}": {
+    "title": "business development executive",
+    "department": "sales",
+    "seniority": "Executive"
+  },
+  "{'title': 'Risk Manager', 'department': 'Finance', 'seniority': 'Senior'}": {
+    "title": "risk manager",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'Data Privacy Officer', 'department': 'Legal', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "legal",
+    "seniority": "Manager"
+  },
+  "{'title': 'Customer Data Specialist', 'department': 'IT', 'seniority': 'Operator'}": {
+    "title": "customer data specialist",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'finance manager', 'department': 'operations', 'seniority': 'Manager'}": {
+    "title": "account manager",
+    "department": "operations",
+    "seniority": "Manager"
+  },
+  "{'title': 'business analyst', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'controller', 'department': 'finance', 'seniority': 'Senior'}": {
+    "title": "controller",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'account manager', 'department': 'sales', 'seniority': 'Senior'}": {
+    "title": "account manager",
+    "department": "sales",
+    "seniority": "Senior"
+  },
+  "{'title': 'data scientist', 'department': 'analytics', 'seniority': 'Senior'}": {
+    "title": "data scientist",
+    "department": "analytics",
+    "seniority": "Senior"
+  },
+  "{'title': 'budget analyst', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'budget analyst', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'customer data specialist', 'department': 'finance', 'seniority': 'Operator'}": {
+    "title": "data scientist",
+    "department": "finance",
+    "seniority": "Operator"
+  },
+  "{'title': 'budget analyst', 'department': 'finance', 'seniority': 'Senior'}": {
+    "title": "budget analyst",
+    "department": "finance",
+    "seniority": "Senior"
+  },
+  "{'title': 'treasury manager', 'department': 'finance', 'seniority': 'Manager'}": {
+    "title": "it manager",
+    "department": "finance",
+    "seniority": "Manager"
+  },
+  "{'title': 'systems analyst', 'department': 'it', 'seniority': 'Operator'}": {
+    "title": "budget analyst",
+    "department": "it",
+    "seniority": "Operator"
+  },
+  "{'title': 'cio', 'department': 'it', 'seniority': 'Executive'}": {
+    "title": "cio",
+    "department": "it",
+    "seniority": "Executive"
   }
 }

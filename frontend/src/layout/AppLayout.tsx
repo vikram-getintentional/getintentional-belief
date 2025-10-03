@@ -1,6 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from "react"; 
 import { Menu } from "lucide-react";
+<<<<<<< Updated upstream
+=======
+import SidebarActions from "../components/SideBarActions";
+import { cn } from '../../utils/cn'; // optional: or just use template strings
+>>>>>>> Stashed changes
 
 const navSections = [
     {
@@ -16,7 +21,7 @@ const navSections = [
       items: [
         { name: 'Value Prop', path: '/value-prop' },
         { name: 'Personas', path: '/personas' },
-        { name: 'ZMOT', path: '/zmot' },
+        { name: 'ICP', path: '/icp' },
         { name: 'Arsenal', path: '/arsenal' },
       ],
     },
@@ -84,6 +89,9 @@ const navSections = [
               alt="GetIntentional logo"
               className="max-h-10 w-auto mx-auto"
             />
+          </div>
+          <div className="mt-6 border-t pt-4">
+            <SidebarActions className="" />
           </div>
           {navSections.map((section) => (
             <div key={section.title}>
