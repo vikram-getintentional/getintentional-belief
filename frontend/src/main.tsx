@@ -9,8 +9,6 @@ import './output.css';
 import Onboarding from './pages/Onboarding';
 import AppLayout from './layout/AppLayout';
 import Personas from './pages/Personas'; 
-<<<<<<< Updated upstream
-=======
 import ICP from './pages/ICP'; 
 import ValueProp from './pages/ValueProposition';
 import ReverseCaseStudies from './pages/ReverseCaseStudies'
@@ -19,7 +17,6 @@ import CRMUpload from './pages/CRMUpload.tsx'
 import Admin from './pages/Admin.tsx'
 import TargetAccounts from './pages/TargetAccounts.tsx'
 
->>>>>>> Stashed changes
 import './output.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -32,9 +29,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
-<<<<<<< Updated upstream
-          <Route path="/personas" element={<Personas/>} />
-=======
           <Route path="/value-prop" element={<ValueProp />} />
           <Route path="/personas" element={<Personas />} />
           <Route path="/icp" element={<ICP />} />
@@ -45,7 +39,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/admin" element={<Admin />} />
           
           {/* Add other routes here */}
->>>>>>> Stashed changes
 
         </Routes>
       </AppLayout>

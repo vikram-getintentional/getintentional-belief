@@ -390,23 +390,6 @@
     "dimension": "frequency",
     "direction": "increase"
   },
-<<<<<<< Updated upstream
-  "{'attribute': 'customer usage patterns', 'dimension': 'complexity', 'direction': 'increase'}": {
-    "attribute": "customer churn rate",
-    "dimension": "frequency",
-    "direction": "increase"
-  },
-  "{'attribute': 'number of subscriptions', 'dimension': 'volume', 'direction': 'increase'}": {
-    "attribute": "revenue transactions",
-    "dimension": "volume",
-    "direction": "increase"
-  },
-  "{'attribute': 'revenue transactions', 'dimension': 'volume', 'direction': 'increase'}": {
-    "attribute": "revenue transactions",
-    "dimension": "volume",
-    "direction": "increase"
-  }
-=======
   "customization limitations": "customization limitations",
   "workflow bottlenecks": "workflow bottlenecks",
   "projection errors": "projection errors",
@@ -1901,5 +1884,4 @@
   "system latency": "system latency",
   "dataset completeness": "dataset completeness",
   "data processing": "data processing"
->>>>>>> Stashed changes
 }

@@ -8,8 +8,6 @@ Fast, feature-complete RCS generator.
 - Returns the SAME report schema as the legacy rcs_generator_engine.
 - Archetype-free: conditions entirely on engaged_nodes.
 - ZMOT/attribute boosts are handled in rcs_staged.rcs_prepare().
-
-You can now retire rcs_generator_engine.py.
 """
 
 from __future__ import annotations
@@ -31,7 +29,7 @@ from backend.utils.graph_base.network_graph import (
 )
 
 from backend.utils.inference.rcs_generators.rcs_helpers.graphwin import compute_graphwin
-from backend.utils.inference.rcs_generators.rcs_helpers.reach import reverse_reach_to_product, reverse_reach_to_product_bulk
+from backend.utils.inference.rcs_generators.rcs_helpers.reach import reverse_reach_to_product_bulk
 from backend.utils.knowledge_base.arsenal.execution_arsenal_repository import (
     get_best_plays_for_concern,
 )
@@ -1212,16 +1210,17 @@ def generate_rcs(
     """
     Fast, archetype-free RCS with full parity to legacy report keys.
     """
+    engaged_nodes = engaged_nodes or []
     print("Running fast rcs with:", engaged_nodes)
     # Stage 0: prepare context (prune, apply engaged boosts, build PPR engine)
     ctx, pre = rcs_prepare(G, [])
     
     # 1) Gather sets
     pain_triggers = get_nodes_list_ids(G, "pain_trigger", {})
-    hard_trigs = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].node_type == "pain_trigger"]
-    hard_pains  = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].node_type == "pain"]
-    hard_jobs   = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].node_type == "job"]
-    hard_pers   = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].node_type == "persona"]
+    hard_trigs = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].get("node_type") == "pain_trigger"]
+    hard_pains  = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].get("node_type") == "pain"]
+    hard_jobs   = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].get("node_type") == "job"]
+    hard_pers   = [n["id"] for n in engaged_nodes if G.nodes[n.get("id")].get("node_type") == "persona"]
 
 
     # 2) Build one reach map for everything we might include as atoms

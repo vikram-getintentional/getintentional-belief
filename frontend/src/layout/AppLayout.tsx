@@ -1,11 +1,9 @@
+import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from "react"; 
 import { Menu } from "lucide-react";
-<<<<<<< Updated upstream
-=======
-import SidebarActions from "../components/SideBarActions";
+import SidebarActions from "../components/SidebarActions";
 import { cn } from '../../utils/cn'; // optional: or just use template strings
->>>>>>> Stashed changes
 
 const navSections = [
     {

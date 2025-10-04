@@ -3,7 +3,6 @@ from typing import Set
 import networkx as nx
 import os
 from collections import defaultdict, deque
-from backend.utils.dev_environment.graph_loader import load_product_graph_from_folder
 from backend.utils.graph_base.agent_graph_builder import _capability, _upsert_edge
 from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import save_graph_as_json, load_graph_from_json
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data

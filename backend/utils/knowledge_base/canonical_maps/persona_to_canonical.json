@@ -3500,13 +3500,8 @@
   },
   "data analyst|data science|Operator": "data analyst|data science|Operator",
   "{'title': 'business intelligence analyst', 'department': 'business intelligence', 'seniority': 'Operator'}": {
-<<<<<<< Updated upstream
-    "title": "data analyst",
-    "department": "data science",
-=======
     "title": "financial analyst",
     "department": "business intelligence",
->>>>>>> Stashed changes
     "seniority": "Operator"
   },
   "{'title': 'data analyst', 'department': 'data science', 'seniority': 'Operator'}": {
@@ -3699,11 +3694,7 @@
     "seniority": "Operator"
   },
   "{'title': 'finance manager', 'department': 'finance', 'seniority': 'Operator'}": {
-<<<<<<< Updated upstream
-    "title": "accountant",
-=======
     "title": "account manager",
->>>>>>> Stashed changes
     "department": "finance",
     "seniority": "Operator"
   },
@@ -4429,11 +4420,7 @@
   },
   "billing specialist|finance|Operator": "billing specialist|finance|Operator",
   "{'title': 'billing specialist', 'department': 'finance', 'seniority': 'Operator'}": {
-<<<<<<< Updated upstream
-    "title": "accountant",
-=======
     "title": "finance analyst",
->>>>>>> Stashed changes
     "department": "finance",
     "seniority": "Operator"
   },
@@ -4971,10 +4958,6 @@
     "department": "it",
     "seniority": "Operator"
   },
-<<<<<<< Updated upstream
-  "{'title': 'payment operations manager', 'department': 'finance', 'seniority': 'Operator'}": {
-    "title": "accountant",
-=======
   "{'title': 'support team lead', 'department': 'customer support', 'seniority': 'Operator'}": {
     "title": "support team lead",
     "department": "customer support",
@@ -4987,7 +4970,6 @@
   },
   "{'title': 'internal auditor', 'department': 'finance', 'seniority': 'Operator'}": {
     "title": "internal auditor",
->>>>>>> Stashed changes
     "department": "finance",
     "seniority": "Operator"
   },
@@ -5071,11 +5053,6 @@
     "department": "finance",
     "seniority": "Junior"
   },
-<<<<<<< Updated upstream
-  "{'title': 'subscription manager', 'department': 'customer success', 'seniority': 'Operator'}": {
-    "title": "subscription manager",
-    "department": "customer success",
-=======
   "{'title': 'sales operations manager', 'department': 'operations', 'seniority': 'Operator'}": {
     "title": "sales manager",
     "department": "sales",
@@ -5089,7 +5066,6 @@
   "{'title': 'crm administrator', 'department': 'operations', 'seniority': 'Operator'}": {
     "title": "sales manager",
     "department": "sales",
->>>>>>> Stashed changes
     "seniority": "Operator"
   },
   "{'title': 'Business Analyst', 'department': 'Analytics', 'seniority': 'Manager'}": {

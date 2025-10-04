@@ -6,19 +6,9 @@ import {
 } from "@mui/material";
 import type { PersonaCardRCSPayload } from "../types/index";
 
-<<<<<<< Updated upstream
-const Personas = () => {
-  const [_, setCompanyId] = useState<string | null>(null);
-  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [personas, setPersonas] = useState([]);
-  const [showBuilder, setShowBuilder] = useState(false);
-  const [statusMsg, setStatusMsg] = useState("");
-=======
 const drawerWidth = 240;
 
 export default function Personas() {
->>>>>>> Stashed changes
   const token = localStorage.getItem("token");
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
@@ -50,40 +40,14 @@ export default function Personas() {
 
   // fetch personas (RCS-based)
   useEffect(() => {
-<<<<<<< Updated upstream
-    console.log("🔄 Working with product:", selectedProductId);
-    if (!selectedProductId) {
-      console.log("❌ No product selected, skipping persona fetch.");
-      return;
-    }
-    const fetchPersonas = async () => {
-      setPersonas([]); // Clear old data immediately
-      setStatusMsg("Fetching personas...");
-=======
     if (!selectedProductId) return;
     setLoading(true);
     (async () => {
->>>>>>> Stashed changes
       try {
         const data: PersonaCardRCSPayload[] = await fetch(
           `http://localhost:8000/get-personas/${selectedProductId}`,
-<<<<<<< Updated upstream
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const personaData = await personaRes.json();
-
-        // 5. Handle backend messages
-        if (personaData?.detail === "No Summaries or Capabilities Mapped") {
-          setStatusMsg("No summaries or capabilities mapped. Please run Value Prop first.");
-          setPersonas([]);
-          return;
-        }
-=======
           { headers: { Authorization: `Bearer ${token}` } }
         ).then(r => r.json());
->>>>>>> Stashed changes
 
         // Expecting the new per-node payload from get_personas_rcs_priority
         console.log("Fetched personas data:", data);
@@ -99,17 +63,7 @@ export default function Personas() {
         }));
         setCards(mapped.slice().sort((a, b) => b.priority_score - a.priority_score));
         setStatusMsg("");
-<<<<<<< Updated upstream
-        setPersonas(personaData);
-
-        // 6. If no personas, prompt to infer
-        if (!personaData || personaData.length === 0) {
-          setStatusMsg("No personas found. Click 'Infer Personas' to generate.");
-        }
-      } catch (err) {
-=======
       } catch {
->>>>>>> Stashed changes
         setStatusMsg("Error fetching personas.");
         setCards([]);
       } finally {
@@ -119,42 +73,6 @@ export default function Personas() {
   }, [selectedProductId, token]);
 
   return (
-<<<<<<< Updated upstream
-    <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Saved Personas</h2>
-
-      {/* 3. If multiple products, let user select */}
-      {products.length > 1 && (
-        <div className="mb-4">
-          <label className="mr-2 font-semibold">Select Product:</label>
-          <select
-            value={selectedProductId || ""}
-            onChange={e => setSelectedProductId(e.target.value)}
-            className="border rounded px-2 py-1"
-          >
-            <option value="" disabled>Select a product</option>
-            {products.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* 4. If no products, show message */}
-      {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
-
-
-      {/* 5. Show personas if they exist */}
-      {personas.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {personas.map((p, i) => (
-            <PersonaCard
-              key={i}
-              persona={p}
-              isSelected={true}
-              onToggle={() => {}}
-            />
-=======
     <Box sx={{ display: "flex" }}>
 
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -185,7 +103,6 @@ export default function Personas() {
             <Grid size={{xs:12, md:6, lg:4}} key={`${card.persona_title}-${card.persona_departments?.[0] || ""}-${card.persona_seniority?.[0] || ""}`}>
               <PersonaMuiCard data={card} />
             </Grid>
->>>>>>> Stashed changes
           ))}
         </Grid>
       </Box>
@@ -193,9 +110,6 @@ export default function Personas() {
   );
 }
 
-<<<<<<< Updated upstream
-export default Personas;
-=======
 function PersonaMuiCard({ data }: { data: PersonaCardRCSPayload }) {
   const { persona, importance, activation, care, marginal_lift, priority_score, jobs, pains } = data;
 
@@ -232,4 +146,3 @@ function PersonaMuiCard({ data }: { data: PersonaCardRCSPayload }) {
     </Card>
   );
 }
->>>>>>> Stashed changes

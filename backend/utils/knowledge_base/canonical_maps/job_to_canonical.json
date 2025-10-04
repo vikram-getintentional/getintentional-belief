@@ -1632,24 +1632,6 @@
   "predict and mitigate customer churn": "predict and mitigate customer churn",
   "set and manage flexible pricing models based on usage": "set and manage flexible pricing models based on usage",
   "manage and monitor all customer subscriptions": "manage and monitor all customer subscriptions",
-<<<<<<< Updated upstream
-  "develop and implement customer retention strategies": "develop and implement customer retention strategies",
-  "set and adjust pricing models based on customer usage": "set and adjust pricing models based on customer usage",
-  "manage and organize product offerings effectively": "manage and organize product offerings effectively",
-  "manage and track customer subscriptions effectively": "manage and track customer subscriptions effectively",
-  "implement effective customer retention strategies and tools": "implement effective customer retention strategies and tools",
-  "ensure system compatibility and seamless integration": "ensure system compatibility and seamless integration",
-  "ensure accurate revenue recognition and gaap compliance": "ensure accurate revenue recognition and gaap compliance",
-  "develop and implement adaptive pricing models based on customer usage": "develop and implement adaptive pricing models based on customer usage",
-  "provide diverse payment options to facilitate transactions": "provide diverse payment options to facilitate transactions",
-  "ensure secure transactions and compliance with regulations": "ensure secure transactions and compliance with regulations",
-  "manage and track subscriptions, ensuring timely billing and payments.": "manage and track subscriptions, ensuring timely billing and payments.",
-  "develop and implement adaptive pricing models based on usage.": "develop and implement adaptive pricing models based on usage.",
-  "ensure accurate revenue recognition in compliance with gaap.": "ensure accurate revenue recognition in compliance with gaap.",
-  "implement strategies to predict and prevent customer churn.": "implement strategies to predict and prevent customer churn.",
-  "manage and track all customer subscriptions effectively": "manage and track all customer subscriptions effectively",
-  "design and implement flexible pricing models based on usage": "design and implement flexible pricing models based on usage"
-=======
   "manage international payments and currencies": "manage international payments and currencies",
   "experiment with different pricing models to maximize profitability": "experiment with different pricing models to maximize profitability",
   "recognize revenue accurately and be audit ready": "recognize revenue accurately and be audit ready",
@@ -2580,5 +2562,4 @@
   "Conduct quarterly revenue audits.": "Conduct quarterly revenue audits.",
   "Manage daily payment operations.": "Optimize cash flow management.",
   "Generate monthly financial reports.": "Conduct quarterly revenue audits."
->>>>>>> Stashed changes
 }
