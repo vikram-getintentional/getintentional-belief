@@ -1,57 +1,27 @@
 # ============================
-# File: backend/utils/graph_base/ppr_builder.py
+# File: backend/utils/inference/rcs_generators/ppr_builder.py
 # ============================
 from __future__ import annotations
-from typing import Dict, Tuple, List
-
-
-import numpy as np
-import scipy.sparse as sp
+from typing import Dict, List
 import networkx as nx
+from .ppr_engine import personalized_pagerank
 
-from backend.utils.inference.rcs_generators.rcs_computations.ppr_engine import PPREngine
+def ppr_from_source(G: nx.DiGraph, source: str, *, alpha: float = 0.85, max_iter: int = 100, tol: float = 1e-8) -> Dict[str, float]:
+    if source not in G:
+        return {n: 0.0 for n in G.nodes}
+    pers = {n: 0.0 for n in G.nodes}
+    pers[source] = 1.0
+    return personalized_pagerank(G, alpha=alpha, personalization=pers, max_iter=max_iter, tol=tol)
 
-
-
-
-def build_ppr_engine_from_graph(G_rev: nx.DiGraph) -> PPREngine:
-    """
-    Build a PPREngine from a *reversed* graph where edges carry 'likelihood' weights
-    and rows should be normalized to be stochastic.
-
-
-    G_rev: Directed graph in the orientation you will PageRank on (your code uses
-    reversed graph for into-conversion flows).
-    """
-    nodes = list(G_rev.nodes())
-    node_index = {n: i for i, n in enumerate(nodes)}
-    idx_node = nodes[:]
-
-
-    rows, cols, data = [], [], []
-    for u, v, d in G_rev.edges(data=True):
-        w = float(d.get("likelihood", 0.0))
-        if w <= 0:
-            continue
-        ui, vi = node_index[u], node_index[v]
-        rows.append(ui)
-        cols.append(vi)
-        data.append(w)
-
-
-    if not rows:
-        # handle empty edge case: identity (self-loops) to keep stochastic
-        n = len(nodes)
-        P = sp.eye(n, format="csr")
-    else:
-        P = sp.csr_matrix((np.array(data, dtype=float), (np.array(rows, dtype=int), np.array(cols, dtype=int))), shape=(len(nodes), len(nodes)))
-        # Row normalize
-        rs = np.array(P.sum(axis=1)).ravel()
-        rs[rs == 0] = 1.0
-        inv = 1.0 / rs
-        Dinv = sp.diags(inv)
-        P = Dinv @ P
-
-
-    return PPREngine(n=len(nodes), node_index=node_index, idx_node=idx_node, P_base=P)
-
+def ppr_from_sources(G: nx.DiGraph, sources: List[str], *, alpha: float = 0.85, max_iter: int = 100, tol: float = 1e-8) -> Dict[str, float]:
+    if not sources:
+        return {n: 0.0 for n in G.nodes}
+    pers = {n: 0.0 for n in G.nodes}
+    for s in sources:
+        if s in G:
+            pers[s] = pers.get(s, 0.0) + 1.0
+    # normalize personalization
+    ssum = sum(pers.values()) or 1.0
+    for k in pers:
+        pers[k] /= ssum
+    return personalized_pagerank(G, alpha=alpha, personalization=pers, max_iter=max_iter, tol=tol)
