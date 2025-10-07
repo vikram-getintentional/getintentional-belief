@@ -1656,7 +1656,7 @@
       "type": "attribute_value",
       "node_type": "attribute_value",
       "dimension": "industry",
-      "name": "Software & Internet",
+      "name": "SaaS",
       "data_source": "llm",
       "last_updated": "2025-10-03T18:29:21.802279"
     },

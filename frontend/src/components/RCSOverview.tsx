@@ -28,10 +28,10 @@ export default function RCSOverview({ rcs }: { rcs: any }) {
 
   const personas: PersonaMetric[] = (rcs.all_personas || rcs.top_N_personas || []).map((p: any) => ({
     id: p.id || p.persona || p.label,
-    label: p.label || p.id,
+    label: p.persona_label || p.label || p.id, // Prefer persona_label if present
     involvement: p.involvement ?? p.I ?? 0,
     activation: p.activation ?? p.A ?? 0,
-    }));
+  }));
 
   const byRole = bucketByRole(personas, { mode: "z", zxCut: 0, zyCut: 0 });
   personas.forEach(p => byRole[roleOf(p)].push(p));

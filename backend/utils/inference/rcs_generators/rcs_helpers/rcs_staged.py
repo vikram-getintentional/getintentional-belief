@@ -442,6 +442,7 @@ def rcs_prepare(
         seeds=seeds, base_win=base_win,
         baseline_dbg=baseline_block,
     )
+    
     return ctx, {"baseline": baseline_block, "cheap": cheap_block}
 
 

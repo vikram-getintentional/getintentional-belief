@@ -11,10 +11,66 @@ from collections import deque
 from itertools import combinations
 
 from backend.utils.graph_base.network_graph import get_edge_attribute, get_node_by_id, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.inference.rcs_generators.rcs_helpers.reach import reverse_reach_from_nodes, reverse_reach_to_product
+
+#------
+# Debug helpers
+#-----
+def dbg_incoming_to_product(G, product_id, edge_attr="likelihood"):
+    from backend.utils.graph_base.network_graph import get_edge_attribute
+    inc = []
+    for u in G.predecessors(product_id):
+        w = (get_edge_attribute(G, u, product_id, edge_attr)
+             or get_edge_attribute(G, u, product_id, "relevance")
+             or 0.0)
+        inc.append((u, float(w or 0.0)))
+    nonzero = sum(1 for _, w in inc if w > 0)
+    print(f"[PROD] incoming→{product_id}: total={len(inc)}, nonzero={nonzero}")
+    for u, w in sorted(inc, key=lambda x: x[1], reverse=True)[:10]:
+        print(f"   {u} -> {product_id} : {w:.6g}")
+
+def dbg_dump_P(P: np.ndarray, nodes: list[str], idx: dict[str, int], product_id: str, max_show: int = 12):
+    nnz = int(np.count_nonzero(P))
+    mx  = float(P.max()) if nnz else 0.0
+    print(f"[DBG] P shape={P.shape}, nnz={nnz}, max={mx:.6g}")
+
+    # Show a few real non-zero entries with row/col labels
+    r, c = np.where(P > 0)
+    take = min(max_show, r.size)
+    sample = [(nodes[int(r[i])], nodes[int(c[i])], float(P[r[i], c[i]])) for i in range(take)]
+    print("[DBG] P sample of non-zero entries:")
+    for (ru, cv, val) in sample:
+        print(f"   {ru} -> {cv} : {val:.6g}")
+
+    # Per-row stats (excluding the absorbing product row)
+    t = idx[product_id]
+    row_sums = P.sum(axis=1)
+    row_sums_no_prod = np.delete(row_sums, t)
+    if row_sums_no_prod.size:
+        print(f"[DBG] Row sums (excl product): min={row_sums_no_prod.min():.6g}, "
+              f"max={row_sums_no_prod.max():.6g}, mean={row_sums_no_prod.mean():.6g}")
+    print(f"[DBG] Product row sum: {row_sums[t]:.6g}")
+
+def dbg_start_vector(start: np.ndarray, nodes: list[str], top_k: int = 10):
+    tot = float(start.sum())
+    print(f"[DBG] start mass total={tot:.6g}")
+    if tot == 0.0:
+        print("[DBG] start vector is all zeros.")
+        return
+    nz = np.where(start > 0)[0]
+    pairs = [(float(start[i]), nodes[i]) for i in nz]
+    pairs.sort(reverse=True)
+    print("[DBG] top start entries:")
+    for val, name in pairs[:top_k]:
+        print(f"   {name}: {val:.6g}")
+
+
 
 # ----------------------------
 # Math helpers
 # ----------------------------
+def _sigmoid(x: float) -> float:
+    return 1.0 / (1.0 + math.exp(-x))
 
 def clip01(x: float) -> float:
     try:
@@ -27,6 +83,7 @@ def noisy_or(vals: List[float]) -> float:
         return 0.0
     prod = 1.0
     for v in vals:
+        v = max(0.0, min(1.0, float(v)))
         prod *= (1.0 - clip01(v))
     return clip01(1.0 - prod)
 
@@ -363,9 +420,88 @@ def set_causal_depths(G: nx.DiGraph) -> None:
     except Exception:
         pass
 
+#----------------------------
+# Helpers for Pain Likelihood Settings
+#----------------------------
+# ---- small utils ----
+def _nt(G: nx.DiGraph, n: str) -> str:
+    d = G.nodes.get(n, {})
+    return d.get("node_type") or d.get("type") or "unknown"
+
+def _clip01(x: float) -> float:
+    return max(0.0, min(1.0, float(x)))
+
+def _noisy_or(prob_list):
+    prod = 1.0
+    for p in prob_list:
+        p = _clip01(p)
+        prod *= (1.0 - p)
+    return 1.0 - prod
+
+def _edge_weight(
+    G: nx.DiGraph,
+    u: str,
+    v: str,
+    *,
+    prefer_keys = ("likelihood", "beta", "boost", "weight", "w"),
+    default: Optional[float] = None,
+) -> Optional[float]:
+    """
+    Robustly read an edge weight from G[u][v]. Supports DiGraph or MultiDiGraph.
+    Returns first matching key in prefer_keys; if MultiDiGraph, picks max of matches.
+    """
+    if not G.has_edge(u, v):
+        return default
+    edata = G.get_edge_data(u, v)
+
+    # DiGraph -> a dict of attributes
+    if isinstance(edata, dict) and all(not isinstance(vv, dict) for vv in edata.values()):
+        for k in prefer_keys:
+            if k in edata:
+                return _clip01(float(edata[k]))
+        return default
+
+    # MultiDiGraph -> {key: {attr...}, ...}
+    if isinstance(edata, dict):
+        found_vals = []
+        for _k, attrs in edata.items():
+            if not isinstance(attrs, dict):
+                continue
+            for pref in prefer_keys:
+                if pref in attrs:
+                    try:
+                        found_vals.append(_clip01(float(attrs[pref])))
+                        break
+                    except Exception:
+                        pass
+        if found_vals:
+            # pick the strongest edge (max)
+            return max(found_vals)
+    return default
+
+def _collect_occurrences(engaged_nodes: List[dict]) -> Dict[str, float]:
+    """
+    Normalize engaged_nodes to {id: occurrence in [0,1]}.
+    Accepts either {'id': ..., 'occurrence': x} dicts or raw IDs (treated as 1.0).
+    """
+    occ: Dict[str, float] = {}
+    for ent in engaged_nodes or []:
+        if isinstance(ent, dict):
+            nid = ent.get("id")
+            if not nid:
+                continue
+            occ[nid] = _clip01(float(ent.get("occurrence", 1.0)))
+        else:
+            occ[str(ent)] = 1.0
+    return occ
+
+
 # ----------------------------
 # PPR & baseline
 # ----------------------------
+
+
+
 
 def _prep_graph_for_ppr(G: nx.DiGraph, conv_id: str) -> nx.DiGraph:
     H = G.copy()
@@ -510,3 +646,38 @@ def design_sequences_and_campaigns(G: nx.DiGraph,seeds:List[str],conv_id:str,
                                    min_synergy:float=1e-6,
                                    max_sequences:int=5)->List[Dict]:
     return []
+
+
+# -----------------------------------------------------------------------------
+# INVOLVEMENT / ACTIVATION LOGIC
+# -----------------------------------------------------------------------------
+def infer_node_involvement_activation(G: nx.DiGraph, engaged_nodes: Optional[List[Dict]] = None) -> List[Dict]:
+    engaged_nodes = engaged_nodes or []
+    persona_ids = [n for n, d in G.nodes(data=True) if d.get("node_type") == "persona"]
+
+    try:
+        pr = nx.pagerank(G, alpha=0.85, max_iter=100, tol=1e-8)
+    except Exception:
+        pr = {n: 1.0 / max(1, G.number_of_nodes()) for n in G.nodes}
+
+    vals = list(pr.values())
+    lo, hi = (min(vals), max(vals)) if vals else (0.0, 1.0)
+    def nrm(x): 
+        if hi <= lo: return 0.0
+        return (x - lo) / (hi - lo)
+
+    out = []
+    for pid in persona_ids:
+        jobs = [v for u, v in G.out_edges(pid) if G.nodes[v].get("node_type") == "job"]
+        job_scores = [nrm(pr.get(j, 0.0)) for j in jobs] or [0.25]
+        inv = 1.0 - math.prod([1.0 - t for t in job_scores])
+        top2 = sorted(job_scores, reverse=True)[:2]
+        felt = sum(top2) / max(1, len(top2))
+        act = inv * felt
+        out.append({
+            "id": pid,
+            "involvement": round(inv, 4),
+            "activation": round(act, 4),
+            "care": round((inv * max(1e-9, felt)) ** 0.5, 4),
+        })
+    return out

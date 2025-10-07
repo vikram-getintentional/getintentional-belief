@@ -7,6 +7,7 @@ from backend.utils.crm_management.target_account_manager import load_target_acco
 from backend.utils.graph_base.graph_utils.graph_confidence import compute_graph_confidence
 from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_product_id_from_subgraph, update_capabilities_by_nodes_list
 from backend.utils.graph_base.nodes.capability_nodes import update_capabilities_by_node_id
+from backend.utils.inference.crm_analysis.actual_win_estimator import generate_win_regression
 from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import run_agentic_loop
 
 from backend.auth.jwt_handler import decode_token
@@ -655,6 +656,7 @@ async def get_target_accounts(company_id: str, product_id: str, request: Request
     product_subgraph = build_product_graph(product_id)
     product_id_actual = get_product_id_from_subgraph(product_subgraph)
     accounts = load_target_accounts_from_db(product_id_actual)
+    
     return {"accounts": accounts}
 
 @router.post("/save-target-accounts/{company_id}")
@@ -700,3 +702,27 @@ async def delete_target_account(company_id: str, account_id: str, product_id: st
     except Exception as e:
         print("❌ Delete Target Account error:", e)
         raise HTTPException(status_code=500, detail="Could not delete target account")
+    
+@router.get("/show-crm-win-model/{product_id}")
+async def get_crm_win_model(product_id: str, request: Request):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    product_subgraph = build_product_graph(product_id)
+    product_id_actual = get_product_id_from_subgraph(product_subgraph)
+    accounts = load_target_accounts_from_db(product_id_actual)
+    try:
+        model = generate_win_regression(product_subgraph, accounts)
+    except Exception as e:
+        print("❌ Win rate model error:", e)
+        model = None
+    return model
+    
+
+# ========================

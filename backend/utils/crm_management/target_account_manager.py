@@ -25,6 +25,7 @@ class TargetAccount(Base):
     geography = Column(String)
     competitor_used = Column(JSON, default=[])
     other_tech_stack = Column(JSON, default=[])
+    deal_status = Column(String, default="New")  # e.g., New, In-Progress, Closed-Won, Closed-Lost
 
 def save_and_update_target_accounts(accounts, product_id):
     
@@ -40,6 +41,7 @@ def save_and_update_target_accounts(accounts, product_id):
         geography = account.get("geography") 
         competitor_used = account.get("competitor_used", [])
         other_tech_stack = account.get("other_tech_stack", [])
+        deal_status = account.get("deal_status", "New")
 
 
         if not account_name:
@@ -61,6 +63,7 @@ def save_and_update_target_accounts(accounts, product_id):
             existing_account.geography = geography
             existing_account.competitor_used = competitor_used
             existing_account.other_tech_stack = other_tech_stack
+            existing_account.deal_status = deal_status
             print(f"Updated existing account: {account_name}")
         else:
             # Create new record
@@ -74,7 +77,8 @@ def save_and_update_target_accounts(accounts, product_id):
                 funding_stage=funding_stage,
                 geography=geography,
                 competitor_used=competitor_used,
-                other_tech_stack=other_tech_stack
+                other_tech_stack=other_tech_stack,
+                deal_status=deal_status
             )
             db.add(new_account)
             print(f"Added new account: {account_name}")
@@ -100,7 +104,8 @@ def account_to_dict(account):
         "funding_stage": account.funding_stage,
         "geography": account.geography,
         "competitor_used": account.competitor_used or [],
-        "other_tech_stack": account.other_tech_stack or []
+        "other_tech_stack": account.other_tech_stack or [],
+        "deal_status": account.deal_status,
     }
 def delete_target_account_handler(account_id, product_id):
     print("Deletion loop inside handler")

@@ -16,6 +16,7 @@ import Arsenal from './pages/Arsenal.tsx'
 import CRMUpload from './pages/CRMUpload.tsx'
 import Admin from './pages/Admin.tsx'
 import TargetAccounts from './pages/TargetAccounts.tsx'
+import Models from './pages/models.tsx'
 
 import './output.css';
 
@@ -36,6 +37,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/arsenal" element={<Arsenal />} />
           <Route path="/crm-upload" element={<CRMUpload />} />
           <Route path="/target-accounts" element={<TargetAccounts />} />
+          <Route path="/models" element={<Models />} />
           <Route path="/admin" element={<Admin />} />
           
           {/* Add other routes here */}

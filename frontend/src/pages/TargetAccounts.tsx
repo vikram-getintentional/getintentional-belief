@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TextField, Autocomplete, Chip, IconButton, CircularProgress,
-  Button
+  Button,
+  MenuItem,
+  Select
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -26,6 +28,7 @@ type TargetAccountRow = {
   geography?: string;
   competitor_used: string[];
   other_tech_stack: string[];
+  deal_status?: string;
 };
 
 function TargetAccounts() {
@@ -123,7 +126,8 @@ function TargetAccounts() {
       funding_stage: row.funding_stage || null,
       geography: row.geography || null,
       competitor_used: row.competitor_used || [],
-      other_tech_stack: row.other_tech_stack || []
+      other_tech_stack: row.other_tech_stack || [],
+      deal_status: row.deal_status || "New"
     };
     console.log("Saving row:", rowToSave);
     await fetch(
@@ -168,6 +172,7 @@ function TargetAccounts() {
             <TableCell>Geography</TableCell>
             <TableCell>Competitor Used</TableCell>
             <TableCell>Other Tech Stack</TableCell>
+            <TableCell>Deal Status</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -191,36 +196,78 @@ function TargetAccounts() {
                   />
                 </TableCell>
                 <TableCell>
-                  <TextField
+                  <Select
                     value={row.revenue || ""}
-                    variant="standard"
                     onChange={e => handleRowChange(idx, { revenue: e.target.value })}
-                    placeholder="0-10M, 10M-50M..."
-                  />
+                    variant="standard"
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Select range…</MenuItem>
+                    <MenuItem value="<$1M>">$0-1M</MenuItem>
+                    <MenuItem value="$1-$10M">$1-10M</MenuItem>
+                    <MenuItem value="$10M-$50M">$10-50M</MenuItem>
+                    <MenuItem value="$50M-$200M">$50-200M</MenuItem>
+                    <MenuItem value="$200M-$1B">$200-1B</MenuItem>
+                    <MenuItem value=">$1B">$1B+</MenuItem>
+                  </Select>
                 </TableCell>
+
                 <TableCell>
-                  <TextField
+                  <Select
                     value={row.employees || ""}
-                    variant="standard"
                     onChange={e => handleRowChange(idx, { employees: e.target.value })}
-                    placeholder="0-10, 10-50..."
-                  />
+                    variant="standard"
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Select range…</MenuItem>
+                    <MenuItem value="1-10">1-10</MenuItem>
+                    <MenuItem value="11-50">11-50</MenuItem>
+                    <MenuItem value="51-200">51-200</MenuItem>
+                    <MenuItem value="201-1K">201-1K</MenuItem>
+                    <MenuItem value="1K-5K">1K-5K</MenuItem>
+                    <MenuItem value="5K-10K">5K-10K</MenuItem>
+                    <MenuItem value=">10K">10K+</MenuItem>
+                  </Select>
                 </TableCell>
+
                 <TableCell>
-                  <TextField
+                  <Select
                     value={row.funding_stage || ""}
-                    variant="standard"
                     onChange={e => handleRowChange(idx, { funding_stage: e.target.value })}
-                    placeholder="Seed, Series A, Public, Bootstrapped..."
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={row.geography || ""}
                     variant="standard"
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Select stage…</MenuItem>
+                    <MenuItem value="Bootstrapped">Bootstrapped</MenuItem>
+                    <MenuItem value="Pre-Seed">Pre-Seed</MenuItem>
+                    <MenuItem value="Seed">Seed</MenuItem>
+                    <MenuItem value="Series A">Series A</MenuItem>
+                    <MenuItem value="Series B">Series B</MenuItem>
+                    <MenuItem value="Series C+">Series C+</MenuItem>
+                    <MenuItem value="Private">Private</MenuItem>
+                    <MenuItem value="Public">Public</MenuItem>
+                  </Select>
+                </TableCell>
+
+                <TableCell>
+                  <Select
+                    value={row.geography || ""}
                     onChange={e => handleRowChange(idx, { geography: e.target.value })}
-                    placeholder="North America, Europe..."
-                  />
+                    variant="standard"
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Select region…</MenuItem>
+                    <MenuItem value="North America">North America</MenuItem>
+                    <MenuItem value="Latin America">Latin America</MenuItem>
+                    <MenuItem value="EMEA">EMEA</MenuItem>
+                    <MenuItem value="APAC">APAC</MenuItem>
+                    <MenuItem value="ANZ">ANZ</MenuItem>
+                    <MenuItem value="Global">Global</MenuItem>
+                  </Select>
                 </TableCell>
                 <TableCell>
                   <Autocomplete
@@ -269,6 +316,22 @@ function TargetAccounts() {
                     }
                     renderInput={params => <TextField {...params} variant="standard" placeholder="Add tech stack" />}
                   />
+                </TableCell>
+                
+                <TableCell>
+                  <Select
+                    value={row.deal_status || ""}
+                    onChange={e => handleRowChange(idx, { deal_status: e.target.value })}
+                    variant="standard"
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Select status…</MenuItem>
+                    <MenuItem value="New">New</MenuItem>
+                    <MenuItem value="In-Progress">In-Progress</MenuItem>
+                    <MenuItem value="Closed-Won">Closed-Won</MenuItem>
+                    <MenuItem value="Closed-Lost">Closed-Lost</MenuItem>
+                  </Select>
                 </TableCell>
                 <TableCell>
                     <IconButton

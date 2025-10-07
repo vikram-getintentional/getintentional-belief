@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import RCSArchetypePicker from "../components/RCSArchetypePicker";
+import CRMWinModels from "../components/model_ui/crm_win_models";
 
-const ReverseCaseStudies = () => {
+const Models = () => {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
-  const [rcsData, setRcsData] = useState<any>(null);
   const token = localStorage.getItem("token");
 
   // 1. Get company ID on mount
@@ -46,22 +45,6 @@ const ReverseCaseStudies = () => {
     fetchCompanyAndProducts();
   }, [token]);
 
-  // Example: fetch RCS data when product changes
-  useEffect(() => {
-    if (!selectedProductId) return;
-    (async () => {
-      const res = await fetch(`http://localhost:8000/get-reverse-case-study/${selectedProductId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({}),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setRcsData(data);
-        console.log("✅ Fetched RCS data for product:", data);
-      }
-    })();
-  }, [selectedProductId, token]);
 
   return (
     <div className="p-8">
@@ -81,10 +64,10 @@ const ReverseCaseStudies = () => {
         </div>
       )}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
-      <RCSArchetypePicker selectedProductId={selectedProductId ?? ""} token={token ?? ""} />
-      
+      <CRMWinModels productId={selectedProductId ?? ""} token={token ?? ""} />
+
     </div>
   );
 };
 
-export default ReverseCaseStudies;
+export default Models;

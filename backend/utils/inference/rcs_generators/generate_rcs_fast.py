@@ -8,21 +8,14 @@ from itertools import combinations
 import math
 import networkx as nx
 
+
 from backend.utils.graph_base.network_graph import (
     _set_node_label,
-    get_node_by_id,
-    get_nodes_list_ids,
 )
-
-from backend.utils.inference.rcs_generators.rcs_helpers.reach import (
-    reverse_reach_from_nodes,
-    reverse_reach_to_product
-)
+from backend.utils.inference.rcs_generators.graph_algorithms import infer_node_involvement_activation
+from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime import get_graphwin
 
 
-from backend.utils.inference.rcs_generators.rcs_helpers.graphwin import (
-    compute_graphwin,
-)
 
 # -----------------------------------------------------------------------------
 # Helpers: safe getters / node type / labels
@@ -399,45 +392,19 @@ def generate_rcs(
     product_id = ctx.conv_id
 
     # ---------------- GraphWin (baseline) ----------------
-    # pain_trigger ids
-    pain_triggers = [n for n in Gp.nodes if _nt(Gp, n) == "pain_trigger"]
-    dim_weights = pre.get("dim_weights", {}) or {}
-
-    # evidence buckets (hard nodes)
-    hard_trigs = [n["id"] for n in engaged_nodes if n["id"].startswith("pain_trigger:")]
-    hard_pains = [n["id"] for n in engaged_nodes if n["id"].startswith("pain:")]
-    hard_jobs  = [n["id"] for n in engaged_nodes if n["id"].startswith("job:")]
-    hard_nodes = hard_trigs + hard_pains + hard_jobs
-
-    # reach maps
-    reach_trigs = reverse_reach_to_product(Gp, product_id=product_id, pain_triggers=pain_triggers, alpha=0.85)
-    reach_hard  = reverse_reach_from_nodes(Gp, product_id=product_id, source_nodes=hard_nodes, alpha=0.85)
-
-    base_win = compute_graphwin(
-        conv_id=product_id,
-        pain_triggers=pain_triggers,
-        dim_weights=dim_weights,
-        beta0=0.0, betas={}, baseline_prior=0.0,
-        hard_on_triggers=hard_trigs,
-        hard_on_pains=hard_pains,
-        hard_on_jobs=hard_jobs,
-        reach_to_product=reach_trigs,
-        reach_from_hard=reach_hard,
-    )
-
-    baseline_block = {
-        "win_likelihood": float(base_win),
-        "note": "GraphWin = noisyOR( trigger_prior × reverse-PPR(trigger→product), plus hard-node reaches ). Baseline=0 with no attributes.",
-    }
-    Gp.graph["win_likelihood"] = float(base_win)
+    print("Computing baseline GraphWin with engaged nodes...", engaged_nodes)
+    baseline_block = get_graphwin(Gp, engaged_nodes=engaged_nodes)
+    Gp.graph["win_likelihood"] = float(baseline_block.get("win_likelihood", 0.0))
+    
 
     # ---------------- Personas: Involvement / Activation ----------------
-    persona_ids_all = [n for n in Gp.nodes if _nt(Gp, n) == "persona"]
-    pa_rows = _compute_involvement_activation(Gp, persona_ids_all)
-    # rank by involvement/activation
+    pa_rows = []
+    pa_rows = infer_node_involvement_activation(Gp, engaged_nodes=engaged_nodes)
+
     top_by_inv = sorted(pa_rows, key=lambda r: r["involvement"], reverse=True)[:top_personas]
     top_by_act = sorted(pa_rows, key=lambda r: r["activation"], reverse=True)[:top_personas]
-    top_by_lift = sorted(pa_rows, key=lambda r: r["care"], reverse=True)[:top_personas]  # proxy
+    top_by_lift = sorted(pa_rows, key=lambda r: r["care"], reverse=True)[:top_personas]
+
 
     # ---------------- Concerns per persona + backlog ----------------
     concern_backlog = _concern_backlog(Gp, [r["id"] for r in top_by_inv], top_k=60)
