@@ -1,7 +1,7 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import json
 import os
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
 from numpy import mean
@@ -16,6 +16,8 @@ RCS_DIR = os.path.join(BASE_DIR, "utils", "dev_environment", "static_jsons", "ac
 def _ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
 
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 def _rcs_file_path(product_id: str, account_id: str):
     return os.path.join(RCS_DIR, f"{product_id}_{account_id}.json")
@@ -136,34 +138,162 @@ def _recompute_portfolio_expectations(plan: dict) -> dict:
 
 #---- Account Level RCS JSON Generation ----#
 
-def load_account_rcs_from_disc(product_id: str, account_id: str):
-    """Loads account-level RCS JSON if exists, else returns None."""
-    path = _rcs_file_path(product_id, account_id)
-    if os.path.exists(path):
-        try:
-            with open(path, "r") as f:
-                return json.load(f)
-        except Exception:
-            return None
-    return None
+def load_account_rcs_from_disk(product_id: str, account_id: str) -> dict:
+    """
+    Load or create an RCS JSON scaffold for this account.
+    If missing or corrupted, create a new enriched scaffold using TargetAccount.
+    """
+    p = _rcs_file_path(product_id, account_id)
 
-def _build_rcs_header(account):
-    """Builds a header-only JSON."""
+    if not p.exists():
+        acct = get_account_by_id(product_id, account_id)
+        rcs = _rcs_header_from_account(product_id, account_id, acct)
+        with p.open("w", encoding="utf-8") as f:
+            json.dump(rcs, f, indent=2)
+        return rcs
+
+    try:
+        with p.open("r", encoding="utf-8") as f:
+            rcs = json.load(f)
+    except json.JSONDecodeError:
+        acct = get_account_by_id(product_id, account_id)
+        rcs = _rcs_header_from_account(product_id, account_id, acct)
+        with p.open("w", encoding="utf-8") as f:
+            json.dump(rcs, f, indent=2)
+        return rcs
+
+    # If it's an empty/fresh file with only headers, enrich it once
+    if not (rcs.get("plays") or rcs.get("evidence") or rcs.get("stakeholders")):
+        acct = get_account_by_id(product_id, account_id)
+        if acct:
+            enriched = _rcs_header_from_account(product_id, account_id, acct)
+            # Preserve any edits user might have made to top-level keys we don't want to clobber
+            # (keep any non-empty arrays the user added)
+            for k in ("plays", "evidence", "nextActions", "hypotheses", "objectives"):
+                if rcs.get(k):
+                    enriched[k] = rcs[k]
+            rcs = enriched
+            with p.open("w", encoding="utf-8") as f:
+                json.dump(rcs, f, indent=2)
+
+    return rcs
+
+#-----RCS Header & Pre-data fillers
+
+def _account_to_rcs_seed(acct: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Normalize a TargetAccount row into fields useful for an RCS scaffold.
+    This function is defensive: it tolerates missing/optional fields.
+    """
+    # Common fields you likely have on TargetAccount (rename if your schema differs)
+    name            = acct.get("name") or acct.get("company") or ""
+    website         = acct.get("website") or ""
+    region          = acct.get("region") or acct.get("geo") or ""
+    size_segment    = acct.get("segment") or acct.get("employee_band") or ""
+    revenue_band    = acct.get("revenue_band") or ""
+    archetypes      = acct.get("archetypes") or acct.get("archetype") or []
+    competitor      = acct.get("current_competitor") or acct.get("billing_competitor") or ""
+    current_stack   = acct.get("current_stack") or {}
+    billing_model   = acct.get("billing_model") or acct.get("pricing_model") or ""
+    icp_fit         = acct.get("icp_fit") if acct.get("icp_fit") is not None else None
+    tags            = acct.get("tags") or []
+    intent_signals  = acct.get("intent_signals") or []
+    notes           = acct.get("notes") or ""
+    # If you store belief/stage on the account, seed from there
+    belief_state    = acct.get("belief_state") or acct.get("funnel_stage") or "Unaware"
+    belief_score    = acct.get("belief_score")
+    belief_reason   = acct.get("belief_rationale") or ""
+
+    # Optional people/roles
+    primary_contacts = acct.get("contacts") or []  # expect list of dicts, if you have it
+
     return {
-        "account": account.account_name,
-        "target_account_id": account.id,
-        "product_id": account.product_id,
-        "archetype": {
-            "industry": account.industry or "Unknown",
-            "revenue": account.revenue_range or "Unknown",
-            "employees": account.employee_range or "Unknown",
-            "funding_stage": account.funding_stage or "Unknown",
-            "geography": account.geography or "Unknown",
+        "account": {
+            "id": acct.get("id"),
+            "product_id": acct.get("product_id"),
+            "name": name,
+            "website": website,
+            "region": region,
+            "segment": size_segment,
+            "revenueBand": revenue_band,
+            "archetypes": archetypes if isinstance(archetypes, list) else [archetypes] if archetypes else [],
+            "currentCompetitor": competitor,
+            "currentStack": current_stack,
+            "billingModel": billing_model,
+            "icpFit": icp_fit,
+            "intentSignals": intent_signals,
+            "tags": tags,
+            "notes": notes,
         },
-        "zmot_theme": None,
-        "reverse_case_study": {"stages": []},
-        "execution_plan": {"themes": [], "campaigns": [], "arsenal": []},
-        "created_at": datetime.now(datetime.timezone.utc).isoformat(),
+        "belief": {
+            "state": belief_state,
+            "score": belief_score if isinstance(belief_score, (int, float)) else 0,
+            "rationale": belief_reason,
+        },
+        "stakeholders": [
+            {
+                "name": c.get("name"),
+                "title": c.get("title"),
+                "email": c.get("email"),
+                "role": c.get("role") or c.get("persona"),
+                "influence": c.get("influence"),  # e.g., 1–5 or "High/Med/Low"
+                "notes": c.get("notes", ""),
+            }
+            for c in primary_contacts
+            if isinstance(c, dict)
+        ],
+    }
+
+
+def _rcs_header_from_account(product_id: str, account_id: str, acct: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Construct a smart default RCS header using an optional TargetAccount.
+    If acct is None, falls back to a minimal header.
+    """
+    now = _now_iso()
+
+    if acct:
+        seed = _account_to_rcs_seed(acct)
+        # Light, opinionated hints you can prune later
+        initial_hypotheses = []
+        if seed["account"].get("currentCompetitor"):
+            initial_hypotheses.append(
+                f"Displace {seed['account']['currentCompetitor']} by proving Revenue Agility + lower cost-to-serve."
+            )
+        if seed["account"].get("billingModel"):
+            initial_hypotheses.append(
+                f"Pilot in {seed['account']['billingModel']} flow with guardrails and rollback plan."
+            )
+        if not initial_hypotheses:
+            initial_hypotheses.append("Validate business case with CFO and align RevOps on phased rollout.")
+
+        return {
+            "meta": {"version": "1.0", "createdAt": now, "updatedAt": now},
+            **seed,
+            "hypotheses": [{"text": h, "status": "Open"} for h in initial_hypotheses],
+            "objectives": {
+                "winHypothesis": initial_hypotheses[0],
+                "kpis": [
+                    {"name": "Belief Shift", "target": "+1 stage"},
+                    {"name": "Executive Alignment", "target": "CFO + RevOps sign-off"},
+                ],
+            },
+            "plays": [],
+            "evidence": [],
+            "nextActions": [],
+        }
+
+    # Fallback minimal header (no account in DB)
+    return {
+        "meta": {"version": "1.0", "createdAt": now, "updatedAt": now},
+        "account": {"id": account_id, "product_id": product_id, "name": ""},
+        "belief": {"state": "Unaware", "score": 0, "rationale": ""},
+        "stakeholders": [],
+        "hypotheses": [],
+        "objectives": {"winHypothesis": "", "kpis": []},
+        "plays": [],
+        "evidence": [],
+        "nextActions": [],
     }
 
 
@@ -174,28 +304,28 @@ def _save_rcs_json(product_id: str, account_id: str, rcs_json: dict):
         json.dump(rcs_json, f, indent=2)
 
 
+
 def load_all_account_rcs_jsons(product_id: str):
     print("Loading all account ids from comprehensive generator")
-    account_ids = get_target_account_ids(
-        product_id, {"deal_status": ["!in", ["Closed-Won", "Closed-Lost"]]}
-    )
-    if not account_ids or len(account_ids) <= 0:
-        print("No target accounts found ")
-        rcs_list=[]
-
-        return 
-    
-    
-    print(f"Found {len(account_ids)} target accounts for product_id {product_id}")
+    account_ids = get_target_account_ids(product_id, {"status": {"nin": ["Closed-won", "Closed-lost"]}})
     rcs_list = []
-    for acc_id in account_ids:
-        rcs = load_account_rcs_from_disc(product_id, acc_id)
-        if not rcs or not rcs.get("reverse_case_study", {}).get("stages"):
-            account = get_account_by_id(product_id, acc_id)
-            if not account:
-                continue
-            rcs = _build_rcs_header(account)
-            _save_rcs_json(product_id, acc_id, rcs)
-        rcs_list.append(rcs)
+    created = 0
+    normalized = 0
 
-    return rcs_list
+    """for acc_id in account_ids:
+        p = _rcs_file_path(product_id, acc_id)
+        existed = p.exists()
+        rcs = load_account_rcs_from_disk(product_id, acc_id)
+        if not existed:
+            created += 1
+        else:
+            if not (rcs.get("plays") or rcs.get("evidence") or rcs.get("stakeholders")):
+                normalized += 1
+        rcs_list.append(rcs)"""
+
+    debug = {
+        "rcs_accounts_count": len(rcs_list),
+        "new_rcs_headers_created": created,
+        "rcs_headers_normalized": normalized,
+    }
+    return rcs_list, debug

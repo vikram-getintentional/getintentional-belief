@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from backend.database import get_db, Base
 from backend.utils.crm_management.target_account_models import TargetAccount
 from sqlalchemy.orm import Session
-from sqlalchemy import Column, String, Integer, JSON
+from sqlalchemy import Column, String, Integer, JSON, func
 import uuid
 
 """
@@ -143,29 +143,68 @@ def delete_target_account_handler(account_id, product_id):
 
 def get_target_account_ids(product_id: str, filters: dict = None):
     """
-    Returns a list of account dicts for a given product_id applying filters.
+    Returns a list of account ids for a given product_id applying filters.
+
+    Notes:
+    - Accepts filter keys "deal_status" or the alias "status".
+    - Supports two input shapes:
+        * tuple form: { "deal_status": ("!in", ["Closed-Won", "Closed-Lost"]) }
+        * dict form:  { "status": { "nin": ["Closed-won", "Closed-lost"] } }
+    - Matching is case-insensitive.
     """
+    print("running tgt acct getter")
     db: Session = next(get_db())
     try:
+        print("Fetching target accounts for product_id:", product_id)
         q = db.query(TargetAccount).filter(TargetAccount.product_id == product_id)
+        print("Initial query:", str(q))
+        all_rows = q.all()
+        print("All rows before filtering:", [r.id for r in all_rows])
 
         if filters:
             for key, condition in filters.items():
-                if key == "deal_status":
-                    op, values = condition
-                    if op == "!in":
-                        q = q.filter(~TargetAccount.deal_status.in_(values))
-                    elif op == "in":
-                        q = q.filter(TargetAccount.deal_status.in_(values))
-                    elif op == "=":
-                        q = q.filter(TargetAccount.deal_status == values)
+                # normalize alias -> deal_status
+                if key in ("deal_status", "status"):
+                    # tuple form: (op, values)
+                    if isinstance(condition, (list, tuple)) and len(condition) == 2:
+                        op, values = condition
+                        vals = [v.lower() for v in (values or [])]
+                        if op in ("!in", "nin"):
+                            print("nin condition detected in tuple")
+                            q = q.filter(~func.lower(TargetAccount.deal_status).in_(vals))
+                        elif op in ("in",):
+                            print("in condition detected in tuple")
+                            q = q.filter(func.lower(TargetAccount.deal_status).in_(vals))
+                        elif op in ("=", "eq"):
+                            print("eq condition detected in tuple")
+                            q = q.filter(func.lower(TargetAccount.deal_status) == (str(values).lower()))
+                    # dict form: {"nin": [...]} or {"in": [...]} or {"=": "value"}
+                    elif isinstance(condition, dict):
+                        if "nin" in condition:
+                            print("nin condition detected in dict")
+                            vals = [v.lower() for v in (condition.get("nin") or [])]
+                            print("NIN values:", vals)
+                            q = q.filter(~func.lower(TargetAccount.deal_status).in_(vals))
+                            print("query after nin filter:", str(q))
+                        if "in" in condition:
+                            print("in condition detected in dict")
+                            vals = [v.lower() for v in (condition.get("in") or [])]
+                            q = q.filter(func.lower(TargetAccount.deal_status).in_(vals))
+                        if "=" in condition or "eq" in condition:
+                            print("eq condition detected in dict")
+                            v = condition.get("=") or condition.get("eq")
+                            q = q.filter(func.lower(TargetAccount.deal_status) == (str(v).lower()))
+                    else:
+                        # unknown shape — ignore but warn
+                        print(f"[WARN] Unhandled filter shape for {key}: {condition}")
 
         rows = q.all()
-        # serialize into dicts, not ORM objects
-        target_account_ids = []
-        for r in rows:
-            target_account_ids.append(r.id)
-        
+        if rows:
+            print("Fetched rows:", [r.id for r in rows])
+        else:
+            print("No rows fetched")
+        # serialize into ids (not ORM objects)
+        target_account_ids = [r.id for r in rows]
         print("Fetched target account IDs:", target_account_ids)
         return target_account_ids
     finally:

@@ -805,7 +805,7 @@ async def get_comprehensive_execution_plan(
         rcs_list = []
         headers_created = []
         if isinstance(rcs_list_output, dict):
-            rcs_list = rcs_list_output.get("rcs_list", []) or []
+            rcs_list, deug = rcs_list_output.get("rcs_list", []) or []
             headers_created = rcs_list_output.get("headers_created", []) or []
         elif isinstance(rcs_list_output, list):
             # older / simpler return shape: list of RCS JSONs
