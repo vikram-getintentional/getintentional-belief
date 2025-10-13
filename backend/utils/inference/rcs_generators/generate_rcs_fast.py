@@ -2,223 +2,112 @@
 # File: backend/utils/inference/rcs_generators/generate_rcs_fast.py
 # ============================
 from __future__ import annotations
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Set, Tuple, Optional
 from collections import defaultdict
 from itertools import combinations
-import math
 import networkx as nx
 
-
-from backend.utils.graph_base.network_graph import (
-    _set_node_label,
-)
-from backend.utils.inference.rcs_generators.graph_algorithms import infer_node_involvement_activation
+from backend.utils.graph_base.network_graph import _set_node_label, get_product_id_from_subgraph, get_source_nodes_by_target_and_type
 from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime import get_graphwin
 
-
+# >>> SINGLE SOURCE OF TRUTH (math) <<<
+# These imports must point to the *PPR-based* implementations you restored.
+from backend.utils.inference.rcs_generators.graph_algorithms import (
+    get_involvement_activation_report,   # -> {"core_scores": {...}, "persona_scores": {...}}
+    _concern_backlog,                    # PPR-based backlog using core_scores (activation×involvement of pains/jobs)
+)
 
 # -----------------------------------------------------------------------------
-# Helpers: safe getters / node type / labels
+# Light helpers (UI packaging, no math)
 # -----------------------------------------------------------------------------
 def _nt(G: nx.DiGraph, n: str) -> str:
     d = G.nodes.get(n, {})
     return d.get("node_type") or d.get("type") or "unknown"
 
-# -----------------------------------------------------------------------------
-# rcs_prepare: prune graph, compute dim_weights, collect ids, etc.
-# (kept intentionally simple; plug back your previous pruner if you had one)
-# -----------------------------------------------------------------------------
 def rcs_prepare(
     G: nx.DiGraph,
     *,
     engaged_nodes: Optional[List[Dict]] = None,
-) -> Tuple[object, Dict]:
+) -> Tuple[nx.DiGraph, Optional[str], List[Dict]]:
+    """
+    Keep this thin: prune noisy node types (if desired), return pruned graph,
+    product_id, and the engaged_nodes payload unchanged.
+    """
     engaged_nodes = engaged_nodes or []
 
-    # Very simple “prune”: keep core node_types you care about
-    keep_types = {"product", "capability", "job", "pain", "pain_trigger", "persona", "zmot_event", "attribute_value"}
+    keep_types = {
+        "product", "capability", "job", "pain", "pain_trigger",
+        "persona", "zmot_event", "attribute_value"
+    }
     Gp = G.copy()
+    attributes =[]
     for n in list(Gp.nodes):
         if _nt(Gp, n) not in keep_types:
             Gp.remove_node(n)
+        if _nt(Gp, n) == "attribute_value":
+            attributes.append(n)
+    product_id = get_product_id_from_subgraph(Gp)
+    Gp = _prune_to_attr_product_paths(Gp, product_id, attributes)  
 
-    # Pick product (assume single product node exists)
-    product_ids = [n for n in Gp.nodes if _nt(Gp, n) == "product"]
-    conv_id = product_ids[0] if product_ids else None
+    return Gp, product_id, engaged_nodes
 
-    # Dimension weights (existing behavior you had): if engaged attributes present,
-    # make a 1-hot or normalized dict by dimension name. For now we reduce to {dimension: 1.0}
-    # if any attribute_value of that dimension is present.
-    dim_weights: Dict[str, float] = {}
-    for item in engaged_nodes:
-        nid = item.get("id")
-        if not nid or nid not in Gp:
+def _prune_to_attr_product_paths(G: nx.DiGraph, product_id: Optional[str], engaged_attr_ids: List[str]) -> nx.DiGraph:
+    if not product_id or not engaged_attr_ids:
+        return G.copy()
+
+    # nodes that can reach the product (ancestors)
+    try:
+        descendants_of_product = set(nx.descendants(G, product_id))
+    except nx.NetworkXError:
+        descendants_of_product = set()
+    descendants_of_product.add(product_id)
+
+    keep_nodes: Set[str] = set()
+    for attr_id in engaged_attr_ids:
+        if attr_id not in G:
             continue
-        if _nt(Gp, nid) == "attribute_value":
-            dim = Gp.nodes[nid].get("dimension") or Gp.nodes[nid].get("type") or "attribute"
-            dim_weights[dim] = 1.0
+        try:
+            ancestors_of_attr = set(nx.ancestors(G, attr_id))
+        except nx.NetworkXError:
+            ancestors_of_attr = set()
+        ancestors_of_attr.add(attr_id)
 
-    # Pack a small context object
-    class Ctx:
-        pass
-    ctx = Ctx()
-    ctx.G_pruned = Gp
-    ctx.conv_id = conv_id
+        # nodes that are both reachable from the attribute and can reach the product
+        keep_nodes |= (ancestors_of_attr & descendants_of_product)
 
-    pre = {
-        "dim_weights": dim_weights,
-        "baseline": {},
-        "engaged_nodes": engaged_nodes,
-    }
-    return ctx, pre
+        # explicitly add zmot_events connected to this attribute
+        linked_zmots = get_source_nodes_by_target_and_type(G, attr_id, "boosted_in")
+        if linked_zmots:
+            keep_nodes.update(linked_zmots)
 
-# -----------------------------------------------------------------------------
-# Involvement / Activation
-# -----------------------------------------------------------------------------
-def _clip01(x: float) -> float:
-    return max(0.0, min(1.0, float(x)))
+    # always keep the product if present
+    if product_id in G:
+        keep_nodes.add(product_id)
 
-def _jobs_of_persona(G: nx.DiGraph, pid: str) -> List[str]:
-    js = set()
-    for u, v, d in G.out_edges(pid, data=True):
-        if _nt(G, v) == "job":
-            js.add(v)
-    for u, v, d in G.in_edges(pid, data=True):
-        if _nt(G, u) == "job":
-            js.add(u)
-    return list(js)
-
-def _rel_job_to_persona(G: nx.DiGraph, job: str, pid: str) -> float:
-    # crude relation proxy: 1 if edge exists either way, else 0.5 if 2-hop, else small
-    if G.has_edge(pid, job) or G.has_edge(job, pid):
-        return 1.0
-    # light 2-hop check
-    for nbr in G.neighbors(pid):
-        if G.has_edge(nbr, job) or G.has_edge(job, nbr):
-            return 0.5
-    return 0.2
-
-def _compute_involvement_activation(
-    G: nx.DiGraph,
-    persona_ids: List[str],
-) -> List[Dict]:
-    """
-    Heuristic:
-      - Involvement ≈ 1 - Π(1 - job_lk) across persona's jobs (fallback 0.25 if unknown)
-      - Activation ≈ involvement * mean(top-2 job_lk)
-    Where job_lk is proxied from PageRank centrality (normalized).
-    """
-    if not persona_ids:
-        return []
-    # compute simple PR as a generic influence proxy
-    try:
-        pr = nx.pagerank(G, alpha=0.85, max_iter=100, tol=1e-8)
-    except Exception:
-        pr = {n: 1.0 / max(1, G.number_of_nodes()) for n in G.nodes}
-
-    # normalize to [0,1] in a robust way
-    vals = [pr.get(n, 0.0) for n in G.nodes]
-    lo, hi = (min(vals), max(vals)) if vals else (0.0, 1.0)
-    def nrm(x): 
-        if hi <= lo: return 0.0
-        return (x - lo) / (hi - lo)
-
-    out = []
-    for pid in persona_ids:
-        jobs = _jobs_of_persona(G, pid)
-        job_scores = [nrm(pr.get(j, 0.0)) for j in jobs] or [0.25]
-        inv_terms = [js for js in job_scores]
-        inv = 1.0 - math.prod([1.0 - t for t in inv_terms])
-        top2 = sorted(job_scores, reverse=True)[:2]
-        felt = sum(top2) / max(1, len(top2))
-        act = inv * felt
-        out.append({
-            "id": pid,
-            "persona_label": _set_node_label(G, pid),
-            "involvement": _clip01(inv),
-            "activation": _clip01(act),
-            "care": _clip01((inv * max(1e-9, felt)) ** 0.5),
-        })
-    return out
+    if not keep_nodes:
+        return G.copy()
+    return G.subgraph(keep_nodes).copy()
+    
 
 # -----------------------------------------------------------------------------
-# Concern backlog (flat)
-# -----------------------------------------------------------------------------
-def _infer_stage(G: nx.DiGraph, cid: str) -> str:
-    # light stage inference (adjust if you have explicit)
-    # prefer node attr
-    stage = G.nodes.get(cid, {}).get("stage")
-    if stage:
-        return stage
-    # else infer from neighbors
-    for u, v, d in G.in_edges(cid, data=True):
-        if _nt(G, u) == "pain":
-            return "pain"
-    for u, v, d in G.out_edges(cid, data=True):
-        if _nt(G, v) == "pain":
-            return "pain"
-    for u, v, d in G.in_edges(cid, data=True):
-        if _nt(G, u) == "job":
-            return "solution"
-    return "problem"
-
-def _concern_backlog(G: nx.DiGraph, top_personas: List[str], top_k: int = 30) -> List[Dict]:
-    """
-    Build flat (pid,cid,stage,lift_proxy) list:
-      - Concerns are ‘pain’ nodes adjacent to jobs/personas.
-      - lift_proxy heuristic: PR(pain) * best job PR around it.
-    """
-    try:
-        pr = nx.pagerank(G, alpha=0.85, max_iter=100, tol=1e-8)
-    except Exception:
-        pr = {n: 1.0 / max(1, G.number_of_nodes()) for n in G.nodes}
-
-    pains = [n for n in G.nodes if _nt(G, n) == "pain"]
-    rows = []
-    for pid in top_personas:
-        for p in pains:
-            # persona relates to pain via job or direct
-            rel = 0.0
-            for u, v, d in G.out_edges(pid, data=True):
-                if _nt(G, v) == "job":
-                    if G.has_edge(v, p) or G.has_edge(p, v):
-                        rel = max(rel, 1.0)
-            if G.has_edge(pid, p) or G.has_edge(p, pid):
-                rel = max(rel, 0.7)
-            if rel <= 0.0:
-                continue
-            # lift proxy
-            lift = float(pr.get(p, 0.0))
-            rows.append({
-                "pid": pid,
-                "persona_label": _set_node_label(G, pid),
-                "cid": p,
-                "concern_label": _set_node_label(G, p),
-                "stage": _infer_stage(G, p),
-                "lift_proxy": lift,
-            })
-    rows.sort(key=lambda r: r["lift_proxy"], reverse=True)
-    return rows[:top_k]
-
-# -----------------------------------------------------------------------------
-# Coalitions & Sequences (restored)
+# Concern coalitions / sequences (presentation logic)
 # -----------------------------------------------------------------------------
 def _jobs_of_concern(G, cid):
     jobs = set()
-    for u, v, d in G.in_edges(cid, data=True):
+    for u, v, _ in G.in_edges(cid, data=True):
         if _nt(G, u) == "job":
             jobs.add(u)
-    for u, v, d in G.out_edges(cid, data=True):
+    for u, v, _ in G.out_edges(cid, data=True):
         if _nt(G, v) == "job":
             jobs.add(v)
     return jobs
 
 def _pains_of_concern(G, cid):
     pains = set()
-    for u, v, d in G.in_edges(cid, data=True):
+    for u, v, _ in G.in_edges(cid, data=True):
         if _nt(G, u) == "pain":
             pains.add(u)
-    for u, v, d in G.out_edges(cid, data=True):
+    for u, v, _ in G.out_edges(cid, data=True):
         if _nt(G, v) == "pain":
             pains.add(v)
     return pains
@@ -227,7 +116,8 @@ def _concern_similarity(G, a, b):
     aj, bj = _jobs_of_concern(G, a["cid"]), _jobs_of_concern(G, b["cid"])
     ap, bp = _pains_of_concern(G, a["cid"]), _pains_of_concern(G, b["cid"])
     def jacc(s1, s2):
-        if not s1 and not s2: return 0.0
+        if not s1 and not s2:
+            return 0.0
         return len(s1 & s2) / max(1, len(s1 | s2))
     s = 0.6 * jacc(aj, bj) + 0.35 * jacc(ap, bp)
     if (a.get("stage") or "") == (b.get("stage") or ""):
@@ -296,7 +186,7 @@ def build_concern_sequences(
         by_persona[r["pid"]].append({
             "pid": r["pid"], "cid": r["cid"], "stage": r.get("stage"),
             "lift_proxy": float(r.get("lift_proxy", 0.0)),
-            "label": r.get("concern_label") or r.get("cid"),
+            "concern_label": r.get("concern_label") or r.get("cid"),
         })
     sequences = []
     for pid, rows in by_persona.items():
@@ -319,9 +209,10 @@ def build_concern_sequences(
                     "persona": pid,
                     "sequence": [
                         {"persona": s["pid"], "concern_id": s["cid"], "stage": s["stage"],
-                         "lift_proxy": s["lift_proxy"], "label": s["label"]}
+                         "lift_proxy": s["lift_proxy"], "concern_label": s["concern_label"]}
                         for s in seq
                     ],
+                    # Use monotonic union (noisy-OR) or keep avg; here keep avg for stability:
                     "final_win": float(sum(s["lift_proxy"] for s in seq) / max(1, len(seq))),
                 })
             i += 1
@@ -340,19 +231,19 @@ def build_persona_coalitions(
     ids = [p["id"] for p in top_personas_list if p.get("id") in G][:12]
     def jobs_of(pid):
         js = set()
-        for u, v, d in G.out_edges(pid, data=True):
+        for u, v, _ in G.out_edges(pid, data=True):
             if _nt(G, v) == "job":
                 js.add(v)
-        for u, v, d in G.in_edges(pid, data=True):
+        for u, v, _ in G.in_edges(pid, data=True):
             if _nt(G, u) == "job":
                 js.add(u)
         return js
     def pains_of(pid):
         ps = set()
-        for u, v, d in G.out_edges(pid, data=True):
+        for u, v, _ in G.out_edges(pid, data=True):
             if _nt(G, v) == "pain":
                 ps.add(v)
-        for u, v, d in G.in_edges(pid, data=True):
+        for u, v, _ in G.in_edges(pid, data=True):
             if _nt(G, u) == "pain":
                 ps.add(u)
         return ps
@@ -370,12 +261,13 @@ def build_persona_coalitions(
         out.append({
             "coalition_id": f"pcoal:{a}|{b}",
             "pair": [a, b],
+            "labels": [_set_node_label(G, a), _set_node_label(G, b)],
             "compatibility": float(s),
         })
     return out
 
 # -----------------------------------------------------------------------------
-# MAIN: generate_rcs
+# MAIN: generate_rcs (deterministic; math delegated to graph_algorithms)
 # -----------------------------------------------------------------------------
 def generate_rcs(
     G: nx.DiGraph,
@@ -383,32 +275,43 @@ def generate_rcs(
     engaged_nodes: Optional[List[Dict]] = None,
     boost_factor: float = 2.0,
     top_concerns_per_persona: int = 5,
-    top_personas: int = 20,
+    top_personas: int = 50,
     plays_per_concern: int = 3,
 ) -> Tuple[nx.DiGraph, Dict]:
     engaged_nodes = engaged_nodes or []
-    ctx, pre = rcs_prepare(G, engaged_nodes=engaged_nodes)
-    Gp = ctx.G_pruned
-    product_id = ctx.conv_id
 
-    # ---------------- GraphWin (baseline) ----------------
-    print("Computing baseline GraphWin with engaged nodes...", engaged_nodes)
+    # 0) Prepare/prune
+    Gp, product_id, engaged_nodes = rcs_prepare(G, engaged_nodes=engaged_nodes)
+
+    # 1) Baseline GraphWin (PPR-based, with union mode configurable inside runtime)
     baseline_block = get_graphwin(Gp, engaged_nodes=engaged_nodes)
     Gp.graph["win_likelihood"] = float(baseline_block.get("win_likelihood", 0.0))
-    
 
-    # ---------------- Personas: Involvement / Activation ----------------
-    pa_rows = []
-    pa_rows = infer_node_involvement_activation(Gp, engaged_nodes=engaged_nodes)
+    # 2) Core + Persona scores (all math in graph_algorithms)
+    #    get_involvement_activation_report returns:
+    #    {
+    #      "core_scores":    { node_id: {"activation","involvement","strength","node_type",...}, ... },
+    #      "persona_scores": { persona_id: {...}, ... }
+    #    }
+    scores = get_involvement_activation_report(Gp, G, engaged_nodes=engaged_nodes)
+    core_scores    = scores.get("core_scores", {}) or {}
+    persona_scores = scores.get("persona_scores", {}) or {}
 
-    top_by_inv = sorted(pa_rows, key=lambda r: r["involvement"], reverse=True)[:top_personas]
-    top_by_act = sorted(pa_rows, key=lambda r: r["activation"], reverse=True)[:top_personas]
-    top_by_lift = sorted(pa_rows, key=lambda r: r["care"], reverse=True)[:top_personas]
+    # Normalize persona list for “top-by-*”
+    pa_rows = [{"id": pid, **vals} for pid, vals in persona_scores.items()]
+    top_by_inv = sorted(pa_rows, key=lambda r: r.get("involvement", 0.0), reverse=True)[:top_personas]
+    top_by_act = sorted(pa_rows, key=lambda r: r.get("activation", 0.0),  reverse=True)[:top_personas]
+    top_by_str = sorted(pa_rows, key=lambda r: r.get("strength",   0.0),  reverse=True)[:top_personas]
 
+    # 3) Concerns backlog (PPR-based) — uses *core_scores* (NOT persona scores)
+    concern_backlog = _concern_backlog(
+        Gp,
+        [r["id"] for r in top_by_inv],   # persona ids
+        node_scores=core_scores,         # pains/jobs activation×involvement
+        top_k=60,
+    )
 
-    # ---------------- Concerns per persona + backlog ----------------
-    concern_backlog = _concern_backlog(Gp, [r["id"] for r in top_by_inv], top_k=60)
-    # concerns_by_persona shape for UI (grouped)
+    # 4) Group for UI
     concerns_by_persona: List[Dict] = []
     byp = defaultdict(list)
     for r in concern_backlog:
@@ -416,33 +319,40 @@ def generate_rcs(
     for pid, rows in byp.items():
         concerns_by_persona.append({
             "persona": pid,
-            "persona_label": _set_node_label(Gp, pid),
+            "label": _set_node_label(Gp, pid),
             "concerns": [
-                {"concern_id": rr["cid"], "label": rr["concern_label"], "stage": rr["stage"], "lift_proxy": rr["lift_proxy"]}
+                {
+                    "concern_id": rr["cid"],
+                    "label": rr.get("concern_label") or rr["cid"],
+                    "stage": rr.get("stage"),
+                    "lift_proxy": rr.get("lift_proxy", 0.0),
+                }
                 for rr in rows[:top_concerns_per_persona]
             ]
         })
 
-    # ---------------- Coalitions & Sequences ----------------
+    # 5) Coalitions & Sequences (presentation)
     concern_coalitions = build_concern_coalitions(Gp, concern_backlog, sim_threshold=0.35, max_coalitions=6)
     concern_sequences  = build_concern_sequences(Gp, concern_backlog, max_sequences=3, max_len=4)
     persona_coalitions = build_persona_coalitions(Gp, top_by_inv[:10], max_pairs=8, min_overlap=0.2)
 
-    # ---------------- Pack report ----------------
+    # 6) Final report (stable keys)
     report = {
         "baseline": baseline_block,
         "top_personas": {
             "by_involvement": top_by_inv,
-            "by_activation": top_by_act,
-            "by_marginal_lift": top_by_lift
+            "by_activation":  top_by_act,
+            "by_strength":    top_by_str,
         },
         "concerns_by_persona": concerns_by_persona,
-        "concerns_flat": concern_backlog,
-        "concern_backlog": concern_backlog,
-        "concern_coalitions": concern_coalitions,
-        "concern_sequences": concern_sequences,
-        "coalitions": persona_coalitions,
-        # (leave placeholders you already had if the UI needs them)
+        "concerns_flat":       concern_backlog,
+        "concern_backlog":     concern_backlog,
+        "concern_coalitions":  concern_coalitions,
+        "concern_sequences":   concern_sequences,
+        "coalitions":          persona_coalitions,
+        # Pass-throughs for downstream UI & orchestrators:
+        "core_scores":         core_scores,
+        "persona_scores":      persona_scores,
         "sequences_and_campaigns": [],
         "causal_flows": [],
     }

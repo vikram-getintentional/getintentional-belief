@@ -427,8 +427,10 @@ class CanonManager:
         Returns a list of "touched" node ids (useful for tests).
         """
         touched: List[str] = []
+        product_node_id = None
         if self._current_product_id:
-            _product(G, self._current_product_id)
+            product_node_id = f"product:{_stable_key(['product', self._current_product_id])}"
+ 
 
         # 1) canonicalize batches
         self.canon = {}
@@ -472,6 +474,17 @@ class CanonManager:
         for k in self.buf:
             self.buf[k].clear()
         self.plan.clear()
+
+        # Remove orphan product node if it was created but has no edges (no inbound/outbound)
+        if product_node_id and product_node_id in G:
+            # degree == 0 means truly dangling
+            try:
+                if G.degree(product_node_id) == 0:
+                    print(f"[gc] removing orphan product node {product_node_id}")
+                    G.remove_node(product_node_id)
+            except Exception:
+                # be defensive: ignore cleanup errors
+                pass
 
         return list(dict.fromkeys(touched))  # unique
 

@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "version": "2.0",
+    "generatedAt": "2025-10-13T00:00:00.000Z",
+    "beliefScale": ["Unaware", "ZMOT", "Discovery", "Evaluation", "Pilot", "Pre-Close", "Customer"]
+  },
+  "portfolio": {
+    "keyStats": {
+      "totalTargetAccounts": 250,
+      "totalPersonasToEngage": 1300,
+      "expectedWinsPct": 0.6,
+      "averageAccountBelief": "Discovery",
+      "timeToWinMonths": 18
+    }
+  },
+  "themes": [
+    {
+      "id": "theme_revenue_agility",
+      "name": "Revenue Agility (Category POV)",
+      "explanation": "Establish Chargebee as the operating system for adaptive monetization using belief-shifting proof and CFO/RevOps credibility.",
+      "objective": "Create category pull and CFO validation that billing is a growth lever.",
+      "targetAccounts": ["Freshworks", "ThoughtSpot"],
+      "campaigns": [
+        {
+          "id": "camp_ra_pillar_launch",
+          "description": "Launch the Revenue Agility Index with top-tier media, analyst, and CFO outreach.",
+          "timeframe": { "startDate": "2025-01-15", "endDate": "2025-03-15" },
+          "personas": ["CFO", "RevOps", "CPO/Pricing"],
+          "arsenalTable": [
+            {
+              "asset": "Revenue Agility Index 2025 (Report)",
+              "channels": "PR, LinkedIn, Website",
+              "fitment": "CFO, RevOps, Pricing",
+              "engagement": "Press release, exec POV posts, SEO landing page",
+              "expectedLift": "3%"
+            },
+            {
+              "asset": "CFO Modernization Brief (4pp)",
+              "channels": "Email, Executive Gifting",
+              "fitment": "CFO, VP Finance",
+              "engagement": "Targeted 1:1 outreach + printed copy",
+              "expectedLift": "2.5%"
+            },
+            {
+              "asset": "Revenue Agility Masterclass (Webinar)",
+              "channels": "YouTube, On-demand",
+              "fitment": "CFO, RevOps, CTO",
+              "engagement": "Interactive webinar with Q&A",
+              "expectedLift": "2.8%"
+            }
+          ]
+        },
+        {
+          "id": "camp_ra_evangelism",
+          "description": "POV evangelism and roadshows showcasing proof-led customer stories.",
+          "timeframe": { "startDate": "2025-07-01", "endDate": "2025-12-15" },
+          "personas": ["CFO", "RevOps", "CTO"],
+          "arsenalTable": [
+            {
+              "asset": "Revenue Agility Masterclass (Webinar)",
+              "channels": "Events, LinkedIn Live",
+              "fitment": "CFO, RevOps, CTO",
+              "engagement": "Exec-led sessions and panels",
+              "expectedLift": "3.2%"
+            },
+            {
+              "asset": "Revenue Agility Index 2025 (Report)",
+              "channels": "PR, Website",
+              "fitment": "CFO, RevOps",
+              "engagement": "Evergreen content drops with analyst sync",
+              "expectedLift": "2.9%"
+            },
+            {
+              "asset": "CFO Modernization Brief",
+              "channels": "Executive Gifting",
+              "fitment": "CFO, Finance Leaders",
+              "engagement": "Printed brief with notes during events",
+              "expectedLift": "2.4%"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "theme_pricing_velocity",
+      "name": "Pricing Velocity (Experimentation → Impact)",
+      "explanation": "Enable pricing leaders to ship faster experiments and measure ROI confidently.",
+      "objective": "Increase cadence of pricing experiments and governance standardization.",
+      "targetAccounts": ["Cursor", "Freshworks"],
+      "campaigns": [
+        {
+          "id": "camp_pv_playbook_wave",
+          "description": "Promote Pricing Velocity Playbook and ROI Calculator through multi-channel nurturing.",
+          "timeframe": { "startDate": "2025-02-01", "endDate": "2025-04-30" },
+          "personas": ["CPO/Pricing", "RevOps"],
+          "arsenalTable": [
+            {
+              "asset": "Pricing Velocity Playbook (eBook)",
+              "channels": "Email, LinkedIn",
+              "fitment": "Pricing, RevOps",
+              "engagement": "8-week nurture series with doc ads",
+              "expectedLift": "3%"
+            },
+            {
+              "asset": "Pricing Impact Calculator",
+              "channels": "Website, Demo",
+              "fitment": "CPO, RevOps, CFO",
+              "engagement": "Interactive tool with AE walkthroughs",
+              "expectedLift": "2.8%"
+            },
+            {
+              "asset": "Pricing Experiment Lab Kit",
+              "channels": "Workshops, Docs",
+              "fitment": "RevOps, Product, CTO",
+              "engagement": "Hands-on labs with guides",
+              "expectedLift": "3.1%"
+            }
+          ]
+        },
+        {
+          "id": "camp_pv_hack_sprint",
+          "description": "Usage-billing hack sprint with demo day to drive adoption.",
+          "timeframe": { "startDate": "2025-08-01", "endDate": "2025-09-15" },
+          "personas": ["CTO", "Product", "RevOps"],
+          "arsenalTable": [
+            {
+              "asset": "Pricing Experiment Lab Kit",
+              "channels": "GitHub, Workshops",
+              "fitment": "CTO, Product, RevOps",
+              "engagement": "Code samples and guided sprint checkpoints",
+              "expectedLift": "3.5%"
+            },
+            {
+              "asset": "Pricing Impact Calculator",
+              "channels": "Demo Day",
+              "fitment": "CPO, RevOps, CFO",
+              "engagement": "Interactive POC validation",
+              "expectedLift": "2.7%"
+            },
+            {
+              "asset": "Pricing Velocity Playbook",
+              "channels": "YouTube",
+              "fitment": "Pricing, RevOps",
+              "engagement": "Highlights and follow-up series",
+              "expectedLift": "2.5%"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "theme_revenue_architecture",
+      "name": "Revenue Architecture (Design → Proof)",
+      "explanation": "Accelerate proofs by blueprinting multi-LOB monetization architecture.",
+      "objective": "Convert interest into proof-driven pilots and reference wins.",
+      "targetAccounts": ["Swiggy"],
+      "campaigns": [
+        {
+          "id": "camp_ra_exec_workshops",
+          "description": "Executive blueprint sessions with risk log and proof documentation.",
+          "timeframe": { "startDate": "2025-03-01", "endDate": "2025-12-01" },
+          "personas": ["CFO", "CTO", "RevOps"],
+          "arsenalTable": [
+            {
+              "asset": "Revenue Architecture Blueprint (Workshop Kit)",
+              "channels": "Workshops, Events",
+              "fitment": "CFO, CTO, RevOps",
+              "engagement": "In-room design + roundtable series",
+              "expectedLift": "3.4%"
+            },
+            {
+              "asset": "Reverse Case Studies (Pack)",
+              "channels": "Email, Sales Deck",
+              "fitment": "CFO, RevOps, CTO",
+              "engagement": "Proof-driven customer stories",
+              "expectedLift": "3%"
+            },
+            {
+              "asset": "30/60/90 Proof Plan + SOP",
+              "channels": "Pilot Docs",
+              "fitment": "CFO, CS, RevOps",
+              "engagement": "Commitment plan with rollback criteria",
+              "expectedLift": "2.6%"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

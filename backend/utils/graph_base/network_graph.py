@@ -515,7 +515,7 @@ def _set_node_label(G: nx.DiGraph, node_id: str) -> str:
     elif node_type == "pain_trigger":
         label = node.get("attribute", "") or f'Pain Trigger {node_id}'
     elif node_type == "zmot_event":
-        label = node.get("description", "") or f'ZMOT Event {node_id}'
+        label = node.get("event", "") or f'ZMOT Event {node_id}'
     elif node_type == "observable_moment":
         label = node.get("description", "") or f'Observable Moment {node_id}'
     elif node_type == "keyword":

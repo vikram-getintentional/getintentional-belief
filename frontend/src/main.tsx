@@ -17,6 +17,7 @@ import CRMUpload from './pages/CRMUpload.tsx'
 import Admin from './pages/Admin.tsx'
 import TargetAccounts from './pages/TargetAccounts.tsx'
 import Models from './pages/models.tsx'
+import MarketingPlanner from './pages/MarketingPlanner.tsx'
 
 import './output.css';
 
@@ -39,7 +40,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/target-accounts" element={<TargetAccounts />} />
           <Route path="/models" element={<Models />} />
           <Route path="/admin" element={<Admin />} />
-          
+          <Route path="/marketing-planner" element={<MarketingPlanner />} />
+
           {/* Add other routes here */}
 
         </Routes>

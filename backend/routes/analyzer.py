@@ -1,5 +1,7 @@
+import json
 from typing import Optional
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Query, Request, HTTPException
+from fastapi.responses import JSONResponse
 from networkx import Graph
 
 from backend.auth.auth_routes import get_current_user
@@ -30,6 +32,7 @@ import networkx as nx
 import os
 
 from backend.utils.knowledge_base.zmot_icp_generation import Chip, collect_zmots_for_attribute_combo, mine_icp_attribute_uplifts
+from backend.utils.strategy_builder.comprehensive_plan_generator import _filter_by_window, _load_plan_from_disk, _recompute_portfolio_expectations, load_all_account_rcs_jsons
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
@@ -567,7 +570,9 @@ async def get_zmots_for_attributes(product_id: str, payload: dict, request: Requ
 
     product_subgraph = build_product_graph(product_id)
     chips = [Chip(family="attribute", node_id=a, label=a) for a in attribute_ids]
-    return collect_zmots_for_attribute_combo(product_subgraph, chips)
+    zmot_ops = collect_zmots_for_attribute_combo(product_subgraph, chips)
+    print("ZMOT ops:", zmot_ops)
+    return zmot_ops
 
 # ========================
 # REVERSE CASE STUDIES
@@ -580,6 +585,8 @@ async def get_reverse_case_study(product_id: str, payload: dict, request: Reques
     """
     engaged_nodes = payload.get("selected_node_ids", [])
     attributes = payload.get("attribute_ids", [])
+    zmot_ids = payload.get("zmot_event_id", "")
+    engaged_nodes.append(zmot_ids)  # Treat selected ZMOTs as engaged nodes too
 
     auth_header = request.headers.get("authorization")
     if not auth_header:
@@ -591,8 +598,9 @@ async def get_reverse_case_study(product_id: str, payload: dict, request: Reques
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
     product_subgraph = build_product_graph(product_id)
-    print("simulating rcs with engaged nodes:", engaged_nodes, " and attr: ", attributes)
-    return simulate_rcs(product_subgraph, engaged_nodes=engaged_nodes, attributes=attributes)
+    print("simulating rcs with engaged nodes:", engaged_nodes, "and attr: ", attributes)
+    output = simulate_rcs(product_subgraph, engaged_nodes=engaged_nodes, attributes=attributes)
+    return output
 
 # ========================
 # ARSENAL LIBRARY
@@ -726,3 +734,111 @@ async def get_crm_win_model(product_id: str, request: Request):
     
 
 # ========================
+
+#--------------
+# STATIC ROUTES FOR TESTING - NEED TO BUILD OUT
+#--------------
+
+@router.get("/get-metadata")
+async def get_metadata():
+    return JSONResponse({
+        "personas": ["CFO", "VP Finance", "RevOps", "CPO/Pricing", "CTO", "Developers", "Head of RevOps"],
+        "channels": ["Website", "Microsite", "SEO", "Email", "LinkedIn", "PR", "Partner", "ABM Ads", "Webinar", "Events", "Dev/OSS", "YouTube", "Conferences"],
+        "stages": ["Awareness", "Interest", "Engagement", "Evaluation", "Conversion", "Expansion", "Evangelism"],
+        "quarters": ["Q1", "Q2", "Q3", "Q4"]
+    })
+
+
+@router.get("/get-comprehensive-execution-plan/{product_id}")
+async def get_comprehensive_execution_plan(
+    product_id: str,
+    request: Request,
+    window_start: Optional[str] = Query(None, description="ISO date YYYY-MM-DD"),
+    window_end: Optional[str] = Query(None, description="ISO date YYYY-MM-DD"),
+):
+    """
+    Current behavior (as requested):
+      1) Ensure per-account RCS JSONs exist for all *live* target accounts (status not Closed-Won/Lost).
+         - If an RCS is missing, create a header-only scaffold on disk.
+      2) Still return the existing default master plan (from disk), optionally date-filtered.
+         - Frontend keeps showing the default plan for now.
+
+    Coming next (your plan):
+      - You'll paste sample RCS data into those per-account JSONs.
+      - We'll add "stitch" logic to aggregate account RCS → a comprehensive plan.
+      - That stitched plan can then be written to product_id_execution_plan.json.
+    """
+    # --- Auth checks ---
+    print("Fetching comprehensive execution plan for product_id:", product_id, "with window:", window_start, "to", window_end)
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Invalid Authorization header format")
+
+    token = parts[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    try:
+        print("Loading RCS JSONs and plan for product_id in try block:", product_id)
+        # 1) Ensure all live target accounts have an RCS JSON (create header if missing).
+        #    This returns:
+        #      - rcs_list: list of per-account RCS JSONs (existing or headers)
+        #      - headers_created: list of headers newly created in this call
+        rcs_list_output = load_all_account_rcs_jsons(
+            product_id=product_id,
+        )
+
+        print("RCS list loaded")
+
+        # Load plan from disk (product-specific or default)
+        plan = _load_plan_from_disk(product_id)
+        if not isinstance(plan, dict):
+            raise HTTPException(status_code=422, detail="Plan JSON must be an object at the top level")
+
+        # Normalize rcs_list_output into rcs_list & headers_created safely
+        rcs_list = []
+        headers_created = []
+        if isinstance(rcs_list_output, dict):
+            rcs_list = rcs_list_output.get("rcs_list", []) or []
+            headers_created = rcs_list_output.get("headers_created", []) or []
+        elif isinstance(rcs_list_output, list):
+            # older / simpler return shape: list of RCS JSONs
+            rcs_list = rcs_list_output
+        else:
+            print("No RCS data found for product_id - showing defaults now")
+
+        # Step 1: Filter by window
+        plan = _filter_by_window(plan, window_start, window_end)
+
+        # Step 2: Recompute expectations dynamically
+        plan = _recompute_portfolio_expectations(plan)
+
+
+        # 3) Return ONLY the default plan to the frontend for now.
+        #    (But include small debug fields you can ignore on the UI side.)
+        return JSONResponse(
+            content={
+                "plan": plan,                       # <— what your UI should read today
+                "debug": {
+                    "rcs_accounts_count": len(rcs_list),
+                    "new_rcs_headers_created": len(headers_created),
+                },
+            }
+        )
+
+    except FileNotFoundError as e:
+        # If you have no per-product plan file yet, fall back to your global default here if desired
+        raise HTTPException(status_code=404, detail=str(e))
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"Invalid JSON file: {e}")
+    except ValueError as e:
+        # date parsing errors
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load plan: {e}")

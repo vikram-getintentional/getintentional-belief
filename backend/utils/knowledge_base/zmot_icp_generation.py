@@ -8,7 +8,7 @@ import networkx as nx
 from dataclasses import dataclass
 
 from backend.utils.graph_base.network_graph import (
-    _set_node_label, get_nodes_list_ids, get_node_by_id, get_product_id_from_subgraph
+    _set_node_label, get_nodes_list_ids, get_node_by_id, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_edge_attribute, get_node_by_id, get_target_nodes_by_source_and_type
 )
 from backend.utils.graph_base.graph_data.rcs_utils.save_and_load_rcs import (
     load_rcs_from_json, save_rcs_as_json
@@ -291,24 +291,25 @@ def collect_zmots_for_attribute_combo(
         "trigger_keywords":  [{"id": "...", "label": "...", "fitness": 0.61}, ...]
       }, ...]
     """
-    # Lazy imports to reuse your helpers without circulars
-    from backend.utils.graph_base.network_graph import (
-        get_edge_attribute, get_node_by_id, get_target_nodes_by_source_and_type
-    )
+    
 
     zmot_acc: Dict[str, Dict] = {}  # zmot_id -> {score, contribs:[], ...}
+    print(f"Collecting ZMOTs for attribute combo: {[c.label for c in combo]}")
 
     # 1) Gather ZMOTs from each chip and aggregate edge scores
     for chip in combo:
         chip_id = chip.node_id
         if chip_id not in G:
+            print(f"  - skipping missing chip node {chip_id}")
             continue
-        zmot_ids = get_target_nodes_by_source_and_type(G, chip_id, "relevant_event") or []
+        zmot_ids = get_source_nodes_by_target_and_type(G, chip_id, "boosted_in") or []
+        if zmot_ids:
+            print("Recd zmot nodes: ", zmot_ids)
         for zmot_id in zmot_ids:
             # prefer 'likelihood', fallback to 'relevance'
-            e = get_edge_attribute(G, chip_id, zmot_id, "likelihood")
-            if e is None:
-                e = get_edge_attribute(G, chip_id, zmot_id, "relevance")
+            e = get_edge_attribute(G, zmot_id, chip_id, "likelihood")
+            
+            print(f"  - chip {chip.label} ({chip_id}) -> zmot {zmot_id} via edge score {e}")
             edge_score = float(e or 0.0)
             if edge_score < min_edge_score:
                 continue
@@ -326,24 +327,6 @@ def collect_zmots_for_attribute_combo(
     if not zmot_acc:
         return []
 
-    # 2) Attach labels, observable moments, and keywords for each ZMOT
-    def _collect_children(zid: str, rel_type: str, label_field_hint: str) -> List[Dict]:
-        out = []
-        ids = get_target_nodes_by_source_and_type(G, zid, rel_type) or []
-        for cid in ids:
-            # prefer 'relevance', fallback to 'likelihood'
-            f = get_edge_attribute(G, zid, cid, "relevance")
-            if f is None:
-                f = get_edge_attribute(G, zid, cid, "likelihood")
-            fitness = float(f or 0.0)
-            out.append({
-                "id": cid,
-                "label": _set_node_label(G, cid),
-                "fitness": round(fitness, 6)
-            })
-        out.sort(key=lambda r: r["fitness"], reverse=True)
-        return out
-
     rows: List[Dict] = []
     for zmot_id, meta in zmot_acc.items():
         if zmot_id not in G:
@@ -353,8 +336,8 @@ def collect_zmots_for_attribute_combo(
         zmot_node = get_node_by_id(G, zmot_id) or {}
         zmot_label = _set_node_label(G, zmot_id)
 
-        observable_moments = _collect_children(zmot_id, "observed_in", "text")[:top_k_moments]
-        trigger_keywords  = _collect_children(zmot_id, "associated_with", "keyword")[:top_k_keywords]
+        observable_moments = get_target_nodes_by_source_and_type(G, zmot_id, "observed_in") or []
+        trigger_keywords  = get_target_nodes_by_source_and_type(G, zmot_id, "associated_with") or []
 
         rows.append({
             "zmot_event_id": zmot_id,
@@ -366,7 +349,9 @@ def collect_zmots_for_attribute_combo(
         })
 
     rows.sort(key=lambda r: r["score"], reverse=True)
-    return rows[:top_k_zmots]
+    
+    return rows
+
 
 def get_attribute_options(G: nx.DiGraph) -> dict:
     """

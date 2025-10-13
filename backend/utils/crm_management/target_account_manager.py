@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 from backend.database import get_db, Base
 from backend.utils.crm_management.target_account_models import TargetAccount
 from sqlalchemy.orm import Session
@@ -26,6 +28,20 @@ class TargetAccount(Base):
     competitor_used = Column(JSON, default=[])
     other_tech_stack = Column(JSON, default=[])
     deal_status = Column(String, default="New")  # e.g., New, In-Progress, Closed-Won, Closed-Lost
+
+# ---------------- RCS Mapping Table ----------------
+class TargetAccountRCS(Base):
+    """
+    Each row maps a TargetAccount → RCS JSON
+    """
+    __tablename__ = "target_account_rcs"
+
+    id = Column(String, primary_key=True, index=True)
+    target_account_id = Column(String, index=True)
+    product_id = Column(String, index=True)
+    account_name = Column(String, index=True)
+    rcs_json = Column(JSON)
+    created_at = Column(String, default=lambda: datetime.now(datetime.timezone.utc).isoformat())
 
 def save_and_update_target_accounts(accounts, product_id):
     
@@ -121,3 +137,60 @@ def delete_target_account_handler(account_id, product_id):
     db.commit()
     db.close()
     return True
+
+#--- Logic to fetch target account ids with filters ----
+
+
+def get_target_account_ids(product_id: str, filters: dict = None):
+    """
+    Returns a list of account dicts for a given product_id applying filters.
+    """
+    db: Session = next(get_db())
+    try:
+        q = db.query(TargetAccount).filter(TargetAccount.product_id == product_id)
+
+        if filters:
+            for key, condition in filters.items():
+                if key == "deal_status":
+                    op, values = condition
+                    if op == "!in":
+                        q = q.filter(~TargetAccount.deal_status.in_(values))
+                    elif op == "in":
+                        q = q.filter(TargetAccount.deal_status.in_(values))
+                    elif op == "=":
+                        q = q.filter(TargetAccount.deal_status == values)
+
+        rows = q.all()
+        # serialize into dicts, not ORM objects
+        target_account_ids = []
+        for r in rows:
+            target_account_ids.append(r.id)
+        
+        print("Fetched target account IDs:", target_account_ids)
+        return target_account_ids
+    finally:
+        db.close()
+
+def get_account_by_id(product_id: str, account_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Fetch a single TargetAccount record by product_id and account_id.
+    Returns a fully serialized dictionary if found, else None.
+    """
+    db: Session = next(get_db())
+    try:
+        account = (
+            db.query(TargetAccount)
+            .filter(
+                TargetAccount.product_id == product_id,
+                TargetAccount.id == account_id,
+            )
+            .first()
+        )
+        if not account:
+            return None
+        return account_to_dict(account)
+    except Exception as e:
+        print(f"[ERROR] Failed to fetch account {account_id}: {e}")
+        return None
+    finally:
+        db.close()

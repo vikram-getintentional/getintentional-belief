@@ -8,6 +8,8 @@ import {
 } from "@mui/material";
 
 import { bucketByRole, zNormalizePersonas, classifyRole, PersonaMetric } from "../utils/rcs_metrics";
+import { pickPreferredSource } from "../utils/rcs_normalize";
+
 
 
 type PersonaRow = { id: string; label?: string; involvement?: number; activation?: number };
@@ -26,24 +28,32 @@ function pct(n?: number) { return `${Math.round(100 * (n ?? 0))}%`; }
 export default function RCSOverview({ rcs }: { rcs: any }) {
   if (!rcs) return null;
 
-  const personas: PersonaMetric[] = (rcs.all_personas || rcs.top_N_personas || []).map((p: any) => ({
-    id: p.id || p.persona || p.label,
-    label: p.persona_label || p.label || p.id, // Prefer persona_label if present
-    involvement: p.involvement ?? p.I ?? 0,
-    activation: p.activation ?? p.A ?? 0,
-  }));
-
+  const preferred = pickPreferredSource(rcs) || {};
+  const personasSrc = preferred?.frozen_persona_pool || preferred?.all_personas || rcs?.all_personas || rcs?.top_N_personas || [];
+  const personas: PersonaMetric[] = (Array.isArray(personasSrc) ? personasSrc.map((p: any) => ({
+    id: p?.id || p?.persona || p?.label || String(p),
+    label: p?.persona_label || p?.label || p?.id || String(p),
+    involvement: Number(p?.involvement ?? p?.I ?? 0),
+    activation: Number(p?.activation ?? p?.A ?? 0),
+  })) : []);
+ 
   const byRole = bucketByRole(personas, { mode: "z", zxCut: 0, zyCut: 0 });
-  personas.forEach(p => byRole[roleOf(p)].push(p));
+   personas.forEach(p => byRole[roleOf(p)].push(p));
+ 
 
   const win =
-    rcs.graph_win_likelihood ??
-    rcs.concern_sequences?.[0]?.final_win ??
-    rcs.sequences_and_campaigns?.[0]?.final_win ??
+    Number(preferred?.graph_win_likelihood ?? preferred?.baseline?.win_likelihood) ||
+    Number(rcs?.graph_win_likelihood) ||
+    Number(rcs?.baseline?.win_likelihood) ||
+    Number(rcs?.concern_sequences?.[0]?.final_win) ||
     0;
-
+ 
   const coalitions =
-    rcs.concern_coalitions || rcs.coalitions || [];
+    preferred?.concern_coalitions ||
+    preferred?.coalitions ||
+    rcs?.concern_coalitions ||
+    rcs?.coalitions ||
+    [];
 
   return (
     <Stack spacing={2}>

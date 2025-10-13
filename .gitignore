@@ -18,8 +18,13 @@ pip-delete-this-directory.txt
 
 # Operating System specific files
 .DS_Store # macOS
+.DS_Store
 .Trashes # macOS
 Desktop.ini # Windows
 
 # Logs
 *.log
+
+#Node Modules
+node_modules
+node_modules/

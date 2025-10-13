@@ -13,6 +13,7 @@ import RCSConcernsRecommendations from "./RCSConcernsRecommendations";
 import RCSCampaignSequences from "./RCSCampaignSequences";
 import RCSOverview from "./RCSOverview";
 import { buildAssetsByPersona, buildLabelMaps } from "../utils/label_utils";
+import { normalizeRcsSequences, normalizeRcsStrategy } from "../utils/rcs_normalize";
 
 type NodeOption = { id: string; type: string; label: string };
 type Family = "industry" | "revenue" | "employees" | "funding" | "geography";
@@ -188,7 +189,12 @@ export default function RCSConfigurator({
         type: (n.node_type || n.type || "").toLowerCase(),
         label: n.label || n.name || n.id,
       }));
-    setNodeOptions([...graphNodes, ...zmotSuggestions]);
+    const byId = new Map<string, { id: string; type: string; label: string }>();
+    graphNodes.forEach(n => byId.set(n.id, n));
+    (zmotSuggestions || []).forEach(z => {
+      if (!byId.has(z.id)) byId.set(z.id, { id: z.id, type: z.type || "zmot", label: z.label || z.id });
+    });
+    setNodeOptions(Array.from(byId.values()));
   }, [rcsGraph, zmotSuggestions]);
 
   const familyPicker = (fam: Family, label: string) => (
@@ -270,8 +276,8 @@ export default function RCSConfigurator({
 
       <TabPanel value={tab} index={0}>
         {rcsGraph ? (
-          <div style={{ width: "100%", position: "relative", overflow: "hidden", padding: 5 }}>
-            <RCSNetworkGraph graphData={rcsGraph || { nodes: [], links: [] }} />
+          <div style={{ width: "100%", height: 560, position: "relative", overflow: "hidden", padding: 5 }}>
+            <RCSNetworkGraph graphData={rcsGraph ?? { nodes: [], links: [] }} />
           </div>
         ) : (
           <Typography variant="body1" color="textSecondary">
@@ -279,6 +285,7 @@ export default function RCSConfigurator({
           </Typography>
         )}
       </TabPanel>
+
 
       <TabPanel value={tab} index={1}>
         {rcs ? <RCSOverview rcs={rcs} /> : (
@@ -289,14 +296,17 @@ export default function RCSConfigurator({
       <TabPanel value={tab} index={2}>
         {rcs ? (
           (() => {
-            const sequences = rcs.concern_sequences || rcs.sequences_and_campaigns || [];
+            const sequences = normalizeRcsSequences(rcs);
             const assetsByPersona = buildAssetsByPersona(rcs);
             const labelMap = buildLabelMaps(rcs);
+            const strategy = normalizeRcsStrategy(rcs);
+
             return (
               <RCSCampaignSequences
                 sequences={sequences}
                 labelMap={labelMap}
                 assetsByPersona={assetsByPersona}
+                strategy={strategy}
               />
             );
           })()

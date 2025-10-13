@@ -7,6 +7,7 @@ import {
   Tooltip, LinearProgress
 } from "@mui/material";
 
+/** ===== Types coming from new normalize layer ===== */
 type StepItem = {
   step: number;
   persona: string;
@@ -18,6 +19,8 @@ type StepItem = {
 };
 
 type Seq = {
+  sequence_id?: string;
+  theme?: string; // optional theme label (if backend sets it)
   sequence: { persona: string; concern_id: string; stage?: string; concern_label?: string }[];
   steps: StepItem[];
   base_win?: number;
@@ -36,6 +39,20 @@ type Asset = {
 
 type AssetsByPersona = Record<string, Record<string, Asset[]>>;
 
+type StrategyShape = {
+  winLikelihood?: number;
+  stage?: "cold" | "warm" | "hot" | "unknown";
+  portfolio?: Record<string, number>;
+  topTheme?: Seq | null;
+  personas?: Array<{ id?: string; label?: string; involvement?: number; activation?: number }>;
+  coalitions?: any[];
+  concernCoalitions?: any[];
+  concernSequences?: Seq[];
+  nextSequences?: Seq[];
+  nextConcerns?: Array<any>;
+};
+
+/** ===== Small helpers / UI bits ===== */
 function StageChip({ stage }: { stage?: string }) {
   const s = (stage || "").toLowerCase();
   const color =
@@ -54,25 +71,74 @@ function FitnessBar({ fitness }: { fitness?: number }) {
   );
 }
 
-// pick the best available asset or return a “gap” note
 function bestAsset(assets?: Asset[]): Asset | null {
   if (!assets || assets.length === 0) return null;
   const withFitness = [...assets].sort((a, b) => (b.fitness ?? 0) - (a.fitness ?? 0));
   return withFitness[0];
 }
 
-/**
- * Props:
- * - sequences: rcs.concern_sequences (or report.sequences from backend)
- * - labelMap:
- *    personaLabelById[id] = human label
- *    concernLabelById[id] = human label (fallback handled)
- * - assetsByPersona: { [personaId]: { [concernId]: Asset[] } }
- */
+/** ===== New: Campaign Meta block ===== */
+function CampaignMeta({
+  seq,
+  labelMap,
+  strategy,
+}: {
+  seq: Seq;
+  labelMap: { personaLabelById: Record<string, string>; concernLabelById: Record<string, string> };
+  strategy?: StrategyShape;
+}) {
+  // Who to hit? — unique personas in this sequence
+  const targetPersonaIds = Array.from(new Set(seq.sequence.map(s => s.persona)));
+  const targetLabels = targetPersonaIds.map(pid => labelMap.personaLabelById[pid] || pid);
+
+  // Theme/narrative
+  const theme =
+    seq.theme ||
+    (strategy?.topTheme?.sequence_id === seq.sequence_id ? "Top Theme" : undefined);
+
+  // One-liner messaging preview — first step’s concern phrase
+  const first = seq.steps?.[0];
+  const firstPersona = first?.persona ? (labelMap.personaLabelById[first.persona] || first.persona) : "";
+  const firstConcern =
+    first?.concern_label ||
+    (first?.concern_id ? (labelMap.concernLabelById[first.concern_id] || first.concern_id) : "");
+
+  return (
+    <Card variant="outlined" sx={{ mb: 2, bgcolor: "background.default" }}>
+      <CardContent>
+        <Stack spacing={1.2}>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+            <Typography variant="subtitle2" color="text.secondary">Campaign Theme</Typography>
+            <Chip size="small" color="primary" label={theme || "Untitled Theme"} />
+          </Stack>
+
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+            <Typography variant="subtitle2" color="text.secondary">Who to hit</Typography>
+            {targetLabels.map(lbl => (
+              <Chip key={lbl} size="small" variant="outlined" label={lbl} />
+            ))}
+          </Stack>
+
+          {firstConcern && (
+            <Typography variant="body2" color="text.secondary">
+              <strong>Messaging focus:</strong>{" "}
+              {firstPersona
+                ? `Show ${firstPersona} how "${firstConcern}" is the leverage point to unlock progress.`
+                : `Show why "${firstConcern}" is the leverage point to unlock progress.`}
+            </Typography>
+          )}
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** ===== Main component ===== */
 export default function RCSCampaignSequences({
   sequences,
   labelMap,
   assetsByPersona,
+  strategy,
 }: {
   sequences: Seq[];
   labelMap: {
@@ -80,18 +146,27 @@ export default function RCSCampaignSequences({
     concernLabelById: Record<string, string>;
   };
   assetsByPersona: AssetsByPersona;
+  strategy?: StrategyShape;
 }) {
-  if (!sequences?.length) {
+  // Prefer “nextSequences” (via normalize) if present; fallback to sequences prop
+  const seqs: Seq[] = (strategy?.nextSequences?.length ? strategy.nextSequences : sequences) || [];
+
+  if (!seqs.length) {
     return <Typography color="text.secondary">No sequences available.</Typography>;
   }
 
   return (
     <Stack spacing={2}>
-      {sequences.map((seq, idx) => (
-        <Card key={idx} variant="outlined">
+      {seqs.map((seq, idx) => (
+        <Card key={seq.sequence_id || idx} variant="outlined">
           <CardContent>
+            {/* Header row */}
             <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-              <Typography variant="h6">Sequence #{idx + 1}</Typography>
+              <Stack spacing={0.5}>
+                <Typography variant="h6">Sequence #{idx + 1}</Typography>
+                {/* Theme + Who to hit + quick messaging */}
+                <CampaignMeta seq={seq} labelMap={labelMap} strategy={strategy} />
+              </Stack>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Typography variant="body2" color="text.secondary">
                   Base win: {(seq.base_win ?? 0).toFixed(3)}
@@ -109,6 +184,7 @@ export default function RCSCampaignSequences({
 
             <Divider sx={{ my: 2 }} />
 
+            {/* Steps */}
             <Grid container spacing={2}>
               {seq.steps.map((st) => {
                 const personaLabel =
@@ -128,11 +204,11 @@ export default function RCSCampaignSequences({
                   (assets.some(a => (a.fitness ?? 0) >= 0.25));
 
                 return (
-                  <Grid size={{ xs: 12 }} key={`${st.persona}-${st.concern_id}-${st.step}`}>
+                  <Grid key={`${st.persona}-${st.concern_id}-${st.step}`} xs={12}>
                     <Card variant="outlined" sx={{ borderLeft: 4, borderLeftColor: "primary.main" }}>
                       <CardContent>
                         <Stack spacing={1}>
-                          <Stack direction="row" spacing={1} alignItems="center">
+                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                             <Chip label={`Step ${st.step}`} size="small" />
                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                               {personaLabel}
@@ -149,7 +225,7 @@ export default function RCSCampaignSequences({
                             Solve: <strong>{concernLabel}</strong>
                           </Typography>
 
-                          <Stack direction="row" spacing={3} alignItems="center">
+                          <Stack direction="row" spacing={3} alignItems="center" flexWrap="wrap">
                             <Chip
                               size="small"
                               color="info"
@@ -168,7 +244,7 @@ export default function RCSCampaignSequences({
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                   Best Asset: {top.asset_name || top.asset_id}
                                 </Typography>
-                                <Stack direction="row" spacing={2} alignItems="center">
+                                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                                   <Typography variant="caption" color="text.secondary">
                                     Channel: {top.channel?.name || "—"}
                                   </Typography>

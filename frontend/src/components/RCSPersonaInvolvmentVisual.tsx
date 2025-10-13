@@ -1,9 +1,17 @@
 import React, { useMemo } from "react";
 import { Box, Typography } from "@mui/material";
 import {
-  ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Label,
 } from "recharts";
 import { zNormalizePersonas, domainOf, PersonaMetric } from "../utils/rcs_metrics";
+import { pickPreferredSource } from "../utils/rcs_normalize";
 
 type Persona = PersonaMetric;
 
@@ -23,12 +31,41 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export default function RCSPersonaInvolvmentVisual({ personas }: { personas: Persona[] }) {
-  const data = useMemo(() => zNormalizePersonas(personas), [personas]);
+export default function RCSPersonaInvolvmentVisual({
+  personas,
+  rcs,
+}: {
+  personas?: Persona[];
+  rcs?: any;
+}) {
+  // derive personas either from explicit prop or from backend RCS payload (prefer frozen_strategy)
+  const personasMapped: Persona[] = useMemo(() => {
+    if (Array.isArray(personas) && personas.length) return personas;
+    const preferred = pickPreferredSource(rcs || {}) || {};
+    const personasSrc =
+      preferred?.frozen_persona_pool ||
+      preferred?.all_personas ||
+      rcs?.all_personas ||
+      rcs?.top_N_personas ||
+      [];
+    if (!Array.isArray(personasSrc)) return [];
+    return personasSrc.map((p: any) =>
+      typeof p === "string"
+        ? { id: p, label: p, involvement: 0, activation: 0 }
+        : {
+            id: p.id ?? p.persona ?? String(p),
+            label: p.persona_label ?? p.label ?? p.id ?? String(p),
+            involvement: Number(p.involvement ?? p.I ?? 0),
+            activation: Number(p.activation ?? p.A ?? 0),
+          }
+    );
+  }, [personas, rcs]);
+
+  const data = useMemo(() => zNormalizePersonas(personasMapped), [personasMapped]);
 
   // raw ranges if you ever want to toggle axes
-  const xRawDomain = useMemo(() => domainOf(data.map(d => d.x)), [data]);
-  const yRawDomain = useMemo(() => domainOf(data.map(d => d.y)), [data]);
+  const xRawDomain = useMemo(() => domainOf(data.map((d) => d.x)), [data]);
+  const yRawDomain = useMemo(() => domainOf(data.map((d) => d.y)), [data]);
 
   return (
     <Box sx={{ width: "100%", height: 400 }}>
@@ -42,7 +79,7 @@ export default function RCSPersonaInvolvmentVisual({ personas }: { personas: Per
             type="number"
             dataKey="zx"
             name="Involvement (z)"
-            domain={[-1, 1]} // compact view; make [-2,2] if you prefer
+            domain={[-1, 1]}
             allowDataOverflow
           >
             <Label value="Involvement (z)" position="insideBottom" offset={-10} />

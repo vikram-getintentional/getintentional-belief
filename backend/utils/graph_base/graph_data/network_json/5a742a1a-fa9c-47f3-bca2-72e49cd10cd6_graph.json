@@ -1296,13 +1296,6 @@
       "last_updated": "2025-10-03T18:15:56.505808"
     },
     {
-      "id": "product:81bef24cd9012b48",
-      "type": "product",
-      "node_type": "product",
-      "data_source": "llm",
-      "last_updated": "2025-10-03T18:19:22.069744"
-    },
-    {
       "id": "persona:f04b0ee54d367f1c",
       "type": "persona",
       "node_type": "persona",
