@@ -10,6 +10,7 @@ import React from "react";
 
 export default function RCSTabs({ rcs, rcsGraph }: { rcs: any; rcsGraph: any }) {
   const [tab, setTab] = React.useState(0);
+  const rcsSource = rcs?.report ?? rcs?.frozen_strategy ?? rcs ?? {};
   const sequences = normalizeRcsSequences(rcs);
   const strategy = normalizeRcsStrategy(rcs);
   const labelMap = buildLabelMaps(rcs);
@@ -27,7 +28,7 @@ export default function RCSTabs({ rcs, rcsGraph }: { rcs: any; rcsGraph: any }) 
 
       {tab === 0 && <RCSNetworkGraph graphData={rcsGraph} />}
       {tab === 1 && <RCSOverview rcs={rcs} />}
-      {tab === 2 && <RCSCampaignSequences sequences={sequences} labelMap={labelMap} assetsByPersona={assetsByPersona} strategy={strategy} />}
+      {tab === 2 && <RCSCampaignSequences strategy={rcs.frozen_strategy} />}
       {tab === 3 && <RCSPersonaInvolvmentVisual personas={strategy.personas || []} />}
       {tab === 4 && <RCSConcernsRecommendations concerns={strategy.nextConcerns || []} />}
     </>

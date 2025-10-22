@@ -16,7 +16,7 @@ class AgentContext:
         # LLM + graph builder
         if client is None:
             # reuse your centralized client
-            from backend.utils.inference.gpt_prompts.openai_client import client as default_client
+            from backend.utils.inference.openai_client import client as default_client
             client = default_client
         self.client = client
 

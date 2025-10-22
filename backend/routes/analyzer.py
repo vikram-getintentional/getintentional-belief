@@ -1,8 +1,9 @@
 import json
-from typing import Optional
+from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, Query, Request, HTTPException
 from fastapi.responses import JSONResponse
 from networkx import Graph
+from pydantic import BaseModel
 
 from backend.auth.auth_routes import get_current_user
 from backend.utils.crm_management.target_account_manager import load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
@@ -16,8 +17,10 @@ from backend.auth.jwt_handler import decode_token
 from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
+from backend.utils.inference.rcs_generators.rcs_helpers.strategy_orchestrators import construct_all_account_rcs
 from backend.utils.inference.rcs_generators.rcs_simulator import simulate_rcs
 from backend.utils.knowledge_base.arsenal_generation import get_all_arsenals
+from backend.utils.knowledge_base.graph_edit_manager import build_hops_from_graph
 from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities
 
 from backend.utils.knowledge_base.persona_generation import (
@@ -397,6 +400,27 @@ async def get_product_capabilities(product_id: str, request: Request):
     except Exception as e:
         print("❌ Get capabilities error:", e)
         raise HTTPException(status_code=500, detail="Could not retrieve capabilities")
+
+
+#--------------------------
+# GRAPH EDITOR & REVIEW
+#--------------------------
+@router.get("/get-product-graph/{product_id}")
+async def get_graph(product_id: str, request: Request):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    product_subgraph = build_product_graph(product_id)
+    hop_outputs = build_hops_from_graph(product_subgraph)
+    print("Hop Outputs: ", hop_outputs)
+    return hop_outputs
+
 
 
 # ========================
@@ -791,7 +815,7 @@ async def get_comprehensive_execution_plan(
         #      - rcs_list: list of per-account RCS JSONs (existing or headers)
         #      - headers_created: list of headers newly created in this call
         rcs_list_output = load_all_account_rcs_jsons(
-            product_id=product_id,
+            product_id,
         )
 
         print("RCS list loaded")
@@ -807,12 +831,17 @@ async def get_comprehensive_execution_plan(
         if isinstance(rcs_list_output, dict):
             rcs_list, deug = rcs_list_output.get("rcs_list", []) or []
             headers_created = rcs_list_output.get("headers_created", []) or []
+            print("RCS list and headers created extracted from dict output")
         elif isinstance(rcs_list_output, list):
             # older / simpler return shape: list of RCS JSONs
             rcs_list = rcs_list_output
+            print("RCS list extracted from list output")
         else:
             print("No RCS data found for product_id - showing defaults now")
 
+        # Step 0.5: Build all RCS and print outputs
+        #print("Building all RCS for indexed product_id:", product_id)
+        #rcs_filled = construct_all_account_rcs(product_id_actual)
         # Step 1: Filter by window
         plan = _filter_by_window(plan, window_start, window_end)
 
@@ -842,3 +871,61 @@ async def get_comprehensive_execution_plan(
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load plan: {e}")
+    
+
+
+# ========================
+# Strategy Simulator
+# ========================
+class SimulatePayload(BaseModel):
+    account_id: str
+    product_id: str
+    attributes: List[str] = []
+    zmots: List[str] = []
+    persona_engagements: List[str] = []
+    stage: str = "auto"
+    plays_per_step: int = 2
+    boost_factor: float = 2.0
+    archetype: Dict[str, Any] = {}
+
+
+@router.post("/simulate-rcs/{product_id}")
+def simulate_rcs_endpoint(product_id: str, payload: SimulatePayload, request: Request):
+    
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    product_subgraph = build_product_graph(product_id)
+    product_id_actual = get_product_id_from_subgraph(product_subgraph)
+    
+    
+
+    sim = SimulationInput(
+        account_id=payload.account_id,
+        product_id=payload.product_id,
+        product_subgraph=G,
+        attributes=payload.attributes,
+        zmots=payload.zmots,
+        persona_engagements=payload.persona_engagements,
+        stage=payload.stage,
+        plays_per_step=payload.plays_per_step,
+        boost_factor=payload.boost_factor,
+        archetype=payload.archetype,
+    )
+
+    result = simulate_scenario(sim)
+    # convert dataclass to JSON
+    return {
+        "generatedAt": result.generated_at,
+        "keyStats": result.key_stats,
+        "rcsReport": result.rcs_report,
+        "frozenStrategy": result.frozen_strategy,
+        "stagePlan": result.stage_plan,
+        "diffs": result.diffs,
+    }

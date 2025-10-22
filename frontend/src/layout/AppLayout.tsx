@@ -27,7 +27,8 @@ const navSections = [
       title: 'Geek Out',
       items: [
         { name: 'Models', path: '/models' },
-        { name: 'Reverse Case Studies', path: '/reverse-case-studies' },
+        {name: 'Pains Map', path: '/pains-map' },
+        { name: 'Simulator', path: '/reverse-case-studies' },
       ],
     },
     {

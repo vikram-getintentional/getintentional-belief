@@ -265,7 +265,21 @@ def get_graphwin(
 
     # Fallback: if no attributes were engaged, return 0 (or consider a default)
     if not attrs:
-        return {"win_likelihood": 0.0, "note": "no attribute seeds"}
+    # No attribute seeds; try computing with extra prior only (ZMOT / new_engaged_nodes).
+        win = graphwin_ppr_from_attributes(
+            product_graph=G,
+            product_id=product_id,
+            attribute_nodes=[],                 # empty attribute set
+            attribute_weights={},               # no weights
+            zmot_nodes=zmots,
+            zmot_weights=zmot_weights,
+            new_engaged_nodes=new_engaged_nodes,
+            new_engaged_weights=new_engaged_weights,
+            alpha=alpha,
+            weight_key=weight_key,
+        )
+        return {"win_likelihood": float(win), "note": "no attribute seeds; used extra prior"}
+
 
     if use_monotonic_union:
         win = graphwin_ppr_union_by_attributes(

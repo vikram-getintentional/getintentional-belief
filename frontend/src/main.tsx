@@ -12,12 +12,14 @@ import Personas from './pages/Personas';
 import ICP from './pages/ICP'; 
 import ValueProp from './pages/ValueProposition';
 import ReverseCaseStudies from './pages/ReverseCaseStudies'
+import RcsSimulator from './pages/RCSSimulator.tsx'
 import Arsenal from './pages/Arsenal.tsx'
 import CRMUpload from './pages/CRMUpload.tsx'
 import Admin from './pages/Admin.tsx'
 import TargetAccounts from './pages/TargetAccounts.tsx'
 import Models from './pages/models.tsx'
 import MarketingPlanner from './pages/MarketingPlanner.tsx'
+import PainsMap from './pages/PainsMap.tsx'
 
 import './output.css';
 
@@ -41,6 +43,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/models" element={<Models />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/marketing-planner" element={<MarketingPlanner />} />
+          <Route path="/rcs-simulator" element={<RcsSimulator />} />
+          <Route path="/pains-map" element={<PainsMap />} />
 
           {/* Add other routes here */}
 

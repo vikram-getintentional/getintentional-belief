@@ -4,7 +4,7 @@
       "id": "state_of_recurring_revenue_2025",
       "name": "2025 State of Recurring Revenue & Monetization Report",
       "format": "research_report",
-      "stages": ["problem", "solution"],
+      "stages": ["problem", "resolution"],
       "personas": [
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
         {"title": "VP Finance", "department": "Finance", "seniority": "VP"},
@@ -21,7 +21,7 @@
       "id": "webinar_cpq_sales_agility",
       "name": "Unlocking Sales Agility using Chargebee CPQ",
       "format": "webinar",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "Sales Ops", "department": "Sales", "seniority": "Manager"},
         {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"},
@@ -38,7 +38,7 @@
       "id": "webinar_ai_automation_billing",
       "name": "AI, Automation & Billing: A Guide to Usage-Based Pricing for 2025",
       "format": "webinar",
-      "stages": ["pain", "solution"],
+      "stages": ["pain", "resolution"],
       "personas": [
         {"title": "CPO", "department": "Product", "seniority": "Executive"},
         {"title": "Product Manager", "department": "Product", "seniority": "Manager"},
@@ -56,7 +56,7 @@
       "id": "pr_g2_summer_2025",
       "name": "Chargebee Dominates G2’s Summer 2025 Rankings",
       "format": "press_release",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
         {"title": "Finance Ops", "department": "Finance", "seniority": "Manager"},
@@ -72,7 +72,7 @@
       "id": "pr_g2_fall_2025",
       "name": "G2 Fall 2025 Reports: Subscription Billing Leader",
       "format": "press_release",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
         {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
@@ -87,7 +87,7 @@
       "id": "blog_revenue_strategy_shift",
       "name": "What 473 companies reveal about revenue strategy shifts",
       "format": "blog",
-      "stages": ["problem", "solution"],
+      "stages": ["problem", "resolution"],
       "personas": [
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
         {"title": "Product Leader", "department": "Product", "seniority": "Director"},
@@ -103,7 +103,7 @@
       "id": "webinar_edtech_investor_sentiment",
       "name": "Investor Sentiment: 2025 EdTech Market Perspectives",
       "format": "webinar",
-      "stages": ["problem", "solution"],
+      "stages": ["problem", "resolution"],
       "personas": [
         {"title": "Founder", "department": "Executive", "seniority": "Executive"},
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
@@ -119,7 +119,7 @@
       "id": "event_beelieve_sf",
       "name": "Beelieve ’25 – San Francisco",
       "format": "event",
-      "stages": ["problem", "pain", "solution"],
+      "stages": ["problem", "pain", "resolution"],
       "personas": [
         {"title": "CXO", "department": "Executive", "seniority": "Executive"},
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
@@ -136,7 +136,7 @@
       "id": "event_beelieve_london",
       "name": "Beelieve ’25 – London",
       "format": "event",
-      "stages": ["problem", "pain", "solution"],
+      "stages": ["problem", "pain"],
       "personas": [
         {"title": "CXO", "department": "Executive", "seniority": "Executive"},
         {"title": "Finance Leader", "department": "Finance", "seniority": "VP"},
@@ -152,7 +152,7 @@
       "id": "event_dreamforce_2025",
       "name": "Chargebee at Dreamforce 2025",
       "format": "event",
-      "stages": ["solution"],
+      "stages": ["problem"],
       "personas": [
         {"title": "Sales Leader", "department": "Sales", "seniority": "VP"},
         {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"},
@@ -168,7 +168,7 @@
       "id": "blog_subscriptionx_strategies",
       "name": "SubscriptionX 2025 Insights — 7 Proven Strategies",
       "format": "blog",
-      "stages": ["problem", "solution"],
+      "stages": ["problem", "execution"],
       "personas": [
         {"title": "CFO", "department": "Finance", "seniority": "Executive"},
         {"title": "Product Manager", "department": "Product", "seniority": "Manager"},
@@ -185,7 +185,7 @@
       "id": "video_cpq_hubspot_demo",
       "name": "Creating a Quote for New Business — Chargebee CPQ for HubSpot",
       "format": "video",
-      "stages": ["solution"],
+      "stages": ["execution"],
       "personas": [
         {"title": "Account Executive", "department": "Sales", "seniority": "IC"},
         {"title": "Sales Ops", "department": "Sales", "seniority": "Manager"},
@@ -201,7 +201,7 @@
       "id": "video_subscription_renewal_cpq",
       "name": "Creating a Quote for Subscription Amendment or Renewal — CPQ for HubSpot",
       "format": "video",
-      "stages": ["solution"],
+      "stages": ["execution"],
       "personas": [
         {"title": "Account Executive", "department": "Sales", "seniority": "IC"},
         {"title": "Sales Ops", "department": "Sales", "seniority": "Manager"},
@@ -220,7 +220,7 @@
       "id": "asset_predictive_modeling_guide",
       "name": "Predictive Modeling Guide for Market Trends",
       "format": "guide",
-      "stages": ["problem"],
+      "stages": ["execution"],
       "personas": [
         {"title": "data scientist", "department": "corporate strategy", "seniority": "Senior"}
       ],
@@ -253,7 +253,7 @@
       "id": "asset_data_integration_best_practices",
       "name": "Data Integration Best Practices for IT Analysts",
       "format": "guide",
-      "stages": ["problem", "pain"],
+      "stages": ["pain", "execution"],
       "personas": [
         {"title": "data analyst", "department": "it", "seniority": "Senior"}
       ],
@@ -269,7 +269,7 @@
       "id": "asset_training_specialist_toolkit",
       "name": "Training Specialist Analytics Toolkit",
       "format": "toolkit",
-      "stages": ["problem"],
+      "stages": ["execution"],
       "personas": [
         {"title": "training specialist", "department": "marketing", "seniority": "Operator"}
       ],
@@ -302,7 +302,7 @@
       "id": "asset_strategic_analyst_solution",
       "name": "Strategic Analyst Solution Playbook",
       "format": "playbook",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "strategic analyst", "department": "corporate strategy", "seniority": "Senior"}
       ],
@@ -320,7 +320,7 @@
       "id": "asset_growfin_roi_calculator_integration",
       "name": "ROI/TCO Calculator: ERP Data Integration with GrowFin.ai",
       "format": "calculator",
-      "stages": ["solution", "problem"],
+      "stages": ["execution", "resolution"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
@@ -339,7 +339,7 @@
       "id": "asset_growfin_case_study_error_reduction",
       "name": "Case Study: 60% Fewer Integration Errors Across Multi-ERP",
       "format": "case_study",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
@@ -358,7 +358,7 @@
       "id": "asset_growfin_architecture_deep_dive",
       "name": "Technical Deep-Dive: GrowFin.ai Integration Architecture",
       "format": "tech_deep_dive",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
@@ -376,7 +376,7 @@
       "id": "asset_growfin_demo_video_5min",
       "name": "5-min Demo: Mapping & Format Normalization",
       "format": "demo_video",
-      "stages": ["solution", "pain"],
+      "stages": ["resolution", "pain"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
@@ -394,7 +394,7 @@
       "id": "asset_growfin_comparison_vs_manual_scripts",
       "name": "Comparison Guide: GrowFin.ai vs Manual Scripts/iPaaS",
       "format": "comparison_guide",
-      "stages": ["solution"],
+      "stages": ["pain"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
@@ -412,7 +412,7 @@
       "id": "asset_growfin_poc_offer_30day",
       "name": "30-Day Proof-of-Concept Offer",
       "format": "poc_offer",
-      "stages": ["solution"],
+      "stages": ["resolution"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
@@ -500,7 +500,7 @@
       "id": "asset_growfin_webinar_risk_controls",
       "name": "Webinar: Reducing Integration Failure Rates & Reporting Delays",
       "format": "webinar",
-      "stages": ["pain", "solution"],
+      "stages": ["pain", "resolution"],
       "personas": [
         {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
         {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"},
@@ -518,7 +518,7 @@
       "id": "asset_growfin_whitepaper_reporting_latency",
       "name": "Whitepaper: Eliminating Reporting Latency from ERP Silos",
       "format": "whitepaper",
-      "stages": ["problem", "solution"],
+      "stages": ["problem", "execution"],
       "personas": [
         {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"},
         {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
@@ -536,7 +536,7 @@
       "id": "asset_growfin_datasheet_connectors",
       "name": "Datasheet: Connectors, Mapping Engine & Monitoring",
       "format": "datasheet",
-      "stages": ["solution"],
+      "stages": ["execution"],
       "personas": [
         {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
         {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"}
@@ -570,7 +570,7 @@
       "id": "asset_growfin_landing_page_integration",
       "name": "Landing Page: Multi-ERP Consolidation with GrowFin.ai",
       "format": "landing_page",
-      "stages": ["solution", "pain", "problem"],
+      "stages": ["resolution", "pain", "problem"],
       "personas": [
         {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"},
         {"title": "erp administrator", "department": "IT", "seniority": "Manager"},

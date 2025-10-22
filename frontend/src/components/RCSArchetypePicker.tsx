@@ -164,7 +164,7 @@ export default function RCSConfigurator({
         if (!res.ok) throw new Error(`Failed to get reverse case study (${res.status})`);
         const data = await res.json();
         if (!alive) return;
-        setRcs(data.output);
+        setRcs(data);
         setRcsGraph(data.graph);
       } catch (e: any) {
         if (alive) { setErr(e?.message || "Failed to load reverse case study"); setRcs(null); }
@@ -295,21 +295,9 @@ export default function RCSConfigurator({
 
       <TabPanel value={tab} index={2}>
         {rcs ? (
-          (() => {
-            const sequences = normalizeRcsSequences(rcs);
-            const assetsByPersona = buildAssetsByPersona(rcs);
-            const labelMap = buildLabelMaps(rcs);
-            const strategy = normalizeRcsStrategy(rcs);
-
-            return (
               <RCSCampaignSequences
-                sequences={sequences}
-                labelMap={labelMap}
-                assetsByPersona={assetsByPersona}
-                strategy={strategy}
+                strategy={rcs?.frozen_strategy ?? rcs}
               />
-            );
-          })()
         ) : (
           <Typography color="text.secondary">No conversion data available.</Typography>
         )}

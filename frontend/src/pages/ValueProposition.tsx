@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import ValuePropCard from "../components/ValuePropCard";
 import CapabilityCard from "../components/CapabilityCard";
+import { useLocation } from 'react-router-dom';
+
+import ConfirmWebsite from "../components/ConfirmWebsite";
 
 type Capability = {
   coreness: number;
@@ -17,12 +20,37 @@ type ProductData = {
 };
 
 const ValueProposition = () => {
+  const [_, setEmail] = useState('');
+  const [companyName, setCompanyName] = useState('');
+
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [productData, setProductData] = useState<ProductData | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
   const token = localStorage.getItem("token");
+  const { state } = useLocation() as { state?: { scraped?: any } };
+  const scraped = state?.scraped;
+  const [showConfirmWebsite, setShowConfirmWebsite] = useState(false);
+  const handleAnalyzeSuccess = (data: any) => {
+    console.log("Analyze succeeded:", data);
+    if (data?.product_node_id) {
+      setSelectedProductId(data.product_node_id);
+    };
+    setShowConfirmWebsite(false);
+  };
+
+  const renderConfirmWebsite = () => {
+      return (
+        <>
+          {console.log("Rendering ConfirmWebsite component with productID:", selectedProductId)}
+          <div className="p-8">
+            <h2 className="text-2xl font-bold mb-6">Confirm Website</h2>
+            <ConfirmWebsite onAnalyzeSuccess={handleAnalyzeSuccess} />
+          </div>
+        </>
+      );
+  };
 
   // Fetch company and products on mount
   useEffect(() => {
@@ -33,6 +61,10 @@ const ValueProposition = () => {
         });
         const meData = await meRes.json();
         setCompanyId(meData.company_id);
+        if (meData.email) {
+          setEmail(meData.email);
+          setCompanyName(meData.company_name);
+        }
 
         const prodRes = await fetch(
           `http://localhost:8000/get-products/${meData.company_id}`,
@@ -41,7 +73,8 @@ const ValueProposition = () => {
         const prodData = await prodRes.json();
         console.log("Backend Products data:", prodData);
         if (!prodData.products || prodData.products.length === 0) {
-          setStatusMsg("No products found. Please run Value Prop first.");
+          setShowConfirmWebsite(true);
+          console.log("No products found, prompting for website confirmation.");
           return;
         }
         setProducts(prodData.products);
@@ -75,6 +108,7 @@ const ValueProposition = () => {
         if (!data || !data.product_node_id) {
           setProductData(null);
           setStatusMsg("No product data found.");
+          setShowConfirmWebsite(true);
           return;
         }
         setProductData(data);
@@ -86,6 +120,11 @@ const ValueProposition = () => {
     };
     fetchProductData();
   }, [selectedProductId, token]);
+
+  if (showConfirmWebsite) {
+      return renderConfirmWebsite();
+    }
+
 
   return (
     <div className="p-8">

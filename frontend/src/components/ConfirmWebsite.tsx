@@ -11,9 +11,9 @@ const normalizeWebsiteInput = (input: string): { cleanDisplay: string; fullUrl: 
   return { cleanDisplay, fullUrl };
 };
 
-const ConfirmWebsite = () => {
-  const [_, setEmail] = useState('');
-  const [websiteInput, setWebsiteInput] = useState('');
+function ConfirmWebsite({ onAnalyzeSuccess }: { onAnalyzeSuccess?: (data: any) => void }) {
+   const [email, setEmail] = useState('');
+   const [websiteInput, setWebsiteInput] = useState('');
   const [cleanWebsite, setCleanWebsite] = useState('');
   const [fullWebsite, setFullWebsite] = useState('');
   const [confirmed, setConfirmed] = useState(false);
@@ -188,6 +188,7 @@ const ConfirmWebsite = () => {
                   url={fullWebsite}
                   plgCta={plgCta}
                   footerFeatures={footerFeatures}
+                  onAnalyzeSuccess={onAnalyzeSuccess}
                 />
               </ErrorBoundary>
               

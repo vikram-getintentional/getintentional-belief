@@ -25,8 +25,10 @@ const Login = () => {
       }
 
       const data = await res.json();
-      localStorage.setItem('token', data.access_token);
-      navigate('/onboarding');
+      const token = data.access_token;
+      localStorage.setItem('token', token);
+
+      navigate('/value-prop', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Login failed');
     }

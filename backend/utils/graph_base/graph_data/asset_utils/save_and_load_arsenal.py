@@ -61,8 +61,14 @@ def load_assets_from_arsenal_json(product_id):
         return []
     with open(full_path, "r") as f:
         all_data = json.load(f)
-    assets = all_data.get(product_id, [])
-    return [Asset(**a) for a in assets]
+    if product_id in all_data:
+        assets = all_data[product_id]
+        
+    else:
+        print(f"No assets found for product_id {product_id}")
+        assets = []
+
+    return assets
 
 def load_channels_from_arsenal_json(product_id):
     filename = "channels.json"
@@ -72,5 +78,11 @@ def load_channels_from_arsenal_json(product_id):
         return []
     with open(full_path, "r") as f:
         all_data = json.load(f)
-    channels = all_data.get(product_id, [])
-    return [Channel(**c) for c in channels]
+    if product_id in all_data:
+        channels = all_data[product_id]
+        
+    else:
+        print(f"No channels found for product_id {product_id}")
+        channels = []
+
+    return channels

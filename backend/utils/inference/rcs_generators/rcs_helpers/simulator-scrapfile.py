@@ -61,7 +61,6 @@ def simulate_rcs(
     # ---------------------------------------------------
     # STRATEGY MODE
     # ---------------------------------------------------
-
     if mode == "strategy":
         frozen_strategy, fs_pain_graph, report = build_account_strategy(
             product_subgraph,
@@ -69,7 +68,6 @@ def simulate_rcs(
             zmots=zmots,
             initial_engagements=occurred_nodes,
         )
-
         tactical_update, tu_pain_graph = update_tactical_plan(
             product_subgraph,
             frozen_strategy,
@@ -82,8 +80,7 @@ def simulate_rcs(
         return {
             "output": tactical_update, 
             "frozen_strategy": frozen_strategy, 
-            "graph": graph_for_ui,
-            "report": report,
+            "graph": graph_for_ui
             }
 
     # ---------------------------------------------------
@@ -111,7 +108,6 @@ def simulate_rcs(
         "tactical_update": tactical_update,
         "frozen_strategy": frozen_strategy,
         "graph": graph_for_ui,
-        "report": report,
     }
 
 

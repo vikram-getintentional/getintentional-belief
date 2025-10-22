@@ -1,9 +1,10 @@
+from collections import defaultdict
 import math
 import networkx as nx
 import numpy as np
 from typing import Dict, Iterable, List, Tuple, Any, Optional
 
-from backend.utils.graph_base.network_graph import _set_node_label, get_edge_attribute, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+from backend.utils.graph_base.network_graph import _set_node_label, get_edge_attribute, get_node_by_id, get_nodes_list_ids, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
 from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime import get_graphwin
 
 # ============================================================
@@ -262,7 +263,7 @@ def compute_node_strengths(
         delta_p = float(am.get("delta_p", 0.0))
         raw_pw = float(am.get("p_with", 0.0))
         strength = involvement * delta_p
-        results[n] = {"activation": activation, "involvement": involvement, "strength": strength, "activation_map": am}
+        results[n] = {"activation": activation, "involvement": involvement, "strength": strength, "activation_map": am, "id": n, "label": _set_node_label(R,n)}
     return results
 
 # ============================================================
@@ -299,18 +300,40 @@ def compute_persona_scores_from_core(
     core_scores: Dict[str, Dict[str, float]],
     mode: str = "prob",
     odds_relevance_scale: float = 1.0,
-) -> Dict[str, Dict[str, float]]:
-    
+) -> Dict[str, Any]:
+    """
+    Returns:
+      {
+        "persona_scores": { persona_id: {activation, involvement, strength, label, p_base, p_persona, mode, contributing_jobs: [...]}, ... },
+        "persona_activation_breakdown": [
+          {
+            "persona_id": pid,
+            "involvement": I,
+            "problem_activation":    {activation, strength, prob_lift, logit_lift, concern_id},
+            "execution_activation":  {...},
+            "pain_activation":       {...},
+            "resolution_activation": {...},
+          }, ...
+        ]
+      }
+    """
     def _extract_p_base(core_scores: Dict[str, Dict[str, float]]) -> float:
         for v in core_scores.values():
             am = v.get("activation_map")
             if isinstance(am, dict) and "p_base" in am:
                 return float(am["p_base"])
         return 0.0
+
     p_base = _extract_p_base(core_scores)
     l_base = _logit(p_base)
+
     all_pruned_jobs = get_nodes_list_ids(product_graph, "job", {})
     persona_acc: Dict[str, Dict[str, Any]] = {}
+    if not all_pruned_jobs:
+        return {
+            "persona_scores": {},
+            "persona_activation_breakdown": {},
+        }
     for job in all_pruned_jobs:
         js = core_scores.get(job, {"involvement": 0.0, "activation_map": {}})
         i = float(js.get("involvement", 0.0))
@@ -344,43 +367,168 @@ def compute_persona_scores_from_core(
 
             acc["contrib"].append({
                 "job": job,
+                "concern_level": "execution",
                 "edge_weight": pj_rel,
-                "job_activation_prob_lift": delta_p,      # <-- from jam
-                "job_activation_logit_lift": dlogit,      # <-- from jam
+                "job_activation_prob_lift": delta_p,
+                "job_activation_logit_lift": dlogit,
                 "job_involvement": i,
-                "job_strength_prob": i * delta_p,         # <-- from jam
+                "job_strength_prob": i * delta_p,
+                "concern_id": job,
             })
-        
-    out: Dict[str, Dict[str, Any]] = {}
+
+            # (B) problems solved by job: job --solves--> pain
+            solved_pains_of_job = get_target_nodes_by_source_and_type(product_graph, job, "solves")
+            for p in solved_pains_of_job:
+                job_to_pain = float(get_edge_attribute(product_graph, job, p, "relevance"))
+                ps = core_scores.get(p, {"involvement": 0.0, "activation_map": {}})
+                pam = ps.get("activation_map") or {}
+                delta_pp  = float(pam.get("delta_p", 0.0))
+                dlogit_pp = float(pam.get("delta_logit", 0.0))
+
+                if mode == "odds":
+                    acc["sum_dlogit"] += odds_relevance_scale * (pj_rel * job_to_pain * dlogit_pp)
+                else:
+                    acc["act_terms_prob"].append(delta_pp * pj_rel * job_to_pain)
+
+                acc["contrib"].append({
+                    "job": job,
+                    "concern_level": "problem",
+                    "edge_weight": pj_rel * job_to_pain,
+                    "job_activation_prob_lift": delta_pp,
+                    "job_activation_logit_lift": dlogit_pp,
+                    "job_involvement": float(ps.get("involvement", 0.0)),
+                    "job_strength_prob": float(ps.get("involvement", 0.0)) * delta_pp,
+                    "concern_id": p,
+                })
+
+            # (C) felt pains for job: pain --felt_in--> job (pain is source)
+            felt_pains_of_job = get_source_nodes_by_target_and_type(product_graph, job, "felt_in")
+            for pa in felt_pains_of_job:
+                job_to_pain = float(get_edge_attribute(product_graph, pa, job, "likelihood"))
+                pas = core_scores.get(pa, {"involvement": 0.0, "activation_map": {}})
+                paam = pas.get("activation_map") or {}
+                delta_pa  = float(paam.get("delta_p", 0.0))
+                dlogit_pa = float(paam.get("delta_logit", 0.0))
+
+                if mode == "odds":
+                    acc["sum_dlogit"] += odds_relevance_scale * (pj_rel * job_to_pain * dlogit_pa)
+                else:
+                    acc["act_terms_prob"].append(delta_pa * pj_rel * job_to_pain)
+
+                acc["contrib"].append({
+                    "job": job,
+                    "concern_level": "pain",
+                    "edge_weight": pj_rel * job_to_pain,
+                    "job_activation_prob_lift": delta_pa,
+                    "job_activation_logit_lift": dlogit_pa,
+                    "job_involvement": float(pas.get("involvement", 0.0)),  # FIX: use pas, not ps
+                    "job_strength_prob": float(pas.get("involvement", 0.0)) * delta_pa,  # FIX
+                    "concern_id": pa,
+                })
+
+                # (D) resolving nodes for a felt pain: rs --solves--> pa
+                solving_nodes_of_pain = get_source_nodes_by_target_and_type(product_graph, pa, "solves")
+                for rs in solving_nodes_of_pain:
+                    if rs == job:
+                        continue
+                    job_relevance = float(get_edge_attribute(product_graph, rs, pa, "relevance"))
+                    rs_s  = core_scores.get(rs, {"involvement": 0.0, "activation_map": {}})
+                    rsam  = rs_s.get("activation_map") or {}
+                    delta_rs  = float(rsam.get("delta_p", 0.0))
+                    dlogit_rs = float(rsam.get("delta_logit", 0.0))
+
+                    if mode == "odds":
+                        acc["sum_dlogit"] += odds_relevance_scale * (pj_rel * job_relevance * dlogit_rs)
+                    else:
+                        acc["act_terms_prob"].append(delta_rs * pj_rel * job_relevance)
+
+                    acc["contrib"].append({
+                        "job": job,
+                        "concern_level": "resolution",
+                        "edge_weight": pj_rel * job_relevance,
+                        "job_activation_prob_lift": delta_rs,
+                        "job_activation_logit_lift": dlogit_rs,
+                        "job_involvement": float(rs_s.get("involvement", 0.0)),
+                        "job_strength_prob": float(rs_s.get("involvement", 0.0)) * delta_rs,
+                        "concern_id": rs,
+                    })
+    
+    # -------- Assemble outputs --------
+    persona_scores_out: Dict[str, Dict[str, Any]] = {}
+    activation_breakdown_list: List[Dict[str, Any]] = []
+
     for pid, acc in persona_acc.items():
-        
         I = noisy_or(acc["inv_terms"]) if acc["inv_terms"] else 0.0
         if mode == "odds":
-            # Persona probability with jobs "on" in odds-space:
             l_persona = l_base + acc["sum_dlogit"]   # additive in log-odds
             p_persona = _sigmoid(l_persona)
-            # Activation is *probability lift* vs baseline:
-            A = max(0.0, p_persona - p_base)
+            A = max(0.0, p_persona - p_base)         # activation lift in prob-space
         else:
-            # Prob mode: combine job activations via noisy-or (or sum-clip)
             A = noisy_or(acc["act_terms_prob"]) if acc["act_terms_prob"] else 0.0
-            p_persona = min(1.0, p_base + A)  # optional, if you want to expose it
+            p_persona = min(1.0, p_base + A)
 
         S = A * I
         label = _set_node_label(original_graph, pid)
-        out[pid] = {
-            "activation": float(A),            # persona activation in prob-space
+
+        # --- persona_scores map (unchanged shape) ---
+        persona_scores_out[pid] = {
+            "activation": float(A),
             "involvement": float(I),
             "strength": float(S),
             "label": label,
             "p_base": float(p_base),
-            "p_persona": float(p_persona),     # helpful for debugging/analytics
+            "p_persona": float(p_persona),
             "mode": mode,
-            "contributing_jobs": sorted(
-                acc["contrib"], key=lambda r: r["job_strength_prob"], reverse=True
-            )
+            #"contributing_jobs": sorted(acc["contrib"], key=lambda r: r["job_strength_prob"], reverse=True),
         }
-    return out
+
+        
+
+        # --- activation breakdown (pick top per concern_level) ---
+        top_per_level = {
+            "execution": None,
+            "problem": None,
+            "pain": None,
+            "resolution": None,
+        }
+        for row in acc["contrib"]:
+            lvl = row.get("concern_level")
+            if lvl not in top_per_level:
+                continue
+            # choose the best by job_strength_prob (or edge-weighted lift)
+            current = top_per_level[lvl]
+            if (current is None) or (row.get("job_strength_prob", 0.0) > current.get("job_strength_prob", 0.0)):
+                top_per_level[lvl] = row
+
+        def _mk_activation_entry(best):
+            if not best:
+                return {"activation": 0.0, "strength": 0.0, "prob_lift": 0.0, "logit_lift": 0.0, "concern_id": None}
+            return {
+                "activation": float(best.get("job_activation_prob_lift", 0.0) or 0.0),
+                "strength": float(best.get("job_strength_prob", 0.0) or 0.0),
+                "prob_lift": float(best.get("job_activation_prob_lift", 0.0) or 0.0),
+                "logit_lift": float(best.get("job_activation_logit_lift", 0.0) or 0.0),
+                "concern_id": best.get("concern_id"),
+            }
+        persona_node = get_node_by_id(original_graph, pid)
+        activation_breakdown_list.append({
+            "persona_id": pid,
+            "label": label,
+            "department": persona_node.get("department"),
+            "seniority": persona_node.get("seniority"),
+            "title": persona_node.get("title"),
+            "involvement": float(I),
+            "execution_activation":  _mk_activation_entry(top_per_level["execution"]),
+            "problem_activation":    _mk_activation_entry(top_per_level["problem"]),
+            "pain_activation":       _mk_activation_entry(top_per_level["pain"]),
+            "resolution_activation": _mk_activation_entry(top_per_level["resolution"]),
+        })
+
+
+    return {
+        "persona_scores": persona_scores_out,
+        "persona_activation_breakdown": activation_breakdown_list,
+    }
 
 
 # ============================================================
@@ -413,7 +561,7 @@ def get_involvement_activation_report(
     if not product_id:
         return {"core_scores": {}, "persona_scores": {}}
     
-
+    
     # Gather engaged attributes
     attr_weights: Dict[str, float] = {}
     for e in engaged_nodes:
@@ -424,7 +572,7 @@ def get_involvement_activation_report(
     if not attr_weights:
         print("[WARN] No engaged attribute_value nodes found.")
         return {"core_scores": {}, "persona_scores": {}}
-
+    
     # Compute core scores (pain, job, trigger, etc.)
     core_scores = compute_node_strengths(
         product_graph=G,
@@ -432,56 +580,120 @@ def get_involvement_activation_report(
         engaged_attributes=attr_weights,
         score_kinds=("attribute_value", "pain", "pain_trigger", "job", "capability")
     )
-
+    
 
     # Compute persona scores from jobs
-    persona_scores = compute_persona_scores_from_core(
+    persona_scores_ret = compute_persona_scores_from_core(
         product_graph=G,
         original_graph=Original_G,
         core_scores=core_scores,
     )
 
-    for pid in list(persona_scores.keys()):
-        if pid in core_scores:
-            core_scores.pop(pid, None)
+
 
     #print("Core Scores:", core_scores)
     #print("Persona Scores:", persona_scores)
 
     return {
         "core_scores": core_scores,
-        "persona_scores": persona_scores,
+        "persona_scores": persona_scores_ret["persona_scores"],
+        "activation_breakdown": persona_scores_ret["persona_activation_breakdown"]
     }
 # ============================================================
-# Concern Backlog Construction (PPR + Core-Score Weighted)
+# Concern Backlog Construction (Derived from Persona Scores )
 # ============================================================
-def _connectivity_persona_pain_via_jobs(
-    G: nx.DiGraph,
-    persona_id: str,
-    target_id: str,
-) -> float:
-    """
-    Returns an approximate connectivity score between a persona and a pain/job node.
-    Uses the best (highest weight) path through job intermediaries if available.
-    """
-    try:
-        # Direct edge shortcut
-        if G.has_edge(persona_id, target_id):
-            return float(G[persona_id][target_id].get("likelihood", 0.5))
-        if G.has_edge(target_id, persona_id):
-            return float(G[target_id][persona_id].get("likelihood", 0.5))
 
-        # Indirect via jobs (persona → job → pain)
-        paths = []
-        for j in G.successors(persona_id):
-            if G.nodes[j].get("node_type") == "job":
-                if G.has_edge(j, target_id):
-                    paths.append(G[j][target_id].get("likelihood", 0.5))
-        if paths:
-            return max(paths)
-    except Exception:
-        pass
-    return 0.0
+def build_concern_backlog_from_activation_breakdown(G:nx.DiGraph, activation_breakdown, stage_weights=None, top_k_per_persona=5):
+    """
+    activation_breakdown: list of persona activation summaries
+    stage_weights: optional dict to prioritize earlier concern types
+    Returns:
+      concern_backlog: flat ranked list of actionable concerns
+      concerns_by_persona: mapping of persona_id -> list of concerns
+    """
+    if stage_weights is None:
+        stage_weights = {"problem": 1.0, "pain": 0.9, "resolution": 0.85, "execution": 0.75}
+
+    concern_backlog = []
+    concerns_by_persona = defaultdict(list)
+
+    for p in activation_breakdown:
+        pid = p["persona_id"]
+        I = p.get("involvement", 0.0)
+        # iterate over each activation layer
+        for stage in ["execution", "problem", "pain", "resolution"]:
+            a = p.get(f"{stage}_activation", {})
+            cid = a.get("concern_id")
+            act = float(a.get("activation", 0.0))
+            if not cid or act <= 0:
+                continue
+            lift_proxy = act * I * stage_weights.get(stage, 1.0)
+            concern_row = {
+                "pid": pid,
+                "persona_label": _set_node_label(G, pid),
+                "cid": cid,
+                "concern_label": _set_node_label(G, cid),
+                "stage": stage,
+                "activation": act,
+                "involvement": I,
+                "lift_proxy": lift_proxy,
+            }
+            concerns_by_persona[pid].append(concern_row)
+            concern_backlog.append(concern_row)
+
+    # sort within persona and globally
+    for pid, rows in concerns_by_persona.items():
+        rows.sort(key=lambda x: x["lift_proxy"], reverse=True)
+        concerns_by_persona[pid] = rows[:top_k_per_persona]
+
+    concern_backlog.sort(key=lambda x: x["lift_proxy"], reverse=True)
+    return concern_backlog, concerns_by_persona
+
+"""
+
+
+def _score_for_concern(
+    G: nx.DiGraph,
+    cid: str,
+    node_scores: Dict[str, Dict[str, float]],
+    *,
+    job_weight_key: str = "weight"
+) -> Tuple[float, float]:
+    
+    Return (activation, involvement) for a concern node.
+    If not present in node_scores (common for pains/pain_triggers),
+    backfill from neighboring JOB nodes using edge weights (weighted mean).
+    
+    s = node_scores.get(cid)
+    if s is not None:
+        return float(s.get("activation", 0.0) or 0.0), float(s.get("involvement", 0.0) or 0.0)
+
+    # Backfill from adjacent JOBs (both directions to be safe with schema)
+    total_w = 0.0
+    act_sum = 0.0
+    inv_sum = 0.0
+
+    # In-neighbors
+    for u, v, ed in G.in_edges(cid, data=True):
+        if G.nodes[u].get("node_type") == "job":
+            w = float(ed.get(job_weight_key, 1.0) or 1.0)
+            js = node_scores.get(u) or {}
+            act_sum += w * float(js.get("activation", 0.0) or 0.0)
+            inv_sum += w * float(js.get("involvement", 0.0) or 0.0)
+            total_w += w
+
+    # Out-neighbors
+    for u, v, ed in G.out_edges(cid, data=True):
+        if G.nodes[v].get("node_type") == "job":
+            w = float(ed.get(job_weight_key, 1.0) or 1.0)
+            js = node_scores.get(v) or {}
+            act_sum += w * float(js.get("activation", 0.0) or 0.0)
+            inv_sum += w * float(js.get("involvement", 0.0) or 0.0)
+            total_w += w
+
+    if total_w > 0.0:
+        return act_sum / total_w, inv_sum / total_w
+    return 0.0, 0.0
 
 
 def _concern_backlog(
@@ -491,40 +703,63 @@ def _concern_backlog(
     *,
     top_k: int = 60,
 ) -> List[Dict[str, Any]]:
-    """
+    
     Build a concern backlog for top personas using graph connectivity × node activation/involvement.
-    For each persona, ranks pains/jobs by lift_proxy:
-        lift_proxy = connectivity(persona, pain) * activation(pain) * involvement(pain)
-    """
-    out = []
-    pains = [n for n, d in G.nodes(data=True)
-             if d.get("node_type") in ("pain", "pain_trigger", "job")]
+
+    For each persona, rank pains/jobs by:
+        lift_proxy = connectivity(persona → concern via jobs) * activation(concern) * involvement(concern)
+
+    Returns a *flat* list that is the union of top_k rows per persona, sorted by lift_proxy desc.
+    
+
+    # Candidate concerns
+    concerns = [
+        n for n, d in G.nodes(data=True)
+        if d.get("node_type") in ("pain", "pain_trigger", "job")
+    ]
+    print(f"Found {len(concerns)} candidate concerns in graph")
+
+    # Per-persona ranking bucket
+    per_persona: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
     for pid in persona_ids:
-        for cid in pains:
+        rows: List[Dict[str, Any]] = []
+        for cid in concerns:
             if pid == cid:
                 continue
+
             conn = _connectivity_persona_pain_via_jobs(G, pid, cid)
-            if conn <= 0:
+            if conn <= 0.0:
                 continue
 
-            s = node_scores.get(cid, {})
-            act = s.get("activation", 0.0)
-            inv = s.get("involvement", 0.0)
+            print(f"Persona {pid} to Concern {cid} connectivity: {conn}")
+
+            # Robust scoring (with job-based backfill)
+            act, inv = _score_for_concern(G, cid, node_scores)
+            if act <= 0.0 or inv <= 0.0:
+                continue
+
             lift = conn * act * inv
+            if lift <= 0.0:
+                continue
 
-            if lift > 0:
-                out.append({
-                    "pid": pid,
-                    "cid": cid,
-                    "concern_label": G.nodes[cid].get("label") or cid,
-                    "stage": infer_stage_for_concern(G, cid),  # ← use helper
-                    "connectivity": conn,
-                    "activation": act,
-                    "involvement": inv,
-                    "lift_proxy": lift,
-                })
+            rows.append({
+                "pid": pid,
+                "cid": cid,
+                "concern_label": G.nodes[cid].get("label") or G.nodes[cid].get("name") or cid,
+                "stage": infer_stage_for_concern(G, cid),
+                "connectivity": conn,
+                "activation": act,
+                "involvement": inv,
+                "lift_proxy": lift,
+            })
 
-    # Sort by lift proxy descending, truncate
-    out.sort(key=lambda x: x["lift_proxy"], reverse=True)
-    return out[:top_k]
+        # sort within persona and cap
+        rows.sort(key=lambda x: x["lift_proxy"], reverse=True)
+        per_persona[pid] = rows[:top_k]
+
+    # Flatten and sort globally for convenience
+    flat = [r for rows in per_persona.values() for r in rows]
+    flat.sort(key=lambda x: x["lift_proxy"], reverse=True)
+    return flat
+    """

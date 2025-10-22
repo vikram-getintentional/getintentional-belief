@@ -23,15 +23,23 @@ const num = (v: any, d = 0) => (typeof v === "number" ? v : d);
 /** Preferred-source resolution: prefer frozen_strategy first, then rcs, then tactical_update / output, then raw */
 export function pickPreferredSource(rcs: any): any {
   if (!rcs) return {};
-  if (rcs.frozen_strategy && Object.keys(rcs.frozen_strategy).length) return rcs.frozen_strategy;
-  if (rcs.rcs && Object.keys(rcs.rcs).length) return rcs.rcs;
-  if (rcs.tactical_update && Object.keys(rcs.tactical_update).length) return rcs.tactical_update;
-  if (rcs.output) {
-    if (rcs.output.frozen_strategy && Object.keys(rcs.output.frozen_strategy).length) return rcs.output.frozen_strategy;
-    if (rcs.output.tactical_update && Object.keys(rcs.output.tactical_update).length) return rcs.output.tactical_update;
-    if (Object.keys(rcs.output).length) return rcs.output;
+
+  // If backend wrapped payload under `report`, prefer that inner object
+  const rpt = rcs.report && Object.keys(rcs.report).length ? rcs.report : rcs;
+
+  if (rpt.frozen_strategy && Object.keys(rpt.frozen_strategy).length) return rpt.frozen_strategy;
+  if (rpt.rcs && Object.keys(rpt.rcs).length) return rpt.rcs;
+  if (rpt.tactical_update && Object.keys(rpt.tactical_update).length) return rpt.tactical_update;
+
+  // support older "output" wrapper as well (maybe under top-level or report)
+  const out = rpt.output || rcs.output;
+  if (out) {
+    if (out.frozen_strategy && Object.keys(out.frozen_strategy).length) return out.frozen_strategy;
+    if (out.tactical_update && Object.keys(out.tactical_update).length) return out.tactical_update;
+    if (Object.keys(out).length) return out;
   }
-  return rcs;
+
+  return rpt;
 }
 
 /** Pick the block that actually has sequences, regardless of backend vintage */
@@ -42,8 +50,9 @@ function pickSequenceSource(rcs: any): any[] {
   if (Array.isArray(src.next_sequences) && src.next_sequences.length) return src.next_sequences;
   if (Array.isArray(src.themes) && src.themes.length) return src.themes;
   // also tolerate top-level sequences if nothing preferred contained them
-  if (Array.isArray(rcs?.concern_sequences) && rcs.concern_sequences.length) return rcs.concern_sequences;
-  if (Array.isArray(rcs?.sequences_and_campaigns) && rcs.sequences_and_campaigns.length) return rcs.sequences_and_campaigns;
+  const raw = rcs?.report ?? rcs;
+  if (Array.isArray(raw?.concern_sequences) && raw.concern_sequences.length) return raw.concern_sequences;
+  if (Array.isArray(raw?.sequences_and_campaigns) && raw.sequences_and_campaigns.length) return raw.sequences_and_campaigns;
   return [];
 }
 
@@ -113,9 +122,13 @@ export function normalizeRcsStrategy(rcs: any) {
     0;
 
   // Personas: prefer frozen_persona_pool from frozen_strategy, then from preferred, then fallback to empty
-  const personasSrc =
+   const personasSrc =
     preferred?.frozen_persona_pool ||
     frozen?.frozen_persona_pool ||
+    preferred?.persona_pool ||
+    frozen?.persona_pool ||
+    preferred?.personas ||
+    frozen?.personas ||
     preferred?.all_personas ||
     live?.all_personas ||
     [];

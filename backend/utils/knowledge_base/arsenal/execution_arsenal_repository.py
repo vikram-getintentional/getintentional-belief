@@ -1,262 +1,670 @@
-# =============================
-# ARSENAL: Assets & Channels
-# =============================
+# execution_arsenal_repository.py
+# Drop-in replacement that ranks Asset × Channel plays against a "concern bundle".
+# Public API: get_best_plays_for_concern(...)
+
 from __future__ import annotations
-
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+from pathlib import Path
+import json
 import math
-from typing import Dict, List, Optional
+import re
 
-from backend.utils.knowledge_base.arsenal.arsenal_models import (
-    Asset, Channel, Play, Stage, STAGE_TO_PURPOSE
-)
-from backend.utils.graph_base.graph_data.asset_utils.save_and_load_arsenal import (
-    load_assets_from_arsenal_json, load_channels_from_arsenal_json
-)
+from backend.utils.graph_base.graph_data.asset_utils.save_and_load_arsenal import load_assets_from_arsenal_json, load_channels_from_arsenal_json
 
-# ----------- basic helpers -----------
-def _safe_lower(x) -> str:
-    try:
-        return str(x or "").strip().lower()
-    except Exception:
-        return ""
+# -----------------------------
+# Data models (lightweight)
+# -----------------------------
 
-def _safe_list(xs):
-    return xs if isinstance(xs, (list, tuple)) else []
+@dataclass
+class Asset:
+    id: str
+    name: str
+    format: str = ""
+    evergreen: bool = False
+    tags: List[str] = None
+    stages: List[str] = None          # ["problem","pain","execution","resolution"]
+    personas: List[str] = None        # strings to match title hints (optional)
+    departments: List[str] = None
+    seniorities: List[str] = None
+    industries: List[str] = None
+    geographies: List[str] = None
+    revenue_ranges: List[str] = None  # e.g., ["$10M-$50M"]
+    employee_ranges: List[str] = None # e.g., ["51-200"]
+    funding_stages: List[str] = None  # e.g., ["Series B", "Series C+"]
+    text: str = ""                    # description/body for text match
+
+@dataclass
+class Channel:
+    id: str
+    name: str
+    type: str = ""
+    reach_score: float = 0.5           # 0..1
+    personas: List[str] = None         # optional targeting
+    industries: List[str] = None
+    geographies: List[str] = None
+
+# -----------------------------
+# Safe JSON loaders
+# -----------------------------
+
+# --------------------------------------------
+# Broad Awareness Play Suggestions (Repository)
+# --------------------------------------------
+from typing import List, Dict, Any, Optional, Tuple
+import math
+import re
+
+# If you already have these utilities, reuse them:
+# - load_assets_from_arsenal_json(product_id)
+# - load_channels_from_arsenal_json(product_id)
+# - _stage_norm, _persona_fit, _firmographic_fit, etc.
+# Below we only add breadth-focused scorers.
+
+_BROAD_CHANNEL_TYPES = {
+    "linkedin_ads",
+    "display",
+    "search_ads",
+    "pr",
+    "event",
+    "youtube",
+    "x_twitter",
+}
+
+
+def _text_tokens(s: str) -> List[str]:
+    s = (s or "").lower()
+    return re.findall(r"[a-z0-9]+", s)
+
+
+def _safe_list(v, default=None):
+    if default is None:
+        default = []
+    if isinstance(v, list):
+        return v
+    if v is None:
+        return default
+    return [v]
+
+
+def _coerce_asset(d: Dict[str, Any]) -> Asset:
+    """
+    Accept either an Asset instance or a dict-like payload and return a fully-populated
+    Asset with safe defaults. Normalizes:
+      - stages -> normalized stage tokens
+      - personas -> list[str] (converts persona dicts to title strings)
+      - tags/industries/geographies -> lists
+      - text -> description/text fallback
+    """
+    
+    def _persona_to_str(p):
+        if isinstance(p, dict):
+            # prefer title, fall back to role/name; include dept for disambiguation
+            title = p.get("title") or p.get("role") or p.get("name") or ""
+            dept = p.get("department") or p.get("dept") or ""
+            sr = p.get("seniority") or p.get("seniority_level") or ""
+            if title and dept:
+                return f"{title} ({dept})"
+            if title:
+                return title
+            if dept:
+                return dept
+            if sr:
+                return sr
+            return ""
+        return str(p)
+
+    # If already an Asset instance, read attributes safely
+    if isinstance(d, Asset):
+        src = d
+        raw_stages = getattr(src, "stages", None) or []
+        raw_personas = getattr(src, "personas", None) or []
+        tags = getattr(src, "tags", None) or []
+        industries = getattr(src, "industries", None) or []
+        geographies = getattr(src, "geographies", None) or []
+        revenue_ranges = getattr(src, "revenue_ranges", None) or []
+        employee_ranges = getattr(src, "employee_ranges", None) or []
+        funding_stages = getattr(src, "funding_stages", None) or []
+        text = getattr(src, "text", "") or ""
+        return Asset(
+            id=str(getattr(src, "id", "") or "asset"),
+            name=str(getattr(src, "name", "") or "Asset"),
+            format=str(getattr(src, "format", "") or ""),
+            evergreen=bool(getattr(src, "evergreen", False)),
+            tags=_safe_list(tags),
+            stages=[_stage_norm(s) for s in _safe_list(raw_stages)],
+            personas=[p for p in (_persona_to_str(p) for p in _safe_list(raw_personas)) if p],
+            departments=_safe_list(getattr(src, "departments", None)),
+            seniorities=_safe_list(getattr(src, "seniorities", None)),
+            industries=_safe_list(industries),
+            geographies=_safe_list(geographies),
+            revenue_ranges=_safe_list(revenue_ranges),
+            employee_ranges=_safe_list(employee_ranges),
+            funding_stages=_safe_list(funding_stages),
+            text=str(text),
+        )
+
+    # Otherwise assume dict-like input (tolerate None)
+    data = d or {}
+    raw_personas = data.get("personas") or data.get("persona_tags") or []
+    # support legacy persona list-of-dicts
+    persona_list = []
+    for p in _safe_list(raw_personas):
+        s = _persona_to_str(p)
+        if s:
+            persona_list.append(s)
+
+    # tags may be 'industry_tags' or 'tags'
+    tags = data.get("tags") or data.get("industry_tags") or data.get("purpose") or []
+    stages_raw = data.get("stages") or data.get("stage_tags") or []
+    return Asset(
+        id=str(data.get("id") or data.get("asset_id") or data.get("name") or "asset"),
+        name=str(data.get("name") or data.get("title") or "Asset"),
+        format=str(data.get("format") or ""),
+        evergreen=bool(data.get("evergreen", False)),
+        tags=_safe_list(tags),
+        stages=[_stage_norm(s) for s in _safe_list(stages_raw)],
+        personas=persona_list,
+        departments=_safe_list(data.get("departments") or data.get("department_tags")),
+        seniorities=_safe_list(data.get("seniorities") or data.get("seniority_tags")),
+        industries=_safe_list(data.get("industries") or data.get("industry_tags")),
+        geographies=_safe_list(data.get("geographies") or data.get("geo") or data.get("regions")),
+        revenue_ranges=_safe_list(data.get("revenue_ranges") or data.get("revenue_range")),
+        employee_ranges=_safe_list(data.get("employee_ranges") or data.get("employee_range")),
+        funding_stages=_safe_list(data.get("funding_stages") or data.get("funding_stage")),
+        text=str(data.get("text") or data.get("description") or data.get("notes") or ""),
+    )
+
+def _coerce_channel(d: Dict[str, Any]) -> Channel:
+    return Channel(
+        id=str(d.get("id") or d.get("channel_id") or d.get("name") or "channel"),
+        name=str(d.get("name") or "Channel"),
+        type=str(d.get("type") or ""),
+        reach_score=float(d.get("reach_score", 0.5)),
+        personas=_safe_list(d.get("personas")),
+        industries=_safe_list(d.get("industries")),
+        geographies=_safe_list(d.get("geographies")),
+    )
+
+
+# -----------------------------
+# Normalization helpers
+# -----------------------------
+
+_STAGE_ALIASES = {
+    "problem": "problem",
+    "problems": "problem",
+    "pain": "pain",
+    "pains": "pain",
+    "execution": "execution",
+    "job": "execution",
+    "jobs": "execution",
+    "solution": "resolution",
+    "solutions": "resolution",
+    "resolve": "resolution",
+    "resolution": "resolution",
+    "capability": "resolution",
+    "capabilities": "resolution",
+}
+
+FUNDING_ORDER = {
+    "bootstrap": 0, "pre-seed": 1, "seed": 2,
+    "series a": 3, "series b": 4, "series c": 5, "series c+": 5,
+    "series d": 6, "series e": 7,
+    "private": 8, "public": 9,
+}
 
 def _stage_norm(s: Optional[str]) -> str:
-    s = _safe_lower(s)
-    if s in ("problem", "problems", "problem_awareness"):
-        return "problem"
-    if s in ("pain", "pains", "pain_awareness"):
-        return "pain"
-    if s in ("solution", "solutions", "resolution", "resolve", "consideration"):
-        return "solution"
-    return "problem"
+    if not s:
+        return "execution"
+    key = str(s).strip().lower()
+    return _STAGE_ALIASES.get(key, key)
 
-def _same_stage_family(query_stage: str, asset_stages: List[str]) -> bool:
-    return _stage_norm(query_stage) in [_stage_norm(s) for s in (asset_stages or [])]
+def _norm(s: Optional[str]) -> str:
+    if not s:
+        return ""
+    return re.sub(r"\s+", " ", str(s).strip().lower())
 
-def _index_in(order: List[str], val: str) -> int:
-    val = _safe_lower(val)
-    try:
-        return order.index(val)
-    except ValueError:
-        return -1
+def _tokenize(s: str) -> List[str]:
+    return re.findall(r"[a-z0-9]+", _norm(s))
 
-# ----------- persona matching -----------
-def _seniority_rank(seniority: str) -> int:
-    ranks = {"junior":0, "operator":1, "manager":2, "senior":3, "executive":4}
-    return ranks.get(_safe_lower(seniority), 2)
+def _jaccard(a: List[str], b: List[str]) -> float:
+    sa, sb = set(a), set(b)
+    if not sa and not sb:
+        return 0.0
+    return len(sa & sb) / max(1, len(sa | sb))
 
-def _persona_match(persona_alias, candidate_persona):
-    # 3: exact title+dept+seniority; 2: dept+seniority; 1: dept only; 0: none
-    if all(_safe_lower(persona_alias.get(k)) == _safe_lower(candidate_persona.get(k))
-           for k in ("title","department","seniority")):
-        return 3
-    if _safe_lower(persona_alias.get("department")) == _safe_lower(candidate_persona.get("department")) and \
-       _safe_lower(persona_alias.get("seniority"))  == _safe_lower(candidate_persona.get("seniority")):
-        return 2
-    if _safe_lower(persona_alias.get("department")) == _safe_lower(candidate_persona.get("department")):
-        return 1
-    return 0
-
-# ----------- org-type ladders -----------
-REVENUE_ORDER  = ["<1m","1-10m","10-50m","50-100m","100-250m","250-500m","500m-1b",">1b"]
-EMPLOYEE_ORDER = ["1-10","11-50","51-200","201-500","501-1000","1001-5000","5001-10000",">10000"]
-FUNDING_ORDER  = ["bootstrapped","pre-seed","seed","series a","series b","series c","late","public","acquired"]
-
-def _range_match_score(order: List[str], query_val: str, asset_vals: List[str]) -> float:
-    asset_vals = [_safe_lower(v) for v in _safe_list(asset_vals)]
-    if not asset_vals:
-        return 0.5
-    q_idx = _index_in(order, query_val)
-    if q_idx < 0:
-        return 0.7 if asset_vals else 0.5
-    if _safe_lower(query_val) in asset_vals:
+def _prefix_match(a: str, b: str) -> float:
+    a, b = _norm(a), _norm(b)
+    if not a or not b:
+        return 0.0
+    if a == b:
         return 1.0
+    return 1.0 if a in b or b in a else 0.0
 
-    a_indices = [i for i in (order.index(v) for v in asset_vals if v in order)]
-    if not a_indices:
-        return 0.5
-    higher = [i for i in a_indices if i >= q_idx]
-    lower  = [i for i in a_indices if i <  q_idx]
+def _range_score(value: str, allowed: List[str]) -> float:
+    if not value or not allowed:
+        return 0.0
+    v = _norm(value)
+    allowed_norm = [_norm(x) for x in allowed]
+    return 1.0 if v in allowed_norm else 0.0
 
-    LAMBDA_UP = 0.7
-    LAMBDA_DN = 0.9
-    if higher:
-        d = min(i - q_idx for i in higher)
-        return float(0.9 * math.exp(-LAMBDA_UP * d))
-    d = min(q_idx - i for i in lower)
-    return float(0.7 * math.exp(-LAMBDA_DN * d))
+def _funding_score(value: str, allowed: List[str]) -> float:
+    if not value or not allowed:
+        return 0.0
+    v = FUNDING_ORDER.get(_norm(value), None)
+    if v is None:
+        return 0.0
+    best = 0.0
+    for a in allowed:
+        av = FUNDING_ORDER.get(_norm(a), None)
+        if av is None:
+            continue
+        # distance-based decay (closer rounds get higher score)
+        dist = abs(v - av)
+        best = max(best, 1.0 / (1.0 + dist))
+    return best
 
-def _geo_match_score(query_geo: str, asset_geos: List[str]) -> float:
-    asset_geos = [_safe_lower(g) for g in _safe_list(asset_geos)]
-    q = _safe_lower(query_geo)
-    if not asset_geos:
-        return 0.5
-    if q and q in asset_geos:
-        return 1.0
-    if "global" in asset_geos:
-        return 0.9
-    return 0.7
+def _persona_fit(persona_alias: Dict[str, str], asset: Asset) -> Tuple[float, List[str]]:
+    title = persona_alias.get("title") or ""
+    dept  = persona_alias.get("department") or ""
+    sr    = persona_alias.get("seniority") or ""
 
-# ----------- master fitness -----------
-def _compute_match_score(persona_alias, asset, query_archetype, query_stage):
-    # Persona score
-    persona_scores = []
-    asset_personas = getattr(asset, "personas", []) or []
-    if not asset_personas:
-        persona_scores.append(0.5)  # generic asset
-    else:
-        for cp in asset_personas:
-            if all(_safe_lower(persona_alias.get(k)) == _safe_lower(cp.get(k))
-                   for k in ("title","department","seniority")):
-                persona_scores.append(1.0); continue
-            if (_safe_lower(persona_alias.get("department")) == _safe_lower(cp.get("department")) and
-                _safe_lower(persona_alias.get("seniority"))  == _safe_lower(cp.get("seniority"))):
-                persona_scores.append(0.85); continue
-            if _safe_lower(persona_alias.get("department")) == _safe_lower(cp.get("department")):
-                persona_scores.append(0.6); continue
-            pa = _seniority_rank(persona_alias.get("seniority"))
-            ca = _seniority_rank(cp.get("seniority"))
-            persona_scores.append(max(0.0, 0.4 - 0.05 * abs(pa - ca)))
-    persona_score = max(persona_scores) if persona_scores else 0.0
+    reasons = []
+    score = 0.0
 
-    # Stage score (soft)
-    q_stage = _stage_norm(query_stage)
-    asset_stages = [_stage_norm(s) for s in (getattr(asset, "stages", []) or [])]
-    if q_stage in asset_stages:
-        stage_score = 1.0
-    elif _same_stage_family(q_stage, asset_stages):
-        stage_score = 0.6
-    elif asset_stages:
-        stage_score = 0.35
-    else:
-        stage_score = 0.25
+    # Exact (title+dept+seniority)
+    t_hit = any(_prefix_match(title, p) for p in (asset.personas or []))
+    d_hit = any(_prefix_match(dept,  p) for p in (asset.departments or []))
+    s_hit = any(_prefix_match(sr,    s) for s in (asset.seniorities or []))
 
-    # Org tags (soft)
-    q_arch = query_archetype or {}
-    def tag_score(q, tags):
-        tags = [_safe_lower(t) for t in (tags or [])]
-        if not q:        return 0.0
-        if not tags:     return 0.4
-        if _safe_lower(q) in tags: return 1.0
-        return 0.6
+    if t_hit and d_hit and s_hit:
+        score = 1.0; reasons.append("exact title+dept+seniority")
+    elif (d_hit and s_hit) or (t_hit and d_hit):
+        score = 0.75; reasons.append("dept+seniority (or title+dept) match")
+    elif d_hit:
+        score = 0.5; reasons.append("department match")
+    elif s_hit:
+        score = 0.35; reasons.append("seniority match")
+    elif t_hit:
+        score = 0.35; reasons.append("title match")
 
-    industry_score = tag_score(q_arch.get("industry"),        getattr(asset, "industry_tags", []))
-    geo_score      = tag_score(q_arch.get("geography"),       getattr(asset, "geographies", []))
-    rev_score      = tag_score(q_arch.get("revenue_range"),   getattr(asset, "revenue_ranges", []))
-    emp_score      = tag_score(q_arch.get("employee_range"),  getattr(asset, "employee_ranges", []))
+    return score, reasons
 
-    # Blend
-    fitness = (
-        0.45 * persona_score +
-        0.25 * stage_score   +
-        0.18 * industry_score +
-        0.06 * geo_score + 0.03 * rev_score + 0.03 * emp_score
-    )
-    return max(0.0, min(1.0, float(fitness)))
+def _stage_fit(stage: str, asset: Asset) -> Tuple[float, List[str]]:
+    if not asset.stages:
+        return 0.2, ["no stage tags"]  # neutral
+    stage_n = _stage_norm(stage)
+    if stage_n in asset.stages:
+        return 1.0, [f"stage:{stage_n}"]
+    return 0.0, []
 
-def _stage_weight(stage: Stage) -> float:
-    return {"problem":0.9, "pain":1.0, "solution":1.05}[stage]
+def _concern_match(concern_label: str, asset: Asset) -> Tuple[float, List[str]]:
+    # Safe guards: some assets may lack tags/text/name
+    concern_tokens = _tokenize(concern_label or "")
+    asset_name = getattr(asset, "name", "") or ""
+    asset_tags = getattr(asset, "tags", []) or []
+    asset_text = getattr(asset, "text", "") or ""
 
-def _rank_plays_for(
-    persona_alias: dict, stage: str, *,
-    product_id: str,
-    archetype: dict,
-    top_k: int = 8
-) -> List[Play]:
-    ASSETS: List[Asset] = load_assets_from_arsenal_json(product_id) or []
-    CHANNELS: List[Channel] = load_channels_from_arsenal_json(product_id) or []
+    asset_tokens = _tokenize(" ".join([asset_name] + asset_tags + [asset_text]))
+    sim = _jaccard(concern_tokens, asset_tokens)
+    reasons = []
+    if sim >= 0.4:
+        reasons.append("strong concern-text overlap")
+    elif sim >= 0.2:
+        reasons.append("moderate concern-text overlap")
+    return sim, reasons
 
-    desired_purpose = STAGE_TO_PURPOSE.get(_stage_norm(stage), STAGE_TO_PURPOSE["problem"])
+def _firmographic_fit(archetype: Dict[str, Any], asset: Asset, channel: Channel) -> Tuple[float, List[str]]:
+    ind = _norm(archetype.get("industry", ""))
+    geo = _norm(archetype.get("geography", ""))
+    rev = _norm(archetype.get("revenue_range", ""))
+    emp = _norm(archetype.get("employee_range", ""))
+    fund = _norm(archetype.get("funding_stage", ""))
 
-    def score_assets(pool):
-        out = []
-        for a in pool:
-            fitness = _compute_match_score(persona_alias, a, archetype, stage)
-            if fitness > 0:
-                out.append((a, fitness))
-        out.sort(key=lambda x: x[1], reverse=True)
-        return out
+    reasons = []
+    score = 0.0
 
-    strict_pool = [a for a in ASSETS if _safe_lower(a.purpose) == _safe_lower(desired_purpose)]
-    ranked = score_assets(strict_pool)
-    if not ranked:
-        ranked = score_assets(ASSETS)  # relax purpose
+    # Industry / Geography — accept match on asset OR channel targeting
+    ind_hit = _range_score(ind, asset.industries) or _range_score(ind, channel.industries)
+    geo_hit = _range_score(geo, asset.geographies) or _range_score(geo, channel.geographies)
+    if ind_hit > 0:
+        reasons.append("industry match")
+    if geo_hit > 0:
+        reasons.append("geo match")
 
-    if not ranked:
-        return []
+    # Revenue / Employee ranges (assets only)
+    rev_hit = _range_score(rev, asset.revenue_ranges)
+    emp_hit = _range_score(emp, asset.employee_ranges)
+    if rev_hit > 0:
+        reasons.append("revenue band match")
+    if emp_hit > 0:
+        reasons.append("employee band match")
 
-    plays: List[Play] = []
-    for a, fitness in ranked[:top_k]:
-        best_channel = None
-        best_channel_score = 0.0
-        for c in CHANNELS:
-            pf_score = 0.0
-            for pf in (c.persona_fit or []):
-                if _persona_match(persona_alias, pf.get("persona", {})) > 0:
-                    pf_score = pf.get("score", 0.0)
-                    break
-            s_fit = (c.stage_fit or {}).get(_stage_norm(stage), 0.0)
-            channel_score = 0.6 * pf_score + 0.4 * s_fit
-            if channel_score > best_channel_score:
-                best_channel_score = channel_score
-                best_channel = c
-        if best_channel:
-            plays.append(Play(
-                asset_id=a.id,
-                channel_id=best_channel.id,
-                score=round(fitness * (best_channel_score or 0.5), 3),
-                rationale=f"fitness={round(fitness*100,1)}%; asset={a.name}; channel={best_channel.name}"
-            ))
+    # Funding — distance-based
+    fund_hit = _funding_score(fund, asset.funding_stages)
+    if fund_hit > 0:
+        reasons.append("funding stage proximity")
 
-    if not plays and CHANNELS:
-        a, fitness = ranked[0]
-        c = CHANNELS[0]
-        plays.append(Play(
-            asset_id=a.id,
-            channel_id=c.id,
-            score=round(fitness * 0.5, 3),
-            rationale=f"fitness={round(fitness*100,1)}%; asset={a.name}; channel={c.name} (fallback)"
-        ))
+    # Weighted blend
+    score = 0.35 * ind_hit + 0.25 * geo_hit + 0.2 * rev_hit + 0.2 * emp_hit
+    score = max(score, 0.2 * fund_hit)  # allow funding to lift weak fits
 
-    plays.sort(key=lambda p: p.score, reverse=True)
-    return plays[:top_k]
+    return score, reasons
 
-# ---------- PUBLIC API ----------
-def get_best_plays_for_concern(
+def _engagement_score(channel: Channel, persona_strength: float) -> float:
+    # Simple proxy: channel reach × (0.6 + 0.4*persona_strength)
+    # persona_strength is 0..1 from persona matching tier
+    return max(0.0, min(1.0, channel.reach_score * (0.6 + 0.4 * persona_strength)))
+
+def _compose_why(parts: List[str]) -> str:
+    parts = [p for p in parts if p]
+    if not parts:
+        return "Best overall fit by concern, stage, persona, and firmographics."
+    # de-duplicate while preserving order
+    seen, uniq = set(), []
+    for p in parts:
+        if p not in seen:
+            seen.add(p); uniq.append(p)
+    return "; ".join(uniq)
+
+# -----------------------------
+# Ranking
+# -----------------------------
+
+def _score_play(
     *,
-    persona_alias: Dict,           # {"title","department","seniority"}
-    concern_stage: str,           # "problem" | "pain" | "solution"
-    product_id: str,
-    archetype: Dict,              # {"industry","revenue_range","employee_range","geography","funding_stage"}
-    top_k: int = 3
-) -> List[Dict]:
-    """
-    Returns ranked plays (asset+channel+fitness+rationale) for a single concern.
-    Always tries to return something if any assets exist.
-    """
+    asset: Asset,
+    channel: Channel,
+    persona_alias: Dict[str, str],
+    concern_label: str,
+    concern_stage: str,
+    archetype: Dict[str, Any],
+) -> Tuple[float, float, str]:
     stage = _stage_norm(concern_stage)
-    assets = load_assets_from_arsenal_json(product_id) or []
-    channels = load_channels_from_arsenal_json(product_id) or []
-    plays = _rank_plays_for(persona_alias, stage, product_id=product_id, archetype=archetype, top_k=top_k)
-    if not plays:
-        return []
 
-    a_map = {a.id: a for a in assets}
-    c_map = {c.id: c for c in channels}
+    # Individual components
+    concern_s, c_reasons      = _concern_match(concern_label, asset)
+    stage_s, s_reasons        = _stage_fit(stage, asset)
+    persona_s, p_reasons      = _persona_fit(persona_alias, asset)
+    firmo_s, f_reasons        = _firmographic_fit(archetype or {}, asset, channel)
+    engage_s                  = _engagement_score(channel, persona_s)
 
-    out: List[Dict] = []
-    for p in plays:
-        a = a_map.get(p.asset_id)
-        c = c_map.get(p.channel_id)
-        if not a or not c:
+    # Weighted total fitness (tune weights as you like)
+    # Emphasize concern match + stage + persona; firmographics and channel modulate.
+    fitness = (
+        0.35 * concern_s +
+        0.20 * stage_s +
+        0.25 * persona_s +
+        0.15 * firmo_s +
+        0.05 * engage_s
+    )
+
+    why = _compose_why(
+        c_reasons + s_reasons + p_reasons + f_reasons +
+        ([f"channel reach:{channel.reach_score:.2f}"] if channel.reach_score else [])
+    )
+    return float(fitness), float(engage_s), why
+
+
+# --- CHANGE: add exclude_pairs param ---
+def _rank_plays_for_concern(
+    persona_alias: Dict[str, str],
+    concern_label: str,
+    concern_stage: str,
+    *,
+    product_id: str,
+    archetype: Dict[str, Any],
+    top_k: int = 3,
+    exclude_pairs: Optional[set[tuple[str, str]]] = None,   # <-- NEW
+) -> List[Dict]:
+    print("running rank plays for concern")
+    exclude_pairs = exclude_pairs or set()
+    
+
+    assets_raw = load_assets_from_arsenal_json(product_id) or []
+    channels_raw = load_channels_from_arsenal_json(product_id) or []
+
+    assets = []
+    for a in assets_raw:
+        assets.append(_coerce_asset(a))
+    channels = []
+    for c in channels_raw:
+        channels.append(_coerce_channel(c))
+
+    
+
+    scored: list[tuple[float, float, Asset, Channel, str]] = []
+
+    # score all asset×channel
+    for a in assets:
+        for c in channels:
+            # --- NEW: skip combos already used this quarter ---
+            if (getattr(a, "id", None), getattr(c, "id", None)) in exclude_pairs:
+                continue
+
+            fitness, engagement, why = _score_play(
+                asset=a, channel=c,
+                persona_alias=persona_alias,
+                concern_label=concern_label,
+                concern_stage=concern_stage,
+                archetype=archetype or {},
+            )
+            scored.append((fitness, engagement, a, c, why))
+    print(f"scored {len(scored)} asset×channel plays")
+
+    # --- RELAXED FALLBACK to avoid empty (prevents “Play: Resolve … email”) ---
+    if not scored:
+        relaxed = [(a, c) for a in assets for c in channels
+                   if (getattr(a, "id", None), getattr(c, "id", None)) not in exclude_pairs]
+        if not relaxed:
+            relaxed = [(a, c) for a in assets for c in channels]
+        tmp = []
+        for a, c in relaxed:
+            simple = float(getattr(a, "engagement_rate", 0.05)) + float(getattr(c, "reach_score", 0.4))
+            tmp.append((simple, 0.0, a, c, "relaxed-stage fallback"))
+        tmp.sort(key=lambda t: t[0], reverse=True)
+        scored = tmp
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    out: list[Dict] = []
+    picked = 0
+    for fit, eng, a, c, why in scored:
+        aid, cid = getattr(a, "id", None), getattr(c, "id", None)
+        if (aid, cid) in exclude_pairs:
             continue
         out.append({
             "asset":   {"id": a.id, "name": a.name, "format": a.format, "evergreen": getattr(a, "evergreen", False)},
             "channel": {"id": c.id, "name": c.name, "type": c.type, "reach_score": getattr(c, "reach_score", 0.0)},
-            "fitness": float(p.score),
-            "why":     p.rationale,
+            "fitness": float(fit),
+            "persona": persona_alias,
+            "engagement_score": float(eng),
+            "why":     why,
         })
+        # --- NEW: remember selection for this quarter ---
+        exclude_pairs.add((aid, cid))
+        picked += 1
+        if picked >= max(1, top_k):
+            break
+
     return out
+
+
+
+def _asset_breadth_score(asset) -> Tuple[float, List[str]]:
+    """
+    Heuristic: reward assets that can reach many roles and generic stages.
+    - More supported stages → broader
+    - More personas across depts/seniority → broader
+    - Formats that naturally travel well (press_release, event, blog, video, research_report)
+    - Evergreen gets a small bump
+    """
+    reasons = []
+    score = 0.0
+
+    # Stage spread
+    stages = set(_safe_list(getattr(asset, "stages", []) or []))
+    if stages:
+        stage_spread = min(len(stages) / 3.0, 1.0)  # cap
+        score += 0.30 * stage_spread
+        reasons.append(f"stageSpread:{stage_spread:.2f}")
+
+    # Persona diversity (departments and seniority spread)
+    personas = _safe_list(getattr(asset, "personas", []) or [])
+    depts = { (p.get("department") or "").lower() for p in personas if isinstance(p, dict) }
+    sens  = { (p.get("seniority") or "").lower()  for p in personas if isinstance(p, dict) }
+    if depts:
+        dept_div = min(len(depts)/3.0, 1.0)
+        score += 0.25 * dept_div
+        reasons.append(f"deptDiversity:{dept_div:.2f}")
+    if sens:
+        sen_div = min(len(sens)/3.0, 1.0)
+        score += 0.15 * sen_div
+        reasons.append(f"seniorityDiversity:{sen_div:.2f}")
+
+    # Format reachability
+    fmt = (getattr(asset, "format", "") or "").lower()
+    fmt_bonus_map = {
+        "press_release": 0.15,
+        "event": 0.15,
+        "blog": 0.10,
+        "video": 0.12,
+        "research_report": 0.10,
+        "webinar": 0.08,
+    }
+    fmt_bonus = fmt_bonus_map.get(fmt, 0.05)
+    score += fmt_bonus
+    reasons.append(f"formatBonus:{fmt}:{fmt_bonus:.2f}")
+
+    # Evergreen bump
+    if getattr(asset, "evergreen", False):
+        score += 0.05
+        reasons.append("evergreen:+0.05")
+
+    # Light penalty if asset is highly niche by industry_tags
+    tags = _safe_list(getattr(asset, "industry_tags", []) or [])
+    if tags and len(tags) == 1:
+        score -= 0.05
+        reasons.append("nicheIndustry:-0.05")
+
+    return max(0.0, min(1.0, score)), reasons
+
+def _channel_breadth_multiplier(channel) -> Tuple[float, List[str]]:
+    """
+    Favor channels with broad reach and no 1:1 consent requirement.
+    """
+    reasons = []
+    ctype = (getattr(channel, "type", "") or "").lower()
+    reach = float(getattr(channel, "reach_score", 0.0) or 0.0)
+
+    base = 0.0
+    if ctype in _BROAD_CHANNEL_TYPES:
+        base = 0.7 + 0.3 * min(1.0, reach)  # 0.7..1.0
+        reasons.append(f"broadType:{ctype}")
+    else:
+        base = 0.4 + 0.4 * min(1.0, reach)  # 0.4..0.8 for narrower channels
+        reasons.append(f"narrowType:{ctype}")
+
+    reasons.append(f"reach:{reach:.2f}")
+    return base, reasons
+
+
+
+
+# -----------------------------
+# Public API (backward-compatible)
+# -----------------------------
+
+# --- CHANGE SIGNATURE: add exclude_pairs and pass to ranker ---
+def get_best_plays_for_concern(
+    *,
+    persona_alias: Dict,
+    concern_label: str,
+    concern_stage: str,
+    product_id: str,
+    archetype: Dict,
+    top_k: int = 3,
+    exclude_pairs: Optional[set[tuple[str, str]]] = None,
+) -> List[Dict]:
+    """
+    Returns a list of best plays (raw asset+channel+fitness dicts).
+    Does NOT build arsenal rows or attach concern info.
+    """
+    plays = _rank_plays_for_concern(
+        persona_alias=persona_alias,
+        concern_label=concern_label,
+        concern_stage=concern_stage,
+        product_id=product_id,
+        archetype=archetype,
+        top_k=top_k,
+        exclude_pairs=exclude_pairs,
+    )
+    if not plays:
+        return []
+    if exclude_pairs is not None:
+        for p in plays:
+            aid = (p.get("asset") or {}).get("id")
+            cid2 = (p.get("channel") or {}).get("id")
+            if aid and cid2:
+                exclude_pairs.add((aid, cid2))
+    return plays
+
+
+def suggest_broad_awareness_plays(
+    *,
+    product_id: str,
+    top_k: int = 6,
+    channels_whitelist: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Repository function: return top-K broad awareness asset×channel recommendations.
+    - Loads/normalizes assets & channels
+    - Scores by breadth (asset) × breadthMultiplier (channel)
+    - Adds 'why' and 'breadthScore' for transparency
+    """
+    print("suggest_broad_awareness_plays called for product:", product_id or "unknown")
+    assets_raw = load_assets_from_arsenal_json(product_id) or []
+    channels_raw = load_channels_from_arsenal_json(product_id) or []
+
+    assets = []
+    for a in assets_raw:
+        assets.append(_coerce_asset(a))
+    channels = []
+    for c in channels_raw:
+        channels.append(_coerce_channel(c))
+
+    print("Loaded raw assets:", len(assets), " and channels:", len(channels))
+    # Optional channel filter by id or type
+    if channels_whitelist:
+        wl = {c.lower() for c in channels_whitelist}
+        channels = [
+            c for c in channels
+            if (getattr(c, "id", "").lower() in wl) or (getattr(c, "type", "").lower() in wl)
+        ]
+
+    scored: List[Tuple[float, float, Any, Any, str]] = []
+    for a in assets:
+        a_breadth, a_reasons = _asset_breadth_score(a)
+        print("  Breadth score:", a_breadth, "reasons:", a_reasons)
+        for c in channels:
+            c_mult, c_reasons = _channel_breadth_multiplier(c)
+            fitness = a_breadth * c_mult  # simple composite
+            why = "; ".join(a_reasons + c_reasons)
+            scored.append((fitness, a_breadth, a, c, why))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    out: List[Dict[str, Any]] = []
+    for fit, a_breadth, a, c, why in scored[:max(1, top_k)]:
+        out.append({
+            "asset":   {"id": a.id, "name": a.name, "format": a.format, "evergreen": getattr(a, "evergreen", False)},
+            "channel": {"id": c.id, "name": c.name, "type": c.type, "reach_score": getattr(c, "reach_score", 0.0)},
+            "fitness": float(fit),
+            "breadthScore": float(a_breadth),
+            "why": why,
+        })
+    print("Outputting suggest_broad_awareness_plays with", len(out), "plays")
+    return out
+
+def _derive_broad_pairs(assets, channels, top_n=2):
+    return []

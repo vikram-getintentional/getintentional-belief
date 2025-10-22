@@ -1,277 +1,410 @@
-// ============================
-// Component: RCSCampaignSequences.tsx
-// ============================
 import React from "react";
 import {
-  Box, Card, CardContent, Chip, Divider, Grid, Stack, Typography,
-  Tooltip, LinearProgress
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Tooltip,
+  LinearProgress,
 } from "@mui/material";
 
-/** ===== Types coming from new normalize layer ===== */
-type StepItem = {
-  step: number;
-  persona: string;
-  concern_id: string;
-  stage?: string;
-  concern_label?: string;
-  delta_lift?: number;
-  win_likelihood?: number;
+/** ===== Types kept minimal for resilience to backend drift ===== */
+type LabelMap = {
+  personaLabelById: Record<string, string>;
+  concernLabelById: Record<string, string>;
 };
-
-type Seq = {
-  sequence_id?: string;
-  theme?: string; // optional theme label (if backend sets it)
-  sequence: { persona: string; concern_id: string; stage?: string; concern_label?: string }[];
-  steps: StepItem[];
-  base_win?: number;
-  final_win?: number;
-  total_lift?: number;
-};
-
-type Asset = {
-  asset_id?: string;
-  asset_name?: string;
-  channel?: { id?: string; name?: string } | null;
-  fitness?: number;
-  why?: string;
-  note?: string; // when no plays exist
-};
-
-type AssetsByPersona = Record<string, Record<string, Asset[]>>;
 
 type StrategyShape = {
-  winLikelihood?: number;
-  stage?: "cold" | "warm" | "hot" | "unknown";
-  portfolio?: Record<string, number>;
-  topTheme?: Seq | null;
-  personas?: Array<{ id?: string; label?: string; involvement?: number; activation?: number }>;
-  coalitions?: any[];
-  concernCoalitions?: any[];
-  concernSequences?: Seq[];
-  nextSequences?: Seq[];
-  nextConcerns?: Array<any>;
+  frozen_strategy?: {
+    phases?: Array<{
+      phaseIndex?: number;
+      stageLabel?: string;
+      stage?: string;
+      timeframe?: { startDate?: string; endDate?: string; start?: string; end?: string };
+      personas?: string[];
+      campaigns?: Array<{
+        id?: string;
+        campaign_id?: string;
+        description?: string;
+        title?: string;
+        arsenalTable?: any[];
+        arsenal_table?: any[];
+      }>;
+    }>;
+    personas?: any[];
+    concerns_flat?: any[];
+  };
+  personas?: any[];
+  concerns_flat?: any[];
 };
 
-/** ===== Small helpers / UI bits ===== */
-function StageChip({ stage }: { stage?: string }) {
-  const s = (stage || "").toLowerCase();
-  const color =
-    s === "solution" ? "success" : s === "pain" ? "warning" : "default";
-  return <Chip size="small" label={stage || "—"} color={color as any} />;
-}
-
-function FitnessBar({ fitness }: { fitness?: number }) {
-  const v = Math.max(0, Math.min(1, fitness ?? 0));
+function FitnessBar({ value }: { value?: number }) {
+  const v = Math.max(0, Math.min(1, value ?? 0));
+  const pct = Math.round(v * 100);
   return (
-    <Box sx={{ minWidth: 120 }}>
-      <Tooltip title={`Fitness ${(v * 100).toFixed(0)}%`}>
-        <LinearProgress variant="determinate" value={v * 100} />
-      </Tooltip>
-    </Box>
+    <Typography variant="caption" color="text.secondary" sx={{ minWidth: 48 }}>
+      {pct}%
+    </Typography>
   );
 }
 
-function bestAsset(assets?: Asset[]): Asset | null {
-  if (!assets || assets.length === 0) return null;
-  const withFitness = [...assets].sort((a, b) => (b.fitness ?? 0) - (a.fitness ?? 0));
-  return withFitness[0];
-}
-
-/** ===== New: Campaign Meta block ===== */
-function CampaignMeta({
-  seq,
+/** ===== Arsenal table (Asset, Channel, Concerns, Engagement, Fitness) ===== */
+function ArsenalTable({
+  rows,
   labelMap,
-  strategy,
 }: {
-  seq: Seq;
-  labelMap: { personaLabelById: Record<string, string>; concernLabelById: Record<string, string> };
-  strategy?: StrategyShape;
+  rows: any[];
+  labelMap: LabelMap;
 }) {
-  // Who to hit? — unique personas in this sequence
-  const targetPersonaIds = Array.from(new Set(seq.sequence.map(s => s.persona)));
-  const targetLabels = targetPersonaIds.map(pid => labelMap.personaLabelById[pid] || pid);
+  const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
 
-  // Theme/narrative
-  const theme =
-    seq.theme ||
-    (strategy?.topTheme?.sequence_id === seq.sequence_id ? "Top Theme" : undefined);
-
-  // One-liner messaging preview — first step’s concern phrase
-  const first = seq.steps?.[0];
-  const firstPersona = first?.persona ? (labelMap.personaLabelById[first.persona] || first.persona) : "";
-  const firstConcern =
-    first?.concern_label ||
-    (first?.concern_id ? (labelMap.concernLabelById[first.concern_id] || first.concern_id) : "");
-
-  return (
-    <Card variant="outlined" sx={{ mb: 2, bgcolor: "background.default" }}>
-      <CardContent>
-        <Stack spacing={1.2}>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Typography variant="subtitle2" color="text.secondary">Campaign Theme</Typography>
-            <Chip size="small" color="primary" label={theme || "Untitled Theme"} />
-          </Stack>
-
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Typography variant="subtitle2" color="text.secondary">Who to hit</Typography>
-            {targetLabels.map(lbl => (
-              <Chip key={lbl} size="small" variant="outlined" label={lbl} />
-            ))}
-          </Stack>
-
-          {firstConcern && (
-            <Typography variant="body2" color="text.secondary">
-              <strong>Messaging focus:</strong>{" "}
-              {firstPersona
-                ? `Show ${firstPersona} how "${firstConcern}" is the leverage point to unlock progress.`
-                : `Show why "${firstConcern}" is the leverage point to unlock progress.`}
-            </Typography>
-          )}
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-}
-
-/** ===== Main component ===== */
-export default function RCSCampaignSequences({
-  sequences,
-  labelMap,
-  assetsByPersona,
-  strategy,
-}: {
-  sequences: Seq[];
-  labelMap: {
-    personaLabelById: Record<string, string>;
-    concernLabelById: Record<string, string>;
+  const toggleExpand = (idx: number) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
   };
-  assetsByPersona: AssetsByPersona;
-  strategy?: StrategyShape;
-}) {
-  // Prefer “nextSequences” (via normalize) if present; fallback to sequences prop
-  const seqs: Seq[] = (strategy?.nextSequences?.length ? strategy.nextSequences : sequences) || [];
 
-  if (!seqs.length) {
-    return <Typography color="text.secondary">No sequences available.</Typography>;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return (
+      <Typography variant="caption" color="text.secondary">
+        No arsenal rows for this campaign.
+      </Typography>
+    );
+  }
+
+  return (
+    <Table size="small">
+      <TableHead>
+        <TableRow>
+          <TableCell>Asset</TableCell>
+          <TableCell>Channel (reach)</TableCell>
+          <TableCell>Targeted</TableCell>
+          <TableCell>Concerns Addressed</TableCell>
+          <TableCell>Engagement</TableCell>
+          <TableCell>Fitness</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {rows.map((row: any, i: number) => {
+          // canonicalize asset / channel objects
+          const asset = row.asset || row.play || row || {};
+          const assetName =
+            asset.asset_name || asset.name || asset.title || asset.id || "—";
+          const assetFormat = asset.format || asset.type || asset.format_label || "";
+
+          const channel = row.channel || row.play_channel || asset.channel || {};
+          const channelName =
+            channel.name || channel.channel_name || channel.id || "—";
+          const channelReach =
+            channel.reach ??
+            channel.reach_score ??
+            channel.reachScore ??
+            channel.reach_score_value ??
+            null;
+
+          // support multiple shapes for concerns
+          const concerns =
+            row.concernsAddressed ??
+            row.concerns_addressed ??
+            row.concerns ??
+            asset.concerns ??
+            [];
+
+          // engagement may be numeric or descriptive label
+          const engagementRaw =
+            row.engagement ??
+            row.engagement_rate ??
+            row.engagementLevel ??
+            row.engagement_level ??
+            row.eng ??
+            null;
+          const engagement =
+            typeof engagementRaw === "number" ? engagementRaw : engagementRaw;
+
+          // fitness / messaging: numeric fitness if present, otherwise try to infer from fit/fitment fields
+          let fitnessNum: number | undefined =
+            row.fitness ?? row.fit ?? asset.fitness ?? undefined;
+          if (fitnessNum == null) {
+            // try fitmentScore / expectedLift heuristics (strings like "+10%")
+            const maybe = row.fitmentScore ?? row.fitment_score ?? row.expectedLift ?? row.expected_lift;
+            if (typeof maybe === "string" && maybe.includes("%")) {
+              const n = parseFloat(maybe.replace(/[^\d.-]/g, ""));
+              if (!Number.isNaN(n)) {
+                // map percent lift to 0..1 roughly
+                fitnessNum = Math.min(1, Math.max(0, n / 100));
+              }
+            }
+          }
+          if (typeof fitnessNum === "string") {
+            const parsed = parseFloat(String(fitnessNum));
+            fitnessNum = Number.isFinite(parsed) ? parsed : undefined;
+          }
+
+          // fit label (human friendly) if available
+          const fitLabel =
+            row.fitment ?? row.fitmentLabel ?? row.fitment_label ?? row.fit ?? asset.fitment ?? asset.fit_label ?? "";
+
+          const why = row.why ?? row.note ?? asset.why ?? "";
+
+          // concerns display logic: show top 3, expand to show all
+          const MAX_VISIBLE = 1;
+          const isExpanded = expandedRows.has(i);
+          const visibleConcerns = Array.isArray(concerns)
+            ? (isExpanded ? concerns : concerns.slice(0, MAX_VISIBLE))
+            : [];
+
+          return (
+            <TableRow hover key={`arsenal-row-${i}`}>
+              <TableCell>
+                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                  <Tooltip title={why || "No explanation provided"} arrow placement="top">
+                    <span style={{ display: "inline-flex", alignItems: "center", cursor: why ? "pointer" : "default" }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {assetName}
+                      </Typography>
+                    </span>
+                  </Tooltip>
+                  {assetFormat ? <Chip size="small" variant="outlined" label={assetFormat} /> : null}
+                </Stack>
+              </TableCell>
+
+              <TableCell>
+                <Typography variant="body2">{channelName}</Typography>
+                {channelReach != null && (
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    reach: {channelReach}
+                  </Typography>
+                )}
+              </TableCell>
+
+              <TableCell>
+                {typeof fitnessNum === "number" && fitnessNum >= 0.6 ? (
+                  <Chip size="small" color="success" label="Targeted" />
+                ) : (
+                  <Chip size="small" label="—" />
+                )}
+              </TableCell>
+
+              <TableCell>
+                {Array.isArray(concerns) && concerns.length ? (
+                  <Stack direction="row" spacing={0.5} flexWrap="wrap" alignItems="center">
+                    {visibleConcerns.map((c: any, idx: number) => {
+                      const label =
+                        typeof c === "string"
+                          ? labelMap.concernLabelById?.[c] || c
+                          : c.concern_label || c.label || c.concern_id || JSON.stringify(c);
+                      return <Chip key={`concern-${i}-${idx}`} size="small" variant="outlined" label={label} />;
+                    })}
+                    {Array.isArray(concerns) && concerns.length > MAX_VISIBLE ? (
+                      <Chip
+                        key={`concern-more-${i}`}
+                        size="small"
+                        variant="outlined"
+                        clickable
+                        onClick={() => toggleExpand(i)}
+                        label={isExpanded ? "Show less" : `+${concerns.length - MAX_VISIBLE} more`}
+                      />
+                    ) : null}
+                  </Stack>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+
+              <TableCell>
+                {engagement == null ? "—" : (typeof engagement === "number" ? engagement.toFixed(3) : String(engagement))}
+              </TableCell>
+
+              <TableCell>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <FitnessBar value={fitnessNum} />
+                  {fitLabel ? <Typography variant="caption" color="text.secondary">{fitLabel}</Typography> : null}
+                </Stack>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}
+
+/** ===== Main: Phase > Campaigns > Asset Table (from frozen_strategy.phases) ===== */
+export default function RCSCampaignSequences({strategy}: {strategy?: StrategyShape;}) 
+{
+  console.log("RCSCampaignSequences: strategy (raw):", strategy);
+
+  // build label maps from strategy/personas/concerns so component can be self-contained
+  function buildLabelMap(strat: any): LabelMap {
+    const personaLabelById: Record<string, string> = {};
+    const concernLabelById: Record<string, string> = {};
+
+    const personas = strat?.personas ?? strat?.frozen_strategy?.personas ?? [];
+    if (Array.isArray(personas)) {
+      for (const p of personas) {
+        // p may be string id or object { id, label }
+        if (typeof p === "string") {
+          personaLabelById[p] = p;
+          const short = String(p).split(":").slice(-1)[0];
+          personaLabelById[short] = personaLabelById[short] || p;
+        } else if (p && typeof p === "object") {
+          const id = String(p.id ?? p.persona ?? p.label ?? "");
+          const label = p.label ?? p.name ?? id;
+          if (id) personaLabelById[id] = label;
+          const short = String(id).split(":").slice(-1)[0];
+          if (short) personaLabelById[short] = personaLabelById[short] || label;
+        }
+      }
+    }
+
+    const concerns = strat?.concerns_flat ?? strat?.frozen_strategy?.concerns_flat ?? strat?.concerns ?? [];
+    if (Array.isArray(concerns)) {
+      for (const c of concerns) {
+        if (typeof c === "string") {
+          concernLabelById[c] = c;
+        } else if (c && typeof c === "object") {
+          const id = String(c.id ?? c.concern_id ?? c.key ?? c.label ?? "");
+          const label = c.label ?? c.concern_label ?? c.name ?? id;
+          if (id) concernLabelById[id] = label;
+          const short = String(id).split(":").slice(-1)[0];
+          if (short) concernLabelById[short] = concernLabelById[short] || label;
+        }
+      }
+    }
+
+    return { personaLabelById, concernLabelById };
+  }
+
+  function resolvePhases(strat: any): any[] {
+    if (!strat) return [];
+    // common places the backend might put phases
+    const candidates = [
+      strat.frozen_strategy?.phases,
+      strat.phases,
+      strat.frozen_strategy,
+      strat.frozen_strategy?.data?.phases,
+      strat?.data?.frozen_strategy?.phases,
+    ];
+    for (const cand of candidates) {
+      if (Array.isArray(cand) && cand.length) return cand;
+      if (cand && typeof cand === "object" && !Array.isArray(cand)) {
+        // keyed object like { "0": {...}, "1": {...} } -> return values
+        const vals = Object.values(cand).filter(Boolean);
+        if (vals.length) return vals;
+      }
+    }
+    return [];
+  }
+
+  const labelMap = buildLabelMap(strategy ?? {});
+  const phases = resolvePhases(strategy ?? {});
+
+  // eslint-disable-next-line no-console
+  console.log("RCSCampaignSequences: resolved phases length:", phases.length, "sample:", phases[0]);
+
+  if (!phases.length) {
+    // show helpful message instead of silently returning
+    return (
+      <Typography color="text.secondary">
+        No phases found in <code>frozen_strategy.phases</code>. Check console for the received strategy shape.
+      </Typography>
+    );
   }
 
   return (
     <Stack spacing={2}>
-      {seqs.map((seq, idx) => (
-        <Card key={seq.sequence_id || idx} variant="outlined">
-          <CardContent>
-            {/* Header row */}
-            <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-              <Stack spacing={0.5}>
-                <Typography variant="h6">Sequence #{idx + 1}</Typography>
-                {/* Theme + Who to hit + quick messaging */}
-                <CampaignMeta seq={seq} labelMap={labelMap} strategy={strategy} />
-              </Stack>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="body2" color="text.secondary">
-                  Base win: {(seq.base_win ?? 0).toFixed(3)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Final win: {(seq.final_win ?? 0).toFixed(3)}
-                </Typography>
-                <Chip
-                  label={`Total Δlift ${(seq.total_lift ?? 0).toFixed(3)}`}
-                  color="primary"
-                  size="small"
-                />
-              </Stack>
-            </Stack>
+      {phases.map((phase, pi) => {
+        const stageLabel = phase.stageLabel || phase.stage || `Phase ${pi + 1}`;
+        const tf = phase.timeframe || {};
+        const start = tf.startDate || tf.start || "";
+        const end = tf.endDate || tf.end || "";
+        const personas = Array.isArray(phase.personas) ? phase.personas : [];
+        const campaigns = Array.isArray(phase.campaigns) ? phase.campaigns : [];
 
-            <Divider sx={{ my: 2 }} />
+        return (
+          <Card key={phase.phaseIndex ?? pi} variant="outlined" sx={{ overflow: "hidden" }}>
+            <CardContent>
+              <Stack spacing={2}>
+                {/* Phase header */}
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Stack spacing={0.25}>
+                    <Typography variant="h6">{stageLabel}</Typography>
+                    {(start || end) && (
+                      <Typography variant="caption" color="text.secondary">
+                        {start} {start && end ? "—" : ""} {end}
+                      </Typography>
+                    )}
+                  </Stack>
+                  <Chip size="small" label={`Phase ${phase.phaseIndex ?? pi + 1}`} />
+                </Stack>
 
-            {/* Steps */}
-            <Grid container spacing={2}>
-              {seq.steps.map((st) => {
-                const personaLabel =
-                  labelMap.personaLabelById[st.persona] || st.persona;
-                const concernLabel =
-                  st.concern_label ||
-                  labelMap.concernLabelById[st.concern_id] ||
-                  st.concern_id;
+                <Divider />
 
-                const assets =
-                  assetsByPersona?.[st.persona]?.[st.concern_id] ?? [];
-                const top = bestAsset(assets);
+                {/* Personas */}
+                <Stack spacing={1}>
+                  <Typography variant="body2" color="text.secondary">
+                    Personas
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {personas.map((p: string | number, idx: any) => (
+                      <Chip
+                        key={`${String(p)}::${idx}`}
+                        size="small"
+                        variant="outlined"
+                        label={labelMap.personaLabelById?.[p] || String(p)}
+                      />
+                    ))}
+                    {!personas.length && (
+                      <Chip size="small" label="—" variant="outlined" />
+                    )}
+                  </Stack>
+                </Stack>
 
-                const coverage =
-                  assets?.length &&
-                  !("note" in (assets[0] || {})) &&
-                  (assets.some(a => (a.fitness ?? 0) >= 0.25));
-
-                return (
-                  <Grid key={`${st.persona}-${st.concern_id}-${st.step}`} xs={12}>
-                    <Card variant="outlined" sx={{ borderLeft: 4, borderLeftColor: "primary.main" }}>
-                      <CardContent>
-                        <Stack spacing={1}>
-                          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                            <Chip label={`Step ${st.step}`} size="small" />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              {personaLabel}
-                            </Typography>
-                            <StageChip stage={st.stage} />
-                            {coverage ? (
-                              <Chip size="small" color="success" label="COVERED" />
-                            ) : (
-                              <Chip size="small" color="default" label="ASSET GAP" />
-                            )}
-                          </Stack>
-
-                          <Typography variant="body1">
-                            Solve: <strong>{concernLabel}</strong>
-                          </Typography>
-
-                          <Stack direction="row" spacing={3} alignItems="center" flexWrap="wrap">
-                            <Chip
-                              size="small"
-                              color="info"
-                              label={`Δlift ${(st.delta_lift ?? 0).toFixed(3)}`}
-                            />
-                            <Chip
-                              size="small"
-                              label={`Cum win ${(st.win_likelihood ?? 0).toFixed(3)}`}
-                            />
-                          </Stack>
-
-                          {/* Best asset block */}
-                          <Box sx={{ mt: 1 }}>
-                            {top && !top.note ? (
-                              <Stack spacing={0.5}>
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                  Best Asset: {top.asset_name || top.asset_id}
-                                </Typography>
-                                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-                                  <Typography variant="caption" color="text.secondary">
-                                    Channel: {top.channel?.name || "—"}
-                                  </Typography>
-                                  <FitnessBar fitness={top.fitness} />
-                                </Stack>
-                                {top.why && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    Why: {top.why}
-                                  </Typography>
-                                )}
-                              </Stack>
-                            ) : (
-                              <Typography variant="caption" color="text.secondary">
-                                No mapped plays. Create a targeted asset for this step.
+                {/* Campaigns */}
+                <Stack spacing={1}>
+                  {campaigns.map((camp: { arsenalTable: any; arsenal_table: any; description: any; title: any; id: any; campaign_id: any; }, ci: number) => {
+                    const table = Array.isArray(camp.arsenalTable)
+                      ? camp.arsenalTable
+                      : camp.arsenal_table || [];
+                    const title = camp.description || camp.title || `Campaign ${ci + 1}`;
+                    return (
+                      <Card key={camp.id || camp.campaign_id || ci} variant="outlined" sx={{ mb: 1 }}>
+                        <CardContent>
+                          <Stack spacing={1.25}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                {title}
                               </Typography>
-                            )}
-                          </Box>
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </CardContent>
-        </Card>
-      ))}
+                            </Stack>
+
+                            <ArsenalTable rows={table} labelMap={labelMap} />
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                  {!campaigns.length && (
+                    <Typography variant="caption" color="text.secondary">
+                      No campaigns in this phase.
+                    </Typography>
+                  )}
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        );
+      })}
     </Stack>
   );
 }
