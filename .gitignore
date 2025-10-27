@@ -28,3 +28,44 @@ Desktop.ini # Windows
 #Node Modules
 node_modules
 node_modules/
+
+# Large files
+path/to/large.file
+
+# Python envs & caches
+.venv*/
+venv*/
+.env
+__pycache__/
+*.py[cod]
+
+# Local site-packages / models / libs
+**/site-packages/**
+*.dylib
+
+# Generated data/artifacts
+backend/utils/graph_base/graph_data/rcs_json/*.json
+*.pt
+*.onnx
+*.zip
+*.mp4
+
+.venv*/
+venv*/
+__pycache__/
+**/site-packages/**
+*.dylib
+backend/utils/graph_base/graph_data/rcs_json/*.json
+*.pt
+*.onnx
+*.zip
+
+.venv*/
+venv*/
+__pycache__/
+**/site-packages/**
+*.dylib
+backend/utils/graph_base/graph_data/rcs_json/*.json
+*.pt
+*.onnx
+*.zip
