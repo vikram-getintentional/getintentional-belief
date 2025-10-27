@@ -185,32 +185,32 @@ def _capability(
     G.nodes[node_id]["id"] = node_id  # Always set the id attribute to the canonical node ID
     return node_id
 
-def _pain(G, canonical_label: str, pain_source: Optional[str]) -> str:
-    return _upsert_node(G, "pain", [_slug(canonical_label)], {"description": canonical_label, "pain_source": pain_source})
+def _pain(G, canonical_label: str, pain_source: Optional[str], data_source = "llm") -> str:
+    return _upsert_node(G, "pain", [_slug(canonical_label)], {"description": canonical_label, "pain_source": pain_source, "data_source": data_source})
 
-def _job(G, canonical_label: str) -> str:
-    return _upsert_node(G, "job", [_slug(canonical_label)], {"description": canonical_label})
+def _job(G, canonical_label: str, data_source = "llm") -> str:
+    return _upsert_node(G, "job", [_slug(canonical_label)], {"description": canonical_label, "data_source": data_source})
 
-def _persona(G, title: str, department: str, seniority: str) -> str:
+def _persona(G, title: str, department: str, seniority: str, data_source = "llm") -> str:
     return _upsert_node(G, "persona", [_slug(title), _slug(department), (seniority or "").lower()],
-                        {"title": title, "department": department, "seniority": seniority})
+                        {"title": title, "department": department, "seniority": seniority, "data_source": data_source})
 
-def _metric(G, metric: str) -> str:
-    return _upsert_node(G, "perceived_metric", [_slug(metric)], {"metric": metric})
+def _metric(G, metric: str, data_source = "llm") -> str:
+    return _upsert_node(G, "perceived_metric", [_slug(metric)], {"metric": metric, "data_source": data_source})
 
-def _trigger(G, attribute: str) -> str:
-    return _upsert_node(G, "pain_trigger", [_slug(attribute)], {"attribute": attribute})
+def _trigger(G, attribute: str, data_source = "llm") -> str:
+    return _upsert_node(G, "pain_trigger", [_slug(attribute)], {"attribute": attribute, "data_source": data_source})
 
-def _zmot(G, event: str) -> str:
-    return _upsert_node(G, "zmot_event", [_slug(event)], {"event": event})
+def _zmot(G, event: str, data_source = "llm") -> str:
+    return _upsert_node(G, "zmot_event", [_slug(event)], {"event": event, "data_source": data_source})
 
-def _observable(G, text: str) -> str:
-    return _upsert_node(G, "observable_moment", [_slug(text)], {"text": text})
+def _observable(G, text: str, data_source = "llm") -> str:
+    return _upsert_node(G, "observable_moment", [_slug(text)], {"text": text, "data_source": data_source})
 
-def _keyword(G, text: str) -> str:
-    return _upsert_node(G, "keyword", [_slug(text)], {"text": text})
+def _keyword(G, text: str, data_source = "llm") -> str:
+    return _upsert_node(G, "keyword", [_slug(text)], {"text": text, "data_source": data_source})
 
-def _archetype(G, a: Dict[str, Any]) -> str:
+def _archetype(G, a: Dict[str, Any], data_source = "llm") -> str:
     return _upsert_node(G, "archetype",
                         [a.get("industry","").lower(), a.get("revenue_range","").lower(),
                          a.get("employee_range","").lower(), a.get("funding_stage","").lower(),
@@ -219,13 +219,14 @@ def _archetype(G, a: Dict[str, Any]) -> str:
                          "revenue_range": a.get("revenue_range",""),
                          "employee_range": a.get("employee_range",""),
                          "funding_stage": a.get("funding_stage",""),
-                         "geography": a.get("geography","")})
+                         "geography": a.get("geography",""),
+                         "data_source": data_source})
 
-def _attribute_value(G, dimension: str, name: str) -> str:
+def _attribute_value(G, dimension: str, name: str, data_source = "llm") -> str:
     return _upsert_node(
         G, "attribute_value",
         [dimension.lower(), _slug(name)],
-        {"dimension": dimension, "name": name}
+        {"dimension": dimension, "name": name, "data_source": data_source}
     )
 
 

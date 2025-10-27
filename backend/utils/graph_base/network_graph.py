@@ -520,6 +520,10 @@ def _set_node_label(G: nx.DiGraph, node_id: str) -> str:
         label = node.get("description", "") or f'Observable Moment {node_id}'
     elif node_type == "keyword":
         label = node.get("keyword", "") or f'Keyword {node_id}'
+    elif node_type == "attribute_value":
+        dimension = node.get("dimension", "")
+        name = node.get("name", "")
+        label = f"{dimension}: {name}" if dimension and name else f'Attribute Value {node_id}'
     elif node_type == "archetype":
         title = node.get("title", "")
         industry = node.get("industry", "")

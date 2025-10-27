@@ -2,10 +2,8 @@ import json
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, Query, Request, HTTPException
 from fastapi.responses import JSONResponse
-from networkx import Graph
 from pydantic import BaseModel
 
-from backend.auth.auth_routes import get_current_user
 from backend.utils.crm_management.target_account_manager import load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
 from backend.utils.graph_base.graph_utils.graph_confidence import compute_graph_confidence
 from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_product_id_from_subgraph, update_capabilities_by_nodes_list
@@ -14,17 +12,14 @@ from backend.utils.inference.crm_analysis.actual_win_estimator import generate_w
 from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import run_agentic_loop
 
 from backend.auth.jwt_handler import decode_token
-from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from backend.database import get_db
-from backend.utils.inference.rcs_generators.rcs_helpers.strategy_orchestrators import construct_all_account_rcs
 from backend.utils.inference.rcs_generators.rcs_simulator import simulate_rcs
 from backend.utils.knowledge_base.arsenal_generation import get_all_arsenals
-from backend.utils.knowledge_base.graph_edit_manager import build_hops_from_graph
+from backend.utils.knowledge_base.graph_edit_manager import add_or_update_graph, serialize_graph_for_frontend
 from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities
 
 from backend.utils.knowledge_base.persona_generation import (
-    get_company_products,
     get_personas_rcs_priority
 )
 from backend.utils.knowledge_base.zmot_icp_generation import _collect_attribute_chips, get_attribute_options
@@ -405,8 +400,8 @@ async def get_product_capabilities(product_id: str, request: Request):
 #--------------------------
 # GRAPH EDITOR & REVIEW
 #--------------------------
-@router.get("/get-product-graph/{product_id}")
-async def get_graph(product_id: str, request: Request):
+@router.get("/export-product-graph/{product_id}")
+async def export_product_graph(product_id: str, request: Request):
     auth_header = request.headers.get("authorization")
     if not auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
@@ -416,10 +411,48 @@ async def get_graph(product_id: str, request: Request):
     if not company_id:
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
-    product_subgraph = build_product_graph(product_id)
-    hop_outputs = build_hops_from_graph(product_subgraph)
-    print("Hop Outputs: ", hop_outputs)
-    return hop_outputs
+    try:
+        product_subgraph = build_product_graph(product_id)
+        payload = serialize_graph_for_frontend(product_subgraph)
+        return payload
+    except Exception as e:
+        print("❌ export-product-graph error:", e)
+        raise HTTPException(status_code=500, detail="Could not export product graph")
+    
+@router.post("/graph/bulk-upsert/{product_id}")
+async def bulk_upsert_graph(product_id: str, graph_payload: dict, request: Request):
+    """
+    Bulk upsert nodes and edges into the product graph.
+    Expects payload with:
+    - product_id: str
+    - nodes: list of node dicts
+    - edges: list of edge dicts
+    """
+
+    # 🔐 Auth
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    if not product_id:
+        raise HTTPException(status_code=400, detail="Product ID is required.")
+    
+    product_graph = build_product_graph(product_id)
+    nodes = graph_payload.get("nodes", [])
+    edges = graph_payload.get("edges", [])
+    
+    try:
+        add_or_update_graph(product_graph, nodes, edges)
+        print("Graph updated successfully with bulk upsert.")
+        return {"message": "Graph updated successfully."}
+    except Exception as e:
+        print("❌ Error in add_or_update_graph:", e)
+        raise HTTPException(status_code=500, detail="Error updating graph data")
+
 
 
 
