@@ -68,6 +68,59 @@ type EditCtx = {
 };
 
 /* ===== Helpers ===== */
+const titleFor = (node?: RawNode) => {
+  if (!node) return "";
+  const t = (node.type ?? node.raw?.type ?? node.raw?.node_type ?? "").toLowerCase();
+  const r = node.raw ?? {};
+
+  switch (t) {
+    case "capability":
+      return r.name ?? node.title ?? node.label ?? node.id;
+    case "pain":
+      return r.description ?? node.content ?? node.title ?? node.label ?? node.id;
+    case "job":
+      return r.description ?? node.content ?? node.title ?? node.label ?? node.id;
+    case "persona": {
+      const parts = [r.title, r.seniority, r.department].filter(Boolean);
+      return parts.length ? parts.join(" • ") : (node.title ?? node.label ?? node.id);
+    }
+    case "perceived_metric":
+    case "metric":
+      return r.metric ?? node.title ?? node.label ?? node.id;
+    case "pain_trigger":
+      return r.attribute ?? node.title ?? node.label ?? node.id;
+    case "attribute_value": {
+      const dim = r.dimension ? String(r.dimension) : "";
+      const name = r.name ?? node.title ?? node.label ?? node.id;
+      return dim ? `${dim}: ${name}` : name;
+    }
+    case "zmot_event":
+      return r.event ?? node.title ?? node.label ?? node.id;
+    case "observable_moment":
+    case "keyword":
+      return r.text ?? node.title ?? node.label ?? node.id;
+    default:
+      return node.title ?? node.label ?? node.id;
+  }
+};
+
+const bodyFor = (node?: RawNode) => {
+  if (!node) return "";
+  const t = (node.type ?? node.raw?.type ?? node.raw?.node_type ?? "").toLowerCase();
+  const r = node.raw ?? {};
+
+  // Only some types have meaningful body text
+  if (t === "capability") return r.description ?? node.content ?? "";
+  if (t === "pain") return r.description ?? node.content ?? "";
+  if (t === "job") return r.description ?? node.content ?? "";
+
+  // Persona: keep body minimal; title already shows the key parts
+  if (t === "persona") return "";
+
+  // Others (metrics, triggers, etc.) usually have a single primary field already used as title
+  return "";
+};
+
 const randId = (prefix: string) =>
   `${prefix}:${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 6)}`;
 
@@ -156,6 +209,51 @@ export default function PainsMap() {
   const [saveAnchor, setSaveAnchor] = useState<null | HTMLElement>(null);
   const saveMenuOpen = Boolean(saveAnchor);
 
+
+  /* ======== FRONTIER EXPANSION ======== */
+  /* frontier expansion */
+  const [genLoading, setGenLoading] = useState(false);
+  const [genMsg, setGenMsg] = useState<string>("");
+
+  // hoist existing inline loader into a function so we can re-use it after expansion
+  const loadGraph = async (productId: string) => {
+    setLoading(true);
+    setStatusMsg("");
+    try {
+      const res = await fetch(
+        `http://localhost:8000/export-product-graph/${productId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const payload = await res.json();
+
+      const nodes: RawNode[] = Array.isArray(payload.nodes) ? payload.nodes : [];
+      const edges: RawEdge[] = Array.isArray(payload.edges) ? payload.edges : [];
+
+      const nodesMap = new Map<string, RawNode>();
+      nodes.forEach((n) => nodesMap.set(String(n.id), n));
+
+      const outgoing = new Map<string, RawEdge[]>();
+      const incoming = new Map<string, RawEdge[]>();
+      edges.forEach((e) => {
+        const s = String(e.source);
+        const t = String(e.target);
+        if (!outgoing.has(s)) outgoing.set(s, []);
+        outgoing.get(s)!.push(e);
+        if (!incoming.has(t)) incoming.set(t, []);
+        incoming.get(t)!.push(e);
+      });
+
+      setGraph({ nodes, edges, nodesMap, outgoing, incoming });
+
+      // reset local pending (do not auto-clear user’s unsaved edits)
+      setExpanded({});
+    } catch {
+      setStatusMsg("Failed to load graph export");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* ===== bootstrap ===== */
   useEffect(() => {
     (async () => {
@@ -184,50 +282,15 @@ export default function PainsMap() {
   /* ===== load graph ===== */
   useEffect(() => {
     if (!selectedProductId) return;
-    (async () => {
-      try {
-        setLoading(true);
-        setStatusMsg("");
-        const res = await fetch(
-          `http://localhost:8000/export-product-graph/${selectedProductId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const payload = await res.json();
-
-        const nodes: RawNode[] = Array.isArray(payload.nodes) ? payload.nodes : [];
-        const edges: RawEdge[] = Array.isArray(payload.edges) ? payload.edges : [];
-
-        const nodesMap = new Map<string, RawNode>();
-        nodes.forEach((n) => nodesMap.set(String(n.id), n));
-
-        const outgoing = new Map<string, RawEdge[]>();
-        const incoming = new Map<string, RawEdge[]>();
-        edges.forEach((e) => {
-          const s = String(e.source);
-          const t = String(e.target);
-          if (!outgoing.has(s)) outgoing.set(s, []);
-          outgoing.get(s)!.push(e);
-          if (!incoming.has(t)) incoming.set(t, []);
-          incoming.get(t)!.push(e);
-        });
-
-        setGraph({ nodes, edges, nodesMap, outgoing, incoming });
-
-        /* reset */
-        setSelectedCapability(null);
-        setSelectedPain(null);
-        setSelectedTrigger(null);
-        setSelectedJob(null);
-        setTrail([]);
-        setExpanded({});
-        setPendingNodes(new Map());
-        setPendingEdges(new Map());
-      } catch {
-        setStatusMsg("Failed to load graph export");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadGraph(selectedProductId);
+    // also reset local UI state that depends on graph load
+    setSelectedCapability(null);
+    setSelectedPain(null);
+    setSelectedTrigger(null);
+    setSelectedJob(null);
+    setTrail([]);
+    setPendingNodes(new Map());
+    setPendingEdges(new Map());
   }, [selectedProductId, token]);
 
   /* ===== helpers ===== */
@@ -483,6 +546,17 @@ export default function PainsMap() {
   };
 
   /* ===== Add helper ===== */
+  const isSourceVisible = (src?: RawNode) => {
+  if (!src) return false;
+  const t = (src.type ?? "").toLowerCase();
+  // adjust to your current context:
+  if (selectedPain && t.includes("pain_trigger")) return true;
+  if (selectedPain && (t.includes("perceived_metric") || t.includes("metric"))) return true;
+  if (selectedJob && t.includes("persona")) return true;
+  // …add other column contexts as needed
+  return false;
+};
+
   const openAddFrom = (fromId: string, sourceType: string, choices: Array<{type:string; defaultRelation:string}>) => {
     const target = choices[0];
     const draftNode: RawNode = { id: "", type: target.type, label: "", title: "", content: "", raw: {} };
@@ -491,7 +565,6 @@ export default function PainsMap() {
       target: "",
       relation: target.defaultRelation,
       relevance: 0.6, likelihood: 0.6, weight: 0.6, boost: null,
-      raw: { evidence: "" }, // initialize
     };
     setEditCtx({
       mode: "add",
@@ -562,11 +635,22 @@ export default function PainsMap() {
   };
 
   /* ===== Render bits ===== */
+
   const getCardBody = (node: RawNode) => (
     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
       {node.content ? (node.content.length > 140 ? node.content.slice(0, 140) + "…" : node.content) : ""}
     </Typography>
   );
+
+  const CardBodyText: React.FC<{ text?: string }> = ({ text }) => {
+  if (!text) return null;
+  const short = text.length > 140 ? text.slice(0, 140) + "…" : text;
+  return (
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+      {short}
+    </Typography>
+  );
+};
 
   const breadcrumb = (() => {
     const capNode = getNode(selectedCapability);
@@ -594,6 +678,107 @@ export default function PainsMap() {
   })();
 
   /* =========================================
+      FRONTIER SEED COLLECTIONS
+  ========================================= */
+
+    /** Collect seed node ids to expand from:
+   *  - currently selected nodes (pain / job / trigger)
+   *  - all trail nodes (pain + selected job/trigger/zmot per segment when present)
+   *  - include selectedProductId? (No—seeds are graph nodes, product is separate param)
+   */
+  const collectSeedIds = (): string[] => {
+    const seeds = new Set<string>();
+
+    if (selectedPain) seeds.add(String(selectedPain));
+    if (selectedJob) seeds.add(String(selectedJob));
+    if (selectedTrigger) seeds.add(String(selectedTrigger));
+
+    trail.forEach(seg => {
+      if (seg.painId) seeds.add(String(seg.painId));
+      if (seg.selectedJobId) seeds.add(String(seg.selectedJobId));
+      if (seg.selectedTriggerId) seeds.add(String(seg.selectedTriggerId));
+      if (seg.selectedZmotId) seeds.add(String(seg.selectedZmotId));
+    });
+
+    return Array.from(seeds);
+  };
+
+  /** POST /graph/expand-frontier/:product_id
+   * Payload:
+   * {
+   *   "product_id": "...",
+   *   "seed_ids": ["node:id", ...],
+   *   // optional:
+   *   // "only_types": ["job","pain_trigger",...],
+   *   // "max_items_per_source": 5
+   * }
+   */
+  const generateNextNodes = async () => {
+    console.log("Generating next nodes…");
+    if (!selectedProductId) {
+      setGenMsg("Select a product first.");
+      return;
+    }
+    console.log("Selected product ID:", selectedProductId);
+    const seeds = collectSeedIds();
+    if (!seeds.length) {
+      console.log("No seeds collected.");
+      setGenMsg("No seeds selected. Pick a pain / job / trigger or open an Explore trail.");
+      return;
+    }
+    console.log("Collected seed IDs:", seeds);
+
+    // If user has unsaved local edits, warn (we don’t auto-save)
+    if (pendingNodes.size || pendingEdges.size) {
+      setGenMsg("You have unsaved edits. Consider saving before expansion to avoid conflicts.");
+    }
+    console.log("Seeds for expansion:", seeds);
+
+    try {
+      setGenLoading(true);
+      setGenMsg("Expanding frontier…");
+
+      const payload: any = {
+        product_id: selectedProductId,
+        seed_ids: seeds,
+        // only_types: undefined, // you can add a selector later
+        // max_items_per_source: 5,
+      };
+      console.log("Expanding frontier with payload:", payload);
+
+      const res = await fetch(
+        `http://localhost:8000/graph/expand-frontier/${selectedProductId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status} ${txt}`);
+      }
+
+      // (Optional) read counts:
+      // const result = await res.json(); // e.g. { job: 3, persona: 2, pain_trigger: 1, ... }
+      // setGenMsg(`Frontier expanded: ${Object.entries(result).map(([k,v])=>`${k}:${v}`).join(", ")}`);
+
+      // Reload graph to reflect new nodes/edges
+      await loadGraph(selectedProductId);
+      setGenMsg("Frontier expanded and graph reloaded.");
+    } catch (e: any) {
+      setGenMsg(`Failed to expand frontier${e?.message ? ` — ${e.message}` : ""}`);
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+
+  /* =========================================
      UI
   ========================================= */
   return (
@@ -605,6 +790,13 @@ export default function PainsMap() {
 
           {/* Save Graph Updates (edited vs entire) */}
           <Box>
+            <Button
+              variant="outlined"
+              disabled={genLoading || !selectedProductId}
+              onClick={generateNextNodes}
+            >
+              {genLoading ? "Expanding…" : "Generate next nodes"}
+            </Button>
             <Button
               variant="contained"
               startIcon={<SaveIcon />}
@@ -671,16 +863,17 @@ export default function PainsMap() {
               {capabilities.length ? (
                 capabilities.map((c: any) => {
                   const isSel = selectedCapability === c.id;
-                  const labelText = displayLabel(c);
                   const edgeToProduct = (c as any).edgeToProduct as RawEdge | undefined;
                   return (
                     <Card key={c.id} sx={{ mb: 2, ...cardSx(isSel, !!selectedCapability) }}>
                       <CardContent>
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <Typography variant="subtitle2" fontWeight={700}>{labelText}</Typography>
+                          <Typography variant="subtitle2" fontWeight={700}>
+                            {titleFor(c)}
+                          </Typography>
                           <IconButton size="small" onClick={() => setExpanded(s=>({...s,[c.id]:!s[c.id]}))}><ExpandMoreIcon fontSize="small"/></IconButton>
                         </Box>
-                        {getCardBody(c)}
+                        <CardBodyText text={bodyFor(c)} />
                       </CardContent>
                       <Collapse in={!!expanded[c.id]}>
                         <CardActions sx={{ pt: 0 }}>
@@ -713,15 +906,19 @@ export default function PainsMap() {
               ) : painsForCapability.length ? (
                 painsForCapability.map(({ node, edge }) => {
                   const isSel = selectedPain === node.id;
-                  const labelText = displayLabel(node);
+                  
                   return (
                     <Card key={node.id} sx={{ mb: 2, ...cardSx(isSel, !!selectedPain) }}>
                       <CardContent>
                         <Box sx={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                          <Typography variant="subtitle2" fontWeight={700}>{labelText}</Typography>
+                          <Typography variant="subtitle2" fontWeight={700}>
+                            {titleFor(node)}
+                          </Typography>
+                          
                           <IconButton size="small" onClick={() => setExpanded(s=>({...s,[node.id]:!s[node.id]}))}><ExpandMoreIcon fontSize="small"/></IconButton>
                         </Box>
-                        {getCardBody(node)}
+                        <CardBodyText text={bodyFor(node)} />
+                        
                       </CardContent>
                       <Collapse in={!!expanded[node.id]}>
                         <CardActions sx={{ pt: 0 }}>
@@ -743,52 +940,92 @@ export default function PainsMap() {
             <Box>
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
                 <Typography variant="subtitle1" fontWeight={700}>Trigger</Typography>
-                <IconButton size="small" disabled={!selectedPain} title="Add Pain Trigger"
-                  onClick={() => selectedPain && openAddFrom(selectedPain, "pain", [{ type: "pain_trigger", defaultRelation: "triggered_by" }])}>
+                <IconButton
+                  size="small"
+                  disabled={!selectedPain}
+                  title="Add Pain Trigger"
+                  onClick={() =>
+                    selectedPain &&
+                    openAddFrom(selectedPain, "pain", [{ type: "pain_trigger", defaultRelation: "triggered_by" }])
+                  }
+                >
                   <AddIcon fontSize="small" />
                 </IconButton>
               </Stack>
 
               {!selectedPain ? (
                 <Typography variant="body2" color="text.secondary">Select a pain to see triggers</Typography>
-              ) : (triggersForPainId(selectedPain).length ? triggersForPainId(selectedPain).map(({ node, edge }) => {
-                const isSel = selectedTrigger === node.id;
-                const labelText = displayLabel(node);
-                return (
-                  <Card key={node.id} sx={{ mb: 2, ...cardSx(isSel, !!selectedTrigger), cursor:"pointer" }}
-                        onClick={() => selectTrigger(node.id)}>
-                    <CardContent>
-                      <Box sx={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                        <Typography variant="subtitle2" fontWeight={700}>{labelText}</Typography>
-                        <IconButton size="small" onClick={(e)=>{ e.stopPropagation(); setExpanded(s=>({...s,[node.id]:!s[node.id]})); }}>
-                          <ExpandMoreIcon fontSize="small"/>
-                        </IconButton>
-                      </Box>
-                      {getCardBody(node)}
-                    </CardContent>
-                    <Collapse in={!!expanded[node.id]}>
-                      <CardActions sx={{ pt: 0 }}>
-                        <Button size="small" onClick={(e)=>{ e.stopPropagation(); selectTrigger(node.id); }}>Attributes / ZMOT</Button>
-                        <Button size="small" startIcon={<EditIcon/>}
-                          onClick={(e)=>{ e.stopPropagation(); setEditCtx({ mode:"edit", node: normalizeNode(node), edge, fromId: String(selectedPain), toId: node.id })}}>Edit</Button>
-                      </CardActions>
-                    </Collapse>
-                  </Card>
-                );
-              }) : <Typography variant="body2" color="text.secondary">No triggers</Typography>)}
+              ) : (() => {
+                  const list = triggersForPainId(selectedPain);
+                  if (!list.length) return <Typography variant="body2" color="text.secondary">No triggers</Typography>;
+                  return list.map(({ node, edge }) => {
+                    const isSel = selectedTrigger === node.id;
+                    return (
+                      <Card
+                        key={node.id}
+                        sx={{ mb: 2, ...cardSx(isSel, !!selectedTrigger), cursor: "pointer" }}
+                        onClick={() => selectTrigger(node.id)}
+                      >
+                        <CardContent>
+                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Typography variant="subtitle2" fontWeight={700}>{titleFor(node)}</Typography>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => { e.stopPropagation(); setExpanded(s => ({ ...s, [node.id]: !s[node.id] })); }}
+                            >
+                              <ExpandMoreIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                          <CardBodyText text={bodyFor(node)} />
+                        </CardContent>
+                        <Collapse in={!!expanded[node.id]}>
+                          <CardActions sx={{ pt: 0 }}>
+                            <Button size="small" onClick={(e) => { e.stopPropagation(); selectTrigger(node.id); }}>
+                              Attributes / ZMOT
+                            </Button>
+                            <Button
+                              size="small"
+                              startIcon={<EditIcon />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditCtx({
+                                  mode: "edit",
+                                  node: normalizeNode(node),
+                                  edge,
+                                  fromId: String(selectedPain),
+                                  toId: node.id,
+                                });
+                              }}
+                            >
+                              Edit
+                            </Button>
+                          </CardActions>
+                        </Collapse>
+                      </Card>
+                    );
+                  });
+                })()}
             </Box>
+
 
             {/* ===== Column 4: Metrics or Attributes ===== */}
             <Box>
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                <Typography variant="subtitle1" fontWeight={700}>{selectedTrigger ? "Attributes" : "Metrics"}</Typography>
-                <IconButton size="small"
+                <Typography variant="subtitle1" fontWeight={700}>
+                  {selectedTrigger ? "Attributes" : "Metrics"}
+                </Typography>
+                <IconButton
+                  size="small"
                   disabled={selectedTrigger ? !selectedTrigger : !selectedPain}
                   title={selectedTrigger ? "Add Attribute Value" : "Add Metric"}
                   onClick={() => {
-                    if (selectedTrigger) openAddFrom(selectedTrigger, "pain_trigger", [{ type: "attribute_value", defaultRelation: "prevalent_in" }]);
-                    else if (selectedPain) openAddFrom(selectedPain, "pain", [{ type: "perceived_metric", defaultRelation: "expressed_as" }]);
-                  }}>
+                    if (selectedTrigger) {
+                      openAddFrom(selectedTrigger, "pain_trigger", [{ type: "attribute_value", defaultRelation: "prevalent_in" }]);
+                    } else if (selectedPain) {
+                      openAddFrom(selectedPain, "pain", [{ type: "perceived_metric", defaultRelation: "expressed_as" }]);
+                    }
+                  }}
+                >
                   <AddIcon fontSize="small" />
                 </IconButton>
               </Stack>
@@ -796,105 +1033,194 @@ export default function PainsMap() {
               {!selectedPain ? (
                 <Typography variant="body2" color="text.secondary">Select a pain to see metrics</Typography>
               ) : selectedTrigger ? (
-                attributesForTriggerId(selectedTrigger).length ? attributesForTriggerId(selectedTrigger).map(({ node, edge }) => (
-                  <Card key={node.id} sx={{ mb: 2, ...cardSx(false,false) }}>
-                    <CardContent>
-                      <Box sx={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                        <Typography variant="subtitle2" fontWeight={700}>{displayLabel(node)}</Typography>
-                        <IconButton size="small" title="Add ZMOT (from attribute value)"
-                          onClick={() => openAddFrom(node.id, "attribute_value", TARGETS_BY_SOURCE["attribute_value"])}>
-                          <AddIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                      {getCardBody(node)}
-                    </CardContent>
-                    <CardActions sx={{ pt: 0 }}>
-                      <Button size="small" startIcon={<EditIcon/>}
-                        onClick={() => setEditCtx({ mode:"edit", node: normalizeNode(node), edge, fromId: String(selectedTrigger), toId: node.id })}>Edit</Button>
-                    </CardActions>
-                  </Card>
-                )) : <Typography variant="body2" color="text.secondary">No attributes</Typography>
+                (() => {
+                  const attrs = attributesForTriggerId(selectedTrigger);
+                  if (!attrs.length) return <Typography variant="body2" color="text.secondary">No attributes</Typography>;
+                  return attrs.map(({ node, edge }) => (
+                    <Card key={node.id} sx={{ mb: 2, ...cardSx(false, false) }}>
+                      <CardContent>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <Typography variant="subtitle2" fontWeight={700}>{titleFor(node)}</Typography>
+                          <IconButton
+                            size="small"
+                            title="Add ZMOT (from attribute value)"
+                            onClick={() => openAddFrom(node.id, "attribute_value", TARGETS_BY_SOURCE["attribute_value"])}
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                        <CardBodyText text={bodyFor(node)} />
+                      </CardContent>
+                      <CardActions sx={{ pt: 0 }}>
+                        <Button
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() =>
+                            setEditCtx({
+                              mode: "edit",
+                              node: normalizeNode(node),
+                              edge,
+                              fromId: String(selectedTrigger),
+                              toId: node.id,
+                            })
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ));
+                })()
               ) : (
-                metricsForPainId(selectedPain).map(({ node, edge }) => (
-                  <Card key={node.id} sx={{ mb: 2, ...cardSx(false,false) }}>
-                    <CardContent>
-                      <Typography variant="subtitle2" fontWeight={700}>{displayLabel(node)}</Typography>
-                      {getCardBody(node)}
-                    </CardContent>
-                    <CardActions sx={{ pt: 0 }}>
-                      <Button size="small" startIcon={<EditIcon/>}
-                        onClick={() => setEditCtx({ mode:"edit", node: normalizeNode(node), edge, fromId: String(selectedPain), toId: node.id })}>Edit</Button>
-                    </CardActions>
-                  </Card>
-                ))
+                (() => {
+                  const metrics = metricsForPainId(selectedPain);
+                  if (!metrics.length) return <Typography variant="body2" color="text.secondary">No metrics</Typography>;
+                  return metrics.map(({ node, edge }) => (
+                    <Card key={node.id} sx={{ mb: 2, ...cardSx(false, false) }}>
+                      <CardContent>
+                        <Typography variant="subtitle2" fontWeight={700}>{titleFor(node)}</Typography>
+                        <CardBodyText text={bodyFor(node)} />
+                      </CardContent>
+                      <CardActions sx={{ pt: 0 }}>
+                        <Button
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() =>
+                            setEditCtx({
+                              mode: "edit",
+                              node: normalizeNode(node),
+                              edge,
+                              fromId: String(selectedPain),
+                              toId: node.id,
+                            })
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ));
+                })()
               )}
             </Box>
+
 
             {/* ===== Column 5: Job or ZMOT ===== */}
             <Box>
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                <Typography variant="subtitle1" fontWeight={700}>{selectedTrigger ? "ZMOT Events" : "Job"}</Typography>
-                <IconButton size="small"
+                <Typography variant="subtitle1" fontWeight={700}>
+                  {selectedTrigger ? "ZMOT Events" : "Job"}
+                </Typography>
+                <IconButton
+                  size="small"
                   disabled={selectedTrigger ? !selectedTrigger : !selectedPain}
                   title={selectedTrigger ? "Add ZMOT Event" : "Add Job"}
                   onClick={() => {
-                    if (selectedTrigger) openAddFrom(selectedTrigger, "pain_trigger", [{ type: "zmot_event", defaultRelation: "leads_to_zmot" }]);
-                    else if (selectedPain) openAddFrom(selectedPain, "pain", [{ type: "job", defaultRelation: "felt_in" }]);
-                  }}>
+                    if (selectedTrigger) {
+                      openAddFrom(selectedTrigger, "pain_trigger", [{ type: "zmot_event", defaultRelation: "leads_to_zmot" }]);
+                    } else if (selectedPain) {
+                      openAddFrom(selectedPain, "pain", [{ type: "job", defaultRelation: "felt_in" }]);
+                    }
+                  }}
+                >
                   <AddIcon fontSize="small" />
                 </IconButton>
               </Stack>
 
               {selectedTrigger ? (
-                zmotForTriggerId(selectedTrigger).length ? zmotForTriggerId(selectedTrigger).map(({ node, edge }) => (
-                  <Card key={node.id} sx={{ mb: 2, ...cardSx(false,false) }}>
-                    <CardContent>
-                      <Box sx={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                        <Typography variant="subtitle2" fontWeight={700}>{displayLabel(node)}</Typography>
-                        <Stack direction="row" spacing={0}>
-                          <IconButton size="small" title="Add Observable Moment"
-                            onClick={() => openAddFrom(node.id, "zmot_event", [{ type: "observable_moment", defaultRelation: "observed_as" }])}>
-                            <AddIcon fontSize="small"/>
-                          </IconButton>
-                          <IconButton size="small" title="Add Keyword"
-                            onClick={() => openAddFrom(node.id, "zmot_event", [{ type: "keyword", defaultRelation: "keyword" }])}>
-                            <AddIcon fontSize="small"/>
-                          </IconButton>
-                        </Stack>
-                      </Box>
-                      {getCardBody(node)}
-                    </CardContent>
-                    <CardActions sx={{ pt: 0 }}>
-                      <Button size="small" startIcon={<EditIcon/>}
-                        onClick={() => setEditCtx({ mode:"edit", node: normalizeNode(node), edge, fromId: String(selectedTrigger), toId: node.id })}>Edit</Button>
-                    </CardActions>
-                  </Card>
-                )) : <Typography variant="body2" color="text.secondary">No ZMOT events</Typography>
+                (() => {
+                  const zmots = zmotForTriggerId(selectedTrigger);
+                  if (!zmots.length) return <Typography variant="body2" color="text.secondary">No ZMOT events</Typography>;
+                  return zmots.map(({ node, edge }) => (
+                    <Card key={node.id} sx={{ mb: 2, ...cardSx(false, false) }}>
+                      <CardContent>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <Typography variant="subtitle2" fontWeight={700}>{titleFor(node)}</Typography>
+                          <Stack direction="row" spacing={0}>
+                            <IconButton
+                              size="small"
+                              title="Add Observable Moment"
+                              onClick={() => openAddFrom(node.id, "zmot_event", [{ type: "observable_moment", defaultRelation: "observed_as" }])}
+                            >
+                              <AddIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              title="Add Keyword"
+                              onClick={() => openAddFrom(node.id, "zmot_event", [{ type: "keyword", defaultRelation: "keyword" }])}
+                            >
+                              <AddIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                        </Box>
+                        <CardBodyText text={bodyFor(node)} />
+                      </CardContent>
+                      <CardActions sx={{ pt: 0 }}>
+                        <Button
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() =>
+                            setEditCtx({
+                              mode: "edit",
+                              node: normalizeNode(node),
+                              edge,
+                              fromId: String(selectedTrigger),
+                              toId: node.id,
+                            })
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ));
+                })()
               ) : !selectedPain ? (
                 <Typography variant="body2" color="text.secondary">Select a pain to see jobs</Typography>
               ) : (
-                jobsForPainId(selectedPain).map(({ node, edge }) => {
-                  const isSel = selectedJob === node.id;
-                  return (
-                    <Card key={node.id} sx={{ mb: 2, ...cardSx(isSel, !!selectedJob) }}>
-                      <CardContent>
-                        <Box sx={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                          <Typography variant="subtitle2" fontWeight={700}>{displayLabel(node)}</Typography>
-                          <IconButton size="small" onClick={() => setExpanded(s=>({...s,[node.id]:!s[node.id]}))}><ExpandMoreIcon fontSize="small"/></IconButton>
-                        </Box>
-                        {getCardBody(node)}
-                      </CardContent>
-                      <Collapse in={!!expanded[node.id]}>
-                        <CardActions sx={{ pt: 0 }}>
-                          <Button size="small" onClick={() => selectJob(node.id)}>Show Personas / Solves</Button>
-                          <Button size="small" startIcon={<EditIcon/>}
-                            onClick={() => setEditCtx({ mode:"edit", node: normalizeNode(node), edge, fromId: String(selectedPain), toId: node.id })}>Edit</Button>
-                          <Button size="small" onClick={() => { setDetailNode(normalizeNode(node)); setDetailOpen(true); }}>Open</Button>
-                        </CardActions>
-                      </Collapse>
-                    </Card>
-                  );
-                })
+                (() => {
+                  const jobs = jobsForPainId(selectedPain);
+                  if (!jobs.length) return <Typography variant="body2" color="text.secondary">No jobs</Typography>;
+                  return jobs.map(({ node, edge }) => {
+                    const isSel = selectedJob === node.id;
+                    return (
+                      <Card key={node.id} sx={{ mb: 2, ...cardSx(isSel, !!selectedJob) }}>
+                        <CardContent>
+                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <Typography variant="subtitle2" fontWeight={700}>{titleFor(node)}</Typography>
+                            <IconButton size="small" onClick={() => setExpanded(s => ({ ...s, [node.id]: !s[node.id] }))}>
+                              <ExpandMoreIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                          <CardBodyText text={bodyFor(node)} />
+                        </CardContent>
+                        <Collapse in={!!expanded[node.id]}>
+                          <CardActions sx={{ pt: 0 }}>
+                            <Button size="small" onClick={() => selectJob(node.id)}>Show Personas / Solves</Button>
+                            <Button
+                              size="small"
+                              startIcon={<EditIcon />}
+                              onClick={() =>
+                                setEditCtx({
+                                  mode: "edit",
+                                  node: normalizeNode(node),
+                                  edge,
+                                  fromId: String(selectedPain),
+                                  toId: node.id,
+                                })
+                              }
+                            >
+                              Edit
+                            </Button>
+                            <Button size="small" onClick={() => { setDetailNode(normalizeNode(node)); setDetailOpen(true); }}>
+                              Open
+                            </Button>
+                          </CardActions>
+                        </Collapse>
+                      </Card>
+                    );
+                  });
+                })()
               )}
             </Box>
 
@@ -911,8 +1237,10 @@ export default function PainsMap() {
                 {personasForJobId(selectedJob).map(({ node, edge }) => (
                   <Card key={node.id} sx={{ mb: 2, ...cardSx(false,false) }}>
                     <CardContent>
-                      <Typography variant="subtitle2" fontWeight={700}>{displayLabel(node)}</Typography>
-                      {getCardBody(node)}
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        {titleFor(node)}
+                      </Typography>
+                      <CardBodyText text={bodyFor(node)} />
                     </CardContent>
                     <CardActions sx={{ pt: 0 }}>
                       <Button size="small" startIcon={<EditIcon/>}
@@ -936,8 +1264,10 @@ export default function PainsMap() {
                 {solvesForJobId(selectedJob).length ? solvesForJobId(selectedJob).map(({ node, edge }) => (
                   <Card key={node.id} sx={{ mb: 2, ...cardSx(false,false) }}>
                     <CardContent>
-                      <Typography variant="subtitle2" fontWeight={700}>{displayLabel(node)}</Typography>
-                      {getCardBody(node)}
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        {titleFor(node)}
+                      </Typography>
+                      <CardBodyText text={bodyFor(node)} />
                     </CardContent>
                     <CardActions sx={{ pt: 0 }}>
                       <Button size="small" onClick={() => pushSolvedPainToTrail(node.id)}>Explore</Button>
@@ -1485,7 +1815,19 @@ export default function PainsMap() {
             <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>Incoming sources & edge metrics</Typography>
             <List dense>
               {detailNode && graph ? (
-                getIncoming(detailNode.id).map(({ edge, node }) => (
+                getIncoming(detailNode.id)
+                  .filter(({ node }) => isSourceVisible(node))
+                  .filter(({ edge }) => (edge.raw?.evidence ?? "").trim().length > 0)
+                  .map(({ edge, node }) => {
+                  // <-- ADD THIS CONSOLE LOG HERE
+                  console.log('incoming', {
+                    from: node?.id,
+                    relation: edge?.relation,
+                    evidence: edge?.raw?.evidence,
+                    raw: edge?.raw,
+                    srcDataSource: node?.raw?.data_source,
+                  });
+                  return (
                   <React.Fragment key={`${node.id}-${edge.source}-${edge.target}`}>
                     <ListItem alignItems="flex-start">
                       <ListItemText
@@ -1501,8 +1843,11 @@ export default function PainsMap() {
                     </ListItem>
                     <Divider component="li" />
                   </React.Fragment>
-                ))
-              ) : <ListItem><ListItemText primary="No incoming sources" /></ListItem>}
+                  );
+                })
+              ) : (
+              <ListItem><ListItemText primary="No incoming sources" /></ListItem>
+            )}
             </List>
           </DialogContent>
         </Dialog>

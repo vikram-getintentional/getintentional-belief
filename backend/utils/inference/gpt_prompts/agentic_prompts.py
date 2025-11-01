@@ -10,6 +10,19 @@ def _fmt(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"), indent=2)
 
 
+LABEL_GUIDE = """
+Label guides (use exactly these strings; DO NOT return numbers):
+- relevance_label: Critical | Core | Supportive | Ancillary | Out-of-scope
+  Meaning: how contextually relevant TARGET is to SOURCE (how expected TARGET is, given SOURCE).
+- likelihood_label: Essential | Expected | Common | Rare | Unlikely
+  Meaning: how likely SOURCE is to occur given TARGET occurs.
+
+Special:
+- boost_label: Very High | High | Medium | Low | Negligible
+  Include ONLY for pain_trigger → zmot_event (how much the ZMOT accelerates the trigger).
+""".strip()
+
+
 # ---------------------------------------------------------------------------
 # HOP 0: capability -> pains -> felt_in (jobs/personas) (+ metrics, triggers)
 # ---------------------------------------------------------------------------
@@ -22,15 +35,14 @@ def build_hop0_prompt(
 ) -> str:
     """
     For each product capability, map pains, felt_in jobs, personas, perceived_metrics, and pain_triggers.
+    All edges MUST include relevance_label and likelihood_label (labels only, not numbers).
     """
     caps_payload = capability_context if capability_context else capability_ids
 
     return f"""
         You are an expert in B2B job architecture.
 
-        Label guides (use exactly these):
-        - relevance_label: Critical=must-solve, Core=direct impact, Supportive=important but secondary, Ancillary=edge/indirect, Out-of-scope=not material
-        - likelihood_label: Essential=almost always, Expected=frequent, Common=often (not key), Rare=uncommon, Unlikely=hardly occurs
+        {LABEL_GUIDE}
 
         Context:
         - Product value proposition: {product_summary}
@@ -148,14 +160,13 @@ def build_hop_plus_prompt(
     """
     For given organizational pains, infer where each pain is felt (jobs/personas)
     and the upstream pains those jobs exist to solve.
+    All edges MUST include relevance_label and likelihood_label.
     """
 
     return f"""
         You are an expert in B2B org design for {domain}.
 
-        Label guides (use exactly these):
-        - relevance_label: Critical=must-solve, Core=direct impact, Supportive=important but secondary, Ancillary=edge/indirect, Out-of-scope=not material
-        - likelihood_label: Essential=almost always, Expected=frequent, Common=often (not key), Rare=uncommon, Unlikely=hardly occurs
+        {LABEL_GUIDE}
 
         Context:
         - Product value proposition: {product_summary}
@@ -238,6 +249,8 @@ def build_archetypes_relevance_matrix(
         You are a senior B2B go-to-market analyst.
         Return ONLY valid JSON. No prose. No markdown.
 
+        {LABEL_GUIDE}
+
         Context:
         - Product value proposition: {product_summary}
         - Product domain: {domain}
@@ -253,28 +266,6 @@ def build_archetypes_relevance_matrix(
         • employee_range (score ALL provided options)
         • funding_stage (score ALL provided options)
         • geography (score ALL provided options)
-
-        Label guides:
-        - Relevance: How central is this pain trigger for orgs with this attribute value?
-          One of: {{"Critical","Core","Supportive","Ancillary","Out-of-scope"}}
-          • Critical: Without addressing this trigger, core goals fail.
-          • Core: Materially impacts outcomes in most workflows.
-          • Supportive: Important but not primary on its own.
-          • Ancillary: Edge/indirect impact.
-          • Out-of-scope: Not a meaningful factor.
-
-        - Likelihood: How expected is this trigger in orgs with this attribute value?
-          One of: {{"Essential","Expected","Common","Rare","Unlikely"}}
-          • Essential: Almost always present.
-          • Expected: Frequently present; absence is surprising.
-          • Common: Often present but not dominant.
-          • Rare: Uncommon; special cases.
-          • Unlikely: Rare to the point of implausible.
-
-        Guardrails:
-        - Use ONLY the provided attribute values; no new values.
-        - Keep tight to the product/domain/industry context.
-        - Deduplicate near-synonyms and keep language specific.
 
         Return STRICT JSON object:
         {{
@@ -309,8 +300,9 @@ def build_zmot_for_triggers_prompt(
 ) -> str:
     """
     Returns a prompt to extract ZMOT events per pain trigger, with:
-      • observable_moments & trigger_keywords (with labels),
-      • a FULL per-dimension boosts array using LABELS ONLY.
+      • observable_moments & trigger_keywords (with relevance/likelihood labels),
+      • a FULL per-dimension boosts array using LABELS ONLY,
+      • and a REQUIRED boost_label on pain_trigger → zmot_event edges.
     """
 
     required_keys = ["revenue_range", "employee_range", "funding_stage", "geography"]
@@ -321,6 +313,8 @@ def build_zmot_for_triggers_prompt(
     return f"""
         You are an expert in B2B org design and external triggers in {domain}/{industry}.
         Return ONLY valid JSON. No prose. No markdown.
+
+        {LABEL_GUIDE}
 
         Context:
           - Product value proposition: {product_summary}
@@ -333,19 +327,9 @@ def build_zmot_for_triggers_prompt(
         For EACH pain trigger, infer up to {max_events_per_trigger} specific, observable ZMOT events
         that accelerate or intensify the trigger.
 
-        Label guides:
-          Boost label (per attribute value):
-            • Very High: Almost always intensifies this trigger.
-            • High: Frequently intensifies; omission is surprising.
-            • Medium: Common intensifier, but not the strongest.
-            • Low: Rarely intensifies; special cases.
-            • Negligible: Little to no effect.
-          Relevance label (per attribute value): same 5-level scale as above for how central the attribute is to why the event boosts the trigger.
-          Likelihood label (per attribute value): same 5-level scale for expected co-occurrence of the attribute when the event drives the trigger.
-
         Requirements:
           - Keep events concrete and externally observable (pricing change, audit, layoffs, M&A, region entry, vendor deprecation, leadership change, etc.).
-          - Provide 3–6 observable_moments and 6–12 trigger_keywords per event (with labels).
+          - Provide 3–6 observable_moments and 6–12 trigger_keywords per event (each with relevance_label & likelihood_label).
           - For **boosts**:
               · industry: 3–5 items — use provided list or infer top-{top_n_industries} if empty
               · revenue_range: score ALL provided values
@@ -364,6 +348,11 @@ def build_zmot_for_triggers_prompt(
                 {{
                   "event_id": "string-slug",
                   "trigger_event": "short, specific noun phrase",
+                  "edge_scores": {{
+                    "relevance_label": "Critical|Core|Supportive|Ancillary|Out-of-scope",
+                    "likelihood_label": "Essential|Expected|Common|Rare|Unlikely",
+                    "boost_label": "Very High|High|Medium|Low|Negligible"
+                  }},
                   "observable_moments": [
                     {{"observable_moment": {{"text":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}}}
                   ],
@@ -388,3 +377,306 @@ def build_zmot_for_triggers_prompt(
 
 
 # ---------------------------------------------------------------------------
+# Single Node Expansion Prompts (for agentic frontier expansion)
+# ---------------------------------------------------------------------------
+
+def _records_from_contexts(
+    expansion_node_ids: Optional[List[str]],
+    expansion_node_contexts: Optional[List[Dict[str, Any]]],
+) -> List[Dict[str, Any]]:
+    if expansion_node_contexts:
+        return expansion_node_contexts
+    # Fallback: minimal records if only IDs are provided
+    records: List[Dict[str, Any]] = []
+    for sid in expansion_node_ids or []:
+        records.append({
+            "source_id": sid,
+            "source": {"id": sid},          # caller should prefer contexts
+            "already_linked": [],
+            "need_fields": []
+        })
+    return records
+
+
+# Capability -> Pain
+def build_capability_expansion_prompt(
+    product_summary: str,
+    domain: str,
+    industry: str,
+    expansion_node_ids: Optional[List[str]] = None,
+    expansion_node_contexts: Optional[List[Dict[str, Any]]] = None,
+    max_items_per_source: int = 5,
+    target_type: Optional[str] = None,
+) -> str:
+    records = _records_from_contexts(expansion_node_ids, expansion_node_contexts)
+    return f"""
+You are expanding a product graph one hop. Return STRICT JSON only. No prose, no markdown.
+
+{LABEL_GUIDE}
+
+Context:
+- Product value proposition: {product_summary}
+- Product domain: {domain}
+- Product industry: {industry}
+
+Task:
+For each capability, propose pains it directly solves or unlocks.
+- Use concise, concrete phrasing for pain.description.
+- Optionally set pain_source: "terminal" | "non-terminal".
+- Avoid any targets present in 'already_linked'.
+- Include relevance_label (capability→pain) and likelihood_label (pain→capability usage).
+- Max items per source: {max_items_per_source}.
+
+Schema:
+items: [
+  {{
+    "source_id": "<capability_id>",
+    "targets": {{
+      "pain": {{
+        "proposals": [{{"description":"string","pain_source":"terminal|non-terminal",
+                        "relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope",
+                        "likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}],
+        "evidence": ["optional why strings"]
+      }}
+    }}
+  }}
+]
+
+Records (inputs):
+{_fmt(records)}
+
+Return JSON object:
+{{"items":[...]}}
+""".strip()
+
+
+# Pain -> (Job, PainTrigger, PerceivedMetric)
+def build_pain_expansion_prompt(
+    product_summary: str,
+    domain: str,
+    industry: str,
+    expansion_node_ids: Optional[List[str]] = None,
+    expansion_node_contexts: Optional[List[Dict[str, Any]]] = None,
+    max_items_per_source: int = 5,
+    target_type: Optional[str] = None,
+) -> str:
+    records = _records_from_contexts(expansion_node_ids, expansion_node_contexts)
+    return f"""
+You are expanding a product graph one hop. Return STRICT JSON only. No prose.
+
+{LABEL_GUIDE}
+
+Context:
+- Product value proposition: {product_summary}
+- Product domain: {domain}
+- Product industry: {industry}
+
+Task:
+From each pain, propose:
+1) job            — where the pain is felt operationally (short actionable description).
+2) pain_trigger   — observable attribute/condition that causes or worsens the pain (attribute field).
+3) perceived_metric — how the pain is expressed/monitored (metric field).
+Avoid 'already_linked'. Max items per source: {max_items_per_source}.
+Every proposed edge MUST include relevance_label and likelihood_label.
+
+Schema:
+items: [
+  {{
+    "source_id": "<pain_id>",
+    "targets": {{
+      "job":            {{"proposals":[{{"description":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}},
+      "pain_trigger":   {{"proposals":[{{"attribute":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}},
+      "perceived_metric":{{"proposals":[{{"metric":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}}
+    }}
+  }}
+]
+
+Records (inputs):
+{_fmt(records)}
+
+Return JSON object:
+{{"items":[...]}}
+""".strip()
+
+
+# Job -> (Persona, Pain [solves-path])
+def build_job_expansion_prompt(
+    product_summary: str,
+    domain: str,
+    industry: str,
+    expansion_node_ids: Optional[List[str]] = None,
+    expansion_node_contexts: Optional[List[Dict[str, Any]]] = None,
+    max_items_per_source: int = 5,
+    target_type: Optional[str] = None,  # if "pain", caller is forcing solves-path UX
+) -> str:
+    records = _records_from_contexts(expansion_node_ids, expansion_node_contexts)
+    return f"""
+You are expanding a product graph one hop. Return STRICT JSON only. No prose.
+
+{LABEL_GUIDE}
+
+Context:
+- Product value proposition: {product_summary}
+- Product domain: {domain}
+- Product industry: {industry}
+
+Task:
+From each job, propose:
+1) persona — likely owner/performer of this job (title, department, seniority; optional linkedin_profiles[] of {{url,bio}}) WITH relevance_label & likelihood_label.
+2) pain    — pains this job directly solves (business wording, optional pain_source) WITH relevance_label & likelihood_label.
+Avoid 'already_linked'. Max items per source: {max_items_per_source}.
+
+Schema:
+items: [
+  {{
+    "source_id": "<job_id>",
+    "targets": {{
+      "persona": {{"proposals":[{{"title":"string","department":"string","seniority":"Junior|Operator|Manager|Senior|Executive","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely","linkedin_profiles":[{{"url":"string","bio":"string"}}]}}], "evidence":["..."]}},
+      "pain":    {{"proposals":[{{"description":"string","pain_source":"terminal|non-terminal","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}}
+    }}
+  }}
+]
+
+Records (inputs):
+{_fmt(records)}
+
+Return JSON object:
+{{"items":[...]}}
+""".strip()
+
+
+# PainTrigger -> (AttributeValue, ZMOT Event)
+def build_pain_trigger_expansion_prompt(
+    product_summary: str,
+    domain: str,
+    industry: str,
+    expansion_node_ids: Optional[List[str]] = None,
+    expansion_node_contexts: Optional[List[Dict[str, Any]]] = None,
+    max_items_per_source: int = 5,
+    target_type: Optional[str] = None,
+) -> str:
+    records = _records_from_contexts(expansion_node_ids, expansion_node_contexts)
+    return f"""
+You are expanding a product graph one hop. Return STRICT JSON only.
+
+{LABEL_GUIDE}
+
+Context:
+- Product value proposition: {product_summary}
+- Product domain: {domain}
+- Product industry: {industry}
+
+Task:
+From each pain_trigger, propose:
+1) attribute_value — {{dimension:"industry|employee_range|revenue_range|funding_stage|geography", name:"string"}} WITH relevance_label & likelihood_label.
+2) zmot_event     — {{event:"short specific name"}} WITH relevance_label, likelihood_label, AND boost_label (REQUIRED).
+Avoid 'already_linked'. Max items per source: {max_items_per_source}.
+
+Schema:
+items: [
+  {{
+    "source_id": "<pain_trigger_id>",
+    "targets": {{
+      "attribute_value": {{"proposals":[{{"dimension":"string","name":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}},
+      "zmot_event":      {{"proposals":[{{"event":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely","boost_label":"Very High|High|Medium|Low|Negligible"}}], "evidence":["..."]}}
+    }}
+  }}
+]
+
+Records (inputs):
+{_fmt(records)}
+
+Return JSON object:
+{{"items":[...]}}
+""".strip()
+
+
+# AttributeValue -> ZMOT Event
+def build_attribute_value_expansion_prompt(
+    product_summary: str,
+    domain: str,
+    industry: str,
+    expansion_node_ids: Optional[List[str]] = None,
+    expansion_node_contexts: Optional[List[Dict[str, Any]]] = None,
+    max_items_per_source: int = 5,
+    target_type: Optional[str] = None,
+) -> str:
+    records = _records_from_contexts(expansion_node_ids, expansion_node_contexts)
+    return f"""
+You are expanding a product graph one hop. Return STRICT JSON only.
+
+{LABEL_GUIDE}
+
+Context:
+- Product value proposition: {product_summary}
+- Product domain: {domain}
+- Product industry: {industry}
+
+Task:
+For each attribute_value (segment), propose relevant ZMOT events as {{ "event": "..." }} WITH relevance_label & likelihood_label.
+Avoid 'already_linked'. Max items per source: {max_items_per_source}.
+(Do NOT include boost_label here; boost applies only to pain_trigger → zmot_event.)
+
+Schema:
+items: [
+  {{
+    "source_id": "<attribute_value_id>",
+    "targets": {{
+      "zmot_event": {{"proposals":[{{"event":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}}
+    }}
+  }}
+]
+
+Records (inputs):
+{_fmt(records)}
+
+Return JSON object:
+{{"items":[...]}}
+""".strip()
+
+
+# ZMOT Event -> (ObservableMoment, Keyword)
+def build_zmot_event_expansion_prompt(
+    product_summary: str,
+    domain: str,
+    industry: str,
+    expansion_node_ids: Optional[List[str]] = None,
+    expansion_node_contexts: Optional[List[Dict[str, Any]]] = None,
+    max_items_per_source: int = 5,
+    target_type: Optional[str] = None,
+) -> str:
+    records = _records_from_contexts(expansion_node_ids, expansion_node_contexts)
+    return f"""
+You are expanding a product graph one hop. Return STRICT JSON only.
+
+{LABEL_GUIDE}
+
+Context:
+- Product value proposition: {product_summary}
+- Product domain: {domain}
+- Product industry: {industry}
+
+Task:
+From each zmot_event, propose:
+1) observable_moment — external signals (press, filings, job posts, release notes, audits, etc.) as {{text:"..."}}
+2) keyword           — search/discovery phrases as {{text:"..."}}
+Each proposed edge MUST include relevance_label & likelihood_label.
+Avoid 'already_linked'. Max items per source: {max_items_per_source}.
+
+Schema:
+items: [
+  {{
+    "source_id": "<zmot_event_id>",
+    "targets": {{
+      "observable_moment": {{"proposals":[{{"text":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}},
+      "keyword":           {{"proposals":[{{"text":"string","relevance_label":"Critical|Core|Supportive|Ancillary|Out-of-scope","likelihood_label":"Essential|Expected|Common|Rare|Unlikely"}}], "evidence":["..."]}}
+    }}
+  }}
+]
+
+Records (inputs):
+{_fmt(records)}
+
+Return JSON object:
+{{"items":[...]}}
+""".strip()

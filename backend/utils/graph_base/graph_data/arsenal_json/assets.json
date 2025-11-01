@@ -1,591 +1,610 @@
 {
-  "product:92f2dce1fb6eb34c": [
+  "5a742a1a-fa9c-47f3-bca2-72e49cd10cd6": [
+  {
+    "id": "asset:state_of_recurring_revenue_2025",
+    "name": "2025 State of Recurring Revenue & Monetization Report",
+    "format": "report",
+    "evergreen": true,
+    "time_to_effect_days": 21,
+    "base_lift_bp": 40,
+    "stage_fit": [
+      "problem_realization",
+      "promised_land"
+    ],
+    "concern_tags": [
+      "cash_flow",
+      "pricing"
+    ],
+    "persona_fit": [
+      "cfo",
+      "vp_finance",
+      "product_leader",
+      "revops"
+    ],
+    "evidence": "Gated report; expecting ~5% conversion among reached audience.",
+    "cost_tier": "med"
+  },
+  {
+    "id": "asset:webinar_cpq_sales_agility",
+    "name": "Unlocking Sales Agility using Chargebee CPQ",
+    "format": "webinar",
+    "evergreen": true,
+    "time_to_effect_days": 7,
+    "base_lift_bp": 55,
+    "stage_fit": [
+      "promised_land"
+    ],
+    "concern_tags": [
+      "sales_agility"
+    ],
+    "persona_fit": [
+      "sales_ops",
+      "revops",
+      "finance_manager",
+      "account_executive"
+    ],
+    "evidence": "Typical signup/view ~10% among target audience.",
+    "cost_tier": "med"
+  },
+  {
+    "id": "asset:webinar_ai_automation_billing",
+    "name": "AI, Automation & Billing: A Guide to Usage-Based Pricing for 2025",
+    "format": "webinar",
+    "evergreen": true,
+    "time_to_effect_days": 7,
+    "base_lift_bp": 50,
+    "stage_fit": [
+      "zmot",
+      "promised_land"
+    ],
+    "concern_tags": [
+      "automation",
+      "pricing"
+    ],
+    "persona_fit": [
+      "cpo",
+      "product_manager",
+      "finance_leader",
+      "revops",
+      "engineering_manager"
+    ],
+    "evidence": "Specialized topic; slightly lower engagement than general webinars.",
+    "cost_tier": "med"
+  },
+  {
+    "id": "asset:pr_g2_summer_2025",
+    "name": "Chargebee Dominates G2\u2019s Summer 2025 Rankings",
+    "format": "pr",
+    "evergreen": false,
+    "time_to_effect_days": 3,
+    "base_lift_bp": 32,
+    "stage_fit": [
+      "promised_land"
+    ],
+    "concern_tags": [
+      "credibility"
+    ],
+    "persona_fit": [
+      "cfo",
+      "finance_ops",
+      "procurement_lead"
+    ],
+    "evidence": "Low direct engagement; strong credibility lift.",
+    "cost_tier": "low"
+  },
+  {
+    "id": "asset:pr_g2_fall_2025",
+    "name": "G2 Fall 2025 Reports: Subscription Billing Leader",
+    "format": "pr",
+    "evergreen": false,
+    "time_to_effect_days": 3,
+    "base_lift_bp": 32,
+    "stage_fit": [
+      "promised_land"
+    ],
+    "concern_tags": [
+      "credibility"
+    ],
+    "persona_fit": [
+      "cfo",
+      "revops"
+    ],
+    "evidence": "",
+    "cost_tier": "low"
+  },
+  {
+    "id": "asset:blog_revenue_strategy_shift",
+    "name": "What 473 companies reveal about revenue strategy shifts",
+    "format": "blog",
+    "evergreen": true,
+    "time_to_effect_days": 14,
+    "base_lift_bp": 43,
+    "stage_fit": [
+      "problem_realization",
+      "promised_land"
+    ],
+    "concern_tags": [
+      "cash_flow"
+    ],
+    "persona_fit": [
+      "cfo",
+      "product_leader",
+      "founder"
+    ],
+    "evidence": "Above\u2011average organic potential.",
+    "cost_tier": "low"
+  },
+  {
+    "id": "asset:webinar_edtech_investor_sentiment",
+    "name": "Investor Sentiment: 2025 EdTech Market Perspectives",
+    "format": "webinar",
+    "evergreen": false,
+    "time_to_effect_days": 7,
+    "base_lift_bp": 47,
+    "stage_fit": [
+      "problem_realization",
+      "promised_land"
+    ],
+    "concern_tags": [
+      "credibility"
+    ],
+    "persona_fit": [
+      "founder",
+      "cfo",
+      "strategy_leader"
+    ],
+    "evidence": "EdTech niche audience; engaged.",
+    "cost_tier": "med"
+  },
+  {
+    "id": "asset:event_beelieve_sf",
+    "name": "Beelieve \u201925 \u2013 San Francisco",
+    "format": "event",
+    "evergreen": false,
+    "time_to_effect_days": 30,
+    "base_lift_bp": 60,
+    "stage_fit": [
+      "problem_realization",
+      "zmot",
+      "promised_land"
+    ],
+    "concern_tags": [
+      "community"
+    ],
+    "persona_fit": [
+      "cxo",
+      "cfo",
+      "product_leader",
+      "revops"
+    ],
+    "evidence": "Flagship event; strong multi\u2011persona reach.",
+    "cost_tier": "high"
+  },
+  {
+    "id": "asset:event_beelieve_london",
+    "name": "Beelieve \u201925 \u2013 London",
+    "format": "event",
+    "evergreen": false,
+    "time_to_effect_days": 30,
+    "base_lift_bp": 55,
+    "stage_fit": [
+      "problem_realization",
+      "zmot"
+    ],
+    "concern_tags": [
+      "community"
+    ],
+    "persona_fit": [
+      "cxo",
+      "finance_leader",
+      "product_leader"
+    ],
+    "evidence": "Regional flagship.",
+    "cost_tier": "high"
+  },
+  {
+    "id": "asset:event_dreamforce_2025",
+    "name": "Chargebee at Dreamforce 2025",
+    "format": "event",
+    "evergreen": false,
+    "time_to_effect_days": 30,
+    "base_lift_bp": 52,
+    "stage_fit": [
+      "problem_realization"
+    ],
+    "concern_tags": [
+      "community",
+      "integration"
+    ],
+    "persona_fit": [
+      "sales_leader",
+      "revops",
+      "finance_leader"
+    ],
+    "evidence": "Large partner\u2011led amplification.",
+    "cost_tier": "high"
+  },
+  {
+    "id": "asset:blog_subscriptionx_strategies",
+    "name": "SubscriptionX 2025 Insights \u2014 7 Proven Strategies",
+    "format": "blog",
+    "evergreen": false,
+    "time_to_effect_days": 14,
+    "base_lift_bp": 43,
+    "stage_fit": [
+      "problem_realization",
+      "implementation"
+    ],
+    "concern_tags": [
+      "visibility"
+    ],
+    "persona_fit": [
+      "cfo",
+      "product_manager",
+      "growth_leader",
+      "revops"
+    ],
+    "evidence": "",
+    "cost_tier": "low"
+  },
+  {
+    "id": "asset:video_cpq_hubspot_demo",
+    "name": "Creating a Quote for New Business \u2014 Chargebee CPQ for HubSpot",
+    "format": "video",
+    "evergreen": true,
+    "time_to_effect_days": 10,
+    "base_lift_bp": 173,
+    "stage_fit": [
+      "implementation"
+    ],
+    "concern_tags": [
+      "integration",
+      "sales_agility"
+    ],
+    "persona_fit": [
+      "account_executive",
+      "sales_ops",
+      "revops"
+    ],
+    "evidence": "Very high historic view count; strong proof.",
+    "cost_tier": "med"
+  },
+  {
+    "id": "asset:video_subscription_renewal_cpq",
+    "name": "Creating a Quote for Subscription Amendment or Renewal \u2014 CPQ for HubSpot",
+    "format": "video",
+    "evergreen": true,
+    "time_to_effect_days": 10,
+    "base_lift_bp": 167,
+    "stage_fit": [
+      "implementation"
+    ],
+    "concern_tags": [
+      "integration",
+      "sales_agility"
+    ],
+    "persona_fit": [
+      "account_executive",
+      "sales_ops",
+      "revops"
+    ],
+    "evidence": "High engagement demo.",
+    "cost_tier": "med"
+  }
+],
+  "e172ce99-993a-4cf9-84b7-e14f4b6aa06c": [
     {
-      "id": "state_of_recurring_revenue_2025",
-      "name": "2025 State of Recurring Revenue & Monetization Report",
-      "format": "research_report",
-      "stages": ["problem", "resolution"],
-      "personas": [
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "VP Finance", "department": "Finance", "seniority": "VP"},
-        {"title": "Product Leader", "department": "Product", "seniority": "Director"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
-      ],
-      "purpose": "thought_leadership",
-      "evergreen": true,
-      "industry_tags": ["SaaS", "Media", "Education"],
-      "engagement_rate": 0.05,
-      "notes": "Gated report; public download count not available; expecting ~5% conversion of target audience reached."
-    },
-    {
-      "id": "webinar_cpq_sales_agility",
-      "name": "Unlocking Sales Agility using Chargebee CPQ",
-      "format": "webinar",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "Sales Ops", "department": "Sales", "seniority": "Manager"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"},
-        {"title": "Finance Manager", "department": "Finance", "seniority": "Manager"},
-        {"title": "Account Executive", "department": "Sales", "seniority": "IC"}
-      ],
-      "purpose": "product_education",
-      "evergreen": true,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.10,
-      "notes": "Webinar is gated; based on similar webinars ~10% signup / view rates among audience."
-    },
-    {
-      "id": "webinar_ai_automation_billing",
-      "name": "AI, Automation & Billing: A Guide to Usage-Based Pricing for 2025",
-      "format": "webinar",
-      "stages": ["pain", "resolution"],
-      "personas": [
-        {"title": "CPO", "department": "Product", "seniority": "Executive"},
-        {"title": "Product Manager", "department": "Product", "seniority": "Manager"},
-        {"title": "Finance Leader", "department": "Finance", "seniority": "VP"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"},
-        {"title": "Engineering Manager", "department": "Engineering", "seniority": "Manager"}
-      ],
-      "purpose": "solution_proof",
-      "evergreen": true,
-      "industry_tags": ["SaaS", "AI"],
-      "engagement_rate": 0.08,
-      "notes": "Likely slightly lower than general webinars since topic is more specialized."
-    },
-    {
-      "id": "pr_g2_summer_2025",
-      "name": "Chargebee Dominates G2’s Summer 2025 Rankings",
-      "format": "press_release",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "Finance Ops", "department": "Finance", "seniority": "Manager"},
-        {"title": "Procurement Lead", "department": "Procurement", "seniority": "Manager"}
-      ],
-      "purpose": "vendor_validation",
+      "id": "asset:impact_report_2024",
+      "name": "Rocketlane Impact Report 2024",
+      "format": "report",
       "evergreen": false,
-      "industry_tags": [],
-      "engagement_rate": 0.03,
-      "notes": "Press releases usually have low direct engagement but useful for credibility; ~3% reach among interested audience."
+      "time_to_effect_days": 21,
+      "base_lift_bp": 38,
+      "stage_fit": ["zmot","discovery"],
+      "concern_tags": ["time_to_value","visibility","profitability"],
+      "persona_fit": ["ps_leader","cxo_services","vp_operations"],
+      "evidence": "Resource library highlights reports & ebooks; Impact-style reports promoted on site",
+      "cost_tier": "med"
     },
     {
-      "id": "pr_g2_fall_2025",
-      "name": "G2 Fall 2025 Reports: Subscription Billing Leader",
-      "format": "press_release",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
-      ],
-      "purpose": "vendor_validation",
-      "evergreen": false,
-      "industry_tags": [],
-      "engagement_rate": 0.03,
-      "notes": ""
+      "id": "asset:onboarding_maturity_benchmark",
+      "name": "Customer Onboarding Maturity Benchmark Report",
+      "format": "report",
+      "evergreen": true,
+      "time_to_effect_days": 21,
+      "base_lift_bp": 42,
+      "stage_fit": ["zmot","discovery"],
+      "concern_tags": ["benchmarking","governance","best_practices"],
+      "persona_fit": ["ps_leader","csm_head","implementations_manager"],
+      "evidence": "Customer Onboarding Maturity Report page",
+      "cost_tier": "med"
     },
     {
-      "id": "blog_revenue_strategy_shift",
-      "name": "What 473 companies reveal about revenue strategy shifts",
+      "id": "asset:ebook_nextgen_psa",
+      "name": "The Case for a Next-Gen PSA in 2025",
+      "format": "ebook",
+      "evergreen": true,
+      "time_to_effect_days": 14,
+      "base_lift_bp": 34,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["utilization","profitability","tool_sprawl"],
+      "persona_fit": ["ps_leader","cfo","vp_finance"],
+      "evidence": "E-books listed on product site/resources",
+      "cost_tier": "low"
+    },
+    {
+      "id": "asset:ebook_legacy_psa_truths",
+      "name": "7 Truths about Legacy PSA Tools",
+      "format": "ebook",
+      "evergreen": true,
+      "time_to_effect_days": 14,
+      "base_lift_bp": 30,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["replacement","efficiency","adoption"],
+      "persona_fit": ["ps_leader","it_ops","cxo_services"],
+      "evidence": "E-books showcased on site/resources",
+      "cost_tier": "low"
+    },
+    {
+      "id": "asset:ideabook_2025",
+      "name": "Intelligent Delivery Ideabook 2025",
+      "format": "guide",
+      "evergreen": true,
+      "time_to_effect_days": 18,
+      "base_lift_bp": 28,
+      "stage_fit": ["discovery"],
+      "concern_tags": ["automation","ai","delivery"],
+      "persona_fit": ["ps_leader","program_manager"],
+      "evidence": "Reporting & dashboards page lists E-Books including 2025 Ideabook",
+      "cost_tier": "low"
+    },
+    {
+      "id": "asset:templates_library",
+      "name": "Templates Library (project plans, forms, checklists)",
+      "format": "template_pack",
+      "evergreen": true,
+      "time_to_effect_days": 7,
+      "base_lift_bp": 26,
+      "stage_fit": ["discovery","implementation"],
+      "concern_tags": ["standardization","governance","speed"],
+      "persona_fit": ["implementations_manager","project_manager"],
+      "evidence": "Resource pages and template blog posts",
+      "cost_tier": "low"
+    },
+    {
+      "id": "asset:blog",
+      "name": "Rocketlane Blog (product updates, resources)",
       "format": "blog",
-      "stages": ["problem", "resolution"],
-      "personas": [
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "Product Leader", "department": "Product", "seniority": "Director"},
-        {"title": "Founder", "department": "Executive", "seniority": "Executive"}
-      ],
-      "purpose": "thought_leadership",
       "evergreen": true,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.06,
-      "notes": "Blog posts tend to attract moderate organic traffic; this one likely above average given topic."
+      "time_to_effect_days": 30,
+      "base_lift_bp": 20,
+      "stage_fit": ["zmot","discovery"],
+      "concern_tags": ["best_practices","product_updates"],
+      "persona_fit": ["ps_leader","csm_head","project_manager"],
+      "evidence": "Blog hub with product updates & resource posts",
+      "cost_tier": "low"
     },
     {
-      "id": "webinar_edtech_investor_sentiment",
-      "name": "Investor Sentiment: 2025 EdTech Market Perspectives",
-      "format": "webinar",
-      "stages": ["problem", "resolution"],
-      "personas": [
-        {"title": "Founder", "department": "Executive", "seniority": "Executive"},
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "Strategy Leader", "department": "Strategy", "seniority": "VP"}
-      ],
-      "purpose": "thought_leadership",
-      "evergreen": false,
-      "industry_tags": ["EdTech"],
-      "engagement_rate": 0.07,
-      "notes": "EdTech focused - smaller but engaged audience."
-    },
-    {
-      "id": "event_beelieve_sf",
-      "name": "Beelieve ’25 – San Francisco",
-      "format": "event",
-      "stages": ["problem", "pain", "resolution"],
-      "personas": [
-        {"title": "CXO", "department": "Executive", "seniority": "Executive"},
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "Product Leader", "department": "Product", "seniority": "Director"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
-      ],
-      "purpose": "community_event",
-      "evergreen": false,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.12,
-      "notes": "Major flagship event; higher engagement from social + attendees."
-    },
-    {
-      "id": "event_beelieve_london",
-      "name": "Beelieve ’25 – London",
-      "format": "event",
-      "stages": ["problem", "pain"],
-      "personas": [
-        {"title": "CXO", "department": "Executive", "seniority": "Executive"},
-        {"title": "Finance Leader", "department": "Finance", "seniority": "VP"},
-        {"title": "Product Leader", "department": "Product", "seniority": "Director"}
-      ],
-      "purpose": "community_event",
-      "evergreen": false,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.10,
-      "notes": "Twitter post sample: 576 views → modest public engagement but high event value."
-    },
-    {
-      "id": "event_dreamforce_2025",
-      "name": "Chargebee at Dreamforce 2025",
-      "format": "event",
-      "stages": ["problem"],
-      "personas": [
-        {"title": "Sales Leader", "department": "Sales", "seniority": "VP"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"},
-        {"title": "Finance Leader", "department": "Finance", "seniority": "VP"}
-      ],
-      "purpose": "brand_presence",
-      "evergreen": false,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.09,
-      "notes": "Typically decent reach due to event size and partner/attendee amplification."
-    },
-    {
-      "id": "blog_subscriptionx_strategies",
-      "name": "SubscriptionX 2025 Insights — 7 Proven Strategies",
-      "format": "blog",
-      "stages": ["problem", "execution"],
-      "personas": [
-        {"title": "CFO", "department": "Finance", "seniority": "Executive"},
-        {"title": "Product Manager", "department": "Product", "seniority": "Manager"},
-        {"title": "Growth Leader", "department": "Marketing", "seniority": "Director"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
-      ],
-      "purpose": "event_recap",
-      "evergreen": false,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.06,
-      "notes": ""
-    },
-    {
-      "id": "video_cpq_hubspot_demo",
-      "name": "Creating a Quote for New Business — Chargebee CPQ for HubSpot",
-      "format": "video",
-      "stages": ["execution"],
-      "personas": [
-        {"title": "Account Executive", "department": "Sales", "seniority": "IC"},
-        {"title": "Sales Ops", "department": "Sales", "seniority": "Manager"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
-      ],
-      "purpose": "product_demo",
+      "id": "asset:preflight_conversations",
+      "name": "Preflight Conversations (community-sourced articles)",
+      "format": "community_content",
       "evergreen": true,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.85,
-      "notes": "This video has ~1.1M views, very high engagement. :contentReference[oaicite:0]{index=0}"
+      "time_to_effect_days": 21,
+      "base_lift_bp": 24,
+      "stage_fit": ["discovery"],
+      "concern_tags": ["peer_learning","process","adoption"],
+      "persona_fit": ["ps_leader","csm_head"],
+      "evidence": "Preflight Conversations blog category",
+      "cost_tier": "low"
     },
     {
-      "id": "video_subscription_renewal_cpq",
-      "name": "Creating a Quote for Subscription Amendment or Renewal — CPQ for HubSpot",
-      "format": "video",
-      "stages": ["execution"],
-      "personas": [
-        {"title": "Account Executive", "department": "Sales", "seniority": "IC"},
-        {"title": "Sales Ops", "department": "Sales", "seniority": "Manager"},
-        {"title": "RevOps", "department": "Revenue Operations", "seniority": "Manager"}
-      ],
-      "purpose": "product_demo",
-      "evergreen": true,
-      "industry_tags": ["SaaS"],
-      "engagement_rate": 0.80,
-      "notes": "~682K views. :contentReference[oaicite:1]{index=1}"
-    }
-  ],
-
-  "product:72147774df84b926": [
-    {
-      "id": "asset_predictive_modeling_guide",
-      "name": "Predictive Modeling Guide for Market Trends",
-      "format": "guide",
-      "stages": ["execution"],
-      "personas": [
-        {"title": "data scientist", "department": "corporate strategy", "seniority": "Senior"}
-      ],
-      "purpose": "problem_validation",
-      "evidence_strength": 0.85,
-      "production_days": 7,
-      "est_cost": 2500,
-      "evergreen": true,
-      "industry_tags": ["Corporate Strategy", "Analytics"],
-      "notes": "Addresses inability to predict market changes and improves forecast accuracy."
-    },
-    {
-      "id": "asset_trend_analysis_template",
-      "name": "Trend Analysis Template for Data Analysts",
-      "format": "template",
-      "stages": ["problem", "pain"],
-      "personas": [
-        {"title": "data analyst", "department": "analytics", "seniority": "Operator"},
-        {"title": "data analyst", "department": "analytics", "seniority": "Manager"}
-      ],
-      "purpose": "problem_validation",
-      "evidence_strength": 0.80,
-      "production_days": 4,
-      "est_cost": 1200,
-      "evergreen": true,
-      "industry_tags": ["Analytics"],
-      "notes": "Helps identify key trends in large datasets and improve time to insight."
-    },
-    {
-      "id": "asset_data_integration_best_practices",
-      "name": "Data Integration Best Practices for IT Analysts",
-      "format": "guide",
-      "stages": ["pain", "execution"],
-      "personas": [
-        {"title": "data analyst", "department": "it", "seniority": "Senior"}
-      ],
-      "purpose": "problem_validation",
-      "evidence_strength": 0.82,
-      "production_days": 6,
-      "est_cost": 1800,
-      "evergreen": true,
-      "industry_tags": ["IT", "Analytics"],
-      "notes": "Covers trend identification and managing diverse data sources."
-    },
-    {
-      "id": "asset_training_specialist_toolkit",
-      "name": "Training Specialist Analytics Toolkit",
-      "format": "toolkit",
-      "stages": ["execution"],
-      "personas": [
-        {"title": "training specialist", "department": "marketing", "seniority": "Operator"}
-      ],
-      "purpose": "problem_validation",
-      "evidence_strength": 0.75,
-      "production_days": 5,
-      "est_cost": 1000,
-      "evergreen": true,
-      "industry_tags": ["Marketing", "Analytics"],
-      "notes": "Toolkit for training specialists to analyze trends and improve insight speed."
-    },
-    {
-      "id": "asset_strategy_manager_guide",
-      "name": "IT Manager Strategy Guide",
-      "format": "guide",
-      "stages": ["problem"],
-      "personas": [
-        {"title": "it manager", "department": "corporate strategy", "seniority": "Manager"},
-        {"title": "it manager", "department": "marketing", "seniority": "Manager"}
-      ],
-      "purpose": "problem_validation",
-      "evidence_strength": 0.78,
-      "production_days": 6,
-      "est_cost": 1500,
-      "evergreen": true,
-      "industry_tags": ["Corporate Strategy", "Marketing"],
-      "notes": "Helps IT managers develop data-driven strategies and identify trends."
-    },
-    {
-      "id": "asset_strategic_analyst_solution",
-      "name": "Strategic Analyst Solution Playbook",
-      "format": "playbook",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "strategic analyst", "department": "corporate strategy", "seniority": "Senior"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.80,
-      "production_days": 7,
-      "est_cost": 2000,
-      "evergreen": true,
-      "industry_tags": ["Corporate Strategy"],
-      "notes": "Playbook for strategic analysts to implement data-driven strategies."
-    }
-  ],
-  "product:0460a497c88a837d":[
-      {
-      "id": "asset_growfin_roi_calculator_integration",
-      "name": "ROI/TCO Calculator: ERP Data Integration with GrowFin.ai",
-      "format": "calculator",
-      "stages": ["execution", "resolution"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.82,
-      "production_days": 12,
-      "est_cost": 8500,
-      "evergreen": true,
-      "industry_tags": ["ERP", "Finance", "SaaS"],
-      "notes": "Interactive inputs for error-rate reduction, mapping automation, and faster reporting cycles."
-    },
-    {
-      "id": "asset_growfin_case_study_error_reduction",
-      "name": "Case Study: 60% Fewer Integration Errors Across Multi-ERP",
+      "id": "asset:customer_stories",
+      "name": "Customer Stories / Case Studies",
       "format": "case_study",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.9,
-      "production_days": 8,
-      "est_cost": 4000,
       "evergreen": true,
-      "industry_tags": ["ERP", "FinOps"],
-      "notes": "Highlights improvement in integration error rates, mapping accuracy, and time-to-close."
+      "time_to_effect_days": 10,
+      "base_lift_bp": 40,
+      "stage_fit": ["barriers","implementation"],
+      "concern_tags": ["social_proof","time_to_value","nps_csat"],
+      "persona_fit": ["cxo_services","ps_leader","cfo"],
+      "evidence": "Customers/case studies library",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_architecture_deep_dive",
-      "name": "Technical Deep-Dive: GrowFin.ai Integration Architecture",
-      "format": "tech_deep_dive",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.76,
-      "production_days": 7,
-      "est_cost": 3200,
+      "id": "asset:rocketlane_tv",
+      "name": "Rocketlane TV (owned OTT channel)",
+      "format": "video_channel",
       "evergreen": true,
-      "industry_tags": ["ERP", "iPaaS", "APIs"],
-      "notes": "Covers connectors, mapping engine, schema normalization, and failover strategies."
+      "time_to_effect_days": 21,
+      "base_lift_bp": 22,
+      "stage_fit": ["zmot","discovery"],
+      "concern_tags": ["education","thought_leadership"],
+      "persona_fit": ["ps_leader","csm_head","implementations_manager"],
+      "evidence": "Rocketlane TV hub",
+      "cost_tier": "med"
     },
     {
-      "id": "asset_growfin_demo_video_5min",
-      "name": "5-min Demo: Mapping & Format Normalization",
-      "format": "demo_video",
-      "stages": ["resolution", "pain"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.58,
-      "production_days": 5,
-      "est_cost": 1800,
+      "id": "asset:podcast_launch_station",
+      "name": "The Launch Station (podcast)",
+      "format": "podcast",
       "evergreen": true,
-      "industry_tags": ["ERP"],
-      "notes": "Shows resolving inconsistent data formats and schema incompatibilities."
+      "time_to_effect_days": 21,
+      "base_lift_bp": 18,
+      "stage_fit": ["zmot","discovery"],
+      "concern_tags": ["best_practices","stories"],
+      "persona_fit": ["ps_leader","csm_head"],
+      "evidence": "Podcast hub + individual episode pages; Spotify listing",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_comparison_vs_manual_scripts",
-      "name": "Comparison Guide: GrowFin.ai vs Manual Scripts/iPaaS",
-      "format": "comparison_guide",
-      "stages": ["pain"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.66,
-      "production_days": 6,
-      "est_cost": 2500,
+      "id": "asset:events_hub",
+      "name": "Events & Webinars Hub",
+      "format": "events_hub",
       "evergreen": true,
-      "industry_tags": ["ERP", "Integration"],
-      "notes": "Evaluates mapping effort, maintenance overhead, reliability, and time-to-value."
+      "time_to_effect_days": 10,
+      "base_lift_bp": 25,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["education","evaluation"],
+      "persona_fit": ["ps_leader","program_manager","revops"],
+      "evidence": "Events page",
+      "cost_tier": "med"
     },
     {
-      "id": "asset_growfin_poc_offer_30day",
-      "name": "30-Day Proof-of-Concept Offer",
-      "format": "poc_offer",
-      "stages": ["resolution"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.88,
-      "production_days": 2,
-      "est_cost": 1500,
-      "evergreen": true,
-      "industry_tags": ["ERP"],
-      "notes": "Hands-on validation for mapping accuracy and reduced failure rates."
+      "id": "asset:webinar_series_isdo",
+      "name": "Webinar Series: Intelligent Service Delivery Organization",
+      "format": "webinar_series",
+      "evergreen": false,
+      "time_to_effect_days": 7,
+      "base_lift_bp": 27,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["automation","ai","governance"],
+      "persona_fit": ["ps_leader","program_manager"],
+      "evidence": "Event/webinar listings",
+      "cost_tier": "med"
     },
     {
-      "id": "asset_growfin_benchmark_integration_errors",
-      "name": "Benchmark Report: Integration Error Rates Across ERPs",
-      "format": "benchmark",
-      "stages": ["pain", "problem"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"}
-      ],
-      "purpose": "pain_validation",
-      "evidence_strength": 0.7,
-      "production_days": 10,
-      "est_cost": 6000,
-      "evergreen": true,
-      "industry_tags": ["ERP"],
-      "notes": "Benchmarks error rates, failure rates, and format inconsistencies per platform."
+      "id": "asset:roadshow_engage_ai",
+      "name": "Engage with AI Roadshow (city events)",
+      "format": "field_event",
+      "evergreen": false,
+      "time_to_effect_days": 14,
+      "base_lift_bp": 33,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["community","peer_validation","innovation"],
+      "persona_fit": ["cxo_services","ps_leader"],
+      "evidence": "Roadshow event pages & LinkedIn announcements",
+      "cost_tier": "high"
     },
     {
-      "id": "asset_growfin_checklist_mapping_accuracy",
-      "name": "Checklist: Data Mapping Accuracy & Format Normalization",
-      "format": "checklist",
-      "stages": ["pain", "problem"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"}
-      ],
-      "purpose": "pain_validation",
-      "evidence_strength": 0.6,
-      "production_days": 3,
-      "est_cost": 900,
-      "evergreen": true,
-      "industry_tags": ["ERP"],
-      "notes": "Step-by-step validation for mapping, schema conflicts, and compatibility."
+      "id": "asset:propel_conference",
+      "name": "Propel (annual/flagship conference)",
+      "format": "conference",
+      "evergreen": false,
+      "time_to_effect_days": 28,
+      "base_lift_bp": 45,
+      "stage_fit": ["discovery","barriers","implementation"],
+      "concern_tags": ["category","vision","community"],
+      "persona_fit": ["cxo_services","ps_leader","cfo"],
+      "evidence": "Propel25 press release (flagship conference)",
+      "cost_tier": "high"
     },
     {
-      "id": "asset_growfin_runbook_inconsistent_formats",
-      "name": "Runbook: Handling Inconsistent Data Formats Across Systems",
-      "format": "one_pager",
-      "stages": ["pain"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"}
-      ],
-      "purpose": "pain_validation",
-      "evidence_strength": 0.55,
-      "production_days": 4,
-      "est_cost": 1200,
+      "id": "asset:product_demos",
+      "name": "Live Product Demos",
+      "format": "demo",
       "evergreen": true,
-      "industry_tags": ["ERP", "Data Engineering"],
-      "notes": "Standard operating procedures for normalization and error remediation."
+      "time_to_effect_days": 5,
+      "base_lift_bp": 36,
+      "stage_fit": ["barriers","implementation"],
+      "concern_tags": ["fit","integration","roi"],
+      "persona_fit": ["ps_leader","it_ops","revops"],
+      "evidence": "Signup & demo CTAs on site",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_ops_playbook_problem_to_pain",
-      "name": "Ops Playbook: From Problem to Pain—Quantifying Integration Risk",
-      "format": "checklist",
-      "stages": ["problem", "pain"],
-      "personas": [
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "awareness",
-      "evidence_strength": 0.5,
-      "production_days": 3,
-      "est_cost": 1000,
+      "id": "asset:help_center",
+      "name": "Help Center / Knowledge Base",
+      "format": "documentation",
       "evergreen": true,
-      "industry_tags": ["ERP", "Finance"],
-      "notes": "Connects downtime and sync errors to reporting delays and reconciliation effort."
+      "time_to_effect_days": 30,
+      "base_lift_bp": 12,
+      "stage_fit": ["implementation","promised_land"],
+      "concern_tags": ["adoption","enablement"],
+      "persona_fit": ["project_manager","admin","implementations_manager"],
+      "evidence": "Help Center docs incl. notifications",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_webinar_risk_controls",
-      "name": "Webinar: Reducing Integration Failure Rates & Reporting Delays",
-      "format": "webinar",
-      "stages": ["pain", "resolution"],
-      "personas": [
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"},
-        {"title": "credit analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "pain_validation",
-      "evidence_strength": 0.7,
-      "production_days": 9,
-      "est_cost": 6500,
+      "id": "asset:academy",
+      "name": "Academy (self-learning portal)",
+      "format": "academy",
       "evergreen": true,
-      "industry_tags": ["ERP", "Finance"],
-      "notes": "Includes live demo of GrowFin.ai’s mapping automation and monitoring."
+      "time_to_effect_days": 30,
+      "base_lift_bp": 16,
+      "stage_fit": ["implementation","promised_land"],
+      "concern_tags": ["enablement","training"],
+      "persona_fit": ["project_manager","csm_head","admin"],
+      "evidence": "Academy site",
+      "cost_tier": "med"
     },
     {
-      "id": "asset_growfin_whitepaper_reporting_latency",
-      "name": "Whitepaper: Eliminating Reporting Latency from ERP Silos",
-      "format": "whitepaper",
-      "stages": ["problem", "execution"],
-      "personas": [
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "credit analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.78,
-      "production_days": 11,
-      "est_cost": 5000,
+      "id": "asset:newsroom",
+      "name": "Newsroom / Press Releases",
+      "format": "press",
       "evergreen": true,
-      "industry_tags": ["Finance", "ERP"],
-      "notes": "Links data availability & cycle time to reconciliation accuracy and close speed."
+      "time_to_effect_days": 10,
+      "base_lift_bp": 18,
+      "stage_fit": ["zmot","discovery"],
+      "concern_tags": ["credibility","momentum"],
+      "persona_fit": ["cxo_services","analyst_relations","press"],
+      "evidence": "Press & newsroom pages",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_datasheet_connectors",
-      "name": "Datasheet: Connectors, Mapping Engine & Monitoring",
-      "format": "datasheet",
-      "stages": ["execution"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.6,
-      "production_days": 2,
-      "est_cost": 600,
+      "id": "asset:partner_program",
+      "name": "Partner Program Pages",
+      "format": "partner_page",
       "evergreen": true,
-      "industry_tags": ["ERP", "APIs"],
-      "notes": "Feature matrix, supported ERPs, SLAs, and alerting."
+      "time_to_effect_days": 21,
+      "base_lift_bp": 20,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["ecosystem","implementation","services_scale"],
+      "persona_fit": ["services_partner","si_partner_manager"],
+      "evidence": "Partner presence noted on site",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_email_sequence_it_ops",
-      "name": "Email Sequence: IT Ops—From Format Issues to Stable Integrations",
-      "format": "email_sequence",
-      "stages": ["problem", "pain"],
-      "personas": [
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"}
-      ],
-      "purpose": "awareness",
-      "evidence_strength": 0.5,
-      "production_days": 3,
-      "est_cost": 1200,
+      "id": "asset:yt_channel",
+      "name": "YouTube Channel (demos, product updates)",
+      "format": "video_channel",
       "evergreen": true,
-      "industry_tags": ["ERP"],
-      "notes": "3–5 touch sequence linking metrics (error rates, mapping accuracy) to outcomes."
+      "time_to_effect_days": 21,
+      "base_lift_bp": 16,
+      "stage_fit": ["zmot","discovery","barriers"],
+      "concern_tags": ["education","product_fit"],
+      "persona_fit": ["ps_leader","project_manager","it_ops"],
+      "evidence": "YouTube channel and videos",
+      "cost_tier": "low"
     },
     {
-      "id": "asset_growfin_landing_page_integration",
-      "name": "Landing Page: Multi-ERP Consolidation with GrowFin.ai",
-      "format": "landing_page",
-      "stages": ["resolution", "pain", "problem"],
-      "personas": [
-        {"title": "financial systems analyst", "department": "Finance", "seniority": "Operator"},
-        {"title": "erp administrator", "department": "IT", "seniority": "Manager"},
-        {"title": "data integration engineer", "department": "IT", "seniority": "Operator"},
-        {"title": "erp integration specialist", "department": "IT", "seniority": "Operator"},
-        {"title": "credit analyst", "department": "Finance", "seniority": "Operator"}
-      ],
-      "purpose": "solution_proof",
-      "evidence_strength": 0.62,
-      "production_days": 6,
-      "est_cost": 2000,
+      "id": "asset:city_cohorts",
+      "name": "Preflight City Cohorts & Meetups",
+      "format": "community_event",
+      "evergreen": false,
+      "time_to_effect_days": 21,
+      "base_lift_bp": 26,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["peer_connects","category","practice_exchange"],
+      "persona_fit": ["ps_leader","csm_head"],
+      "evidence": "Preflight community & city cohorts mentions",
+      "cost_tier": "med"
+    },
+    {
+      "id": "asset:newsletter_offers",
+      "name": "Newsletter/Offer Landing (e.g., Latka promo)",
+      "format": "offer_landing",
+      "evergreen": false,
+      "time_to_effect_days": 7,
+      "base_lift_bp": 22,
+      "stage_fit": ["discovery","barriers"],
+      "concern_tags": ["incentive","trial","evaluation"],
+      "persona_fit": ["ps_leader","project_manager"],
+      "evidence": "Latka newsletter offer page",
+      "cost_tier": "low"
+    },
+    {
+      "id": "asset:event_recaps",
+      "name": "Event Recap Articles",
+      "format": "blog",
       "evergreen": true,
-      "industry_tags": ["ERP", "Finance"],
-      "notes": "Ties capabilities to pains and metrics: integration error rate, reporting cycle time."
+      "time_to_effect_days": 14,
+      "base_lift_bp": 14,
+      "stage_fit": ["discovery"],
+      "concern_tags": ["community","learning"],
+      "persona_fit": ["ps_leader","program_manager"],
+      "evidence": "Event recap posts on blog",
+      "cost_tier": "low"
     }
-
   ]
+
 }

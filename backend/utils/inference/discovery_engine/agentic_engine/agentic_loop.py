@@ -1,5 +1,6 @@
 # agentic_loop.py
 
+from typing import Any, Dict, Iterable, List, Optional
 from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.graph_base.schema import EDGES
 from backend.utils.inference.discovery_engine.agentic_engine.agent_context import AgentContext
@@ -8,6 +9,7 @@ from backend.utils.graph_base.network_graph import (
     get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type, update_graph
 )
 from backend.utils.inference.discovery_engine.agentic_discovery_engine import (
+    expand_frontier_one_layer,
     hop0_inference,
     pain_source_inference,
     process_hop_plus_gpt_cache,
@@ -83,10 +85,12 @@ def agentic_inference(product_subgraph: nx.DiGraph, context: AgentContext | None
     product_id = get_node_id(product_subgraph, "product", {})
     if not product_id:
         raise ValueError("❌ Product ID not found in subgraph.")
+    print("🧠 Starting agentic inference pass for product_id:", product_id)
 
     if context is None:
         context = AgentContext(max_depth=3)
     product_subgraph = update_graph(product_subgraph)
+    print("🔎 Starting inference pass for product_id:", product_id)
     # 1) Capabilities must exist
     capability_ids = get_nodes_list_ids(product_subgraph, "capability", {})
     if not capability_ids:
@@ -345,6 +349,56 @@ def archetype_event_discovery(
 
 
 
+#--------------------------------------------
+# Slim Frontier Expansion Contract
+#--------------------------------------------
 
+def run_frontier_expansion(
+    G: nx.DiGraph,
+    seed_ids: Iterable[str],
+    *,
+    only_types: Optional[Iterable[str]] = None,
+    waves: int = 1,
+    max_items_per_source: int = 5,
+    model: str = "gpt-4o-mini",
+    ctx: Optional["AgentContext"] = None,
+    # fallbacks if ctx is not provided
+    product_id: Optional[str] = None,
+    product_summary: Optional[str] = None,
+    product_industry: Optional[str] = None,
+    product_domain: Optional[str] = None,
+    client: Optional[Any] = None,
+    now_iso_fn: Optional[callable] = None,
+    build_product_context_fn: Optional[callable] = None,
+) -> Dict[str, Any]:
+    seeds: List[str] = list(seed_ids or [])
+    waves = max(int(waves or 1), 1)
+    agg: Dict[str, Any] = {"expanded_count": 0, "by_type_counts": {}, "new_node_ids": []}
+    if ctx is None:
+        ctx = AgentContext(max_depth=3)
+    for _ in range(waves):
+        print("Expanding waves — current seeds:", seeds)
+        out = expand_frontier_one_layer(
+            G,
+            seeds,
+            only_types=list(only_types) if only_types else None,
+            max_items_per_source=int(max_items_per_source),
+            model=model,
+            ctx=ctx,
+        )
+        if isinstance(out, dict):
+            agg["expanded_count"] += int(out.get("expanded_count", 0))
+            for k, v in (out.get("by_type_counts") or {}).items():
+                agg["by_type_counts"][k] = int(agg["by_type_counts"].get(k, 0)) + int(v)
+            agg["new_node_ids"].extend(out.get("new_node_ids") or [])
 
+        # If you want “multi-wave” chaining, uncomment:
+        # seeds = out.get("new_node_ids") or seeds
+
+    # de-dup
+    if agg["new_node_ids"]:
+        s = set(); agg["new_node_ids"] = [x for x in agg["new_node_ids"] if not (x in s or s.add(x))]
+    print("Frontier expansion complete:", agg)
+    update_graph(G)
+    return agg
 

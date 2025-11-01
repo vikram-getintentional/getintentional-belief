@@ -1,547 +1,278 @@
 {
-  "product:92f2dce1fb6eb34c": [
+  "5a742a1a-fa9c-47f3-bca2-72e49cd10cd6": [
+  {
+    "id": "channel:ch_email",
+    "name": "Email (Owned)",
+    "type": "email",
+    "reach_score": 0.6,
+    "time_to_effect_days": 2,
+    "breadth_multiplier": 0.8,
+    "cadence_hint": "1-2 sends/week"
+  },
+  {
+    "id": "channel:ch_sales_outreach",
+    "name": "Sales 1:1 Outreach",
+    "type": "sales_outreach",
+    "reach_score": 0.4,
+    "time_to_effect_days": 1,
+    "breadth_multiplier": 0.7,
+    "cadence_hint": "3-5 touches/2 weeks"
+  },
+  {
+    "id": "channel:ch_linkedin",
+    "name": "LinkedIn Ads",
+    "type": "paid_social",
+    "reach_score": 0.8,
+    "time_to_effect_days": 3,
+    "breadth_multiplier": 0.9,
+    "cadence_hint": "2-3 creatives/week"
+  },
+  {
+    "id": "channel:ch_webinar",
+    "name": "Webinar Platform",
+    "type": "webinar_platform",
+    "reach_score": 0.55,
+    "time_to_effect_days": 7,
+    "breadth_multiplier": 0.78,
+    "cadence_hint": "1 session/2-4 weeks"
+  },
+  {
+    "id": "channel:ch_retarget",
+    "name": "Retargeting",
+    "type": "retargeting",
+    "reach_score": 0.65,
+    "time_to_effect_days": 2,
+    "breadth_multiplier": 0.82,
+    "cadence_hint": "always-on, refresh 2-3 weeks"
+  },
+  {
+    "id": "channel:ch_field_event",
+    "name": "Executive Field Event",
+    "type": "field_event",
+    "reach_score": 0.3,
+    "time_to_effect_days": 21,
+    "breadth_multiplier": 0.65,
+    "cadence_hint": "1 event/quarter"
+  },
+  {
+    "id": "channel:ch_data_integration_email",
+    "name": "Data Integration Specialist Email",
+    "type": "email",
+    "reach_score": 0.55,
+    "time_to_effect_days": 2,
+    "breadth_multiplier": 0.78,
+    "cadence_hint": "1-2 sends/week"
+  },
+  {
+    "id": "channel:ch_it_support_email",
+    "name": "IT Support Specialist Email",
+    "type": "email",
+    "reach_score": 0.52,
+    "time_to_effect_days": 2,
+    "breadth_multiplier": 0.76,
+    "cadence_hint": "1-2 sends/week"
+  },
+  {
+    "id": "channel:ch_integration_engineer_email",
+    "name": "Integration Engineer Email",
+    "type": "email",
+    "reach_score": 0.5,
+    "time_to_effect_days": 2,
+    "breadth_multiplier": 0.75,
+    "cadence_hint": "1-2 sends/week"
+  },
+  {
+    "id": "channel:ch_data_integration_webinar",
+    "name": "Data Integration Specialist Webinar",
+    "type": "webinar_platform",
+    "reach_score": 0.6,
+    "time_to_effect_days": 7,
+    "breadth_multiplier": 0.8,
+    "cadence_hint": "1 session/2-4 weeks"
+  },
+  {
+    "id": "channel:ch_it_support_webinar",
+    "name": "IT Support Specialist Webinar",
+    "type": "webinar_platform",
+    "reach_score": 0.58,
+    "time_to_effect_days": 7,
+    "breadth_multiplier": 0.79,
+    "cadence_hint": "1 session/2-4 weeks"
+  },
+  {
+    "id": "channel:ch_integration_engineer_webinar",
+    "name": "Integration Engineer Webinar",
+    "type": "webinar_platform",
+    "reach_score": 0.57,
+    "time_to_effect_days": 7,
+    "breadth_multiplier": 0.78,
+    "cadence_hint": "1 session/2-4 weeks"
+  }
+],
+  
+  "e172ce99-993a-4cf9-84b7-e14f4b6aa06c": [
     {
-      "id": "ch_email",
-      "name": "Email (Owned)",
-      "type": "email",
-      "reach_score": 0.6,
-      "cost_index": 0.15,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "cfo", "department": "finance", "seniority": "Executive"}, "score": 0.7},
-        {"persona": {"title": "cto", "department": "engineering", "seniority": "Executive"}, "score": 0.7},
-        {"persona": {"title": "vp engineering", "department": "engineering", "seniority": "Senior"}, "score": 0.7},
-        {"persona": {"title": "cio", "department": "it", "seniority": "Executive"}, "score": 0.7},
-        {"persona": {"title": "operations manager", "department": "operations", "seniority": "Manager"}, "score": 0.7},
-        {"persona": {"title": "security lead", "department": "security", "seniority": "Senior"}, "score": 0.7},
-        {"persona": {"title": "finance operations manager", "department": "finance", "seniority": "Manager"}, "score": 0.7},
-        {"persona": {"title": "data leader", "department": "data", "seniority": "Senior"}, "score": 0.7},
-        {"persona": {"title": "procurement manager", "department": "procurement", "seniority": "Manager"}, "score": 0.7}
-      ],
-      "stage_fit": {"problem": 0.5, "pain": 0.65, "solution": 0.75},
-      "targeting": ["account list", "title", "intent signal"],
-      "notes": ""
+      "id": "channel:seo",
+      "name": "SEO / Organic Search",
+      "type": "owned",
+      "reach_score": 0.7,
+      "time_to_effect_days": 45,
+      "breadth_multiplier": 1.0,
+      "cadence_hint": "2–4 high-intent resources/month"
     },
     {
-      "id": "ch_sales_outreach",
-      "name": "Sales 1:1 Outreach",
-      "type": "sales_outreach",
-      "reach_score": 0.4,
-      "cost_index": 0.25,
-      "lead_days": 1,
-      "persona_fit": [
-        {"persona": {"title": "cfo", "department": "finance", "seniority": "Executive"}, "score": 0.9},
-        {"persona": {"title": "cto", "department": "engineering", "seniority": "Executive"}, "score": 0.85},
-        {"persona": {"title": "vp engineering", "department": "engineering", "seniority": "Senior"}, "score": 0.85},
-        {"persona": {"title": "cio", "department": "it", "seniority": "Executive"}, "score": 0.85},
-        {"persona": {"title": "procurement manager", "department": "procurement", "seniority": "Manager"}, "score": 0.8},
-        {"persona": {"title": "operations manager", "department": "operations", "seniority": "Manager"}, "score": 0.6},
-        {"persona": {"title": "security lead", "department": "security", "seniority": "Senior"}, "score": 0.8},
-        {"persona": {"title": "finance operations manager", "department": "finance", "seniority": "Manager"}, "score": 0.75},
-        {"persona": {"title": "data leader", "department": "data", "seniority": "Senior"}, "score": 0.7}
-      ],
-      "stage_fit": {"problem": 0.4, "pain": 0.65, "solution": 0.9},
-      "targeting": ["warm intros", "executive sponsor"],
-      "notes": ""
-    },
-    {
-      "id": "ch_linkedin",
+      "id": "channel:linkedin_ads",
       "name": "LinkedIn Ads",
-      "type": "linkedin_ads",
-      "reach_score": 0.8,
-      "cost_index": 0.6,
-      "lead_days": 3,
-      "persona_fit": [
-        {"persona": {"title": "cfo", "department": "finance", "seniority": "Executive"}, "score": 0.75},
-        {"persona": {"title": "cto", "department": "engineering", "seniority": "Executive"}, "score": 0.85},
-        {"persona": {"title": "vp engineering", "department": "engineering", "seniority": "Senior"}, "score": 0.85},
-        {"persona": {"title": "cio", "department": "it", "seniority": "Executive"}, "score": 0.8},
-        {"persona": {"title": "operations manager", "department": "operations", "seniority": "Manager"}, "score": 0.7},
-        {"persona": {"title": "security lead", "department": "security", "seniority": "Senior"}, "score": 0.8},
-        {"persona": {"title": "finance operations manager", "department": "finance", "seniority": "Manager"}, "score": 0.75},
-        {"persona": {"title": "data leader", "department": "data", "seniority": "Senior"}, "score": 0.8},
-        {"persona": {"title": "procurement manager", "department": "procurement", "seniority": "Manager"}, "score": 0.7}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["title", "company", "skill", "group membership", "ABM list"],
-      "notes": ""
-    },
-    {
-      "id": "ch_webinar",
-      "name": "Webinar Platform",
-      "type": "webinar_platform",
-      "reach_score": 0.55,
-      "cost_index": 0.45,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "cfo", "department": "finance", "seniority": "Executive"}, "score": 0.7},
-        {"persona": {"title": "cto", "department": "engineering", "seniority": "Executive"}, "score": 0.8},
-        {"persona": {"title": "vp engineering", "department": "engineering", "seniority": "Senior"}, "score": 0.75},
-        {"persona": {"title": "cio", "department": "it", "seniority": "Executive"}, "score": 0.8},
-        {"persona": {"title": "security lead", "department": "security", "seniority": "Senior"}, "score": 0.85},
-        {"persona": {"title": "operations manager", "department": "operations", "seniority": "Manager"}, "score": 0.6},
-        {"persona": {"title": "finance operations manager", "department": "finance", "seniority": "Manager"}, "score": 0.65},
-        {"persona": {"title": "data leader", "department": "data", "seniority": "Senior"}, "score": 0.7},
-        {"persona": {"title": "procurement manager", "department": "procurement", "seniority": "Manager"}, "score": 0.5}
-      ],
-      "stage_fit": {"problem": 0.5, "pain": 0.85, "solution": 0.75},
-      "targeting": ["registration", "co-marketing", "analyst"],
-      "notes": ""
-    },
-    {
-      "id": "ch_retarget",
-      "name": "Retargeting",
-      "type": "retargeting",
+      "type": "paid_social",
       "reach_score": 0.65,
-      "cost_index": 0.3,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "cfo", "department": "finance", "seniority": "Executive"}, "score": 0.6},
-        {"persona": {"title": "cto", "department": "engineering", "seniority": "Executive"}, "score": 0.6},
-        {"persona": {"title": "vp engineering", "department": "engineering", "seniority": "Senior"}, "score": 0.6},
-        {"persona": {"title": "cio", "department": "it", "seniority": "Executive"}, "score": 0.6},
-        {"persona": {"title": "operations manager", "department": "operations", "seniority": "Manager"}, "score": 0.6},
-        {"persona": {"title": "security lead", "department": "security", "seniority": "Senior"}, "score": 0.6},
-        {"persona": {"title": "finance operations manager", "department": "finance", "seniority": "Manager"}, "score": 0.6},
-        {"persona": {"title": "data leader", "department": "data", "seniority": "Senior"}, "score": 0.6},
-        {"persona": {"title": "procurement manager", "department": "procurement", "seniority": "Manager"}, "score": 0.6}
-      ],
-      "stage_fit": {"problem": 0.6, "pain": 0.7, "solution": 0.75},
-      "targeting": ["site visitors", "engaged audiences"],
-      "notes": ""
+      "time_to_effect_days": 7,
+      "breadth_multiplier": 0.8,
+      "cadence_hint": "2–3 creatives/week; rotate offers"
     },
     {
-      "id": "ch_field_event",
-      "name": "Executive Field Event",
-      "type": "field_event",
-      "reach_score": 0.3,
-      "cost_index": 0.9,
-      "lead_days": 21,
-      "persona_fit": [
-        {"persona": {"title": "cfo", "department": "finance", "seniority": "Executive"}, "score": 0.9},
-        {"persona": {"title": "cto", "department": "engineering", "seniority": "Executive"}, "score": 0.85},
-        {"persona": {"title": "cio", "department": "it", "seniority": "Executive"}, "score": 0.85},
-        {"persona": {"title": "vp engineering", "department": "engineering", "seniority": "Senior"}, "score": 0.7},
-        {"persona": {"title": "procurement manager", "department": "procurement", "seniority": "Manager"}, "score": 0.6},
-        {"persona": {"title": "security lead", "department": "security", "seniority": "Senior"}, "score": 0.7},
-        {"persona": {"title": "operations manager", "department": "operations", "seniority": "Manager"}, "score": 0.4},
-        {"persona": {"title": "finance operations manager", "department": "finance", "seniority": "Manager"}, "score": 0.6},
-        {"persona": {"title": "data leader", "department": "data", "seniority": "Senior"}, "score": 0.6}
-      ],
-      "stage_fit": {"problem": 0.4, "pain": 0.65, "solution": 0.95},
-      "targeting": ["invite-only", "account tier"],
-      "notes": ""
-    },
-    {
-      "id": "ch_data_integration_email",
-      "name": "Data Integration Specialist Email",
-      "type": "email",
+      "id": "channel:linkedin_org",
+      "name": "LinkedIn Organic",
+      "type": "social",
       "reach_score": 0.55,
-      "cost_index": 0.12,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "data integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for IT data integration specialists."
+      "time_to_effect_days": 14,
+      "breadth_multiplier": 0.7,
+      "cadence_hint": "3–5 posts/week incl. clips & carousels"
     },
     {
-      "id": "ch_it_support_email",
-      "name": "IT Support Specialist Email",
-      "type": "email",
-      "reach_score": 0.52,
-      "cost_index": 0.1,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "it support specialist", "department": "it", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.7, "solution": 0.8},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for IT support specialists."
-    },
-    {
-      "id": "ch_integration_engineer_email",
-      "name": "Integration Engineer Email",
-      "type": "email",
-      "reach_score": 0.5,
-      "cost_index": 0.11,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "integration engineer", "department": "it", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for IT integration engineers."
-    },
-    {
-      "id": "ch_data_integration_webinar",
-      "name": "Data Integration Specialist Webinar",
-      "type": "webinar_platform",
+      "id": "channel:youtube",
+      "name": "YouTube",
+      "type": "video",
       "reach_score": 0.6,
-      "cost_index": 0.22,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "data integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for IT data integration specialists."
+      "time_to_effect_days": 14,
+      "breadth_multiplier": 0.75,
+      "cadence_hint": "1–2 videos/week; playlisted"
     },
     {
-      "id": "ch_it_support_webinar",
-      "name": "IT Support Specialist Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.58,
-      "cost_index": 0.2,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "it support specialist", "department": "it", "seniority": "Operator"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.8},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for IT support specialists."
+      "id": "channel:podcast_platforms",
+      "name": "Podcast Platforms (Spotify/Apple)",
+      "type": "audio",
+      "reach_score": 0.45,
+      "time_to_effect_days": 21,
+      "breadth_multiplier": 0.6,
+      "cadence_hint": "Biweekly episodes"
     },
     {
-      "id": "ch_integration_engineer_webinar",
-      "name": "Integration Engineer Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.57,
-      "cost_index": 0.21,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "integration engineer", "department": "it", "seniority": "Operator"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.85, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for IT integration engineers."
-    },
-    {
-      "id": "ch_billing_specialist_email",
-      "name": "Billing Specialist Email",
-      "type": "email",
-      "reach_score": 0.5,
-      "cost_index": 0.1,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "billing specialist", "department": "finance", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for Finance billing specialists."
-    },
-    {
-      "id": "ch_finance_manager_email",
-      "name": "Finance Manager Email",
-      "type": "email",
-      "reach_score": 0.51,
-      "cost_index": 0.11,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "finance manager", "department": "finance", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for Finance managers."
-    },
-    {
-      "id": "ch_financial_analyst_email",
-      "name": "Financial Analyst Email",
-      "type": "email",
-      "reach_score": 0.52,
-      "cost_index": 0.12,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "financial analyst", "department": "finance", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for Finance analysts."
-    },
-    {
-      "id": "ch_billing_specialist_webinar",
-      "name": "Billing Specialist Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.56,
-      "cost_index": 0.2,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "billing specialist", "department": "finance", "seniority": "Operator"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for Finance billing specialists."
-    },
-    {
-      "id": "ch_finance_manager_webinar",
-      "name": "Finance Manager Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.57,
-      "cost_index": 0.21,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "finance manager", "department": "finance", "seniority": "Operator"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for Finance managers."
-    },
-    {
-      "id": "ch_financial_analyst_webinar",
-      "name": "Financial Analyst Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.58,
-      "cost_index": 0.22,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "financial analyst", "department": "finance", "seniority": "Operator"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for Finance analysts."
-    },
-    {
-      "id": "ch_strategy_manager_email",
-      "name": "Strategy Manager Email",
-      "type": "email",
-      "reach_score": 0.53,
-      "cost_index": 0.13,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "strategic planner", "department": "strategy", "seniority": "Manager"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for Strategy managers."
-    },
-    {
-      "id": "ch_strategy_manager_webinar",
-      "name": "Strategy Manager Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.59,
-      "cost_index": 0.23,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "strategic planner", "department": "strategy", "seniority": "Manager"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for Strategy managers."
-    }
-  ],
-
-  "product:72147774df84b926": [
-    {
-      "id": "ch_predictive_modeling_webinar",
-      "name": "Predictive Modeling Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.65,
-      "cost_index": 0.2,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "data scientist", "department": "corporate strategy", "seniority": "Senior"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for predictive modeling and market forecasting."
-    },
-    {
-      "id": "ch_analytics_email",
-      "name": "Analytics Team Email Campaign",
-      "type": "email",
+      "id": "channel:email",
+      "name": "Email / Newsletter",
+      "type": "owned",
       "reach_score": 0.6,
-      "cost_index": 0.12,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "data analyst", "department": "analytics", "seniority": "Operator"}, "score": 0.8},
-        {"persona": {"title": "data analyst", "department": "analytics", "seniority": "Manager"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.8, "solution": 0.7},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for analytics teams to improve time to insight."
+      "time_to_effect_days": 7,
+      "breadth_multiplier": 0.7,
+      "cadence_hint": "Weekly digest; webinar & offer drips"
     },
     {
-      "id": "ch_it_analyst_webinar",
-      "name": "IT Analyst Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.62,
-      "cost_index": 0.18,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "data analyst", "department": "it", "seniority": "Senior"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.85, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for IT analysts on trend identification and data integration."
-    },
-    {
-      "id": "ch_training_specialist_email",
-      "name": "Training Specialist Email",
-      "type": "email",
-      "reach_score": 0.58,
-      "cost_index": 0.11,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "training specialist", "department": "marketing", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.6},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email campaign for marketing training specialists."
-    },
-    {
-      "id": "ch_strategy_manager_webinar",
-      "name": "Strategy Manager Webinar",
-      "type": "webinar_platform",
-      "reach_score": 0.6,
-      "cost_index": 0.19,
-      "lead_days": 7,
-      "persona_fit": [
-        {"persona": {"title": "it manager", "department": "corporate strategy", "seniority": "Manager"}, "score": 0.8},
-        {"persona": {"title": "it manager", "department": "marketing", "seniority": "Manager"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.8, "pain": 0.7, "solution": 0.7},
-      "targeting": ["registration", "title", "department"],
-      "notes": "Webinar for IT managers in strategy and marketing."
-    },
-    {
-      "id": "ch_strategic_analyst_solution_email",
-      "name": "Strategic Analyst Solution Email",
-      "type": "email",
-      "reach_score": 0.61,
-      "cost_index": 0.13,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "strategic analyst", "department": "corporate strategy", "seniority": "Senior"}, "score": 0.85}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.7, "solution": 0.85},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Email for strategic analysts implementing data-driven solutions."
-    }
-  ],
-
-  "product:0460a497c88a837d": [
-    {
-      "id": "ch_it_operator_email",
-      "name": "IT Operator Email",
-      "type": "email",
-      "reach_score": 0.56,
-      "cost_index": 0.14,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "data integration engineer", "department": "it", "seniority": "Operator"}, "score": 0.85},
-        {"persona": {"title": "erp integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.82}
-      ],
-      "stage_fit": {"problem": 0.55, "pain": 0.7, "solution": 0.72},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Nurture sequence with checklist, runbook, and demo CTA."
-    },
-    {
-      "id": "ch_erp_admin_email",
-      "name": "ERP Administrator Email",
-      "type": "email",
+      "id": "channel:webinars",
+      "name": "Webinars / Virtual Events",
+      "type": "event",
       "reach_score": 0.5,
-      "cost_index": 0.13,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "erp administrator", "department": "it", "seniority": "Manager"}, "score": 0.84}
-      ],
-      "stage_fit": {"problem": 0.6, "pain": 0.7, "solution": 0.75},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Focus on downtime, sync errors, and reporting delays."
+      "time_to_effect_days": 10,
+      "breadth_multiplier": 0.65,
+      "cadence_hint": "2/month; series-based"
     },
     {
-      "id": "ch_fin_analyst_email",
-      "name": "Finance Analyst Email",
-      "type": "email",
-      "reach_score": 0.52,
-      "cost_index": 0.15,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "financial systems analyst", "department": "finance", "seniority": "Operator"}, "score": 0.82},
-        {"persona": {"title": "credit analyst", "department": "finance", "seniority": "Operator"}, "score": 0.7}
-      ],
-      "stage_fit": {"problem": 0.65, "pain": 0.7, "solution": 0.68},
-      "targeting": ["title", "department", "account list"],
-      "notes": "Tie integration health to reconciliation time and matching accuracy."
+      "id": "channel:field_events",
+      "name": "Field Events / Roadshows",
+      "type": "event",
+      "reach_score": 0.45,
+      "time_to_effect_days": 21,
+      "breadth_multiplier": 0.55,
+      "cadence_hint": "Quarterly city stops"
     },
     {
-      "id": "ch_linkedin_it_titles",
-      "name": "LinkedIn Ads—IT Integration Titles",
-      "type": "linkedin_ads",
-      "reach_score": 0.8,
-      "cost_index": 0.62,
-      "lead_days": 3,
-      "persona_fit": [
-        {"persona": {"title": "data integration engineer", "department": "it", "seniority": "Operator"}, "score": 0.88},
-        {"persona": {"title": "erp integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.86},
-        {"persona": {"title": "erp administrator", "department": "it", "seniority": "Manager"}, "score": 0.78}
-      ],
-      "stage_fit": {"problem": 0.7, "pain": 0.8, "solution": 0.7},
-      "targeting": ["title", "skills (ETL, iPaaS, ERP)", "company", "ABM list"],
-      "notes": "Carousel ads with demo & benchmark offers."
+      "id": "channel:conference_flagship",
+      "name": "Flagship Conference (Propel)",
+      "type": "event",
+      "reach_score": 0.5,
+      "time_to_effect_days": 28,
+      "breadth_multiplier": 0.7,
+      "cadence_hint": "Annual + pre/post content blitz"
     },
     {
-      "id": "ch_webinar_platform_integrations",
-      "name": "Webinar Platform—Integration Reliability",
-      "type": "webinar_platform",
-      "reach_score": 0.58,
-      "cost_index": 0.48,
-      "lead_days": 8,
-      "persona_fit": [
-        {"persona": {"title": "erp administrator", "department": "it", "seniority": "Manager"}, "score": 0.82},
-        {"persona": {"title": "financial systems analyst", "department": "finance", "seniority": "Operator"}, "score": 0.75},
-        {"persona": {"title": "credit analyst", "department": "finance", "seniority": "Operator"}, "score": 0.65}
-      ],
-      "stage_fit": {"problem": 0.5, "pain": 0.85, "solution": 0.75},
-      "targeting": ["registration", "co-marketing", "analyst speaker"],
-      "notes": "Live demo on reducing failure rates and accelerating reporting cycles."
-    },
-    {
-      "id": "ch_retargeting_site_engagers",
-      "name": "Retargeting—Site Engagers",
-      "type": "retargeting",
-      "reach_score": 0.66,
-      "cost_index": 0.32,
-      "lead_days": 2,
-      "persona_fit": [
-        {"persona": {"title": "data integration engineer", "department": "it", "seniority": "Operator"}, "score": 0.7},
-        {"persona": {"title": "erp integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.7},
-        {"persona": {"title": "financial systems analyst", "department": "finance", "seniority": "Operator"}, "score": 0.65}
-      ],
-      "stage_fit": {"problem": 0.6, "pain": 0.7, "solution": 0.75},
-      "targeting": ["site visitors", "pricing page", "product docs readers"],
-      "notes": "Promote demo video and POC offer to re-engage evaluators."
-    },
-    {
-      "id": "ch_sales_outreach_it_finops",
-      "name": "Sales 1:1 Outreach—IT & FinOps",
-      "type": "sales_outreach",
-      "reach_score": 0.42,
-      "cost_index": 0.27,
-      "lead_days": 1,
-      "persona_fit": [
-        {"persona": {"title": "erp administrator", "department": "it", "seniority": "Manager"}, "score": 0.86},
-        {"persona": {"title": "financial systems analyst", "department": "finance", "seniority": "Operator"}, "score": 0.76},
-        {"persona": {"title": "erp integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.8}
-      ],
-      "stage_fit": {"problem": 0.45, "pain": 0.68, "solution": 0.92},
-      "targeting": ["warm intros", "intent signals", "ABM list"],
-      "notes": "Deliver ROI deck or arrange 30-day POC; ideal at solution stage."
-    },
-    {
-      "id": "ch_community_devops_data",
-      "name": "Community—DevOps/Data Integration Forums",
+      "id": "channel:community_preflight",
+      "name": "Preflight Community (owned)",
       "type": "community",
-      "reach_score": 0.48,
-      "cost_index": 0.18,
-      "lead_days": 5,
-      "persona_fit": [
-        {"persona": {"title": "data integration engineer", "department": "it", "seniority": "Operator"}, "score": 0.75},
-        {"persona": {"title": "erp integration specialist", "department": "it", "seniority": "Operator"}, "score": 0.72}
-      ],
-      "stage_fit": {"problem": 0.62, "pain": 0.68, "solution": 0.55},
-      "targeting": ["topics: etl, erp integration", "slack/discord communities"],
-      "notes": "Thought-leadership posts and links to runbooks/benchmarks."
+      "reach_score": 0.55,
+      "time_to_effect_days": 14,
+      "breadth_multiplier": 0.65,
+      "cadence_hint": "Weekly threads; monthly meetups"
+    },
+    {
+      "id": "channel:pr_newsroom",
+      "name": "PR / Newsroom",
+      "type": "earned",
+      "reach_score": 0.5,
+      "time_to_effect_days": 10,
+      "breadth_multiplier": 0.6,
+      "cadence_hint": "Quarterly milestones & launches"
+    },
+    {
+      "id": "channel:partner_marketing",
+      "name": "Partner Co-Marketing",
+      "type": "partner",
+      "reach_score": 0.45,
+      "time_to_effect_days": 21,
+      "breadth_multiplier": 0.65,
+      "cadence_hint": "Quarterly joint webinars/guides"
+    },
+    {
+      "id": "channel:rltv",
+      "name": "Rocketlane TV (Owned OTT)",
+      "type": "video",
+      "reach_score": 0.4,
+      "time_to_effect_days": 21,
+      "breadth_multiplier": 0.55,
+      "cadence_hint": "Weekly drops; invite creators"
+    },
+    {
+      "id": "channel:gated_downloads",
+      "name": "Gated Content Downloads",
+      "type": "owned",
+      "reach_score": 0.55,
+      "time_to_effect_days": 7,
+      "breadth_multiplier": 0.7,
+      "cadence_hint": "1–2 launches/month"
+    },
+    {
+      "id": "channel:case_studies",
+      "name": "Case Studies (Sales Enablement)",
+      "type": "enablement",
+      "reach_score": 0.4,
+      "time_to_effect_days": 5,
+      "breadth_multiplier": 0.5,
+      "cadence_hint": "New story/quarter; refresh quotes"
+    },
+    {
+      "id": "channel:trial_demo_cta",
+      "name": "Free Trial / Book a Demo CTAs",
+      "type": "owned",
+      "reach_score": 0.6,
+      "time_to_effect_days": 3,
+      "breadth_multiplier": 0.65,
+      "cadence_hint": "Always-on; BOFU routing"
+    },
+    {
+      "id": "channel:social_x",
+      "name": "X / Twitter (organic)",
+      "type": "social",
+      "reach_score": 0.35,
+      "time_to_effect_days": 14,
+      "breadth_multiplier": 0.45,
+      "cadence_hint": "3–4 posts/week; event threads"
+    },
+    {
+      "id": "channel:sem",
+      "name": "Search Engine Marketing",
+      "type": "paid_search",
+      "reach_score": 0.55,
+      "time_to_effect_days": 7,
+      "breadth_multiplier": 0.75,
+      "cadence_hint": "Always-on BOFU; quarterly keyword refresh"
     }
   ]
 }
+

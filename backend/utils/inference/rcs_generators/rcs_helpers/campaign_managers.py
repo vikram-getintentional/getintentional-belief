@@ -1,251 +1,183 @@
-#---- Helpers for Arsenal Mapping ---
+# backend/utils/inference/rcs_generators/rcs_helpers/campaign_managers.py
+from __future__ import annotations
+from typing import Any, Dict, List, Optional, Tuple
 import re
-from typing import Any, Dict, List, Optional
-import networkx as nx
-from datetime import date, datetime, timedelta
-from backend.utils.inference.rcs_generators.generate_rcs_fast import _nt
 
-from backend.utils.knowledge_base.arsenal.execution_arsenal_repository import get_best_plays_for_concern
+from backend.utils.knowledge_base.arsenal.execution_arsenal_repository import (
+    get_best_plays_for_concern,
+)
+
+# ---------------------------------------------------------------------
+# Utilities
+# ---------------------------------------------------------------------
 
 def _slug(s: str) -> str:
-    s = (s or "").strip().lower()
-    s = re.sub(r"[^a-z0-9]+", "-", s)
-    return s.strip("-") or "x"
+    return "".join(ch.lower() if ch.isalnum() else "_" for ch in (s or "")).strip("_")[:64]
 
+def _engagement_label(x: float) -> str:
+    try:
+        x = float(x or 0.0)
+    except Exception:
+        x = 0.0
+    return "High" if x >= 0.7 else ("Medium" if x >= 0.4 else "Low")
 
-def _to_timeframe(idx: int) -> Dict[str, str]:
-    start = date.today() + timedelta(days=14*idx)
-    end   = start + timedelta(days=84)  # ~12 weeks
-    return {"startDate": start.isoformat(), "endDate": end.isoformat()}
+def _expected_lift_label(stage: str, fitness: float) -> str:
+    # coarse stage-based scale; tune later
+    base = {
+        "pre_zmot": (0.5, 2.0),
+        "zmot": (1.0, 4.0),
+        "problem": (2.0, 6.0),
+        "problem_realization": (2.0, 6.0),
+        "discovery": (3.0, 8.0),
+        "barriers": (2.0, 6.0),
+        "execution": (2.0, 6.0),
+        "implementation": (2.0, 6.0),
+        "resolution": (1.0, 3.0),
+        "solution": (1.0, 3.0),
+    }.get((stage or "").lower(), (1.0, 3.0))
+    lo, hi = base
+    span = hi - lo
+    try:
+        f = max(0.0, min(1.0, float(fitness or 0.5)))
+    except Exception:
+        f = 0.5
+    est = lo + span * f
+    return f"+{est:.0f}%"
 
-def _expected_lift(combo: Dict[str, Any]) -> str:
-    # Prefer explicit % if provided
-    if isinstance(combo.get("expectedLift"), str):
-        return combo["expectedLift"]
-    # Derive from any numeric fit/engagement you already compute (fallback 8–25%)
-    score = float(combo.get("fitScore", combo.get("engagementScore", 0.5)) or 0.5)
-    pct = max(8, min(25, int(100*score*0.25)))
-    return f"+{pct}%"
+def _persona_alias_from_label(label: str) -> Dict[str, str]:
+    # minimal, non-blocking mapping used by arsenal repo
+    lab = (label or "").strip()
+    dept = ""
+    sr   = ""
+    m = re.search(r"\b(cfo|finance|revops|sales|marketing|security|engineering|architecture|product|procurement)\b", lab, re.I)
+    if m:
+        dept = m.group(1).title()
+    if re.search(r"\b(cxo|vp|head|director|senior|lead|manager)\b", lab, re.I):
+        sr = "senior"
+    return {"title": lab, "department": dept, "seniority": sr}
 
+def _safe_seq_list(report: Dict[str, Any]) -> List[Dict[str, Any]]:
+    # Accept either 'sequences' or 'concern_sequences'
+    if "sequences" in (report or {}):
+        return list(report.get("sequences") or [])
+    return list(report.get("concern_sequences") or [])
 
-def _index_concerns_from_report(report: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    """
-    Build a lookup: cid -> {label, stage, persona}
-    Uses concern_backlog; falls back to concerns_by_persona when needed.
-    """
-    idx: Dict[str, Dict[str, Any]] = {}
-    for row in (report.get("concern_backlog") or []):
-        cid = row.get("cid") or row.get("concern_id")
-        if not cid:
-            continue
-        idx[cid] = {
-            "label": row.get("concern_label") or row.get("label") or f"Concern {cid}",
-            "stage": row.get("stage"),
-            "persona": row.get("pid")
-        }
-    if not idx:
-        for pname, items in (report.get("concerns_by_persona") or {}).items():
-            for it in items or []:
-                cid = it.get("cid") or it.get("concern_id")
-                if not cid:
-                    continue
-                idx.setdefault(cid, {
-                    "label": it.get("concern_label") or it.get("label") or f"Concern {cid}",
-                    "stage": it.get("stage"),
-                    "persona": pname
-                })
-    return idx
-
-def _fallback_asset_row_from_step(step: dict) -> dict:
-    """Graceful fallback play when ranker yields no results."""
-    label = step.get("concern_label") or step.get("cid") or "Concern"
-    return {
-        "asset": {"id": "tbd", "name": f"Play: Resolve “{label}”", "format": "email", "evergreen": True},
-        "channel": {"id": "email", "name": "Email", "type": "email", "reach_score": 0.6},
-        "fitness": 0.4,
-        "engagement_score": 0.5,
-        "why": "fallback",
-    }
-
-
-def _engagement_bucket(x: float) -> str:
-    if x is None: return "Medium"
-    if x >= 0.66: return "High"
-    if x >= 0.33: return "Medium"
-    return "Low"
-
-def _play_to_arsenal_row(play: dict, *, cinfo: dict) -> dict:
-    """Convert ranked play → Arsenal table row with concern context."""
-    asset = play.get("asset", {}) or {}
-    channel = play.get("channel", {}) or {}
-    fitness = float(play.get("fitness") or play.get("fitness_score") or 0.0)
-    engage = float(play.get("engagement_score") or 0.0)
-    stage = (cinfo.get("stage") or "").lower()
-    label = cinfo.get("label")
-
-    return {
-        "asset": {
-            "id": asset.get("id"),
-            "name": asset.get("name"),
-            "format": asset.get("format"),
-            "evergreen": bool(asset.get("evergreen", False)),
-        },
-        "channel": {
-            "id": channel.get("id"),
-            "name": channel.get("name") or channel.get("type"),
-            "type": channel.get("type"),
-            "reach_score": channel.get("reach_score"),
-        },
-        "stage": stage,
-        "fitment": f"{round(fitness * 100)}%",
-        "engagement": "High" if engage >= 0.66 else "Medium" if engage >= 0.33 else "Low",
-        "expectedLift": f"+{round((0.5 * fitness + 0.2 * engage) * 100)}%",
-        "concernsAddressed": [label] if label else [],
-        "why": play.get("why"),
-    }
-
+# ---------------------------------------------------------------------
+# PUBLIC: turn sequences into campaigns by pulling plays from the arsenal repo
+# ---------------------------------------------------------------------
 
 def _campaigns_from_sequences_using_arsenal(
     *,
-    G: nx.DiGraph,
+    G,  # (currently unused, reserved for future graph-aware enrich)
     account_id: Optional[str],
     product_id: Optional[str],
     report: Dict[str, Any],
     start_idx: int = 0,
-    plays_per_step: int = 3,
-    archetype: Optional[Dict] = None,
+    plays_per_step: int = 1,
+    archetype: Optional[Dict[str, Any]] = None,
     exclude_pairs: Optional[set[tuple[str, str]]] = None,
+    limits: Optional[Dict[str, int]] = None,
 ) -> List[Dict[str, Any]]:
     """
-    For each concern-sequence, fetch best play(s) per step via get_best_plays_for_concern
-    and convert into execution_plan.campaigns entries.
+    Build campaigns directly from RCS sequences using the execution_arsenal_repository.
+    - No catalogs.
+    - Respects exclude_pairs to avoid repeating asset×channel pairs within a plan.
+    - Fills essential arsenal row fields; stage_playbooks will attach concerns later.
     """
-    print("starting campaign generation for:", product_id, " with exclude pairs: ", exclude_pairs)
-    sequences = report.get("concern_sequences") or []
+    sequences = _safe_seq_list(report)
     if not sequences:
         return []
 
-    concern_idx = _index_concerns_from_report(report)
-    prefix = _slug(account_id or "acct")
+    exclude_pairs = exclude_pairs or set()
+    archetype = archetype or {}
+    limits = limits or {}
+    per_persona_cap = max(1, int(limits.get("per_persona", 99)))
+    max_sequences = int(limits.get("max_sequences", len(sequences)))
+
+    seen_per_persona: Dict[str, int] = {}
     campaigns: List[Dict[str, Any]] = []
+    seq_count = 0
 
-    # safe helpers
-    def _node(G, nid: Optional[str]) -> Dict[str, Any]:
-        if nid and nid in G:
-            return G.nodes[nid]
-        return {}
+    for seq_idx, seq in enumerate(sequences):
+        if seq_count >= max_sequences:
+            break
 
-    def _persona_meta_from_graph(G, pid: Optional[str]) -> Dict[str, str]:
-        d = _node(G, pid)
-        return {
-            "title": d.get("title") or d.get("name") or d.get("label") or (pid or ""),
-            "department": d.get("department") or "General",
-            "seniority": d.get("seniority") or "Manager",
-        }
+        steps = list(seq.get("sequence") or [])
+        if not steps:
+            continue
 
-    def _stage_norm_local(stage: Optional[str]) -> str:
-        s = (stage or "").strip().lower()
-        if s == "resolution":
-            return "solution"
-        if s in {"problem", "pain", "execution", "solution"}:
-            return s
-        # fallbacks for common typos
-        if s in {"solve", "soln", "solutions"}:
-            return "solution"
-        return "execution"
+        # personas present in the sequence
+        persona_labels = []
+        for st in steps:
+            pl = st.get("persona_label") or st.get("persona") or ""
+            if pl:
+                persona_labels.append(pl)
+        personas = sorted({p for p in persona_labels if p})
 
+        key_pid = personas[0] if personas else "unknown"
+        if seen_per_persona.get(key_pid, 0) >= per_persona_cap:
+            continue
 
-    for i, seq in enumerate(sequences):
-        print("starting steps in camp seq")
-        
-        steps = seq.get("sequence") or []
-        personas: List[str] = []
         arsenal_rows: List[Dict[str, Any]] = []
 
-        for st in steps:
+        for step in steps:
+            concern_label = step.get("concern_label") or step.get("cid") or ""
+            concern_stage = (step.get("stage") or "").lower()
+            persona_label = step.get("persona_label") or step.get("persona") or ""
+            persona_alias = _persona_alias_from_label(persona_label)
 
-            # 1) Extract step fields FIRST (don't touch cid before this)
-            cid   = st.get("cid")
-            stage = st.get("stage")
-            label = st.get("concern_label") or (G.nodes[cid].get("label") if cid in G else cid)
-            pid   = st.get("persona") or (concern_idx.get(cid, {}) or {}).get("persona")
-
-            # 2) Persona meta + bookkeeping
-            persona_meta  = _persona_meta_from_graph(G, pid)
-            if pid:
-                st.get("persona") or (concern_idx.get(st.get("cid") or "", {}) or {}).get("persona")
-                personas.append(pid)
-
-            # 3) Concern meta used by arsenal row + fallbacks
-            concern_type = _nt(G, cid)  # optional, if you want to log it
-            cinfo = concern_idx.get(cid) or {
-                "concern_id": cid,
-                "label":      label,
-                "stage":      stage,
-            }
-
-            # 4) Archetype safe default
-            """archetype = {
-                "industry":        scaffold["archetype"].get("industry", ""),
-                "geography":       scaffold["archetype"].get("geography", ""),
-                "revenue_range":   scaffold["archetype"].get("revenue_range", ""),
-                "employee_range":  scaffold["archetype"].get("employee_range", ""),
-                "funding_stage":   scaffold["archetype"].get("funding_stage", ""),
-                "competitors_used":scaffold["archetype"].get("competitors_used", ""),
-                "tech_stack":      scaffold["archetype"].get("tech_stack", "")
-            }
-            """
-            plays = []
-            try:
-                print("trying get_best_plays block in _campaigns_from_sequences")
-                # IMPORTANT: pass concern_id (not concern_type) and include the label
-                plays = get_best_plays_for_concern(
-                    persona_alias = persona_meta,
-                    concern_label = label,
-                    concern_stage = stage,
-                    product_id    = product_id,
-                    archetype     = archetype,
-                    top_k         = plays_per_step,
-                    exclude_pairs = exclude_pairs,
-                ) or []
-            except Exception as e:
-                print("⚠️ get_best_plays_for_concern failed:", e)
-                plays = []
-
-            if not plays:
-                # graceful fallback
-                print(f"⚠️ No plays found for concern {cid} ({label}) at stage '{stage}' for persona {pid}; using generic fallback.")
-                plays = [{
-                    "asset":   {"id": "fallback", "name": f"Play: Resolve “{label}”", "format": "email", "evergreen": True},
-                    "channel": {"id": "email", "name": "Email", "type": "email", "reach_score": 0.6},
-                    "fitness": 0.6,
-                    "why":     "generic fallback"
-                }]
+            plays = get_best_plays_for_concern(
+                persona_alias=persona_alias,
+                concern_label=concern_label,
+                concern_stage=concern_stage,
+                product_id=product_id,
+                archetype=archetype,
+                top_k=max(1, plays_per_step),
+                exclude_pairs=exclude_pairs,
+            ) or []  # defensive
 
             for p in plays:
-                arsenal_rows.append(_play_to_arsenal_row(p, cinfo=cinfo))
-                # remember asset×channel combo to avoid reuse this quarter
-                if exclude_pairs is not None:
-                    aid = (p.get("asset", {}) or {}).get("id")
-                    cid2 = (p.get("channel", {}) or {}).get("id")
-                    if aid and cid2:
-                        exclude_pairs.add((aid, cid2))
+                a = p.get("asset", {}) or {}
+                c = p.get("channel", {}) or {}
+                fitness = float(p.get("fitness", 0.5) or 0.5)
+                eng     = float(p.get("engagement_score", 0.5) or 0.5)
+                why     = p.get("why", "")
 
+                # Dedup guard across the plan
+                pair = (a.get("id"), c.get("id"))
+                if pair[0] and pair[1]:
+                    if pair in exclude_pairs:
+                        continue
+                    exclude_pairs.add(pair)
 
-        personas = sorted({p for p in personas if p})
-        print("Personas in campaign mgr: ", personas)
+                arsenal_rows.append({
+                    "asset":   {"id": a.get("id"), "name": a.get("name"), "format": a.get("format"), "evergreen": a.get("evergreen", False)},
+                    "channel": {"id": c.get("id"), "name": c.get("name"), "type": c.get("type"), "reach": c.get("reach_score", 0.0)},
+                    "fitment": concern_stage or "Concern resolution",
+                    "engagement": _engagement_label(eng),
+                    "expectedLift": _expected_lift_label(concern_stage, fitness),
+                    "why": why,
+                    # concernsAddressed is attached upstream by stage_playbooks
+                })
+
+        if not arsenal_rows:
+            # Skip empty campaigns (e.g., empty repo)
+            continue
+
+        description = "Resolve prioritized concerns"
+        if personas:
+            description += f" across {', '.join(personas[:2])}"
+
+        camp_id = f"camp_seq_{seq_idx + start_idx:02d}_{_slug(account_id or 'acct')}"
         campaigns.append({
-            "id": f"camp_{prefix}_{i+start_idx:02d}",
-            "description": (
-                f"Resolve prioritized concerns across {', '.join(personas[:2])}."
-                if personas else "Resolve prioritized concerns."
-            ),
-            "timeframe": _to_timeframe(i + start_idx),
-            "arsenalTable": arsenal_rows,
+            "id": camp_id,
+            "description": description,
             "personas": personas,
+            "arsenalTable": arsenal_rows,
+            # timeframe is stamped upstream (frozen_stage_simulator or stage_playbooks)
         })
 
-    print("Campaign generation complete")
-    
-    return campaigns
+        seen_per_persona[key_pid] = seen_per_persona.get(key_pid, 0) + 1
+        seq_count += 1
 
+    return campaigns

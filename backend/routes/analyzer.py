@@ -1,15 +1,14 @@
-import json
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, Query, Request, HTTPException
+from fastapi import APIRouter, Body, Depends, Query, Request, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from backend.utils.crm_management.target_account_manager import load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
+from backend.utils.crm_management.target_account_manager import get_account_by_id, get_target_account_ids, load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
 from backend.utils.graph_base.graph_utils.graph_confidence import compute_graph_confidence
 from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_product_id_from_subgraph, update_capabilities_by_nodes_list
 from backend.utils.graph_base.nodes.capability_nodes import update_capabilities_by_node_id
 from backend.utils.inference.crm_analysis.actual_win_estimator import generate_win_regression
-from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import run_agentic_loop
+from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import run_agentic_loop, run_frontier_expansion
 
 from backend.auth.jwt_handler import decode_token
 from sqlalchemy.orm import Session
@@ -30,7 +29,7 @@ import networkx as nx
 import os
 
 from backend.utils.knowledge_base.zmot_icp_generation import Chip, collect_zmots_for_attribute_combo, mine_icp_attribute_uplifts
-from backend.utils.strategy_builder.comprehensive_plan_generator import _filter_by_window, _load_plan_from_disk, _recompute_portfolio_expectations, load_all_account_rcs_jsons
+from backend.utils.strategy_builder.comprehensive_plan_generator import _filter_by_window, build_integrated_portfolio_plan
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
@@ -285,41 +284,84 @@ def post_confidence(request: Request):
 # ========================
 
 @router.post("/analyze/deep")
-async def analyze_deep(payload: dict, request: Request):
-    product_id = payload.get("product_id")
+async def analyze_deep(payload: dict = Body(..., embed=False), request: Request = None):
+    """
+    Run agentic analysis for a product. Expects JSON body: { "product_id": "<id>" }.
+    """
+    product_id = (payload or {}).get("product_id")
+    print("Deep analyzing product_id:", product_id)
     if not product_id:
-        raise HTTPException(status_code=400, detail="Product ID required.")
+        raise HTTPException(status_code=400, detail="Product ID required in body as {\"product_id\": \"...\"}")
 
     # 🔐 Auth
-    auth_header = request.headers.get("authorization")
-    if not auth_header:
+    auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not auth_header or " " not in auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
-    token = auth_header.split(" ")[1]
+    scheme, token = auth_header.split(" ", 1)
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(status_code=401, detail="Invalid Authorization header")
     decoded = decode_token(token)
     company_id = decoded.get("company_id")
     if not company_id:
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
+    # Build product graph and validate
     product_subgraph = build_product_graph(product_id)
-    run_agentic_loop(product_subgraph)
+    if not product_subgraph:
+        raise HTTPException(status_code=404, detail=f"Product subgraph not found for product_id: {product_id}")
+    print("Product subgraph built successfully for product_id:", product_id,". Starting agent")
+    # Run the agentic loop (update_graph inside that flow should now receive a valid subgraph)
+    try:
+        run_agentic_loop(product_subgraph)
+    except Exception as e:
+        print("❌ Agentic analysis error:", e)
+        raise HTTPException(status_code=500, detail="Agentic analysis failed")
+
     return {"status": "Agentic analysis complete"}
 
-@router.post("/analyze/deep/{product_id}")
-async def analyze_deep(payload: dict, request: Request):
-    product_id = product_id
-    # 🔐 Auth
-    auth_header = request.headers.get("authorization")
+@router.post("/graph/expand-frontier/{product_id}")
+async def expand_frontier(product_id: str, request: Request, body: dict = Body(..., embed=False)):
+    print("Expanding frontier for product_id:", product_id)
+    auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
     if not auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
     token = auth_header.split(" ")[1]
     decoded = decode_token(token)
-    company_id = decoded.get("company_id")
-    if not company_id:
-        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-    product_subgraph = build_product_graph(product_id)
-    run_agentic_loop(product_subgraph)
-    return {"status": "Agentic analysis complete"}
+    seed_ids = body.get("seed_ids") or []
+    only_types = body.get("only_types")
+    waves = int(body.get("waves", 1))
+    max_items = int(body.get("max_items_per_source", 5))
+    print("Seed IDs:", seed_ids)
+
+    G = build_product_graph(product_id)
+
+    # Optional: auto-seed terminals if caller sent no seeds
+    if not seed_ids:
+        # terminal = out_degree 0, restrict by type if requested
+        allow = set(only_types) if only_types else None
+        term = []
+        for n, data in G.nodes(data=True):
+            if G.out_degree(n) == 0 and (allow is None or data.get("type") in allow):
+                term.append(n)
+        # keep bounded
+        seed_ids = term[: max_items * (len(allow) if allow else 3) or 5]
+        print("[Frontier] Auto-seeded terminals:", seed_ids)
+
+   
+
+    result = run_frontier_expansion(
+        G,
+        seed_ids,
+        only_types=only_types,
+        waves=waves,
+        max_items_per_source=max_items,
+        model="gpt-4o-mini",
+        ctx=None,
+    )
+    return {"ok": True, **(result or {})}
 
 # ========================    
 # GET-Products to get a list of Product Nodes for a company_id
@@ -419,7 +461,7 @@ async def export_product_graph(product_id: str, request: Request):
         print("❌ export-product-graph error:", e)
         raise HTTPException(status_code=500, detail="Could not export product graph")
     
-@router.post("/graph/bulk-upsert/{product_id}")
+@router.post("/graph/bulk-upsert-graph/{product_id}")
 async def bulk_upsert_graph(product_id: str, graph_payload: dict, request: Request):
     """
     Bulk upsert nodes and edges into the product graph.
@@ -640,10 +682,14 @@ async def get_reverse_case_study(product_id: str, payload: dict, request: Reques
     """
     Generates reverse case studies for product_id, using attribute sets + engaged nodes.
     """
+    print("Generating RCS for product_id:", product_id)
     engaged_nodes = payload.get("selected_node_ids", [])
     attributes = payload.get("attribute_ids", [])
-    zmot_ids = payload.get("zmot_event_id", "")
-    engaged_nodes.append(zmot_ids)  # Treat selected ZMOTs as engaged nodes too
+    zmot_id = payload.get("zmot_event_id")
+    if zmot_id:
+        engaged_nodes.append(zmot_id)
+    # also drop falsy node ids from UI bugs
+    engaged_nodes = [n for n in engaged_nodes if n]
 
     auth_header = request.headers.get("authorization")
     if not auth_header:
@@ -721,6 +767,34 @@ async def get_target_accounts(company_id: str, product_id: str, request: Request
     product_subgraph = build_product_graph(product_id)
     product_id_actual = get_product_id_from_subgraph(product_subgraph)
     accounts = load_target_accounts_from_db(product_id_actual)
+    
+    return {"accounts": accounts}
+
+@router.get("/get-accounts-for-rcs/{product_id}")
+async def get_accounts_for_rcs(product_id: str, request: Request):
+    # --- Auth checks ---
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Invalid Authorization header format")
+
+    token = parts[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    account_ids = get_target_account_ids(product_id, {"status": {"nin": ["Closed-won", "Closed-lost"]}})
+    print("account ids:", account_ids)
+    accounts = []
+    for account_id in account_ids:
+        account = get_account_by_id(product_id=product_id, account_id=account_id)
+        if account:
+            accounts.append(account)
+
     
     return {"accounts": accounts}
 
@@ -810,101 +884,46 @@ async def get_metadata():
 async def get_comprehensive_execution_plan(
     product_id: str,
     request: Request,
-    window_start: Optional[str] = Query(None, description="ISO date YYYY-MM-DD"),
-    window_end: Optional[str] = Query(None, description="ISO date YYYY-MM-DD"),
+    # explicitly mark these as query params
+    account_id: Optional[str] = Query(None, description="Filter to a single account id"),
+    window_start: Optional[str] = Query(None, description="YYYY-MM-DD (inclusive)"),
+    window_end:   Optional[str] = Query(None, description="YYYY-MM-DD (inclusive)"),
 ):
-    """
-    Current behavior (as requested):
-      1) Ensure per-account RCS JSONs exist for all *live* target accounts (status not Closed-Won/Lost).
-         - If an RCS is missing, create a header-only scaffold on disk.
-      2) Still return the existing default master plan (from disk), optionally date-filtered.
-         - Frontend keeps showing the default plan for now.
-
-    Coming next (your plan):
-      - You'll paste sample RCS data into those per-account JSONs.
-      - We'll add "stitch" logic to aggregate account RCS → a comprehensive plan.
-      - That stitched plan can then be written to product_id_execution_plan.json.
-    """
-    # --- Auth checks ---
-    print("Fetching comprehensive execution plan for product_id:", product_id, "with window:", window_start, "to", window_end)
+    # --- auth (unchanged) ---
     auth_header = request.headers.get("authorization")
     if not auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
-
-    parts = auth_header.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(status_code=401, detail="Invalid Authorization header format")
-
-    token = parts[1]
+    token = auth_header.split(" ")[1]
     decoded = decode_token(token)
-    company_id = decoded.get("company_id")
-    if not company_id:
+    if not decoded.get("company_id"):
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
+    # normalize blank -> None so the planner doesn’t try to match ""
+    if account_id == "":
+        account_id = None
+
     try:
-        print("Loading RCS JSONs and plan for product_id in try block:", product_id)
-        # 1) Ensure all live target accounts have an RCS JSON (create header if missing).
-        #    This returns:
-        #      - rcs_list: list of per-account RCS JSONs (existing or headers)
-        #      - headers_created: list of headers newly created in this call
-        rcs_list_output = load_all_account_rcs_jsons(
-            product_id,
-        )
+        print(f"[plan] product_id={product_id} account_id={account_id} "
+              f"window_start={window_start} window_end={window_end}")
 
-        print("RCS list loaded")
+        plan = build_integrated_portfolio_plan(product_id, account_id=account_id)
 
-        # Load plan from disk (product-specific or default)
-        plan = _load_plan_from_disk(product_id)
-        if not isinstance(plan, dict):
-            raise HTTPException(status_code=422, detail="Plan JSON must be an object at the top level")
+        if window_start or window_end:
+            plan = _filter_by_window(plan, window_start, window_end)
 
-        # Normalize rcs_list_output into rcs_list & headers_created safely
-        rcs_list = []
-        headers_created = []
-        if isinstance(rcs_list_output, dict):
-            rcs_list, deug = rcs_list_output.get("rcs_list", []) or []
-            headers_created = rcs_list_output.get("headers_created", []) or []
-            print("RCS list and headers created extracted from dict output")
-        elif isinstance(rcs_list_output, list):
-            # older / simpler return shape: list of RCS JSONs
-            rcs_list = rcs_list_output
-            print("RCS list extracted from list output")
-        else:
-            print("No RCS data found for product_id - showing defaults now")
-
-        # Step 0.5: Build all RCS and print outputs
-        #print("Building all RCS for indexed product_id:", product_id)
-        #rcs_filled = construct_all_account_rcs(product_id_actual)
-        # Step 1: Filter by window
-        plan = _filter_by_window(plan, window_start, window_end)
-
-        # Step 2: Recompute expectations dynamically
-        plan = _recompute_portfolio_expectations(plan)
-
-
-        # 3) Return ONLY the default plan to the frontend for now.
-        #    (But include small debug fields you can ignore on the UI side.)
-        return JSONResponse(
-            content={
-                "plan": plan,                       # <— what your UI should read today
-                "debug": {
-                    "rcs_accounts_count": len(rcs_list),
-                    "new_rcs_headers_created": len(headers_created),
-                },
-            }
-        )
-
+        quarters = plan.get("quarters") or []
+        total_campaigns = sum(len(q.get("campaigns") or []) for q in quarters)
+        return JSONResponse(content={"plan": plan, "debug": {
+            "quarters": len(quarters),
+            "total_campaigns": total_campaigns,
+        }})
     except FileNotFoundError as e:
-        # If you have no per-product plan file yet, fall back to your global default here if desired
         raise HTTPException(status_code=404, detail=str(e))
-    except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"Invalid JSON file: {e}")
     except ValueError as e:
-        # date parsing errors
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load plan: {e}")
-    
+
 
 
 # ========================

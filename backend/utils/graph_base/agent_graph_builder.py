@@ -166,8 +166,16 @@ def label_to_float(label: str, label_type: str = "relevance") -> float:
 
 # canonical node constructors (use canonical strings/fields)
 
-def _product(G: nx.DiGraph, product_id: str, attrs: Optional[Dict[str, Any]] = None) -> str:
-    return _upsert_node(G, "product", [product_id], attrs or {"id": product_id})
+
+def _product(G, node_id: str, attrs: dict | None = None) -> str:
+    """Upsert a product node using the *provided* node_id (canonical id)."""
+    attrs = attrs or {}
+    if node_id in G:
+        G.nodes[node_id].update({"node_type": "product", "id": node_id, **attrs})
+    else:
+        G.add_node(node_id, node_type="product", id=node_id, **attrs)
+    return node_id
+
 
 def _capability(
     G,
@@ -191,9 +199,9 @@ def _pain(G, canonical_label: str, pain_source: Optional[str], data_source = "ll
 def _job(G, canonical_label: str, data_source = "llm") -> str:
     return _upsert_node(G, "job", [_slug(canonical_label)], {"description": canonical_label, "data_source": data_source})
 
-def _persona(G, title: str, department: str, seniority: str, data_source = "llm") -> str:
+def _persona(G, title: str, department: str, seniority: str, sample_profiles: List[str] = None, data_source = "llm") -> str:
     return _upsert_node(G, "persona", [_slug(title), _slug(department), (seniority or "").lower()],
-                        {"title": title, "department": department, "seniority": seniority, "data_source": data_source})
+                        {"title": title, "department": department, "seniority": seniority, "sample_profiles": sample_profiles, "data_source": data_source})
 
 def _metric(G, metric: str, data_source = "llm") -> str:
     return _upsert_node(G, "perceived_metric", [_slug(metric)], {"metric": metric, "data_source": data_source})
@@ -229,6 +237,46 @@ def _attribute_value(G, dimension: str, name: str, data_source = "llm") -> str:
         {"dimension": dimension, "name": name, "data_source": data_source}
     )
 
+def _stype(G: nx.DiGraph, node_id: str) -> str:
+    nd = G.nodes.get(node_id, {}) or {}
+    return nd.get("type") or nd.get("node_type") or ""
+
+ #=== Frontier creation & relations (add-only) ===
+
+# Create targets by type (ID stability remains via your builders)
+CREATE_BY_TYPE = {
+    "capability":       lambda G, r: _capability(G, canonical_label=(r.get("name") or r.get("description") or "")),
+    "pain":             lambda G, r: _pain(G, canonical_label=(r.get("description") or ""), pain_source=r.get("pain_source")),
+    "job":              lambda G, r: _job(G, canonical_label=(r.get("description") or "")),
+    "persona":          lambda G, r: _persona(
+        G,
+        canonical_label=" • ".join([x for x in [r.get("title"), r.get("seniority"), r.get("department")] if x]),
+        title=r.get("title"), department=r.get("department"), seniority=r.get("seniority"),
+        linkedin_profiles=r.get("linkedin_profiles"),
+    ),
+    "perceived_metric": lambda G, r: _metric(G, canonical_label=(r.get("metric") or "")),
+    "pain_trigger":     lambda G, r: _trigger(G, canonical_label=(r.get("attribute") or "")),
+    "attribute_value":  lambda G, r: _attribute_value(G, canonical_label="{}:{}".format((r.get("dimension") or "").lower(), r.get("name") or "")),
+    "zmot_event":       lambda G, r: _zmot(G, canonical_label=(r.get("event") or "")),
+    "observable_moment":lambda G, r: _observable(G, canonical_label=(r.get("text") or "")),
+    "keyword":          lambda G, r: _keyword(G, canonical_label=(r.get("text") or "")),
+}
+
+# Edge relation map (source_type -> target_type)
+RELATION_BY_PAIR = {
+    ("capability","pain"): "solves",
+    ("pain","job"): "felt_in",
+    ("pain","perceived_metric"): "expressed_as",
+    ("pain","pain_trigger"): "triggered_by",
+    ("pain_trigger","attribute_value"): "prevalent_in",
+    ("attribute_value","zmot_event"): "associated_zmot",
+    ("pain_trigger","zmot_event"): "leads_to_zmot",
+    ("zmot_event","observable_moment"): "observed_in",
+    ("zmot_event","keyword"): "keyword",
+    ("job","persona"): "performed_by",
+    ("job","pain"): "solves",
+}
+
 
 # -----------------------------------------------------------------------------
 # CanonManager — batch-first collector + writer
@@ -243,7 +291,392 @@ class CanonManager:
       builder.flush(G)     # canonicalize + write
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        product_id: Optional[str] = None,
+        data_source: str = "llm_frontier",
+        G: Optional[nx.DiGraph] = None,
+        **_ignored,   # tolerate future kwargs
+    ):
+        self.data_source = data_source
+        self.product_id = product_id
+        self.G = G
+
+        self.buf: Dict[str, Any] = {
+            "pain": set(),
+            "job": set(),
+            "persona": [],                # list of dicts
+            "perceived_metric": set(),
+            "pain_trigger": set(),
+            "zmot_event": set(),
+            "observable_moment": set(),
+            "keyword": set(),
+            "archetype": [],              # list of dicts
+            "attribute_value": set(),
+        }
+        self.canon: Dict[str, Dict[Any, Dict[str, Any]]] = {k: {} for k in self.buf.keys()}
+        self.plan: List[Tuple[str, Dict[str, Any]]] = []
+        self._current_product_id: Optional[str] = None
+        self._bc = CAN.BatchCanonicalizer()
+
+    # keep your existing bind_graph, and add a set_graph for older callers
+    def set_graph(self, G: nx.DiGraph):
+        self.G = G
+        return self
+    @staticmethod
+    def _init_canon_manager(G, product_id: Optional[str]) -> Any:
+        """
+        Create and bind a CanonManager regardless of signature differences across versions.
+        Tries several ctor shapes and graph-binding styles.
+        """
+        # 1) construct
+        cm = None
+        ctor_errors = []
+
+        for kwargs in (
+            {"product_id": product_id, "data_source": "llm_frontier"},
+            {"data_source": "llm_frontier"},
+            {},  # bare
+        ):
+            try:
+                cm = CanonManager(**kwargs)  # type: ignore
+                break
+            except TypeError as e:
+                ctor_errors.append((kwargs, str(e)))
+                cm = None
+
+        if cm is None:
+            # Last resort: raise the most informative error
+            raise TypeError(f"CanonManager ctor mismatch. Tried: {ctor_errors}")
+
+        # 2) bind graph
+        if hasattr(cm, "bind_graph") and callable(getattr(cm, "bind_graph")):
+            bound = cm.bind_graph(G)
+            # some implementations return a new instance, others return None/self
+            cm = bound or cm
+        elif hasattr(cm, "set_graph") and callable(getattr(cm, "set_graph")):
+            cm.set_graph(G)
+        else:
+            # best-effort field injection
+            setattr(cm, "G", G)
+
+        # 3) stash product_id if the instance uses it later (and ctor didn't take it)
+        if product_id and not getattr(cm, "product_id", None):
+            try:
+                setattr(cm, "product_id", product_id)
+            except Exception:
+                pass
+
+        return cm
+    
+    # ---------- bind a live NetworkX graph before ingesting ----------
+    def bind_graph(self, G: nx.DiGraph):
+        self.G = G
+        return self
+    
+    # ---------- tiny helper for edge attrs ----------
+    def _edge_attrs(self, relation: str | None, evidence: str | None) -> dict:
+        attrs: dict = {}
+        if relation:
+            attrs["relation"] = relation
+        if evidence:
+            attrs["evidence"] = evidence
+        # NOTE: if you want to add relevance/likelihood/weight/boost later from LLM,
+        #       this is the one place to merge them.
+        return attrs
+    
+        # ---------- edge scoring helpers (frontier) ----------
+    def _edge_scores_from_raw(self, raw: Dict[str, Any], source_type: str, target_type: str) -> Dict[str, float]:
+        """
+        Pull labels from raw['edge_scores'] (preferred) or raw['*_label'] fallbacks,
+        then map → floats via label_to_float(). Returns dict with possible keys:
+        {'relevance','likelihood','boost'} (missing keys omitted).
+        """
+        es = (raw or {}).get("edge_scores") or {}
+
+        # Prefer edge_scores; fallback to top-level labels for backward compatibility
+        rel_label = es.get("relevance_label") or raw.get("relevance_label")
+        lik_label = es.get("likelihood_label") or raw.get("likelihood_label")
+        # Only meaningful for pain_trigger -> zmot_event
+        boost_label = es.get("boost_label") or raw.get("boost_label")
+
+        out: Dict[str, float] = {}
+        if rel_label:
+            out["relevance"] = label_to_float(rel_label, "relevance")
+        if lik_label:
+            out["likelihood"] = label_to_float(lik_label, "likelihood")
+
+        if (source_type, target_type) == ("pain_trigger", "zmot_event") and boost_label:
+            out["boost"] = label_to_float(boost_label, "boost")
+
+        return out
+
+    def _score_and_upsert_edge(
+        self,
+        G: nx.DiGraph,
+        *,
+        src: str,
+        relation: str,
+        tgt: str,
+        source_type: str,
+        target_type: str,
+        raw: Dict[str, Any],
+        evidence: Optional[str] = None,
+    ) -> None:
+        """
+        Decide edge weight and attrs based on labels present on proposal.
+        Default weight = relevance, EXCEPT for pain_trigger -> zmot_event, where
+        weight = boost (if present) else relevance.
+        """
+        scores = self._edge_scores_from_raw(raw, source_type, target_type)
+        # default weight
+        weight = scores.get("relevance", 1.0)
+        # special-case: pain_trigger -> zmot_event prefers boost
+        if (source_type, target_type) == ("pain_trigger", "zmot_event"):
+            weight = scores.get("boost", scores.get("relevance", 1.0))
+
+        attrs = {"relation": relation}
+        if evidence:
+            attrs["evidence"] = evidence
+        # attach numeric scores if present
+        attrs.update({k: v for k, v in scores.items()})
+
+        _upsert_edge(G, src, relation, tgt, weight=weight, attrs=attrs)
+
+    
+    # ---- capability -> pain (usually produced by frontier expansion from capability) ----
+    def ingest_frontier_pain(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None, "CanonManager.bind_graph(G) must be called before ingest."
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "pain"), "solve")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                desc = (raw.get("description") or "").strip()
+                pain_source = raw.get("pain_source")
+                tgt = _pain(self.G, canonical_label=desc, pain_source=pain_source, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="pain", raw=raw, evidence=ev
+                )
+
+    # ---- pain -> job ----
+    def ingest_frontier_job(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "job"), "felt_in")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                desc = (raw.get("description") or "").strip()
+                tgt = _job(self.G, canonical_label=desc, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="job", raw=raw, evidence=ev
+                )
+
+    # ---- job -> persona ----
+    def ingest_frontier_persona(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "persona"), "performed_by")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                title = (raw.get("title") or "").strip()
+                department = raw.get("department")
+                seniority = raw.get("seniority")
+                tgt = _persona(self.G, title=title, department=department, seniority=seniority, data_source=self.data_source)
+
+                # Optional: persist persona.linkedin_profiles to node (if present)
+                profiles = raw.get("linkedin_profiles") or []
+                if profiles:
+                    self.G.nodes[tgt]["linkedin_profiles"] = profiles  # [{"url": "...", "bio": "..."}, ...]
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="persona", raw=raw, evidence=ev
+                )
+
+    # ---- job -> pain (solves) ----
+    def ingest_frontier_solves_pain(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "pain"), "solves")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                desc = (raw.get("description") or "").strip()
+                pain_source = raw.get("pain_source")
+                tgt = _pain(self.G, canonical_label=desc, pain_source=pain_source, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="pain", raw=raw, evidence=ev
+                )
+
+    # ---- pain -> perceived_metric ----
+    def ingest_frontier_perceived_metric(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "perceived_metric"), "expressed_as")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                metric = (raw.get("metric") or "").strip()
+                tgt = _metric(self.G, metric=metric, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="perceived_metric", raw=raw, evidence=ev
+                )
+
+    # ---- pain -> pain_trigger ----
+    def ingest_frontier_pain_trigger(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "pain_trigger"), "triggered_by")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                attribute = (raw.get("attribute") or "").strip()
+                tgt = _trigger(self.G, attribute=attribute, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="pain_trigger", raw=raw, evidence=ev
+                )
+
+    # ---- pain_trigger -> attribute_value ----
+    def ingest_frontier_attribute_value(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "attribute_value"), "prevalent_in")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                dim = (raw.get("dimension") or "").strip()
+                name = (raw.get("name") or "").strip()
+                tgt = _attribute_value(self.G, dimension=dim, name=name, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="attribute_value", raw=raw, evidence=ev
+                )
+
+    # ---- pain_trigger -> zmot_event ----
+    def ingest_frontier_zmot_event(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "zmot_event"), "associated_zmot")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                event = (raw.get("event") or "").strip()
+                tgt = _zmot(self.G, event=event, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="zmot_event", raw=raw, evidence=ev
+                )
+
+    # ---- zmot_event -> observable_moment ----
+    def ingest_frontier_observable_moment(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "observable_moment"), "observed_in")  # <-- typo fixed below
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                text = (raw.get("text") or "").strip()
+                tgt = _observable(self.G, text=text, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="observable_moment", raw=raw, evidence=ev
+                )
+
+    # ---- zmot_event -> keyword ----
+    def ingest_frontier_keyword(self, batch: list[dict], *, product_id: str = "") -> None:
+        assert self.G is not None
+        for rec in batch:
+            src = rec.get("source_id")
+            if not src or src not in self.G:
+                continue
+            st = _stype(self.G, src)
+            relation = rec.get("relation") or RELATION_BY_PAIR.get((st, "keyword"), "keyword")
+            props = rec.get("proposals") or []
+            evids = rec.get("evidence") or []
+
+            for i, raw in enumerate(props):
+                text = (raw.get("text") or "").strip()
+                tgt = _keyword(self.G, text=text, data_source=self.data_source)
+
+                ev = evids[i] if i < len(evids) else None
+                self._score_and_upsert_edge(
+                    self.G, src=src, relation=relation, tgt=tgt,
+                    source_type=st, target_type="keyword", raw=raw, evidence=ev
+                )
+
+    # ----------------- Batch Non-frontier Methods below -----------------
+
+    """def __init__(self):
         self.buf: Dict[str, set] = {
             "pain": set(),
             "job": set(),
@@ -263,7 +696,8 @@ class CanonManager:
         self._current_product_id: Optional[str] = None
 
         # internal batch canonicalizer instance
-        self._bc = CAN.BatchCanonicalizer()
+        self._bc = CAN.BatchCanonicalizer()"""
+        
 
     # --------- ingest (collect raw) ---------
 

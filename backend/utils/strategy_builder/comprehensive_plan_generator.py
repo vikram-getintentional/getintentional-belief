@@ -1,498 +1,251 @@
-from datetime import date, datetime, timezone
+# backend/utils/strategy_builder/comprehensive_plan_generator.py
+from __future__ import annotations
+
 import json
 import os
-from typing import Any, Dict, Optional
-from pathlib import Path
+from datetime import datetime, date
+from typing import Any, Dict, List, Optional, Tuple
+import statistics as stats
 
-from fastapi import HTTPException
-from numpy import mean
-
-from backend.utils.crm_management.target_account_manager import get_account_by_id, get_target_account_ids
+# --- GI imports (existing in your repo) ---
+from backend.utils.crm_management.target_account_manager import get_target_account_ids
 from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph
-from backend.utils.inference.rcs_generators.rcs_helpers.strategy_orchestrators import construct_all_account_rcs
-from backend.utils.strategy_builder.plan_manager import build_portfolio_plan_from_rcs_sequences
+from backend.utils.inference.rcs_generators.rcs_helpers.strategy_orchestrators import (
+    rcs_for_target_account,
+)
 
-
+# -------------------------
+# Paths & small utilities
+# -------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_DIR = os.path.join(BASE_DIR, "utils", "dev_environment", "static_jsons")
-RCS_DIR = os.path.join(BASE_DIR, "utils", "dev_environment", "static_jsons", "account_rcs_jsons")
+GRAPH_DATA_DIR = os.path.join(BASE_DIR, "graph_base", "graph_data")
+RCS_JSON_DIR = os.path.join(GRAPH_DATA_DIR, "rcs_json")
 
-def _ensure_dir(path: str):
-    os.makedirs(path, exist_ok=True)
+def _ensure_dir(p: str) -> None:
+    os.makedirs(p, exist_ok=True)
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
-def _rcs_file_path(product_id: str, account_id: str):
-    return Path(RCS_DIR) / f"{product_id}_{account_id}.json"
+def _clamp01(x: float) -> float:
+    try:
+        x = float(x)
+    except Exception:
+        return 0.0
+    return max(0.0, min(1.0, x))
 
-def _parse_date(s: Optional[str]) -> Optional[date]:
-    if not s:
+# -------------------------------------------------
+# Load / Save RCS (kept compatible with your logs)
+# -------------------------------------------------
+def _rcs_path(product_id: str, account_id: str) -> str:
+    return os.path.join(RCS_JSON_DIR, product_id, f"{account_id}.json")
+
+def _save_rcs_json(product_id: str, account_id: str, rcs: Dict[str, Any]) -> None:
+    folder = os.path.join(RCS_JSON_DIR, product_id)
+    _ensure_dir(folder)
+    with open(os.path.join(folder, f"{account_id}.json"), "w") as f:
+        json.dump(rcs, f, indent=2)
+
+def load_account_rcs_from_disk(product_id: str, account_id: str) -> Tuple[Optional[Dict[str, Any]], str]:
+    p = _rcs_path(product_id, account_id)
+    if not os.path.exists(p):
+        return None, p
+    with open(p, "r") as f:
+        return json.load(f), p
+
+# ----------------------------------------
+# Campaign synthesis (fallback) from RCS
+# ----------------------------------------
+def _to_timeframe(idx: int) -> Dict[str, str]:
+    # compact horizon: start today + 2w * idx, 10w duration
+    start = date.today()
+    return {
+        "startDate": start.isoformat(),
+        "endDate": start.replace(day=min(28, start.day)) .isoformat()
+    }
+
+def _synthesize_campaigns_from_sequences(rcs: Dict[str, Any]) -> List[Dict[str, Any]]:
+    seqs = (rcs.get("rcs_brief") or rcs.get("report") or {}).get("concern_sequences") or []
+    if not seqs:
+        return []
+    out: List[Dict[str, Any]] = []
+    for i, seq in enumerate(seqs):
+        steps = seq.get("sequence", []) or []
+        personas = []
+        rows = []
+        for step in steps:
+            pname = step.get("persona")
+            if pname:
+                personas.append(pname)
+            label = step.get("label") or step.get("concern_label") or step.get("cid") or "Concern"
+            rows.append({
+                "asset": f"[TBD] Resolve “{label}”",
+                "channels": "Email Nurture, LinkedIn Ads, Sales Assist",
+                "fitment": step.get("stage") or "Concern resolution",
+                "engagement": "Medium",
+                "expectedLift": "+10%",
+            })
+        personas = sorted({p for p in personas if p})
+        out.append({
+            "id": f"camp_seq_{i:02d}",
+            "description": f"Resolve prioritized concerns across {', '.join(personas[:2]) or 'key personas'}",
+            "timeframe": _to_timeframe(i),
+            "personas": personas,
+            "arsenalTable": rows,
+        })
+    return out
+
+# ----------------------------------------
+# Belief metrics (portfolio summary)
+# ----------------------------------------
+def _avg_belief_band(avg: float) -> str:
+    # map 0..1 to bands; tolerate 0..100 strings
+    if avg > 1.5:  # assume it was given in %
+        avg = avg / 100.0
+    avg = _clamp01(avg)
+    if avg < 0.25:
+        return "Unaware"
+    if avg < 0.5:
+        return "Problem-aware"
+    if avg < 0.75:
+        return "Solution-aware"
+    return "Most-aware"
+
+def _belief_from_rcs(rcs: Dict[str, Any]) -> Optional[float]:
+    # try persona_scores.avg or execution_plan.personas belief avg
+    ps = ((rcs.get("rcs_brief") or {}).get("persona_scores") or {}) if rcs else {}
+    vals: List[float] = []
+    for row in ps.values():
+        b = row.get("belief")
+        if isinstance(b, (int, float)):
+            vals.append(_clamp01(float(b)))
+    if not vals:
+        ppl = ((rcs.get("execution_plan") or {}).get("personas") or []) if rcs else []
+        for p in ppl:
+            b = p.get("belief")
+            if isinstance(b, (int, float)):
+                vals.append(_clamp01(float(b)))
+    if not vals:
         return None
-    return datetime.strptime(s, "%Y-%m-%d").date()
+    return float(stats.mean(vals))
 
-def _overlaps(item_start: Optional[str], item_end: Optional[str], w_start: date, w_end: date) -> bool:
-    """Return True if [item_start, item_end] overlaps [w_start, w_end]."""
-    # Default open intervals if missing
-    s = _parse_date(item_start) or date.min
-    e = _parse_date(item_end) or date.max
-    return not (e < w_start or s > w_end)
+# ----------------------------------------
+# Theme builders
+# ----------------------------------------
+def _theme_from_account_rcs(account_id: str, rcs: Dict[str, Any]) -> Dict[str, Any]:
+    acct_label = rcs.get("account_name") or rcs.get("account") or account_id
+    # prefer already prepared campaigns
+    campaigns = ((rcs.get("execution_plan") or {}).get("campaigns") or [])[:]
+    if not campaigns:
+        # synthesize from sequences if blank
+        campaigns = _synthesize_campaigns_from_sequences(rcs)
 
-def _load_plan_from_disk(product_id: str) -> dict:
+    return {
+        "id": f"theme:{account_id}",
+        "name": f"Plan for {acct_label}",
+        "explanation": "Auto-constructed from account RCS",
+        "objective": rcs.get("objectives", {}).get("winHypothesis", ""),
+        "targetAccounts": [acct_label],
+        "campaigns": campaigns,
+    }
+
+# ----------------------------------------
+# Public helpers for the route
+# ----------------------------------------
+def build_integrated_portfolio_plan(product_id: str, account_id: Optional[str] = None) -> Dict[str, Any]:
     """
-    Attempt to load a product-specific plan, otherwise fall back to default.
-    Raises FileNotFoundError if neither file exists.
+    Returns the **v2** plan:
+      { meta, portfolio: {keyStats}, themes: [...] }
+    If account_id is provided, returns a single-account plan with one theme.
+    Otherwise, aggregates all open target accounts.
     """
-    
-    
-    product_id_indexed = product_id
-    product_subgraph = build_product_graph(product_id)
-    product_id_actual = get_product_id_from_subgraph(product_subgraph)
+    # Normalize product_id (use actual id from subgraph)
+    G = build_product_graph(product_id)
+    product_id = get_product_id_from_subgraph(G) or product_id
 
-    print("Loading plan from disk for product_id:", product_id)
-    product_file = os.path.join(DATA_DIR, f"{product_id}_execution_plan.json")
-    default_file = os.path.join(DATA_DIR, "execution_plan.json")
-    
-
-    print("Checking for product-specific plan file at:", product_file)
-    """
-    if os.path.exists(product_file):
-        with open(product_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-    """    
-    print("Building all RCS for indexed product_id:", product_id_indexed)
-    rcs_filled = construct_all_account_rcs(product_id_indexed)
-    if rcs_filled:
-        print("RCS data constructed for product_id:", product_id_indexed)
-        print("RCS data type:", type(rcs_filled))
-        print("RCS items length:", len(rcs_filled))
-        for rcs in rcs_filled:
-            if rcs.get("execution_plan"):
-                print("RCS data contains execution_plan")
-
-    if rcs_filled:
-        # Create unified product-specific plan file with comprehensive RCS data
-        print("Attempting to create product-specific plan with RCS data" )
-        integrated_plan = build_portfolio_plan_from_rcs_sequences(
-            rcs_list=rcs_filled,
-            G=product_subgraph,
-            product_id=product_id_actual
-            )
-        return integrated_plan
-
+    # Determine which accounts to include
+    if account_id:
+        account_ids = [account_id]
     else:
-        print("No RCS data found to create product-specific plan.")
-    if os.path.exists(default_file):
-        print("Falling back to default plan file at:", default_file)
-        with open(default_file, "r", encoding="utf-8") as f:
-            return json.load(f)
+        account_ids = get_target_account_ids(product_id, {"status": {"nin": ["Closed-won", "Closed-lost"]}})
 
-    raise FileNotFoundError(
-        f"No plan JSON found. Checked: {product_file} and {default_file}"
-    )
+    themes: List[Dict[str, Any]] = []
+    belief_vals: List[float] = []
+    personas_all: set[str] = set()
 
-def _filter_by_window(plan: dict, window_start: str | None, window_end: str | None) -> dict:
+    for acc in account_ids:
+        # Load or (re)build RCS
+        rcs, p = load_account_rcs_from_disk(product_id, acc)
+        if rcs is None:
+            # generate + save
+            rcs = rcs_for_target_account(product_id, acc)
+            # ensure a sane minimal shape if generators return partials
+            if "execution_plan" not in rcs:
+                rcs["execution_plan"] = {}
+            _save_rcs_json(product_id, acc, rcs)
+
+        # Theme from this account
+        theme = _theme_from_account_rcs(acc, rcs)
+        # collect persona count for portfolio
+        for c in theme.get("campaigns", []):
+            for p in c.get("personas", []) or []:
+                personas_all.add(str(p))
+
+        themes.append(theme)
+
+        # belief contribution
+        b = _belief_from_rcs(rcs)
+        if b is not None:
+            belief_vals.append(b)
+
+    # Portfolio metrics
+    total_accounts = len(account_ids)
+    avg_belief = float(stats.mean(belief_vals)) if belief_vals else 0.0
+    plan: Dict[str, Any] = {
+        "meta": {
+            "version": "2.0",
+            "generatedAt": _now_iso(),
+            "beliefScale": ["Unaware", "Problem-aware", "Solution-aware", "Most-aware"],
+            "avgBeliefBand": _avg_belief_band(avg_belief),
+        },
+        "portfolio": {
+            "keyStats": {
+                "totalTargetAccounts": total_accounts,
+                "totalPersonasToEngage": len(personas_all),
+                "expectedWinsPct": 0.0,          # you can wire this to graphwin later
+                "averageAccountBelief": f"{avg_belief:.2f}",
+                "timeToWinMonths": 3,            # default; tune later
+            }
+        },
+        "themes": themes,
+    }
+    return plan
+
+def _filter_by_window(plan: Dict[str, Any], window_start: Optional[str], window_end: Optional[str]) -> Dict[str, Any]:
     """
-    Filters campaigns in each theme by timeframe boundaries.
-    Expects schema v2.0 where campaigns live under plan['themes'][*]['campaigns'].
+    Non-destructive filter: keeps only campaigns whose timeframe overlaps [start, end].
+    If either bound is None, it behaves like an open interval on that side.
     """
     if not window_start and not window_end:
         return plan
 
-    w_start = _parse_date(window_start) or date.min
-    w_end   = _parse_date(window_end) or date.max
-    if w_end < w_start:
-        raise HTTPException(status_code=422, detail="window_end must be >= window_start")
+    def overlaps(tf: Dict[str, str]) -> bool:
+        s = tf.get("startDate")
+        e = tf.get("endDate")
+        if not (s and e):
+            return True  # keep if undefined
+        if window_start and e < window_start:
+            return False
+        if window_end and s > window_end:
+            return False
+        return True
+
+    themes = []
+    for t in plan.get("themes", []):
+        camps = [c for c in (t.get("campaigns") or []) if overlaps(c.get("timeframe") or {})]
+        if camps:
+            themes.append({**t, "campaigns": camps})
 
     out = dict(plan)
-    filtered_themes = []
-
-    for theme in plan.get("themes", []):
-        theme_copy = dict(theme)
-        filtered_campaigns = []
-        for camp in theme.get("campaigns", []):
-            tf = camp.get("timeframe", {})
-            if _overlaps(tf.get("startDate"), tf.get("endDate"), w_start, w_end):
-                filtered_campaigns.append(camp)
-        theme_copy["campaigns"] = filtered_campaigns
-        filtered_themes.append(theme_copy)
-
-    out["themes"] = filtered_themes
+    out["themes"] = themes
     return out
-
-
-def _recompute_portfolio_expectations(plan: dict) -> dict:
-    """
-    Recalculate expectedWinsPct and averageAccountBelief based on visible campaigns.
-    Works with v2.0 JSON only.
-    """
-    portfolio = plan.get("portfolio", {})
-    key_stats = portfolio.get("keyStats", {})
-    campaigns = [c for t in plan.get("themes", []) for c in t.get("campaigns", [])]
-
-    if not campaigns:
-        key_stats["expectedWinsPct"] = 0.0
-        key_stats["averageAccountBelief"] = "Unaware"
-        plan["portfolio"]["keyStats"] = key_stats
-        return plan
-
-    # --- Expected Wins % ---
-    total = len(campaigns)
-    active = sum(1 for c in campaigns if c.get("timeframe"))
-    base = key_stats.get("expectedWinsPct", 0.6)
-    key_stats["expectedWinsPct"] = round(base * (active / total), 2)
-
-    # --- Average Belief Level ---
-    belief_scale = plan.get("meta", {}).get("beliefScale", [])
-    if not belief_scale:
-        belief_scale = ["Unaware", "ZMOT", "Discovery", "Evaluation", "Pilot", "Pre-Close", "Customer"]
-    belief_map = {b.lower(): i for i, b in enumerate(belief_scale)}
-
-    def infer_belief_from_text(campaign):
-        txt = (campaign.get("description", "") + " " + " ".join(campaign.get("personas", []))).lower()
-        if any(x in txt for x in ["awareness", "launch", "press", "analyst", "zmot"]):
-            return belief_map.get("zmot", 1)
-        if any(x in txt for x in ["discovery", "interest", "learn", "education"]):
-            return belief_map.get("discovery", 2)
-        if any(x in txt for x in ["evaluation", "blueprint", "workshop"]):
-            return belief_map.get("evaluation", 3)
-        if any(x in txt for x in ["pilot", "proof", "poc", "demo", "adoption"]):
-            return belief_map.get("pilot", 4)
-        if any(x in txt for x in ["customer", "reference", "evangelism", "story"]):
-            return belief_map.get("customer", 6)
-        return belief_map.get("discovery", 2)
-
-    scores = [infer_belief_from_text(c) for c in campaigns]
-    avg_idx = round(mean(scores)) if scores else belief_map.get("discovery", 2)
-    key_stats["averageAccountBelief"] = belief_scale[min(avg_idx, len(belief_scale) - 1)]
-
-    plan["portfolio"]["keyStats"] = key_stats
-    return plan
-
-#---- Account Level RCS JSON Generation ----#
-
-def _save_rcs_json(product_id: str, account_id: str, rcs_json: dict):
-    p = Path(_rcs_file_path(product_id, account_id))
-    p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("w", encoding="utf-8") as f:
-        json.dump(rcs_json, f, indent=2)
-
-        print("Saved updated json to:", p)
-
-def load_account_rcs_from_disk(product_id: str, account_id: str) -> dict:
-    """
-    Load or create an RCS JSON scaffold for this account.
-    If missing or corrupted, create a new enriched scaffold using TargetAccount.
-    """
-    p = Path(_rcs_file_path(product_id, account_id))
-    print("Loading RCS JSON from path:", p)
-    try:
-        existed = p.exists()
-    except Exception as e:
-        print("[ERROR] checking path exists:", e)
-        existed = False
-
-    if not existed:
-        print("RCS file not found, creating new scaffold.")
-        acct = get_account_by_id(product_id, account_id)
-        rcs = _rcs_header_from_account(product_id, account_id, acct)
-        print("New RCS scaffold created for account_id:", account_id, " with headers: ", rcs)
-        # ensure directory exists then write
-        try:
-            p.parent.mkdir(parents=True, exist_ok=True)
-            with p.open("w", encoding="utf-8") as f:
-                json.dump(rcs, f, indent=2)
-        except Exception as e:
-            print("[ERROR] failed to write new RCS file:", e)
-        return rcs, False
-
-    # file exists -> try to load
-    try:
-        with p.open("r", encoding="utf-8") as f:
-            rcs = json.load(f)
-    except json.JSONDecodeError:
-        print("RCS JSON corrupted, recreating scaffold.")
-        acct = get_account_by_id(product_id, account_id)
-        rcs = _rcs_header_from_account(product_id, account_id, acct)
-        try:
-            with p.open("w", encoding="utf-8") as f:
-                json.dump(rcs, f, indent=2)
-        except Exception as e:
-            print("[ERROR] failed to write repaired RCS file:", e)
-        return rcs, False
-    except Exception as e:
-        print("[ERROR] unexpected error reading RCS file:", e)
-        # return a scaffold so caller can continue
-        acct = get_account_by_id(product_id, account_id)
-        rcs = _rcs_header_from_account(product_id, account_id, acct)
-        return rcs, False
-
-    # If it's an empty/fresh file with only headers, enrich it once
-    if not (rcs.get("plays") or rcs.get("evidence") or rcs.get("stakeholders")):
-        acct = get_account_by_id(product_id, account_id)
-        if acct:
-            enriched = _rcs_header_from_account(product_id, account_id, acct)
-            for k in ("plays", "evidence", "nextActions", "hypotheses", "objectives"):
-                if rcs.get(k):
-                    enriched[k] = rcs[k]
-            rcs = enriched
-            try:
-                with p.open("w", encoding="utf-8") as f:
-                    json.dump(rcs, f, indent=2)
-            except Exception as e:
-                print("[ERROR] failed to write enriched RCS file:", e)
-
-    return rcs, True
-
-#-----RCS Header & Pre-data fillers
-
-def _account_to_rcs_seed(acct: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Normalize a TargetAccount row into fields useful for an RCS scaffold.
-    This function is defensive: it tolerates missing/optional fields and
-    maps the DB column names used by target_account_manager to the RCS seed.
-    """
-    # Prefer the TargetAccount column names, fall back to older keys if present
-    name            = acct.get("account_name") or acct.get("name") or acct.get("company") or ""
-    website         = acct.get("website") or acct.get("site") or ""
-    region          = acct.get("geography") or acct.get("region") or acct.get("geo") or ""
-    size_segment    = acct.get("employee_range") or acct.get("employee_band") or acct.get("segment") or ""
-    revenue_band    = acct.get("revenue_range") or acct.get("revenueBand") or acct.get("revenue") or ""
-    # competitor_used in DB is JSON list — pick first as primary competitor string if present
-    competitor      = ""
-    cu = acct.get("competitor_used") or acct.get("current_competitor") or acct.get("billing_competitor") or []
-    if isinstance(cu, (list, tuple)) and cu:
-        competitor = cu[0]
-    elif isinstance(cu, str):
-        competitor = cu
-    current_stack   = acct.get("other_tech_stack") or acct.get("current_stack") or {}
-    billing_model   = acct.get("billing_model") or acct.get("pricing_model") or ""
-    icp_fit         = acct.get("icp_fit") if acct.get("icp_fit") is not None else None
-    tags            = acct.get("tags") or []
-    intent_signals  = acct.get("intent_signals") or []
-    notes           = acct.get("notes") or ""
-    # If you store belief/stage on the account, seed from there (support both names)
-    belief_state    = acct.get("deal_status") or acct.get("belief_state") or acct.get("funnel_stage") or "Unaware"
-    belief_score    = acct.get("belief_score") or acct.get("win_likelihood")  # optional numeric
-    belief_reason   = acct.get("belief_rationale") or acct.get("belief_reason") or ""
-
-    # Optional people/roles (TargetAccount currently may not have contacts; keep defensive)
-    primary_contacts = acct.get("contacts") or acct.get("primary_contacts") or []
-
-    return {
-        "account": {
-            "id": acct.get("id"),
-            "product_id": acct.get("product_id"),
-            "name": name,
-            "account_name": name,
-            "website": website,
-            "region": region,
-            "segment": size_segment,
-            "revenueBand": revenue_band,
-            "revenue_range": revenue_band,
-            "employee_range": size_segment,
-            "funding_stage": acct.get("funding_stage") or acct.get("funding") or "",
-            "industry": acct.get("industry") or "",
-            "currentCompetitor": competitor,
-            "currentStack": current_stack,
-            "billingModel": billing_model,
-            "icpFit": icp_fit,
-            "intentSignals": intent_signals,
-            "tags": tags,
-            "notes": notes,
-            # preserve raw DB status too
-            "deal_status": acct.get("deal_status"),
-        },
-        "belief": {
-            "state": belief_state,
-            "score": belief_score if isinstance(belief_score, (int, float)) else 0,
-            "rationale": belief_reason,
-        },
-        "stakeholders": [
-            {
-                "name": c.get("name"),
-                "title": c.get("title"),
-                "email": c.get("email"),
-                "role": c.get("role") or c.get("persona"),
-                "influence": c.get("influence"),
-                "notes": c.get("notes", ""),
-            }
-            for c in primary_contacts
-            if isinstance(c, dict)
-        ],
-    }
-
-
-def _rcs_header_from_account(product_id: str, account_id: str, acct: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-    """
-    Construct a smart default RCS header using an optional TargetAccount.
-    If acct is None, falls back to a minimal header.
-    """
-    now = _now_iso()
-
-    if acct:
-        seed = _account_to_rcs_seed(acct)
-        account = seed.get("account", {})
-        belief = seed.get("belief", {"state": "Unaware", "score": 0.0, "rationale": ""})
-        stakeholders = seed.get("stakeholders", [])
-
-        # Archetype mapping (best-effort from seed)
-        archetype = {
-            "industry": account.get("industry") or (account.get("archetypes")[0] if account.get("archetypes") else "") or "",
-            "revenue_range": account.get("revenueBand") or account.get("revenue") or "",
-            "employee_range": account.get("employee_range") or account.get("segment") or "",
-            "geography": account.get("region") or account.get("geography") or "",
-            "funding_stage": account.get("funding_stage") or account.get("funding") or "",
-        }
-
-        # Simple persona scoring from stakeholder influence if present
-        top_personas_by_involvement = []
-        try:
-            sorted_stakeholders = sorted(
-                [s for s in stakeholders if isinstance(s, dict)],
-                key=lambda x: (x.get("influence") or 0),
-                reverse=True,
-            )
-            for s in sorted_stakeholders[:6]:
-                top_personas_by_involvement.append({
-                    "id": s.get("role") or s.get("title") or s.get("name"),
-                    "involvement": float(s.get("influence") or 0),
-                    "activation": round(float(s.get("influence") or 0) * 0.5, 2),
-                    "strength": round(float(s.get("influence") or 0) * 0.75, 2),
-                })
-        except Exception:
-            top_personas_by_involvement = []
-
-        hot_nodes = [s.get("role") or s.get("title") or s.get("name") for s in stakeholders][:6]
-
-        scaffold = {
-            "meta": {"version": "1.0", "createdAt": now, "updatedAt": now},
-            "account_id": account.get("id") or account_id,
-            "account_name": account.get("name") or account.get("company") or "",
-            "product_id": account.get("product_id") or product_id,
-            "website": account.get("website") or "",
-            "deal_status": account.get("deal_status") or belief.get("state") or "Unaware",
-            "archetype": archetype,
-
-            "zmot_theme": "",
-            "rcs_brief": {
-                "baseline": {
-                    "win_likelihood": float(belief.get("score") or 0.0),
-                    "walk_path": [],
-                    "hot_nodes": hot_nodes,
-                },
-                "top_personas": {
-                    "by_involvement": top_personas_by_involvement,
-                    "by_activation": [], 
-                    "by_strength": [],
-                },
-                "concerns_by_persona": {},
-                "concern_backlog": [],
-                "concern_coalitions": [],
-                "concern_sequences": [],
-                "coalitions": [],
-                "core_scores": {},
-                "persona_scores": {},
-                "sequences_and_campaigns": [],
-                "causal_flows": []
-            },
-            "reverse_case_study": {
-                "stages": [
-                    {
-                        "stage": "",
-                        "trigger": "",
-                        "belief_before": "",
-                        "belief_after": "",
-                        "personas": [],
-                        "pains": [],
-                        "evidence": [],
-                        "recommended_assets": []
-                    }
-                ]
-            },
-            "execution_plan": {
-                "belief_state_summary": {
-                    "average_belief_score": float(belief.get("score") or 0.0),
-                    "dominant_stage": belief.get("state") or "",
-                    "recommended_focus": "",
-                },
-                "personas": [],
-                "campaigns": []
-            },
-            # keep legacy/utility keys for downstream code
-            "plays": [],
-            "evidence": [],
-            "nextActions": [],
-            "hypotheses": [{"text": f"Validate with {stakeholders[0].get('role')}" , "status": "Open"}] if stakeholders else [],
-            "objectives": {"winHypothesis": "", "kpis": []},
-        }
-
-        return scaffold
-
-    # Fallback minimal header (no account in DB)
-    return {
-        "meta": {"version": "1.0", "createdAt": now, "updatedAt": now},
-        "account": {"id": account_id, "product_id": product_id, "name": ""},
-        "belief": {"state": "Unaware", "score": 0.0, "rationale": ""},
-        "stakeholders": [],
-        "hypotheses": [],
-        "objectives": {"winHypothesis": "", "kpis": []},
-        "plays": [],
-        "evidence": [],
-        "nextActions": [],
-        "rcs_brief": {
-            "baseline": {"win_likelihood": 0.0, "walk_path": [], "hot_nodes": []},
-            "top_personas": {"by_involvement": [], "by_activation": [], "by_strength": []},
-            "concerns_by_persona": {},
-            "concern_backlog": [],
-            "concern_coalitions": [],
-            "concern_sequences": [],
-            "coalitions": [],
-            "core_scores": {},
-            "persona_scores": {},
-            "sequences_and_campaigns": [],
-            "causal_flows": []
-        },
-        "reverse_case_study": {"stages": []},
-        "execution_plan": {
-            "belief_state_summary": {"average_belief_score": 0.0, "dominant_stage": "", "recommended_focus": ""},
-            "personas": [],
-            "campaigns": []
-        }
-    }
-
-
-
-
-
-def load_all_account_rcs_jsons(product_id: str):
-    print("Loading all account ids from comprehensive generator")
-    product_id_indexed = product_id
-    product_subgraph = build_product_graph(product_id)
-    product_id_actual = get_product_id_from_subgraph(product_subgraph)
-
-    account_ids = get_target_account_ids(product_id_actual, {"status": {"nin": ["Closed-won", "Closed-lost"]}})
-    print("Account IDs fetched for product_id", product_id_actual, ":", account_ids)
-    rcs_list = []
-    created = 0
-    normalized = 0
-
-    for acc_id in account_ids:
-        print("Processing account_id:", acc_id)
-        existed = "False"
-        rcs, existed = load_account_rcs_from_disk(product_id_actual, acc_id)
-        print("Loaded RCS for account_id", acc_id)
-        if not existed:
-            created += 1
-        else:
-            if not (rcs.get("plays") or rcs.get("evidence") or rcs.get("stakeholders")):
-                normalized += 1
-        rcs_list.append(rcs)
-
-    debug = {
-        "rcs_accounts_count": len(rcs_list),
-        "new_rcs_headers_created": created,
-        "rcs_headers_normalized": normalized,
-    }
-    return rcs_list, debug
-

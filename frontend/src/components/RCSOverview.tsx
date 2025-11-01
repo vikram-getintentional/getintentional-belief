@@ -1,412 +1,423 @@
-// ============================
-// Component: RCSOverview.tsx
-// ============================
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
-  Box, Card, CardContent, Chip, Divider, Grid, Stack, Typography,
-  Tooltip,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Grid,
+  LinearProgress,
+  Stack,
   Table,
+  TableBody,
+  TableCell,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody
+  Tooltip,
+  Typography,
 } from "@mui/material";
 
-import { bucketByRole, zNormalizePersonas, classifyRole, PersonaMetric } from "../utils/rcs_metrics";
-import { pickPreferredSource } from "../utils/rcs_normalize";
-
-
-
-type PersonaRow = { id: string; label?: string; involvement?: number; activation?: number };
-
-function roleOf(p: PersonaRow) {
-  const inv = p.involvement ?? 0;
-  const act = p.activation ?? 0;
-  if (inv >= 0.5 && act >= 0.5) return "Potential Champion";
-  if (inv >= 0.5 && act < 0.5)  return "Blocker";
-  if (inv < 0.5 && act >= 0.5)  return "Operator";
-  return "Passive Influencer";
+/** -------- helpers -------- */
+function pct(n?: number) {
+  const v = Number.isFinite(n as number) ? (n as number) : 0;
+  return `${Math.round(v * 100)}%`;
+}
+function safe<T>(v: T | undefined | null, d: T): T {
+  return v ?? d;
+}
+function truncate(str: string, n = 80) {
+  if (!str) return "";
+  return str.length > n ? str.slice(0, n - 1) + "…" : str;
 }
 
-function pct(n?: number) { return `${Math.round(100 * (n ?? 0))}%`; }
+function median(xs: number[]) {
+  if (!xs.length) return 0;
+  const a = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(a.length / 2);
+  return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+}
 
-export default function RCSOverview({ rcs }: { rcs: any }) {
-  if (!rcs) return null;
+/** Extractors that tolerate old/new report shapes */
+function pickReport(rcs: any) {
+  return rcs?.frozen_strategy?.report || rcs?.report || {};
+}
+function pickFrozenPersonas(rcs: any) {
+  // canonical: frozen_strategy.frozen_personas (object keyed by persona_id)
+  const fp = rcs?.frozen_strategy?.frozen_personas;
+  if (fp && typeof fp === "object") return Object.values(fp);
+  // older shapes fallbacks
+  return rcs?.frozen_strategy?.personas || rcs?.personas || [];
+}
+function pickGraphwin(rcs: any) {
+  const report = pickReport(rcs);
+  return Number(report?.graphwin ?? 0);
+}
+function pickOrgCoalitions(rcs: any) {
+  const report = pickReport(rcs);
+  return Array.isArray(report?.org_coalitions) ? report.org_coalitions : [];
+}
+function pickTotalCampaigns(rcs: any) {
+  const t = rcs?.tactical_update?.next_campaigns;
+  if (Array.isArray(t)) return t.length;
+  // fallback: 1 if stage plan exists in tactical_update
+  return Array.isArray(rcs?.tactical_update?.phases) ? rcs.tactical_update.phases.length : 0;
+}
 
-  const preferred = pickPreferredSource(rcs) || {};
-  const personasSrc =
-    preferred?.top_personas?.by_strength ||
-    preferred?.top_personas ||
-    preferred?.frozen_persona_pool ||
-    preferred?.all_personas ||
-    // also accept payload wrapped under report or legacy keys
-    rcs?.report?.top_personas?.by_strength ||
-    rcs?.report?.top_personas ||
-    rcs?.top_personas ||
-    rcs?.all_personas ||
-    rcs?.top_N_personas ||
-    [];
-  const personas: PersonaMetric[] = (Array.isArray(personasSrc) ? personasSrc.map((p: any) => ({
-    id: p?.id || p?.persona || p?.label || String(p),
-    label: p?.persona_label || p?.label || p?.id || String(p),
-    involvement: Number(p?.involvement ?? p?.I ?? 0),
-    activation: Number(p?.activation ?? p?.A ?? 0),
-  })) : []);
- 
-  const byRole = bucketByRole(personas, { mode: "z", zxCut: 0, zyCut: 0 });
-   personas.forEach(p => byRole[roleOf(p)].push(p));
- 
+type Persona = {
+  id?: string;
+  persona?: string;
+  persona_label?: string;
+  label?: string;
+  involvement?: number;
+  activation?: number;
+  strength?: number;
+};
 
-  const win =
-    Number(preferred?.graph_win_likelihood ?? preferred?.baseline?.win_likelihood) ||
-    Number(rcs?.graph_win_likelihood) ||
-    Number(rcs?.baseline?.win_likelihood) ||
-    Number(rcs?.concern_sequences?.[0]?.final_win) ||
-    0;
- 
-  const rawCoalitionCandidates = [
-    preferred?.concern_coalitions,
-    preferred?.coalitions,
-    preferred?.coalition_candidates,
-    rcs?.coalitions,
-    rcs?.concern_coalitions,
-    rcs?.top_coalitions,
-    rcs?.report?.coalitions,
-    rcs?.report?.concern_coalitions,
-    rcs?.report?.output?.coalitions,
-    rcs?.output?.coalitions,
-    (rcs?.report && rcs.report.report && rcs.report.report.coalitions) // nested wrapper
-  ];
+type Coalition = {
+  coalition_id?: string;
+  dominant_phase?: string;
+  members?: any[];
+  concerns?: any[];
+  org_rank_score?: number;
+  keyness_score?: number;
+  stats?: any;
+};
 
-  const rawCoalitions = rawCoalitionCandidates.find((c) => Array.isArray(c) && c.length) || [];
-  // Debug: if UI still shows none, check console for where we looked and a sample
-  if (!rawCoalitions.length) {
-    // eslint-disable-next-line no-console
-    console.debug("RCSOverview: no coalitions found. checked candidates:", rawCoalitionCandidates.map((c) => (Array.isArray(c) ? `arr(${c.length})` : typeof c)));
-  } else {
-    // eslint-disable-next-line no-console
-    console.debug("RCSOverview: using coalitions from source, sample:", rawCoalitions[0]);
+/** Build the 2x2 buckets from frozen personas using median thresholds */
+function bucketRoles(personas: Persona[]) {
+  const I = personas.map((p) => Number(p.involvement ?? 0));
+  const A = personas.map((p) => Number(p.activation ?? 0));
+  const iCut = median(I);
+  const aCut = median(A);
+
+  const labelOf = (p: Persona) =>
+    p.persona_label || p.label || p.persona || p.id || "—";
+
+  const champions: string[] = [];
+  const blockers: string[] = [];
+  const operators: string[] = [];
+  const influencers: string[] = [];
+
+  personas.forEach((p) => {
+    const inv = Number(p.involvement ?? 0);
+    const act = Number(p.activation ?? 0);
+    const name = labelOf(p);
+
+    if (inv >= iCut && act >= aCut) champions.push(name);
+    else if (inv >= iCut && act < aCut) blockers.push(name);
+    else if (inv < iCut && act >= aCut) operators.push(name);
+    else influencers.push(name);
+  });
+
+  return { champions, blockers, operators, influencers, iCut, aCut };
+}
+
+/** Coalition render helpers for new shape */
+function coalitionMemberLabels(c: Coalition): string[] {
+  const src = Array.isArray(c?.members) ? c.members : [];
+  const names = src
+    .map((m) => {
+      if (m?.persona_label) return m.persona_label;
+      if (m?.persona) return m.persona;
+      if (m?.label) return m.label;
+      return typeof m === "string" ? m : "";
+    })
+    .filter(Boolean);
+  // de-dupe, keep order
+  return Array.from(new Set(names));
+}
+function coalitionConcernLabels(c: Coalition): string[] {
+  // primary source: coalition.concerns[]
+  if (Array.isArray(c?.concerns) && c.concerns.length) {
+    return c.concerns
+      .map((x) => x?.label || x?.concern_label || (typeof x === "string" ? x : ""))
+      .filter(Boolean);
   }
+  // fallback: collect member.concern_label
+  const fromMembers =
+    Array.isArray(c?.members) &&
+    c.members
+      .map((m: any) => m?.concern_label)
+      .filter(Boolean);
+  return (fromMembers || []).slice(0, 6); // cap
+}
 
-  const coalitions: any[] = Array.isArray(rawCoalitions)
-    ? rawCoalitions.map((c: any) => {
-        // robust lift/synergy resolution
-        const lift = Number(
-          c?.lift ??
-            c?.compatibility ??
-            c?.score ??
-            c?.compatibility_score ??
-            c?.lift_score ??
-            0
-        );
-        const synergy = Number(
-          c?.synergy ?? c?.synergy_score ?? c?.overlap_size ?? c?.overlap ?? 0
-        );
-        // Accept many shapes: concerns, shared_concerns, members, pair, plain strings
-        const rawConcerns =
-          c?.concerns ??
-          c?.shared_concerns ??
-          c?.members ??
-          c?.pair ??
-          c?.members_list ??
-          [];
+/** ---------- Component ---------- */
+export default function RCSOverview({ rcs }: { rcs: any }) {
+  const graphwin = pickGraphwin(rcs);
+  const frozenPersonas: Persona[] = pickFrozenPersonas(rcs);
+  const coalitions: Coalition[] = pickOrgCoalitions(rcs);
+  const totalCampaigns = pickTotalCampaigns(rcs);
 
-        const concerns = Array.isArray(rawConcerns)
-          ? rawConcerns.map((cc: any) => {
-              // string element -> persona id only
-              if (typeof cc === "string") {
-                return { persona: cc, concern_id: "", concern_label: "" };
-              }
-              // object element -> be permissive about fields
-              return {
-                persona:
-                  cc?.persona ||
-                  cc?.persona_id ||
-                  cc?.member_persona ||
-                  // fallback to coalition pair if present
-                  (Array.isArray(c?.pair) && c.pair[0]) ||
-                  cc?.id ||
-                  "",
-                concern_id: cc?.concern_id || cc?.cid || cc?.id || cc?.concern || "",
-                concern_label:
-                  cc?.concern_label || cc?.label || cc?.name || cc?.concern_text || ""
-              };
-            })
-          : [];
-
-        // Debug: show one sample mapping in console to verify shapes during dev
-        // eslint-disable-next-line no-console
-        console.debug("RCSOverview: mapped coalition", { raw: c, mapped: concerns.slice(0, 6) });
-
-        return { ...c, lift, synergy, concerns };
-      })
-    : [];
+  const roles = useMemo(() => bucketRoles(frozenPersonas), [frozenPersonas]);
 
   return (
-    <Stack spacing={2}>
-      {/* Meta / Stats */}
-      <Card variant="outlined">
-        <CardContent>
-          <Typography variant="h6">Graph Snapshot</Typography>
-          <Divider sx={{ my: 1.5 }} />
-          <Stack direction="row" spacing={4} flexWrap="wrap">
-            <Stack>
-              <Typography variant="body2" color="text.secondary">Graph win likelihood</Typography>
-              <Typography variant="h5">{(win as number).toFixed(3)}</Typography>
-            </Stack>
-            <Stack>
-              <Typography variant="body2" color="text.secondary">Personas analyzed</Typography>
-              <Typography variant="h5">{personas.length}</Typography>
-            </Stack>
-            <Stack>
-              <Typography variant="body2" color="text.secondary">Coalition ideas</Typography>
-              <Typography variant="h5">{coalitions.length}</Typography>
-            </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
+    <Stack spacing={3}>
+      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+        Overview
+      </Typography>
 
-      {/* Persona roles */}
-      <Card variant="outlined">
+      {/* Snapshot */}
+      <Card variant="outlined" sx={{ borderRadius: 2 }}>
         <CardContent>
-          <Typography variant="h6">Persona Roles (Involvement × Activation)</Typography>
-          <Divider sx={{ my: 1.5 }} />
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+            Snapshot
+          </Typography>
           <Grid container spacing={2}>
-            {Object.entries(byRole).map(([role, list]) => (
-              <Grid size={{ xs: 12, md: 6, lg: 6 }} key={role}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Stack spacing={1}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip
-                          color={
-                            role === "Potential Champion" ? "success" :
-                            role === "Blocker" ? "error" :
-                            role === "Operator" ? "info" : "default"
-                          }
-                          label={role}
-                          size="small"
-                        />
-                        <Typography variant="body2" color="text.secondary">
-                          {list.length} persona{list.length !== 1 ? "s" : ""}
-                        </Typography>
-                      </Stack>
-
-                      <Stack spacing={0.5}>
-                        {list.slice(0, 6).map(p => (
-                          <Tooltip
-                            key={p.id}
-                            title={`Involvement ${pct(p.involvement)} · Activation ${pct(p.activation)}`}
-                          >
-                            <Typography variant="body2">• {p.label || p.id}</Typography>
-                          </Tooltip>
-                        ))}
-                        {list.length > 6 && (
-                          <Typography variant="caption" color="text.secondary">
-                            +{list.length - 6} more…
-                          </Typography>
-                        )}
-                      </Stack>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+            <Grid item xs={12} sm={3}>
+              <KPI label="Graph Win Likelihood" value={pct(graphwin)} helper="" />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <KPI label="Personas to Analyze" value={frozenPersonas.length} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <KPI label="Coalitions to Convert" value={coalitions.length} />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <KPI label="Total Campaigns" value={totalCampaigns} />
+            </Grid>
           </Grid>
         </CardContent>
       </Card>
 
-      {/* Coalitions */}
-      <Card variant="outlined">
+      {/* Persona Roles */}
+      <Card variant="outlined" sx={{ borderRadius: 2 }}>
         <CardContent>
-          <Typography variant="h6">Potential Persona Coalitions</Typography>
-          <Divider sx={{ my: 1.5 }} />
-          {!coalitions.length ? (
-            <Typography color="text.secondary">No coalitions available.</Typography>
-          ) : (
-            <Stack spacing={1.5}>
-              {coalitions.slice(0, 8).map((c: any, i: number) => {
-                // build persona id -> label map from normalized personas (prefer human label)
-                const personaMap = new Map((personas || []).map((p: any) => [String(p.id), p.label]));
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+            Persona Roles (Involvement × Activation)
+          </Typography>
 
-                // derive member ids + labels (preserve ids so extractor can probe persona-keyed lifts/stages)
-                let memberIds: string[] = [];
-                let memberLabels: string[] = [];
-                if (Array.isArray(c.labels) && Array.isArray(c.pair) && c.labels.length && c.pair.length) {
-                  // both labels and pair present -> pair contains ids matching labels
-                  memberIds = c.pair.map((p: any) => String(p));
-                  memberLabels = c.labels.map((l: any) => String(l));
-                } else if (Array.isArray(c.pair) && c.pair.length) {
-                  memberIds = c.pair.map((p: any) => String(p));
-                  memberLabels = memberIds.map((id) => {
-                    const short = id.split(":").slice(-1)[0];
-                    return personaMap.get(id) ?? personaMap.get(short) ?? short;
-                  });
-                } else {
-                  // fallback: collect persona ids from shared_concerns / concerns
-                  const collector = new Set<string>();
-                  const sharedArr = Array.isArray(c.shared_concerns) ? c.shared_concerns : (Array.isArray(c.concerns) ? c.concerns : []);
-                  if (Array.isArray(sharedArr) && sharedArr.length) {
-                    sharedArr.forEach((sc: any) => {
-                      if (typeof sc === "string") collector.add(sc);
-                      else {
-                        if (sc?.persona) collector.add(String(sc.persona));
-                        if (sc?.persona_id) collector.add(String(sc.persona_id));
-                        if (sc?.member_persona) collector.add(String(sc.member_persona));
-                        if (Array.isArray(sc?.pair)) sc.pair.forEach((pid: any) => collector.add(String(pid)));
-                      }
-                    });
-                  }
-                  if (!collector.size && Array.isArray(c.pair)) c.pair.forEach((p: any) => collector.add(String(p)));
-                  memberIds = Array.from(collector);
-                  memberLabels = memberIds.map((id) => {
-                    const short = String(id).split(":").slice(-1)[0];
-                    return personaMap.get(id) ?? personaMap.get(short) ?? short;
-                  });
-                }
-                // dev log to verify we resolved meaningful ids+labels
-                // eslint-disable-next-line no-console
-                console.debug("RCSOverview: memberIds resolved:", memberIds, "memberLabels:", memberLabels);
+          <Grid container spacing={2}>
+            {/* Champions (High x High) */}
+            <Grid item xs={12}>
+              <RoleBox title="Potential Champion (High I × High A)" color="success" items={roles.champions} />
+            </Grid>
 
-                const shared = Array.isArray(c.shared_concerns) ? c.shared_concerns : (Array.isArray(c.concerns) ? c.concerns : []);
+            {/* Blockers & Operators side-by-side for compactness */}
+            <Grid item xs={12} md={6}>
+              <RoleBox title="Blocker (High I × Low A)" color="error" items={roles.blockers} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RoleBox title="Operator (Low I × High A)" color="info" items={roles.operators} />
+            </Grid>
 
-                // build member rows: persona_label | stage | lift_proxy (avg over shared concerns)
-                function extractStageAndLiftFromShared(sc: any, memberIdx: number, memberId?: string) {
-                  // stage candidates
-                  const stageCandidates = [
-                    sc?.stage,
-                    sc?.stage_a,
-                    sc?.stage_b,
-                    sc?.stg,
-                    sc?.stage0,
-                    sc?.stage1,
-                    sc?.phase,
-                    sc?.phase_a,
-                    sc?.phase_b,
-                  ].filter(Boolean);
+            {/* Influencers */}
+            <Grid item xs={12}>
+              <RoleBox title="Passive Influencer (Low I × Low A)" color="default" items={roles.influencers} />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
-                  // lift candidates: explicit per-side keys
-                  const explicit =
-                    memberIdx === 0
-                      ? (sc?.lift_a ?? sc?.liftA ?? sc?.lift_0 ?? sc?.lift_1)
-                      : (sc?.lift_b ?? sc?.liftB ?? sc?.lift_1 ?? sc?.lift_2);
+      {/* Potential Coalitions */}
+      <Card variant="outlined" sx={{ borderRadius: 2 }}>
+        <CardContent>
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+            Potential Coalitions
+          </Typography>
 
-                  // nested lifts objects/arrays
-                  let nested: any = undefined;
-                  if (!explicit && sc?.lifts && typeof sc.lifts === "object") {
-                    if (memberId && sc.lifts[memberId] != null) nested = sc.lifts[memberId];
-                    else if (Array.isArray(sc.lifts) && sc.lifts[memberIdx] != null) nested = sc.lifts[memberIdx];
-                    else if (sc.lifts.a != null || sc.lifts.b != null) nested = memberIdx === 0 ? sc.lifts.a : sc.lifts.b;
-                  }
-
-                  // fallback generic numeric fields (lift, lift_proxy, lift_score, score, compatibility)
-                  const fallbackCandidates = [
-                    sc?.lift,
-                    sc?.lift_proxy,
-                    sc?.lift_score,
-                    sc?.score,
-                    sc?.compatibility,
-                    sc?.compatibility_score,
-                    nested,
-                    explicit,
-                  ];
-
-                  // pick first numeric candidate
-                  const pickNumeric = (vals: any[]) => {
-                    for (const v of vals) {
-                      if (v == null) continue;
-                      if (typeof v === "number") return v;
-                      if (typeof v === "string" && v.trim()) {
-                        const n = Number(v);
-                        if (!Number.isNaN(n)) return n;
-                      }
-                    }
-                    // as last resort, search object properties for numeric-looking values
-                    for (const v of vals) {
-                      if (v && typeof v === "object") {
-                        for (const k of Object.keys(v)) {
-                          const val = v[k];
-                          if (typeof val === "number") return val;
-                          if (typeof val === "string" && val.trim()) {
-                            const n = Number(val);
-                            if (!Number.isNaN(n)) return n;
-                          }
-                        }
-                      }
-                    }
-                    return undefined;
-                  };
-
-                  if (!stageCandidates.length && memberId) {
-                    const short = String(memberId).split(":").slice(-1)[0];
-                    if (sc?.stages && typeof sc.stages === "object") {
-                      const s = sc.stages[memberId] ?? sc.stages[short];
-                      if (s) stageCandidates.push(s);
-                    }
-                    if (sc?.stage_by_persona && typeof sc.stage_by_persona === "object") {
-                      const s2 = sc.stage_by_persona[memberId] ?? sc.stage_by_persona[short];
-                      if (s2) stageCandidates.push(s2);
-                    }
-                  }
-                  const stage = stageCandidates.length ? String(stageCandidates[0]) : undefined;
-                  const lift = pickNumeric(fallbackCandidates);
-                  return { stage, lift: typeof lift === "number" ? lift : undefined };
-                }
-
-                const memberRows = memberLabels.map((lab: string, idx: number) => {
-                  const lifts: number[] = [];
-                  const stages = new Set<string>();
-                  for (const sc of shared) {
-                    const memberIdGuess = memberIds[idx]; // pass the resolved persona id so extractor can find persona-specific fields
-                    const { stage, lift } = extractStageAndLiftFromShared(sc, idx, memberIdGuess);
-                    console.debug("RCSOverview: shared concern pick", { sc, memberIdx: idx, memberId: memberIdGuess, stage, lift });
-                    if (stage) stages.add(stage);
-                    if (typeof lift === "number" && !Number.isNaN(lift)) lifts.push(lift);
-                  }
-                  const avgLift = lifts.length ? lifts.reduce((s, n) => s + n, 0) / lifts.length : 0;
-                  const stageText = Array.from(stages).join(", ") || (c?.stage || "");
-                  return { persona_label: lab, stage: stageText, lift_proxy: avgLift };
-                });
-
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Coalition</TableCell>
+                <TableCell>Concerns</TableCell>
+                <TableCell align="right">Org Rank</TableCell>
+                <TableCell align="right">Keyness</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {coalitions.map((c, idx) => {
+                const people = coalitionMemberLabels(c);
+                const concerns = coalitionConcernLabels(c);
                 return (
-                  <Card key={i} variant="outlined">
-                    <CardContent>
-                      <Stack spacing={1}>
-                        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                          <Typography variant="subtitle1">{c?.label || c?.coalition_id || `Coalition ${i+1}`}</Typography>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Chip color="primary" size="small" label={`Lift ${(c.lift ?? 0).toFixed(3)}`} />
-                            <Chip size="small" label={`Synergy ${(c.synergy ?? 0).toFixed(3)}`} />
-                          </Stack>
-                        </Stack>
-
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Persona</TableCell>
-                              <TableCell>Stage</TableCell>
-                              <TableCell>Lift</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {memberRows.map((mr, j) => (
-                              <TableRow key={j}>
-                                <TableCell>{mr.persona_label}</TableCell>
-                                <TableCell>{mr.stage || "—"}</TableCell>
-                                <TableCell>{(mr.lift_proxy ?? 0).toFixed(6)}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                  <TableRow key={c.coalition_id || idx}>
+                    <TableCell sx={{ maxWidth: 520 }}>
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                        {people.length === 0 ? (
+                          <Muted>—</Muted>
+                        ) : (
+                          people.map((p) => (
+                            <Chip
+                              key={p + idx}
+                              size="small"
+                              label={truncate(p, 40)}
+                              sx={{ bgcolor: "success.main", color: "white" }}
+                            />
+                          ))
+                        )}
                       </Stack>
-                    </CardContent>
-                  </Card>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 520 }}>
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                        {concerns.length === 0 ? (
+                          <Muted>—</Muted>
+                        ) : (
+                          concerns.map((lab, i) => (
+                            <Tooltip key={lab + i} title={lab}>
+                              <Chip size="small" variant="outlined" label={truncate(lab, 36)} />
+                            </Tooltip>
+                          ))
+                        )}
+                      </Stack>
+                    </TableCell>
+                    <TableCell align="right" sx={{ minWidth: 120 }}>
+                      <Bar
+                        value={
+                          typeof c?.org_rank_score === "number"
+                            ? c.org_rank_score
+                            : typeof c?.stats?.avg_perc === "number"
+                            ? c.stats.avg_perc
+                            : 0
+                        }
+                        mode="bps"
+                      />
+
+                    </TableCell>
+                    <TableCell align="right" sx={{ minWidth: 120 }}>
+                      <Bar
+                        value={
+                          typeof c?.stats?.avg_key === "number"
+                            ? c.stats.avg_key
+                            : safe(c.keyness_score, 0)
+                        }
+                      />
+                    </TableCell>
+
+                  </TableRow>
                 );
               })}
-            </Stack>
-          )}
+              {coalitions.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4}>
+                    <Muted>No coalitions returned for this scenario.</Muted>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </Stack>
+  );
+}
+
+/** --------- small presentational bits ---------- */
+function KPI({ label, value, helper }: { label: string; value: React.ReactNode; helper?: string }) {
+  return (
+    <Box
+      sx={{
+        px: 2,
+        py: 1.5,
+        borderRadius: 2,
+        border: "1px solid",
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Typography sx={{ fontSize: 28, fontWeight: 700, lineHeight: 1 }}>{value}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      {helper && (
+        <Typography variant="caption" color="text.disabled">
+          {helper}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
+function RoleBox({
+  title,
+  items,
+  color,
+}: {
+  title: string;
+  items: string[];
+  color: "success" | "error" | "info" | "default";
+}) {
+  const palette =
+    color === "success"
+      ? { bg: "success.main", fg: "common.white", variant: "filled" as const }
+      : color === "error"
+      ? { bg: "error.main", fg: "common.white", variant: "filled" as const }
+      : color === "info"
+      ? { bg: "info.main", fg: "common.white", variant: "filled" as const }
+      : { bg: "grey.200", fg: "text.primary", variant: "outlined" as const };
+
+  return (
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        border: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <Typography variant="subtitle2" sx={{ mb: 1.25, color: "text.secondary" }}>
+        {title}
+      </Typography>
+      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+        {items.length === 0 ? (
+          <Muted>—</Muted>
+        ) : (
+          items.map((t, i) => (
+            <Chip
+              key={t + i}
+              size="small"
+              label={t}
+              sx={palette.variant === "filled" ? { bgcolor: palette.bg, color: palette.fg } : {}}
+              variant={palette.variant}
+            />
+          ))
+        )}
+      </Stack>
+    </Box>
+  );
+}
+
+function Bar({ value, mode = "percent" }: { value: number; mode?: "percent" | "bps" }) {
+  const v = Number(value || 0);
+
+  if (mode === "bps") {
+    // convert float (0.0061) → 61 bps
+    const bps = v * 10000;
+    const bounded = Math.min(100, bps / 100); // simple scale bar visually up to 100 bps
+    return (
+      <Stack alignItems="flex-end" spacing={0.5}>
+        <Typography variant="caption" color="text.secondary">
+          {bps.toFixed(0)} bps
+        </Typography>
+        <LinearProgress
+          variant="determinate"
+          value={bounded}
+          sx={{ width: 120, height: 6, borderRadius: 4 }}
+        />
+      </Stack>
+    );
+  }
+
+  // default percent view
+  const pct = Math.max(0, Math.min(1, v));
+  return (
+    <Stack alignItems="flex-end" spacing={0.5}>
+      <Typography variant="caption" color="text.secondary">
+        {Math.round(pct * 100)}%
+      </Typography>
+      <LinearProgress
+        variant="determinate"
+        value={pct * 100}
+        sx={{ width: 120, height: 6, borderRadius: 4 }}
+      />
+    </Stack>
+  );
+}
+
+
+function Muted({ children }: { children: React.ReactNode }) {
+  return (
+    <Typography variant="body2" color="text.disabled">
+      {children}
+    </Typography>
   );
 }

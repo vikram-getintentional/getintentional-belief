@@ -1,23 +1,36 @@
 # agentic_discovery_engine.py
 # Orchestrates LLM calls and packages HIGHER-CONTEXT inputs for prompts.
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+import inspect
+from typing import Any, Callable, Dict, List, Optional, DefaultDict, Tuple
+from collections import defaultdict
 import json
 import traceback
+import networkx as nx
 
-from backend.utils.graph_base.schema import EDGES
+from backend.utils.graph_base.schema import EDGES, NEXT_HOPS, RAW_FIELDS_BY_TYPE
+from backend.utils.inference.discovery_engine.agentic_engine.agent_context import AgentContext, already_linked_fields, minimal_source_fields, product_pack
 from backend.utils.inference.gpt_prompts.agentic_prompts import (
     build_archetypes_relevance_matrix,
     build_hop0_prompt,
     build_hop_plus_prompt,
     build_zmot_for_triggers_prompt,
     build_pain_source_prompt,
+    build_capability_expansion_prompt,
+    build_pain_expansion_prompt,
+    build_job_expansion_prompt,
+    build_pain_trigger_expansion_prompt,
+    build_attribute_value_expansion_prompt,
+    build_zmot_event_expansion_prompt
+    
 )
-from backend.utils.graph_base.agent_graph_builder import CanonManager
+from backend.utils.graph_base.agent_graph_builder import CREATE_BY_TYPE, RELATION_BY_PAIR, CanonManager
 from backend.utils.graph_base.network_graph import (
     get_node_by_id,
     get_node_id,
     get_nodes_list_ids,
+    get_product_id_from_subgraph,
     get_source_nodes_by_target_and_type,
     get_target_nodes_by_source_and_type,
     update_graph,
@@ -334,6 +347,21 @@ def _extract_product_context(G, context):
         raise RuntimeError("❌ LLM client missing on context.")
     if builder is None:
         raise RuntimeError("❌ CanonManager builder missing on context.")
+    
+    # 🔒 ensure the builder is graph-bound
+    if getattr(builder, "G", None) is None:
+        if hasattr(builder, "bind_graph") and callable(builder.bind_graph):
+            builder.bind_graph(G)
+        else:
+            # fallback if someone passed a plain object with a .G slot
+            setattr(builder, "G", G)
+
+    # Optionally set product_id / data_source if the instance didn’t get them
+    if not getattr(builder, "product_id", None):
+        try:
+            setattr(builder, "product_id", product_id)
+        except Exception:
+            pass
 
     return product_id, summary, domain, industry, capability_ids, client, builder
 
@@ -537,3 +565,492 @@ def pain_source_inference(G, pain_ids: list[str], context, enrich_pains: bool = 
     print("Pain Source inference completed. Result:", result)
     print("------------------------------------------------")
     return result
+
+
+#---- Single Frontier Node Addition Logic ----
+def _get_product_pack(product_id: str) -> Dict[str, Any]:
+    """
+    Minimal, stable product pack used by prompts.
+    Return keys you already include today in your agentic prompts
+    (summary, domain, industry, value_prop, capabilities, etc.)
+    """
+    # TODO: replace with your real loader
+    return {
+        "product_id": product_id,
+        "summary": "",   # fill from your cache/db
+        "domain": "",
+        "industry": "",
+    }
+
+def _seed_context(G: nx.DiGraph, node_id: str) -> Dict[str, Any]:
+    """
+    Minimal seed-node context for the LLM. Keep it compact & deterministic.
+    """
+    d = G.nodes.get(node_id, {})
+    return {
+        "id": node_id,
+        "type": d.get("type") or d.get("node_type"),
+        "title": d.get("title"),
+        "label": d.get("label"),
+        # raw-ish fields by type (keep short)
+        "raw": {
+            "description": d.get("description"),
+            "pain_source": d.get("pain_source"),
+            "metric": d.get("metric"),
+            "attribute": d.get("attribute"),
+            "dimension": d.get("dimension"),
+            "name": d.get("name"),
+            "event": d.get("event"),
+            "text": d.get("text"),
+            "title_persona": d.get("title"),
+            "department": d.get("department"),
+            "seniority": d.get("seniority"),
+        }
+    }
+
+def _already_linked(G: nx.DiGraph, src: str, target_type: str) -> List[Dict[str, Any]]:
+    """
+    Provide a compact list of currently-linked targets (by type) so the LLM avoids duplicates.
+    """
+    out = []
+    for _, tgt, data in G.out_edges(src, data=True):
+        td = G.nodes.get(tgt, {})
+        ttype = td.get("type") or td.get("node_type")
+        if ttype == target_type:
+            out.append({
+                "id": tgt,
+                "label": td.get("label") or td.get("title"),
+                "description": td.get("description"),
+                "metric": td.get("metric"),
+                "attribute": td.get("attribute"),
+                "dimension": td.get("dimension"),
+                "name": td.get("name"),
+                "event": td.get("event"),
+                "text": td.get("text"),
+                "title_persona": td.get("title"),
+                "department": td.get("department"),
+                "seniority": td.get("seniority"),
+            })
+    return out
+
+# Target schemas (mirror RAW_FIELDS_BY_TYPE)
+RAW_FIELDS_BY_TYPE: Dict[str, List[str]] = {
+    "pain": ["description", "pain_source"],
+    "job": ["description"],
+    "perceived_metric": ["metric"],
+    "pain_trigger": ["attribute"],
+    "attribute_value": ["dimension", "name"],
+    "zmot_event": ["event"],
+    "observable_moment": ["text"],
+    "keyword": ["text"],
+    "persona": ["title", "department", "seniority", "linkedin_profiles"],
+}
+
+# Legal expansions per *source* type
+SOURCE_TO_TARGETS: Dict[str, List[str]] = {
+    "capability": ["pain"],
+    "pain": ["job", "pain_trigger", "perceived_metric"],
+    "job": ["persona", "pain"],  # solves path
+    "pain_trigger": ["attribute_value", "zmot_event"],
+    "attribute_value": ["zmot_event"],
+    "zmot_event": ["observable_moment", "keyword"],
+    "persona": ["job"],  # optional
+}
+
+# Relation defaults keyed by (source_type, target_type)
+RELATION_BY_PAIR: Dict[Tuple[str, str], str] = {
+    ("capability", "pain"): "solves",
+    ("pain", "job"): "felt_in",
+    ("pain", "perceived_metric"): "expressed_as",
+    ("pain", "pain_trigger"): "triggered_by",
+    ("pain_trigger", "attribute_value"): "prevalent_in",
+    ("pain_trigger", "zmot_event"): "associated_zmot",
+    ("attribute_value", "zmot_event"): "associated_zmot",
+    ("zmot_event", "observable_moment"): "observed_in",
+    ("zmot_event", "keyword"): "keyword",
+    ("job", "persona"): "performed_by",
+    ("job", "pain"): "solves",
+}
+
+def _ntype(G: nx.DiGraph, node_id: str) -> str:
+    nd = G.nodes.get(node_id, {}) or {}
+    return nd.get("type") or nd.get("node_type") or ""
+
+def _minimal_source_fields(G: nx.DiGraph, node_id: str) -> Dict[str, Any]:
+    """Small summary per source used in prompts—safe across types."""
+    nd = G.nodes.get(node_id, {}) or {}
+    t = _ntype(G, node_id)
+    # pick the canonical fields you store on nodes
+    if t == "capability":
+        return {"id": node_id, "type": t, "name": nd.get("name"), "description": nd.get("description")}
+    if t == "pain":
+        return {"id": node_id, "type": t, "description": nd.get("description"), "pain_source": nd.get("pain_source")}
+    if t == "job":
+        return {"id": node_id, "type": t, "description": nd.get("description")}
+    if t == "persona":
+        return {"id": node_id, "type": t, "title": nd.get("title"), "department": nd.get("department"), "seniority": nd.get("seniority")}
+    if t == "perceived_metric":
+        return {"id": node_id, "type": t, "metric": nd.get("metric")}
+    if t == "pain_trigger":
+        return {"id": node_id, "type": t, "attribute": nd.get("attribute")}
+    if t == "attribute_value":
+        return {"id": node_id, "type": t, "dimension": nd.get("dimension"), "name": nd.get("name")}
+    if t == "zmot_event":
+        return {"id": node_id, "type": t, "event": nd.get("event")}
+    if t == "observable_moment":
+        return {"id": node_id, "type": t, "text": nd.get("text")}
+    if t == "keyword":
+        return {"id": node_id, "type": t, "text": nd.get("text")}
+    return {"id": node_id, "type": t}
+
+def _already_linked_targets(G: nx.DiGraph, source_id: str, target_type: str) -> List[Dict[str, Any]]:
+    out = []
+    for _, tgt, edata in G.out_edges(source_id, data=True):
+        if _ntype(G, tgt) == target_type:
+            out.append({"id": tgt, "label": G.nodes[tgt].get("label"), "title": G.nodes[tgt].get("title")})
+    return out
+
+def _bucket_by_target_type(G: nx.DiGraph, seed_ids: List[str], only_types: List[str] | None) -> Dict[str, List[str]]:
+    """
+    Decide which target types to expand for each seed, then bucket the seeds.
+    If `only_types` is provided, use it. Otherwise infer from source type.
+    """
+    buckets: Dict[str, List[str]] = {}
+    for sid in seed_ids:
+        st = _ntype(G, sid)
+        if only_types:
+            target_types = only_types
+        else:
+            # default expansion map: what a source typically expands to in one hop
+            if st == "capability":
+                target_types = ["pain"]
+            elif st == "pain":
+                target_types = ["job", "pain_trigger", "perceived_metric"]
+            elif st == "job":
+                target_types = ["persona", "pain"]  # pain here means "solves pain"
+            elif st == "pain_trigger":
+                target_types = ["attribute_value", "zmot_event"]
+            elif st == "attribute_value":
+                target_types = ["zmot_event"]  # optional; depends on your graph
+            elif st == "zmot_event":
+                target_types = ["observable_moment", "keyword"]
+            else:
+                target_types = []
+
+        for t in target_types:
+            buckets.setdefault(t, []).append(sid)
+
+    # dedupe seeds per bucket
+    for t in list(buckets.keys()):
+        buckets[t] = list(dict.fromkeys(buckets[t]))
+    return buckets
+
+
+def _ingest_with_pid(fn, items, product_id):
+            try:
+                return fn(items, product_id=product_id)
+            except TypeError:
+                return fn(items)
+
+def _normalize_type(t: str) -> str:
+    t = (t or "").strip().lower().replace("-", "_").replace(" ", "_")
+    return {
+        "jobs": "job",
+        "pains": "pain",
+        "personas": "persona",
+        "metrics": "perceived_metric",
+        "metric": "perceived_metric",
+        "pain_triggers": "pain_trigger",
+        "attributes": "attribute_value",
+        "attribute_values": "attribute_value",
+        "zmots": "zmot_event",
+        "zmot": "zmot_event",
+        "moments": "observable_moment",
+        "keywords": "keyword",
+    }.get(t, t)
+
+def _make_expansion_contexts_for_frontier(G, source_ids: List[str], target_type: str) -> List[Dict[str, Any]]:
+    need_fields = RAW_FIELDS_BY_TYPE.get(target_type, [])
+    out = []
+    for sid in source_ids:
+        out.append({
+            "source_id": sid,
+            "source": _minimal_source_fields(G, sid),
+            "already_linked": _already_linked_targets(G, sid, target_type),
+            "need_fields": need_fields
+        })
+    return out
+
+
+EDGE_REL_KEYS = ("relevance_label", "likelihood_label")
+EDGE_BOOST_PAIR = ("pain_trigger", "zmot_event")  # only this pair expects boost_label from LLM
+
+def _normalize_edge_scored_proposals(
+    proposals: List[Dict[str, Any]],
+    source_type: str,
+    target_type: str,
+) -> List[Dict[str, Any]]:
+    """
+    Clone each proposal and attach an 'edge_scores' object containing:
+      - relevance_label (if present)
+      - likelihood_label (if present)
+      - boost_label (ONLY for pain_trigger -> zmot_event, if present)
+    We keep labels also on the proposal root for backward compatibility,
+    but ingest_* functions can standardize on 'edge_scores'.
+    """
+    out: List[Dict[str, Any]] = []
+    for p in proposals or []:
+        # Shallow clone is fine; we do not mutate the original list
+        q = dict(p)
+
+        # Collect labels if present
+        rel = p.get("relevance_label")
+        lik = p.get("likelihood_label")
+        boost = p.get("boost_label") if (source_type, target_type) == EDGE_BOOST_PAIR else None
+
+        edge_scores: Dict[str, Any] = {}
+        if rel is not None:
+            edge_scores["relevance_label"] = rel
+        if lik is not None:
+            edge_scores["likelihood_label"] = lik
+        if boost is not None:
+            edge_scores["boost_label"] = boost
+
+        if edge_scores:
+            q["edge_scores"] = edge_scores
+
+        out.append(q)
+    return out
+
+
+def expand_frontier_one_layer(
+    G: nx.DiGraph,
+    seed_ids: List[str],
+    *,
+    only_types: Optional[List[str]] = None,
+    max_items_per_source: int = 5,
+    model: str = "gpt-4o-mini",
+    ctx: Optional["AgentContext"] = None,
+) -> Dict[str, int]:
+    """
+    Expand exactly one hop from the provided seeds, grouped by target type.
+    Returns counts per target type. Mutates G in place (adds nodes/edges).
+    """
+
+    # --- 1) Extract shared context exactly like hop0_inference ---
+    product_id, summary, domain, industry, capability_ids, client, builder = _extract_product_context(G, context=ctx)
+    product_ctx = {"summary": summary, "domain": domain, "industry": industry}
+    now_iso = datetime.now().isoformat()
+
+    if builder is None:
+        raise RuntimeError("expand_frontier_one_layer: Canon builder is None (check _extract_product_context)")
+    if client is None:
+        raise RuntimeError("expand_frontier_one_layer: LLM client is None (check _extract_product_context)")
+
+    # Bucket seeds by source type
+    by_source: Dict[str, List[str]] = defaultdict(list)
+    for sid in seed_ids:
+        st = _ntype(G, sid)
+        if only_types and st not in (only_types or []):
+            continue
+        by_source[st].append(sid)
+
+    counts: Dict[str, int] = {}
+
+    for source_type, sources in by_source.items():
+        # Build contexts (need_fields is per target, but our prompts already ask for all)
+        expansion_node_ids = sources
+        expansion_node_contexts = []
+        for sid in sources:
+            expansion_node_contexts.append({
+                "source_id": sid,
+                "source": _minimal_source_fields(G, sid),
+                "already_linked": [],  # optional: can prefill per-target later
+                "need_fields": []      # prompts already encode what to emit
+            })
+
+        # --- 2) Select prompt builder for this source_type ---
+        if source_type == "job":
+            user_prompt = build_job_expansion_prompt(
+                product_summary=summary, domain=domain, industry=industry,
+                expansion_node_ids=expansion_node_ids,
+                expansion_node_contexts=expansion_node_contexts,
+                max_items_per_source=max_items_per_source,
+            )
+        elif source_type == "pain":
+            user_prompt = build_pain_expansion_prompt(
+                product_summary=summary, domain=domain, industry=industry,
+                expansion_node_ids=expansion_node_ids,
+                expansion_node_contexts=expansion_node_contexts,
+                max_items_per_source=max_items_per_source,
+            )
+        elif source_type == "capability":
+            user_prompt = build_capability_expansion_prompt(
+                product_summary=summary, domain=domain, industry=industry,
+                expansion_node_ids=expansion_node_ids,
+                expansion_node_contexts=expansion_node_contexts,
+                max_items_per_source=max_items_per_source,
+            )
+        elif source_type == "pain_trigger":
+            user_prompt = build_pain_trigger_expansion_prompt(
+                product_summary=summary, domain=domain, industry=industry,
+                expansion_node_ids=expansion_node_ids,
+                expansion_node_contexts=expansion_node_contexts,
+                max_items_per_source=max_items_per_source,
+            )
+        elif source_type == "attribute_value":
+            user_prompt = build_attribute_value_expansion_prompt(
+                product_summary=summary, domain=domain, industry=industry,
+                expansion_node_ids=expansion_node_ids,
+                expansion_node_contexts=expansion_node_contexts,
+                max_items_per_source=max_items_per_source,
+            )
+        elif source_type == "zmot_event":
+            user_prompt = build_zmot_event_expansion_prompt(
+                product_summary=summary, domain=domain, industry=industry,
+                expansion_node_ids=expansion_node_ids,
+                expansion_node_contexts=expansion_node_contexts,
+                max_items_per_source=max_items_per_source,
+            )
+        else:
+            raise RuntimeError(f"Unsupported source_type for frontier: {source_type}")
+
+        print(f"[frontier] Calling LLM for source_type={source_type} with {len(sources)} sources...")
+        # Optional but VERY handy for debugging malformed label returns
+        # print("User prompt for frontier expansion:", user_prompt)
+
+        resp = _llm_json(
+            client=client,
+            system_prompt="You return JSON ONLY. Never include prose.",
+            user_prompt=user_prompt,
+            temperature=0.12,
+        )
+
+        # --- 3) Normalize response into batches per target type ---
+        batches: DefaultDict[str, List[Dict[str, Any]]] = defaultdict(list)
+        allowed_targets = SOURCE_TO_TARGETS.get(source_type, [])
+
+        key_map = {
+            "pain": "pain",
+            "pains": "pain",
+            "job": "job",
+            "jobs": "job",
+            "persona": "persona",
+            "personas": "persona",
+            "perceived_metric": "perceived_metric",
+            "metric": "perceived_metric",
+            "metrics": "perceived_metric",
+            "pain_trigger": "pain_trigger",
+            "pain_triggers": "pain_trigger",
+            "attribute_value": "attribute_value",
+            "attributes": "attribute_value",
+            "attribute_values": "attribute_value",
+            "zmot_event": "zmot_event",
+            "zmot": "zmot_event",
+            "observable_moment": "observable_moment",
+            "observable_moments": "observable_moment",
+            "keyword": "keyword",
+            "keywords": "keyword",
+        }
+
+        rows = []
+        if isinstance(resp, dict):
+            rows = resp.get("items") or resp.get("results") or []
+        elif isinstance(resp, list):
+            rows = resp
+
+        for row in rows or []:
+            src = row.get("source_id")
+            tblocks = row.get("targets") or {}
+            if not src or not isinstance(tblocks, dict):
+                continue
+
+            for raw_k, block in tblocks.items():
+                tcanon = key_map.get(raw_k)
+                if not tcanon:
+                    continue
+                if tcanon not in allowed_targets:
+                    continue
+                if not isinstance(block, dict):
+                    continue
+
+                proposals = block.get("proposals") or []
+                if not proposals:
+                    continue
+
+                # --- NEW: attach edge_scores to each proposal based on labels present ---
+                scored_proposals = _normalize_edge_scored_proposals(
+                    proposals=proposals,
+                    source_type=source_type,
+                    target_type=tcanon,
+                )
+
+                relation = RELATION_BY_PAIR.get((source_type, tcanon))
+                batches[tcanon].append({
+                    "source_id": src,
+                    "relation": relation,
+                    "proposals": scored_proposals,            # carries edge_scores inside each proposal
+                    "evidence": block.get("evidence") or [],  # block-level why
+                })
+
+        # Debug: how much we’re about to ingest for this source_type
+        dbg_counts = {k: sum(len(it.get("proposals") or []) for it in v) for k, v in batches.items()}
+        print(f"LLM Response normalized for {source_type}:", json.dumps(dbg_counts))
+
+        # --- 4) Ingest per target type (builder.* will now see edge_scores) ---
+        created_total = 0
+        def _ct(items: List[Dict[str, Any]]) -> int:
+            return sum(len(it.get("proposals") or []) for it in items)
+
+        if batches.get("pain"):
+            if source_type == "job":
+                _ingest_with_pid(builder.ingest_frontier_solves_pain, batches["pain"], product_id)
+            else:
+                _ingest_with_pid(builder.ingest_frontier_pain, batches["pain"], product_id)
+            created_total += _ct(batches["pain"])
+
+        if batches.get("job"):
+            _ingest_with_pid(builder.ingest_frontier_job, batches["job"], product_id)
+            created_total += _ct(batches["job"])
+
+        if batches.get("persona"):
+            _ingest_with_pid(builder.ingest_frontier_persona, batches["persona"], product_id)
+            created_total += _ct(batches["persona"])
+
+        if batches.get("perceived_metric"):
+            _ingest_with_pid(builder.ingest_frontier_perceived_metric, batches["perceived_metric"], product_id)
+            created_total += _ct(batches["perceived_metric"])
+
+        if batches.get("pain_trigger"):
+            _ingest_with_pid(builder.ingest_frontier_pain_trigger, batches["pain_trigger"], product_id)
+            created_total += _ct(batches["pain_trigger"])
+
+        if batches.get("attribute_value"):
+            _ingest_with_pid(builder.ingest_frontier_attribute_value, batches["attribute_value"], product_id)
+            created_total += _ct(batches["attribute_value"])
+
+        if batches.get("zmot_event"):
+            _ingest_with_pid(builder.ingest_frontier_zmot_event, batches["zmot_event"], product_id)
+            created_total += _ct(batches["zmot_event"])
+
+        if batches.get("observable_moment"):
+            _ingest_with_pid(builder.ingest_frontier_observable_moment, batches["observable_moment"], product_id)
+            created_total += _ct(batches["observable_moment"])
+
+        if batches.get("keyword"):
+            _ingest_with_pid(builder.ingest_frontier_keyword, batches["keyword"], product_id)
+            created_total += _ct(batches["keyword"])
+
+        # Flush *inside* the loop so each source_type commit lands
+        touched = builder.flush(G)
+        update_graph(G)
+
+        counts[source_type] = created_total
+        print(f"Ingested total for {source_type}: {created_total}")
+
+    # mark timestamp and return per-source_type counts
+    try:
+        G.graph["last_frontier_expand"] = now_iso
+    except Exception:
+        pass
+    return counts

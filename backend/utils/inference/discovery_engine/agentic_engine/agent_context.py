@@ -1,5 +1,7 @@
 
-from typing import List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
+import networkx as nx
+from backend.utils.graph_base.schema import RAW_FIELDS_BY_TYPE
 
 
 class AgentContext:
@@ -69,6 +71,40 @@ class AgentContext:
     def enqueue_pain_for_source(self, pain_id): self.pain_source_cache.append(pain_id)
     def visited_pains(self): return self._visited_pains
     def visited_triggers(self): return self._visited_triggers
+
+def _ntype(G: nx.DiGraph, nid: str) -> str:
+    return (G.nodes[nid].get("type") or G.nodes[nid].get("node_type") or "").lower()
+
+def minimal_source_fields(G: nx.DiGraph, nid: str) -> Dict[str, Any]:
+    """Return only the fields the LLM needs for reasoning, plus id/type."""
+    t = _ntype(G, nid)
+    keep = RAW_FIELDS_BY_TYPE.get(t, [])
+    n = G.nodes[nid]
+    slim = {k: n.get(k) for k in keep if k in n}
+    slim["_node_id"] = nid
+    slim["_type"] = t
+    return slim
+
+def already_linked_fields(G: nx.DiGraph, nid: str, target_type: str) -> List[Dict[str, Any]]:
+    """Return raw field snapshots of already-linked targets of the desired type."""
+    out: List[Dict[str, Any]] = []
+    for _, v in G.out_edges(nid):
+        tv = _ntype(G, v)
+        if tv == "metric":  # normalize if you have both "metric" and "perceived_metric"
+            tv = "perceived_metric"
+        if tv == target_type:
+            keep = RAW_FIELDS_BY_TYPE.get(target_type, [])
+            tgt = G.nodes[v]
+            out.append({k: tgt.get(k) for k in keep if k in tgt})
+    return out
+
+def product_pack(product_summary: str | None, domain: str | None, industry: str | None) -> Dict[str, Any]:
+    """Stable wrapper used by prompts—keeps your prompt schema consistent."""
+    return {
+        "product_summary": product_summary or "",
+        "domain": domain or "",
+        "industry": industry or "",
+    }
 
 
 

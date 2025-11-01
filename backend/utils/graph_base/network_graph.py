@@ -15,6 +15,7 @@ def build_product_graph(product_lookup_id: str):
     """
     Build a NetworkX DiGraph for the given product_id using your internal graph data.
     """
+    print("Building product graph for:", product_lookup_id)
     product_graph = load_graph_from_json(product_lookup_id)
     return product_graph
 
@@ -22,14 +23,14 @@ def update_graph(product_subgraph):
     """
     Updates the product subgraph with latest available nodes and edges
     """
-    product_lookup_id = product_subgraph.graph.get("product_lookup_id")
+    product_lookup_id = get_product_id_from_subgraph(product_subgraph)
     print("Updating graph for product ID:", product_lookup_id)
 
     # Load the latest product graph
     latest_graph = build_product_graph(product_lookup_id)
 
     # Merge the new graph into the existing subgraph
-    product_subgraph = nx.compose(product_subgraph, latest_graph)
+    product_subgraph = nx.compose(latest_graph, product_subgraph)
 
     print("Graph updated successfully.")
 
@@ -43,11 +44,15 @@ def update_graph(product_subgraph):
 
     return product_subgraph
 
-def get_product_id_from_subgraph(G) -> str:
-    for node_id, data in G.nodes(data=True):
+def get_product_id_from_subgraph(G):
+    pid = (G.graph or {}).get("product_lookup_id")
+    if pid and pid in G: 
+        return pid
+    # fallback: first node with node_type == "product"
+    for nid, data in G.nodes(data=True):
         if data.get("node_type") == "product":
-            return node_id
-    raise ValueError("No product node found in subgraph.")
+            return nid
+    return None
 
 def get_node_by_id(G, node_id: str) -> dict:
     """
@@ -107,7 +112,7 @@ def get_edge_attribute(G, source_id, target_id, attribute: str):
         elif attribute == "boost":
             return G.get_edge_data(source_id, target_id).get("boost", 0.0)
         else: 
-            print(f"Attribute {attribute} not recognized. Returning weight.")
+            print(f"Attribute {attribute} not recognized for {source_id} -> {target_id}. Returning weight.")
             return G.get_edge_data(source_id, target_id).get("weight", 0.0) 
     return 0.0
 
@@ -138,11 +143,6 @@ def get_all_target_nodes(G, node_id):
 def get_all_source_nodes(G, node_id):
     return [G.nodes[u] for u, _ in G.in_edges(node_id)]
 
-def get_product_id_from_subgraph(G) -> str:
-    for node_id, data in G.nodes(data=True):
-        if data.get("node_type") == "product":
-            return node_id
-    raise ValueError("No product node found in subgraph.")
 
 def update_capability_centralities(G):
     updated_caps_list = []
