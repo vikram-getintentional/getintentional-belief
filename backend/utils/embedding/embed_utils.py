@@ -2,10 +2,16 @@ from sentence_transformers import SentenceTransformer
 
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import save_embeddings
 
-# Load once and reuse
-model = SentenceTransformer('all-MiniLM-L6-v2')
+# Load once and reuse (guarded for offline environments)
+try:
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+except Exception as exc:
+    print("⚠️ SentenceTransformer model load failed; embeddings disabled:", exc)
+    model = None
 
 def get_embedding(text: str) -> list[float]:
+    if model is None:
+        return []
     try:
         embedding = model.encode([text], convert_to_numpy=True)[0]
         return embedding.tolist()
@@ -15,6 +21,9 @@ def get_embedding(text: str) -> list[float]:
 
 
 def generate_embeddings(texts: list[str]) -> dict:
+    if model is None:
+        print("⚠️ Embedding model unavailable; skipping generation.")
+        return {}
     print(f"Generating embeddings  for texts")
     try:
         embeddings = model.encode(texts, convert_to_numpy=True)

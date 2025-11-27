@@ -1,12 +1,11 @@
 # agentic_loop.py
 
 from typing import Any, Dict, Iterable, List, Optional
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 from backend.utils.graph_base.schema import EDGES
 from backend.utils.inference.discovery_engine.agentic_engine.agent_context import AgentContext
 from backend.utils.graph_base.network_graph import (
     get_node_by_id, get_node_id, get_nodes_list_ids,
-    get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type, update_graph
+    get_target_nodes_by_source_and_type, update_graph
 )
 from backend.utils.inference.discovery_engine.agentic_discovery_engine import (
     expand_frontier_one_layer,
@@ -54,13 +53,13 @@ def run_agentic_loop(product_subgraph: nx.DiGraph, max_depth: int = 6):
     
     # Finalize: run archetype discovery for Pain Triggers
     print("✅ Completed agentic Hop loop passes.")
-    print("🔍 Running final Trigger Event + Archetype discovery for Pain Triggers…")
-    archetype_event_discovery(product_subgraph, context)
+    #print("🔍 Running final Trigger Event + Archetype discovery for Pain Triggers…")
+    #archetype_event_discovery(product_subgraph, context)
 
 
     
     
-    print("✅ Completed Archetype discovery.")
+    #print("✅ Completed Archetype discovery.")
 
 
 # ---------------------------------------------------------------------------
@@ -148,11 +147,6 @@ def agentic_inference(product_subgraph: nx.DiGraph, context: AgentContext | None
         if pain_source == "non-terminal":
             # Check non-terminal pains for relevance
             print("Processing non-terminal pain:", pain_id)
-            relevance = get_cumulative_relevance_data(product_id, pain_id)
-            if relevance < context.relevance_threshold:
-                print(f"ℹ️ Non-terminal pain {pain_id} below relevance threshold ({relevance}).")
-                context.mark_pain_visited(pain_id)
-                continue
             upstream_jobs = get_target_nodes_by_source_and_type(product_subgraph, pain_id, "felt_in")
             if upstream_jobs:
                 print("Non terminal pain has upstream jobs - marking as visited")

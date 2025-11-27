@@ -8,7 +8,6 @@ import os
 import json
 
 from backend.utils.graph_base.network_graph import get_node_by_id, get_node_id, get_product_id_from_subgraph, get_target_nodes_by_source_and_type, update_graph
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 from backend.utils.inference.gpt_prompts.openai_helper import extract_summary_and_capabilities, validate_summary_and_persona_samples
 from backend.utils.knowledge_base.canonicalizer import canonicalize_job, canonicalize_pain, canonicalize_persona, canonicalize_trigger_events
@@ -113,8 +112,7 @@ def generate_product_value_prop(company_id: str, url: str, text: str, plg_cta: b
             "summary": summary,
             "domain": domain,
             "industry": industry,
-            "plg_flag": plg_cta,
-            "node_type": "product"
+            "plg_flag": plg_cta
         })
         print("Upserting capability nodes")
         # Upsert capability nodes and edges
@@ -182,7 +180,6 @@ def generate_product_value_prop(company_id: str, url: str, text: str, plg_cta: b
                 "name": name,
                 "description": description,
                 "coreness": cap.get("coreness", 0.0),
-                "node_type": "capability"
             })
         print("Capability nodes upserted. Now saving graph.")
         # Update and Save Graph
@@ -300,13 +297,11 @@ def get_product_value_prop_capabilities(sub_graph: nx.DiGraph):
     for cap_id in capabilities_list:
         capability_node = get_node_by_id(sub_graph, cap_id)
         if capability_node:
-            relevance = get_cumulative_relevance_data(product_id, cap_id)
             capabilities.append({
                 "name": capability_node.get("name", ""),
                 "description": capability_node.get("description", ""),
                 "coreness": capability_node.get("coreness", 0.0),
                 "centrality": capability_node.get("centrality", 0.0),
-                "relevance": relevance
             })
         else:
             print("Capability node not found:", cap_id)

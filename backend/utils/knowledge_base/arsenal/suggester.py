@@ -5,14 +5,14 @@ import math
 
 try:
     from backend.utils.knowledge_base.arsenal.execution_arsenal_repository import (
-        load_assets_from_arsenal_json,
-        load_channels_from_arsenal_json,
+        load_assets,
+        load_channels,
     )
 except Exception:
     # fallback path
     from backend.utils.execution_arsenal_repository import (  # type: ignore
-        load_assets_from_arsenal_json,
-        load_channels_from_arsenal_json,
+        load_assets as load_assets,  # type: ignore[assignment]
+        load_channels as load_channels,  # type: ignore[assignment]
     )
 
 # --- helpers ---
@@ -63,8 +63,8 @@ def suggest_asset_channel_combos(
     limit_per_concern: int = 3,
 ) -> List[Dict[str, Any]]:
     """Return a ranked list of {asset, channel, fitScore, engagementScore, concernsAddressed}"""
-    assets = load_assets_from_arsenal_json(product_id)
-    channels = load_channels_from_arsenal_json(product_id)
+    assets = load_assets(product_id)
+    channels = load_channels(product_id)
 
     out: List[Dict[str, Any]] = []
     if not assets or not channels:

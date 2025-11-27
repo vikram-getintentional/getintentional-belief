@@ -1,9 +1,7 @@
 # plan_manager.py
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
-from datetime import date, datetime
-
-from backend.utils.strategy_builder.belief_math import belief_summary_meta
+from typing import Any, Dict, Optional
+from datetime import date
 
 
 def _parse_date(s: Optional[str]) -> Optional[date]:
@@ -48,63 +46,8 @@ def filter_plan_by_window(plan: Dict[str, Any], window_start: Optional[str], win
 def _filter_by_window(plan: Dict[str, Any], window_start: Optional[str], window_end: Optional[str]) -> Dict[str, Any]:
     return filter_plan_by_window(plan, window_start, window_end)
 
-def build_integrated_portfolio_plan_v2(
-    *,
-    generated_at_iso: str,
-    per_account_scaffolds: List[Dict[str, Any]],
-) -> Dict[str, Any]:
-    # Aggregate quick stats
-    total_accounts = len(per_account_scaffolds)
-    all_personas = set()
-    for sc in per_account_scaffolds:
-        for p in sc.get("execution_plan", {}).get("personas", []):
-            nm = p.get("name")
-            if nm:
-                all_personas.add(nm)
-
-    # crude belief average for portfolio
-    belief_vals = []
-    for sc in per_account_scaffolds:
-        bs = sc.get("execution_plan", {}).get("belief_state_summary", {}).get("average_belief_score")
-        if isinstance(bs, (int, float)):
-            belief_vals.append(float(bs))
-    avg_belief = round(sum(belief_vals) / max(1, len(belief_vals)), 3)
-
-    key_stats = {
-        "totalTargetAccounts": total_accounts,
-        "totalPersonasToEngage": len(all_personas),
-        "expectedWinsPct": 0.0,   # left 0.0 until CRM calibration is wired
-        "averageAccountBelief": f"{avg_belief:.2f}",
-        "timeToWinMonths": 3,
-    }
-
-    from .frozen_plan_builder import to_portfolio_themes
-    themes = to_portfolio_themes(per_account_scaffolds)
-
-    plan = {
-        "meta": {
-            "version": "2.0",
-            "generatedAt": generated_at_iso,
-            "beliefScale": ["Cold", "Warming", "Engaged", "Primed"],
-            **belief_summary_meta(avg_belief),
-        },
-        "portfolio": {
-            "keyStats": key_stats
-        },
-        "themes": themes,
-    }
-    return plan
-
-# Back-compat wrapper name used by your route
+# Back-compat wrapper name used by older routes
 def build_integrated_portfolio_plan(product_id: str, account_id: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Loads per-account RCS scaffolds for product_id (or just `account_id`), returns plan in V2 schema.
-    """
-    from ..strategy_builder.comprehensive_plan_generator import construct_or_load_account_scaffolds
-    from datetime import datetime
+    from backend.utils.strategy_builder.comprehensive_plan_generator import build_product_marketing_plan
 
-    scaffolds = construct_or_load_account_scaffolds(product_id, account_id=account_id)
-    return build_integrated_portfolio_plan_v2(
-        generated_at_iso=datetime.utcnow().isoformat(),
-        per_account_scaffolds=scaffolds,
-    )
+    return build_product_marketing_plan(product_id, account_id=account_id)

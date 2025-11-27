@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "updated_at": "2025-11-27T04:43:38Z",
+  "transition": {
+    "persona:3bdfb4082dbd4ad0": {
+      "inference_belief_thesis_v2": {
+        "persona:9e0716d60deed4c9": 136,
+        "persona:3bdfb4082dbd4ad0": 22,
+        "persona:9c81a302c370084e": 4,
+        "persona:ae853dc612a99a2b": 3
+      }
+    },
+    "persona:9e0716d60deed4c9": {
+      "inference_belief_thesis_v2": {
+        "persona:4f4ec80a157813fb": 80,
+        "persona:9c81a302c370084e": 19,
+        "persona:d13606272034a589": 51,
+        "persona:9e0716d60deed4c9": 16,
+        "persona:ae853dc612a99a2b": 7,
+        "persona:ef4e2dd1113326d3": 5
+      }
+    },
+    "persona:4f4ec80a157813fb": {
+      "inference_belief_thesis_v2": {
+        "persona:ae853dc612a99a2b": 95
+      }
+    },
+    "persona:ae853dc612a99a2b": {
+      "inference_belief_thesis_v2": {
+        "persona:d13606272034a589": 28,
+        "persona:ef4e2dd1113326d3": 16,
+        "persona:ae853dc612a99a2b": 89,
+        "persona:3bdfb4082dbd4ad0": 83,
+        "persona:89a38715c877d26c": 3,
+        "persona:9e0716d60deed4c9": 9,
+        "persona:352cf6ccca62af39": 3,
+        "persona:160c2956ac48591b": 2
+      }
+    },
+    "persona:9c81a302c370084e": {
+      "inference_belief_thesis_v2": {
+        "persona:4f4ec80a157813fb": 15,
+        "persona:3bdfb4082dbd4ad0": 6,
+        "persona:ae853dc612a99a2b": 8,
+        "persona:9e0716d60deed4c9": 1
+      }
+    },
+    "persona:ef4e2dd1113326d3": {
+      "inference_belief_thesis_v2": {
+        "persona:3bdfb4082dbd4ad0": 9,
+        "persona:9c81a302c370084e": 7,
+        "persona:ae853dc612a99a2b": 5
+      }
+    },
+    "persona:d13606272034a589": {
+      "inference_belief_thesis_v2": {
+        "persona:3bdfb4082dbd4ad0": 51
+      }
+    },
+    "persona:6c81c53c4499a75a": {
+      "inference_belief_thesis_v2": {
+        "persona:6c81c53c4499a75a": 12,
+        "persona:79c495dc90613e17": 12,
+        "persona:ae853dc612a99a2b": 12
+      }
+    },
+    "persona:79c495dc90613e17": {
+      "inference_belief_thesis_v2": {
+        "persona:6c81c53c4499a75a": 12
+      }
+    },
+    "persona:89a38715c877d26c": {
+      "inference_belief_thesis_v2": {
+        "persona:89a38715c877d26c": 11,
+        "persona:ae853dc612a99a2b": 14
+      }
+    },
+    "persona:352cf6ccca62af39": {
+      "inference_belief_thesis_v2": {
+        "persona:89a38715c877d26c": 3
+      }
+    },
+    "persona:160c2956ac48591b": {
+      "inference_belief_thesis_v2": {
+        "persona:3bdfb4082dbd4ad0": 1,
+        "persona:89a38715c877d26c": 1
+      }
+    }
+  },
+  "emission": {
+    "persona:3bdfb4082dbd4ad0": {
+      "inference_belief_thesis_v2": 258
+    },
+    "persona:9e0716d60deed4c9": {
+      "inference_belief_thesis_v2": 187
+    },
+    "persona:4f4ec80a157813fb": {
+      "inference_belief_thesis_v2": 95
+    },
+    "persona:ae853dc612a99a2b": {
+      "inference_belief_thesis_v2": 233
+    },
+    "persona:d13606272034a589": {
+      "inference_belief_thesis_v2": 79
+    },
+    "persona:9c81a302c370084e": {
+      "inference_belief_thesis_v2": 30
+    },
+    "persona:ef4e2dd1113326d3": {
+      "inference_belief_thesis_v2": 21
+    },
+    "persona:6c81c53c4499a75a": {
+      "inference_belief_thesis_v2": 36
+    },
+    "persona:79c495dc90613e17": {
+      "inference_belief_thesis_v2": 12
+    },
+    "persona:89a38715c877d26c": {
+      "inference_belief_thesis_v2": 32
+    },
+    "persona:352cf6ccca62af39": {
+      "inference_belief_thesis_v2": 3
+    },
+    "persona:160c2956ac48591b": {
+      "inference_belief_thesis_v2": 2
+    }
+  }
+}

@@ -5,6 +5,20 @@ import networkx as nx
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RCS_JSON_DIR = os.path.join(BASE_DIR, "graph_data", "rcs_json")
 
+def _ensure_dir(p: str) -> None:
+    os.makedirs(p, exist_ok=True)
+
+def _account_dir(product_id: str) -> str:
+    d = os.path.join(RCS_JSON_DIR, str(product_id))
+    _ensure_dir(d)
+    return d
+
+def _account_filename(account_id: str) -> str:
+    return f"{account_id}_rcs.json"
+
+def _account_path(product_id: str, account_id: str) -> str:
+    return os.path.join(_account_dir(product_id), _account_filename(account_id))
+
 def nx_to_dict(G):
     # Converts a networkx graph to a dict for JSON serialization
     return nx.node_link_data(G)
@@ -64,3 +78,45 @@ def load_rcs_from_json(product_id, attribute_dict, zmot_id=None):
     except KeyError:
         print(f"No RCS output found for {product_id}/{attr_key}/{zmot_key}")
         return None
+    
+
+ # ── New account-centric API (preferred) ───────────────────────────────────────
+def save_account_rcs_json(
+    product_id: str,
+    account_id: str,
+    causal_graph: nx.Graph | None,
+    rcs_report: dict,
+) -> str:
+    """
+    Save one file per account:
+      backend/utils/dev_environment/static_jsons/rcs_json/{product_id}/{account_id}_rcs.json
+    Returns the full path written.
+    """
+    full_path = _account_path(product_id, account_id)
+    payload = {
+        "causal_graph": nx_to_dict(causal_graph or nx.DiGraph()),
+        "rcs_report": rcs_report or {},
+    }
+    with open(full_path, "w") as f:
+        json.dump(payload, f, indent=2)
+    return full_path
+
+def load_account_rcs_json(product_id: str, account_id: str) -> dict | None:
+    """
+    Try the new canonical file first. If missing, attempt a legacy fallback:
+    - legacy per-account file: graph_data/rcs_json/{product_id}/{account_id}.json
+    - legacy monolithic file via load_rcs_from_json (attrs={"account_id": ...})
+    """
+    # 1) New canonical
+    new_path = _account_path(product_id, account_id)
+    if os.path.exists(new_path):
+        with open(new_path, "r") as f:
+            data = json.load(f)
+        # Reinflate graph to networkx for parity with older callers (if needed)
+        try:
+            data["causal_graph"] = nx.node_link_graph(data.get("causal_graph", {}))
+        except Exception:
+            data["causal_graph"] = nx.DiGraph()
+        return data
+
+    return None

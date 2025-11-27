@@ -6,6 +6,7 @@ const Models = () => {
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
+  const [rebuildStatus, setRebuildStatus] = useState<string>("");
   const token = localStorage.getItem("token");
 
   // 1. Get company ID on mount
@@ -45,6 +46,39 @@ const Models = () => {
     fetchCompanyAndProducts();
   }, [token]);
 
+  const triggerGlobalThesisRebuild = async () => {
+    if (!token) {
+      setRebuildStatus("Missing auth token.");
+      return;
+    }
+    if (!selectedProductId) {
+      setRebuildStatus("Select a product first.");
+      return;
+    }
+    try {
+      setRebuildStatus("Rebuilding global thesis…");
+      const res = await fetch(
+        `http://localhost:8000/journey/rebuild-global-thesis/${selectedProductId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ window: 1000 }),
+        }
+      );
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Failed to rebuild thesis");
+      }
+      const data = await res.json();
+      const episodes = data?.thesis?.meta?.num_episodes ?? "?";
+      setRebuildStatus(`Global thesis rebuilt (episodes analyzed: ${episodes}).`);
+    } catch (err: any) {
+      setRebuildStatus(err?.message || "Global thesis rebuild failed.");
+    }
+  };
 
   return (
     <div className="p-8">
@@ -64,6 +98,18 @@ const Models = () => {
         </div>
       )}
       {statusMsg && <div className="mb-4 text-red-600">{statusMsg}</div>}
+      <div className="mb-6 flex items-center gap-3">
+        <button
+          className="bg-indigo-600 text-white px-3 py-2 rounded disabled:opacity-50"
+          onClick={triggerGlobalThesisRebuild}
+          disabled={!selectedProductId}
+        >
+          Rebuild Journey Thesis
+        </button>
+        {rebuildStatus && (
+          <span className="text-sm text-slate-600">{rebuildStatus}</span>
+        )}
+      </div>
       <CRMWinModels productId={selectedProductId ?? ""} token={token ?? ""} />
 
     </div>

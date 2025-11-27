@@ -164,16 +164,16 @@ export default function RCSOverview({ rcs }: { rcs: any }) {
             Snapshot
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <KPI label="Graph Win Likelihood" value={pct(graphwin)} helper="" />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <KPI label="Personas to Analyze" value={frozenPersonas.length} />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <KPI label="Coalitions to Convert" value={coalitions.length} />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <KPI label="Total Campaigns" value={totalCampaigns} />
             </Grid>
           </Grid>
@@ -189,20 +189,20 @@ export default function RCSOverview({ rcs }: { rcs: any }) {
 
           <Grid container spacing={2}>
             {/* Champions (High x High) */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <RoleBox title="Potential Champion (High I × High A)" color="success" items={roles.champions} />
             </Grid>
 
             {/* Blockers & Operators side-by-side for compactness */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <RoleBox title="Blocker (High I × Low A)" color="error" items={roles.blockers} />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <RoleBox title="Operator (Low I × High A)" color="info" items={roles.operators} />
             </Grid>
 
             {/* Influencers */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <RoleBox title="Passive Influencer (Low I × Low A)" color="default" items={roles.influencers} />
             </Grid>
           </Grid>

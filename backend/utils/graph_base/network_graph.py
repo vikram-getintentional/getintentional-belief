@@ -5,7 +5,6 @@ import os
 from collections import defaultdict, deque
 from backend.utils.graph_base.agent_graph_builder import _capability, _upsert_edge
 from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import save_graph_as_json, load_graph_from_json
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import add_or_update_cumulative_relevance_data
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
@@ -36,12 +35,7 @@ def update_graph(product_subgraph):
 
     # Save updated graph to JSON
     save_graph_as_json(product_subgraph, product_lookup_id)
-    product_node_id = get_product_id_from_subgraph(product_subgraph)
-    relevance_nodes = calculate_soft_or_relevance(product_subgraph)
-    cumulative_relevance = {item["node_id"]: item["relevance"] for item in relevance_nodes}
-    add_or_update_cumulative_relevance_data(product_node_id, cumulative_relevance)
-    print("Relevance updated in Update Graph")
-
+    
     return product_subgraph
 
 def get_product_id_from_subgraph(G):

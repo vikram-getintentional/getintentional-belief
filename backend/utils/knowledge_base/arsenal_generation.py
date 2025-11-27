@@ -1,30 +1,22 @@
-import os
-from typing import List
-import uuid
-import json
-from backend.utils.graph_base.graph_data.asset_utils.save_and_load_arsenal import load_assets_from_arsenal_json, load_channels_from_arsenal_json
-from backend.utils.graph_base.graph_utils.json_store import load_json, save_json
-from backend.utils.knowledge_base.arsenal.arsenal_models import Asset, Channel
+from backend.database import get_db
+from backend.utils.knowledge_base.arsenal.service import serialize_arsenal_library
 
 
-
-
-
-def get_all_arsenals(product_id):
+def get_all_arsenals(product_id: str):
     """
-    Gets all existing arsenals from assets and channels json and returns a dict as arsenal{assets[],channels[]}
+    Return the structured arsenal library for a product.
+
+    This consolidates assets, channels, and any recorded impact evidence
+    so the API layer can serve it directly without touching JSON files.
     """
-    
     print("Getting Arsenal for product", product_id)
-    assets = load_assets_from_arsenal_json(product_id)
-    channels = load_channels_from_arsenal_json(product_id)
-    ASSETS: List[Asset] = load_assets_from_arsenal_json(product_id)
-    print("Loaded", len(ASSETS), "assets", "for product", product_id)
-    CHANNELS: List[Channel] = load_channels_from_arsenal_json(product_id)
-    print("Loaded", len(CHANNELS), "channels", "for product", product_id)
-    output = {
-        "assets": ASSETS,
-        "channels": CHANNELS
-    }
-    print(f"Loaded Arsenal for product {product_id}: {output}")
-    return output
+    db = next(get_db())
+    try:
+        library = serialize_arsenal_library(db, product_id=product_id)
+        print(
+            f"Loaded {len(library.get('assets', []))} assets and "
+            f"{len(library.get('channels', []))} channels for product {product_id}"
+        )
+        return library
+    finally:
+        db.close()

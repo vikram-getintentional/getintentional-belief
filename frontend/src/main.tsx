@@ -20,6 +20,7 @@ import TargetAccounts from './pages/TargetAccounts.tsx'
 import Models from './pages/models.tsx'
 import MarketingPlanner from './pages/MarketingPlanner.tsx'
 import PainsMap from './pages/PainsMap.tsx'
+import EngagementsSetup from './pages/Engagements.tsx'
 
 import './output.css';
 
@@ -45,6 +46,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/marketing-planner" element={<MarketingPlanner />} />
           <Route path="/rcs-simulator" element={<RcsSimulator />} />
           <Route path="/pains-map" element={<PainsMap />} />
+          <Route path="/engagements-setup" element={<EngagementsSetup />} />
 
           {/* Add other routes here */}
 

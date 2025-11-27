@@ -3,7 +3,6 @@ import json
 from collections import defaultdict
 
 from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_node_by_id, get_nodes_list, get_product_id_from_subgraph, get_source_nodes_by_target_and_type
-from backend.utils.graph_base.relevance.cumulative_relevance_manager import get_cumulative_relevance_data
 
 
 from backend.utils.graph_base.graph_data.rcs_utils.save_and_load_rcs import load_rcs_from_json, save_rcs_as_json
@@ -196,15 +195,13 @@ def get_personas_rcs_priority(sub_graph: nx.DiGraph, attribute_dict: Optional[di
         for job_id in persona_jobs:
             job_node = get_node_by_id(sub_graph, job_id) or {}
             job_text = job_node.get("description") or job_node.get("text") or ""
-            job_rel = get_cumulative_relevance_data(product_id, job_id)
-            jobs.append({"description": job_text, "relevance": job_rel})
+            jobs.append({"description": job_text,})
 
             pain_ids = get_source_nodes_by_target_and_type(sub_graph, job_id, "felt_in")
             for pain_id in pain_ids:
                 pain_node = get_node_by_id(sub_graph, pain_id) or {}
                 pain_text = pain_node.get("description") or pain_node.get("text") or ""
-                pain_rel = get_cumulative_relevance_data(product_id, pain_id)
-                pains.append({"description": pain_text, "relevance": pain_rel})
+                pains.append({"description": pain_text,})
 
         node_cards.append({
             "persona_id": persona_id,

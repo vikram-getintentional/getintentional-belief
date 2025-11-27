@@ -179,7 +179,7 @@ const AssetsTemplate = ({ productID }: AssetsTemplateProps) => {
       <Typography variant="h6" gutterBottom>Existing Asset Types</Typography>
       <Grid container spacing={2}>
         {assets.map(asset => (
-          <Grid item xs={12} sm={6} md={4} key={asset.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={asset.id}>
             <Card variant="outlined" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
               <CardHeader title={asset.name} subheader={asset.format} sx={{ bgcolor: "#f5f5f5" }} />
               <CardContent sx={{ flexGrow: 1 }}>

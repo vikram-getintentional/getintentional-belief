@@ -103,7 +103,7 @@ export default function ZmotIcp() {
 
         <Grid container spacing={2}>
           {(icp?.combos || []).map((combo, idx) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={idx}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={idx}>
               <IcpComboCard combo={combo} baseline={icp?.baseline?.win_rate ?? 0} />
             </Grid>
           ))}

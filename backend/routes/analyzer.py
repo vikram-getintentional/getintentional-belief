@@ -1,12 +1,10 @@
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Body, Depends, Query, Request, HTTPException
-from fastapi.responses import JSONResponse
+from typing import Any, Dict, List, Literal, Optional
+from fastapi import APIRouter, Body, Depends, Request, HTTPException
 from pydantic import BaseModel
 
 from backend.utils.crm_management.target_account_manager import get_account_by_id, get_target_account_ids, load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
 from backend.utils.graph_base.graph_utils.graph_confidence import compute_graph_confidence
-from backend.utils.graph_base.network_graph import add_capabilities_to_product, build_product_graph, get_product_id_from_subgraph, update_capabilities_by_nodes_list
-from backend.utils.graph_base.nodes.capability_nodes import update_capabilities_by_node_id
+from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph
 from backend.utils.inference.crm_analysis.actual_win_estimator import generate_win_regression
 from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import run_agentic_loop, run_frontier_expansion
 
@@ -15,6 +13,11 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.utils.inference.rcs_generators.rcs_simulator import simulate_rcs
 from backend.utils.knowledge_base.arsenal_generation import get_all_arsenals
+from backend.utils.knowledge_base.arsenal.service import (
+    enum_options_payload,
+    update_asset_metadata,
+    update_channel_metadata,
+)
 from backend.utils.knowledge_base.graph_edit_manager import add_or_update_graph, serialize_graph_for_frontend
 from backend.utils.knowledge_base.value_prop_analysis import generate_product_value_prop, get_product_id_from_company_id, get_product_value_prop_capabilities
 
@@ -29,12 +32,32 @@ import networkx as nx
 import os
 
 from backend.utils.knowledge_base.zmot_icp_generation import Chip, collect_zmots_for_attribute_combo, mine_icp_attribute_uplifts
-from backend.utils.strategy_builder.comprehensive_plan_generator import _filter_by_window, build_integrated_portfolio_plan
+from backend.utils.crm_management.engagement_service import get_account_engagements, save_and_update_account_engagements, save_engagements_bulk
+from backend.utils.crm_management.hubspot_engagements_ingestion import ingest_hubspot_company
+from backend.utils.inference.belief_manager.belief_manager import build_belief_thesis_for_account, incremental_learnings_from_thesis
+from backend.utils.inference.belief_manager.journey.learn_service import (
+    record_learning_updates_for_account,
+    summarize_global_insights,
+    apply_persona_recommendation_to_graph,
+    apply_edge_recommendation_to_graph,
+)
+from backend.utils.inference.belief_manager.journey.bgn_service import rebuild_global_thesis
+from backend.utils.inference.belief_manager.journey.shm_service import write_meta_episode_from_thesis
+from backend.utils.inference.belief_manager.journey.storage import load_global_thesis
+from backend.utils.strategy_builder.comprehensive_plan_generator import (
+    build_product_marketing_plan,
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
 
 router = APIRouter()
+
+
+class ApplyRecommendationBody(BaseModel):
+    product_id: str
+    type: Literal["persona", "edge"]
+    recommendation: Dict[str, Any]
 
 # ========================
 # PRODUCT GRAPH ROUTES
@@ -90,165 +113,6 @@ def analyze(payload: dict, request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         print("❌ Analyze error:", e)
         raise HTTPException(status_code=500, detail="Could not run analysis")
-
-@router.post("/update-capabilities")
-def update_capabilities_route(payload: dict, request: Request, db: Depends = None):
-    """
-    Updates existing capabilities by node_id.
-    Expects payload with:
-    - company_id: str
-    - capabilities: list of {node_id, name, description}
-    """
-    try:
-        # 🔐 Auth
-        auth_header = request.headers.get("authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Missing Authorization header")
-        token = auth_header.split(" ")[1]
-        decoded = decode_token(token)
-        company_id = decoded.get("company_id")
-        if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-        capabilities = payload.get("capabilities", [])
-        if not capabilities:
-            raise HTTPException(status_code=400, detail="Capabilities are required.")
-
-        product_id = payload.get("product_id")
-        if not product_id:
-            raise HTTPException(status_code=400, detail="Product ID is required.")
-        updated_nodes = update_capabilities_by_node_id(capabilities)
-        return {"message": "Capabilities updated successfully.", "capabilities": [n["id"] for n in updated_nodes]}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print("❌ Update capabilities error:", e)
-        raise HTTPException(status_code=500, detail="Could not update capabilities")
-
-
-@router.post("/update-capabilities")
-def update_capabilities_route(payload: dict, request: Request, db: Depends = None):
-    """
-    Updates existing capabilities by node_id.
-    Expects payload with:
-    - company_id: str
-    - capabilities: list of {node_id, name, description}
-    """
-    try:
-        # 🔐 Auth
-        auth_header = request.headers.get("authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Missing Authorization header")
-        token = auth_header.split(" ")[1]
-        decoded = decode_token(token)
-        company_id = decoded.get("company_id")
-        if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-        capabilities = payload.get("capabilities", [])
-        print("Capabilities as recd by API:", capabilities)
-        if not capabilities:
-            raise HTTPException(status_code=400, detail="Capabilities are required.")
-
-        product_id = payload.get("product_id")
-        if not product_id:
-            raise HTTPException(status_code=400, detail="Product ID is required.")
-
-        product_subgraph = build_product_graph(product_id)
-        cap_list_to_process = []
-        for cap in capabilities:
-            cap_id = cap.get("id")
-            updated_cap_name = cap.get("name", "")
-            updated_cap_description = cap.get("description", "")
-            updated_capability = { "id": cap_id, "name": updated_cap_name, "description": updated_cap_description }
-            cap_list_to_process.append(updated_capability)
-        print("Capabilities to process:", cap_list_to_process)
-        updated_nodes = update_capabilities_by_nodes_list(product_subgraph,cap_list_to_process)
-        return {"message": "Capabilities updated successfully.", "capabilities": [n["id"] for n in updated_nodes]}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print("❌ Update capabilities error:", e)
-        raise HTTPException(status_code=500, detail="Could not update capabilities")
-
-
-@router.post("/add-capabilities")
-def add_capabilities_route(payload: dict, request: Request, db: Depends = None):
-    """
-    Adds new capabilities to a product.
-    Expects payload with:
-    - url: str
-    - capabilities: list of {name, description}
-    """
-    try:
-        # 🔐 Auth
-        auth_header = request.headers.get("authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Missing Authorization header")
-        token = auth_header.split(" ")[1]
-        decoded = decode_token(token)
-        company_id = decoded.get("company_id")
-        if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-        product_id = payload.get("product_id")
-        capabilities = payload.get("capabilities", [])
-        if not product_id or not capabilities:
-            raise HTTPException(status_code=400, detail="Product ID and capabilities are required.")
-
-        product_subgraph = build_product_graph(product_id)
-
-        added_capabilities = add_capabilities_to_product(product_subgraph, capabilities)
-        return {
-            "message": "New capabilities added successfully.",
-            "capabilities": [
-                {
-                    "node_id": c["id"],
-                    "name": c.get("name", ""),
-                    "description": c.get("description", "")
-                }
-                for c in added_capabilities
-            ]
-        }
-    except Exception as e:
-        print("❌ Add capabilities error:", e)
-        raise HTTPException(status_code=500, detail="Could not add capabilities")
-
-
-@router.post("/save-summary")
-def save_summary(payload: dict, request: Request, db: Depends = None):
-    """
-    Saves or updates the summary for a product.
-    Expects payload with:
-    - company_id: str
-    - url: str
-    - summary: str
-    """
-    try:
-        # 🔐 Auth
-        auth_header = request.headers.get("authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Missing Authorization header")
-        token = auth_header.split(" ")[1]
-        decoded = decode_token(token)
-        company_id = decoded.get("company_id")
-        if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-        product_id = payload.get("product_id")
-        summary = payload.get("summary", "").strip()
-        if not product_id or not summary:
-            raise HTTPException(status_code=400, detail="Product ID and summary are required.")
-
-        product_node = get_or_create_product_node(
-            summary=summary,
-            company_id=company_id,
-            product_id=product_id
-        )
-        return {"message": "Summary updated successfully.", "summary": summary}
-    except Exception as e:
-        print("❌ Save summary error:", e)
-        raise HTTPException(status_code=500, detail="Could not save summary")
 
 # ========================
 # EPISTEMATIC CONFIDENCE
@@ -735,6 +599,84 @@ async def get_arsenal_library(product_id: str, request: Request):
         raise HTTPException(status_code=500, detail="Could not retrieve arsenal library")
 
 
+@router.get("/arsenal/options")
+async def get_arsenal_options(request: Request):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    return enum_options_payload()
+
+
+@router.patch("/arsenal/assets/{asset_id}")
+async def patch_arsenal_asset(
+    asset_id: str,
+    payload: Dict[str, Any] = Body(...),
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    if request is None:
+        raise HTTPException(status_code=400, detail="Request context required")
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    try:
+        updated = update_asset_metadata(db, asset_id=asset_id, patch=payload or {})
+        db.commit()
+        return {"asset": updated}
+    except LookupError as exc:
+        db.rollback()
+        raise HTTPException(status_code=404, detail=str(exc))
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        db.rollback()
+        print("❌ Asset metadata update error:", repr(exc))
+        raise HTTPException(status_code=500, detail="Failed to update asset metadata")
+
+
+@router.patch("/arsenal/channels/{channel_id}")
+async def patch_arsenal_channel(
+    channel_id: str,
+    payload: Dict[str, Any] = Body(...),
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    if request is None:
+        raise HTTPException(status_code=400, detail="Request context required")
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    try:
+        updated = update_channel_metadata(db, channel_id=channel_id, patch=payload or {})
+        db.commit()
+        return {"channel": updated}
+    except LookupError as exc:
+        db.rollback()
+        raise HTTPException(status_code=404, detail=str(exc))
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        db.rollback()
+        print("❌ Channel metadata update error:", repr(exc))
+        raise HTTPException(status_code=500, detail="Failed to update channel metadata")
+
+
 # ========================
 # TARGET ACCOUNTS
 # ========================
@@ -842,6 +784,242 @@ async def delete_target_account(company_id: str, account_id: str, product_id: st
         print("❌ Delete Target Account error:", e)
         raise HTTPException(status_code=500, detail="Could not delete target account")
     
+#------- Engagements Routes---------
+
+@router.post("/save-account-engagements/{product_id}")
+async def save_account_engagements(product_id: str, request: Request):
+    """
+    Save target account engagements.
+    """
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    print("Saving engagements for product_id:", product_id)
+    print("Request body:", await request.body())
+    try:
+        body: Dict[str, Any] = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    engagements: List[Dict[str, Any]] = (body or {}).get("engagements", [])
+    if not engagements or not isinstance(engagements, list):
+        raise HTTPException(status_code=400, detail="Engagements data is required (non-empty list)")
+
+    # --- Optional: resolve lookup product ids to canonical ids ---
+    try:
+        product_subgraph = build_product_graph(product_id)
+        product_id_actual = get_product_id_from_subgraph(product_subgraph) or product_id
+    except Exception:
+        product_id_actual = product_id  # already canonical → continue
+
+    # --- Persist ---
+    try:
+        print("Calling save and update engagements with body content:", engagements)
+        result = save_and_update_account_engagements(product_id_actual, engagements)
+        # e.g., {"created": N, "touched_accounts": [...]}
+        return {"ok": True, **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save engagements: {e}")
+    
+
+@router.get("/load-account-engagements/{product_id}/{account_id}")
+async def load_account_engagements(product_id: str, account_id: str, request: Request):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    company_id = decoded.get("company_id")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    rows = get_account_engagements(product_id, account_id)
+    return {"engagements": rows}
+
+#---- Persona Matching for Engagements ------
+    
+@router.get("/get-persona-matches/{product_id}/{account_id}")
+async def get_persona_matches(product_id: str, account_id: str, request: Request, db: Session = Depends(get_db)):
+    # --- Auth (unchanged) ---
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    try:
+        token = auth_header.split(" ")[1]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Malformed Authorization header")
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    try:
+        print("Building belief thesis for product_id:", product_id, "and account_id:", account_id)
+        thesis = build_belief_thesis_for_account(product_id, account_id)
+        print("Recd thesis - persisting SHM now")
+        # 1) Persist SHM meta episode + steps from this thesis
+        write_meta_episode_from_thesis(
+            db,
+            product_id=product_id,
+            account_id=account_id,
+            thesis=thesis,
+        )
+        # 2) Account-level incremental learnings
+        incremental = incremental_learnings_from_thesis(thesis)
+        print("Incremental learnings computed:", incremental)
+
+        # 2) persist those learnings into SHM-level update table
+        record_learning_updates_for_account(
+            db,
+            product_id=product_id,
+            account_id=account_id,
+            incremental_learnings=incremental,
+        )
+        db.commit()  # important!
+
+        # 3) Product-level global insights from SHM + learning updates
+        global_insights = summarize_global_insights(db, product_id=product_id)
+        print("Global insights summarized:", global_insights)
+
+        # 4) Whatever else the FE needs (activity feed, etc.)
+        activity = (thesis.get("journey") or {}).get("steps") or []
+        print("Activity feed extracted, total steps:", len(activity))
+
+        return {
+            "product_id": product_id,
+            "account_id": account_id,
+            "global": global_insights,
+            "incremental": incremental,
+            "activity": activity,
+            "thesis": thesis,  # optional if FE wants the full object
+        }
+    except Exception as e:
+        import traceback
+        print("Error in get_persona_matches:", repr(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Persona match failed: {e}")
+
+
+@router.post("/journey/rebuild-global-thesis/{product_id}")
+async def rebuild_global_thesis_route(
+    product_id: str,
+    request: Request,
+    payload: Dict[str, Any] = Body(default=None),
+    db: Session = Depends(get_db),
+):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    try:
+        token = auth_header.split(" ")[1]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Malformed Authorization header")
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    window = None
+    if isinstance(payload, dict):
+        try:
+            window_val = payload.get("window")
+            if window_val is not None:
+                window = int(window_val)
+        except (TypeError, ValueError):
+            window = None
+
+    thesis = rebuild_global_thesis(db, product_id=product_id, window=window)
+    return {"ok": True, "thesis": thesis}
+
+
+@router.get("/journey/global-thesis/{product_id}")
+async def fetch_global_thesis(
+    product_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    try:
+        token = auth_header.split(" ")[1]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Malformed Authorization header")
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    thesis = load_global_thesis(product_id)
+    insights = summarize_global_insights(db, product_id=product_id)
+    return {"product_id": product_id, "thesis": thesis, "insights": insights}
+
+
+@router.post("/journey/apply-recommendation")
+async def apply_recommendation(
+    body: ApplyRecommendationBody,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    try:
+        token = auth_header.split(" ")[1]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Malformed Authorization header")
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    try:
+        if body.type == "persona":
+            result = apply_persona_recommendation_to_graph(
+                body.product_id, body.recommendation, db=db
+            )
+        else:
+            result = apply_edge_recommendation_to_graph(
+                body.product_id, body.recommendation, db=db
+            )
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise exc
+
+    insights = summarize_global_insights(db, product_id=body.product_id)
+    return {
+        "ok": True,
+        "applied": result,
+        "insights": insights,
+    }
+
+
+@router.get("/get-comprehensive-execution-plan/{product_id}")
+async def get_comprehensive_execution_plan(
+    product_id: str,
+    request: Request,
+    account_id: Optional[str] = None,
+):
+    auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not auth_header or " " not in auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ", 1)[1]
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    try:
+        return build_product_marketing_plan(product_id, account_id=account_id)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("❌ get_comprehensive_execution_plan error:", exc)
+        raise HTTPException(status_code=500, detail="Failed to build marketing plan")
+
+#---- Math Models Routes -----
+
 @router.get("/show-crm-win-model/{product_id}")
 async def get_crm_win_model(product_id: str, request: Request):
     auth_header = request.headers.get("authorization")
@@ -865,119 +1043,44 @@ async def get_crm_win_model(product_id: str, request: Request):
     
 
 # ========================
+# CRM Ingestion Logic
+# ========================
 
-#--------------
-# STATIC ROUTES FOR TESTING - NEED TO BUILD OUT
-#--------------
+@router.post("/engagements/bulk/{product_id}/{account_id}")
+def ingest_bulk(product_id: str, account_id: str, payload: dict, request: Request):
+    # auth
+    auth = request.headers.get("authorization")
+    if not auth:
+        raise HTTPException(status_code=401, detail="Missing Authorization")
+    token = auth.split(" ")[1]
+    if not decode_token(token).get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-@router.get("/get-metadata")
-async def get_metadata():
-    return JSONResponse({
-        "personas": ["CFO", "VP Finance", "RevOps", "CPO/Pricing", "CTO", "Developers", "Head of RevOps"],
-        "channels": ["Website", "Microsite", "SEO", "Email", "LinkedIn", "PR", "Partner", "ABM Ads", "Webinar", "Events", "Dev/OSS", "YouTube", "Conferences"],
-        "stages": ["Awareness", "Interest", "Engagement", "Evaluation", "Conversion", "Expansion", "Evangelism"],
-        "quarters": ["Q1", "Q2", "Q3", "Q4"]
-    })
+    items = payload.get("engagements", [])
+    print("Payload for processing:", items)
+    try: 
+        count = save_engagements_bulk(product_id, account_id, items)
+        return {"ok": True, "overwritten_account": account_id, "inserted": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Bulk ingest failed: {e}")
 
-
-@router.get("/get-comprehensive-execution-plan/{product_id}")
-async def get_comprehensive_execution_plan(
-    product_id: str,
-    request: Request,
-    # explicitly mark these as query params
-    account_id: Optional[str] = Query(None, description="Filter to a single account id"),
-    window_start: Optional[str] = Query(None, description="YYYY-MM-DD (inclusive)"),
-    window_end:   Optional[str] = Query(None, description="YYYY-MM-DD (inclusive)"),
-):
-    # --- auth (unchanged) ---
-    auth_header = request.headers.get("authorization")
-    if not auth_header:
-        raise HTTPException(status_code=401, detail="Missing Authorization header")
-    token = auth_header.split(" ")[1]
-    decoded = decode_token(token)
-    if not decoded.get("company_id"):
-        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-    # normalize blank -> None so the planner doesn’t try to match ""
-    if account_id == "":
-        account_id = None
+@router.post("/ingest/hubspot/{product_id}/{account_id}")
+async def ingest_hs(product_id: str, account_id: str, company_name: str, request: Request):
+    # auth
+    auth = request.headers.get("authorization")
+    if not auth:
+        raise HTTPException(status_code=401, detail="Missing Authorization")
+    token = auth.split(" ")[1]
+    if not decode_token(token).get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     try:
-        print(f"[plan] product_id={product_id} account_id={account_id} "
-              f"window_start={window_start} window_end={window_end}")
-
-        plan = build_integrated_portfolio_plan(product_id, account_id=account_id)
-
-        if window_start or window_end:
-            plan = _filter_by_window(plan, window_start, window_end)
-
-        quarters = plan.get("quarters") or []
-        total_campaigns = sum(len(q.get("campaigns") or []) for q in quarters)
-        return JSONResponse(content={"plan": plan, "debug": {
-            "quarters": len(quarters),
-            "total_campaigns": total_campaigns,
-        }})
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        data = ingest_hubspot_company(company_name)
+        # attach account_id to each engagement row
+        for e in data["engagements"]:
+            e["account_id"] = account_id
+        # persist using your existing save path
+        save_engagements_bulk(product_id, data["engagements"])
+        return {"status": "ok", "ingested": len(data["engagements"])}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load plan: {e}")
-
-
-
-# ========================
-# Strategy Simulator
-# ========================
-class SimulatePayload(BaseModel):
-    account_id: str
-    product_id: str
-    attributes: List[str] = []
-    zmots: List[str] = []
-    persona_engagements: List[str] = []
-    stage: str = "auto"
-    plays_per_step: int = 2
-    boost_factor: float = 2.0
-    archetype: Dict[str, Any] = {}
-
-
-@router.post("/simulate-rcs/{product_id}")
-def simulate_rcs_endpoint(product_id: str, payload: SimulatePayload, request: Request):
-    
-    auth_header = request.headers.get("authorization")
-    if not auth_header:
-        raise HTTPException(status_code=401, detail="Missing Authorization header")
-    token = auth_header.split(" ")[1]
-    decoded = decode_token(token)
-    company_id = decoded.get("company_id")
-    if not company_id:
-        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-
-    product_subgraph = build_product_graph(product_id)
-    product_id_actual = get_product_id_from_subgraph(product_subgraph)
-    
-    
-
-    sim = SimulationInput(
-        account_id=payload.account_id,
-        product_id=payload.product_id,
-        product_subgraph=G,
-        attributes=payload.attributes,
-        zmots=payload.zmots,
-        persona_engagements=payload.persona_engagements,
-        stage=payload.stage,
-        plays_per_step=payload.plays_per_step,
-        boost_factor=payload.boost_factor,
-        archetype=payload.archetype,
-    )
-
-    result = simulate_scenario(sim)
-    # convert dataclass to JSON
-    return {
-        "generatedAt": result.generated_at,
-        "keyStats": result.key_stats,
-        "rcsReport": result.rcs_report,
-        "frozenStrategy": result.frozen_strategy,
-        "stagePlan": result.stage_plan,
-        "diffs": result.diffs,
-    }
+        raise HTTPException(status_code=500, detail=f"Ingest failed: {e}")

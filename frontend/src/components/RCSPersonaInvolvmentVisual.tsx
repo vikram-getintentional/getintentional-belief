@@ -69,7 +69,7 @@ export default function RCSPersonaInvolvmentVisual({
   return (
     <Box sx={{ p: 2 }}>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="h6" sx={{ mb: 1 }}>Persona Involvement vs Activation (z-normalized)</Typography>
           <Box sx={{ width: "100%", height: 360 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -88,7 +88,7 @@ export default function RCSPersonaInvolvmentVisual({
           </Box>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="h6" sx={{ mb: 1 }}>Perceptibility vs Proximity</Typography>
           <Box sx={{ width: "100%", height: 360 }}>
             <ResponsiveContainer width="100%" height="100%">

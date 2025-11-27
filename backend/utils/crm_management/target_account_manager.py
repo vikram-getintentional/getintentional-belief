@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from backend.database import get_db, Base
-from backend.utils.crm_management.target_account_models import TargetAccount
+from backend.utils.crm_management.target_account_models_dto import TargetAccount
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, String, Integer, JSON, func
 import uuid
+import networkx as nx
+
+from backend.utils.graph_base.network_graph import build_product_graph
 
 """
 For the list of account data provided this function looks in the target_list_db if an existing record is found, else creates one.
@@ -219,3 +222,65 @@ def get_account_by_id(product_id: str, account_id: str) -> Optional[Dict[str, An
         return None
     finally:
         db.close()
+
+
+
+#--------------------------------------------
+# Logic to get account metadata and map to nodes in graph
+#--------------------------------------------
+def _norm_token(s: str) -> str:
+    return str(s).strip().lower().replace(" ", "_").replace("/", "_").replace("&", "and")
+
+def map_account_meta_to_stable_ids(product_id: str, account_meta: Dict[str, Any] | None) -> List[str]:
+    """
+    Map account metadata to stable, reusable string IDs (sidecar-only, not added to graph).
+    Example outputs:
+      attr:industry:saas
+      attr:revenue_range:200m_1b
+      attr:employee_range:5k_10k
+      attr:funding_stage:public
+      attr:geography:north_america
+      comp:stripe
+      tech:snowflake
+    """
+    print("Mapping account meta to stable IDs for product:", product_id)
+    if account_meta is None:
+        # If caller passed None, fetch from DB
+        account_meta = get_account_by_id(product_id, account_meta)  # defensive; no-op pattern
+
+    # If still None or shape unknown, bail gracefully
+    if not account_meta:
+        return []
+
+    ids: List[str] = []
+
+    # Attributes
+    attrs = {
+        "industry": account_meta.get("industry"),
+        "revenue_range": account_meta.get("revenue_range"),
+        "employee_range": account_meta.get("employee_range"),
+        "funding_stage": account_meta.get("funding_stage"),
+        "geography": account_meta.get("geography"),
+    }
+    for k, v in attrs.items():
+        if not v:
+            continue
+        val = _norm_token(str(v))
+        # small cleanup for ranges like "$200M-$1B" -> "200m_1b"
+        val = (
+            val.replace("$", "")
+               .replace("-", "_")
+               .replace("__", "_")
+        )
+        ids.append(f"attr:{_norm_token(k)}:{val}")
+
+    # Competitors used
+    for c in (account_meta.get("competitor_used") or []):
+        ids.append(f"comp:{_norm_token(c)}")
+
+    # Tech stack
+    for t in (account_meta.get("other_tech_stack") or []):
+        ids.append(f"tech:{_norm_token(t)}")
+    print("Mapped account meta to stable IDs:", ids)
+
+    return ids

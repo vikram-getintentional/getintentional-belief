@@ -55,7 +55,8 @@ def save_canonical_map(canonical_map: dict, file_path: str):
     # Check for overwriting keys
     overlapping_keys = set(existing_data.keys()) & set(canonical_map.keys())
     if overlapping_keys:
-        print(f"⚠️ Warning: Overwriting keys in {file_path}")
+        #print(f"⚠️ Warning: Overwriting keys in {file_path}")
+        pass
 
     # Merge the new data with the existing data
     existing_data.update(canonical_map)
@@ -85,7 +86,8 @@ def save_embeddings(entity_type: str, new_data: dict):
     # Check for overwriting keys
     overlapping_keys = set(existing_data.keys()) & set(new_data.keys())
     if overlapping_keys:
-        print(f"⚠️ Warning: Overwriting keys in {path}")
+        #print(f"⚠️ Warning: Overwriting keys in {path}")
+        pass
 
     # Update with new embeddings
     existing_data.update(new_data)

@@ -10,6 +10,11 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import networkx as nx
 
 from backend.utils.inference.rcs_generators.generate_rcs_fast import generate_rcs
+from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph
+from backend.utils.crm_management.target_account_manager import get_target_account_ids
+from backend.utils.graph_base.graph_data.rcs_utils.save_and_load_rcs import load_account_rcs_json
+from backend.utils.strategy_builder.frozen_stage_simulator import build_frozen_strategy
+from backend.utils.knowledge_base.arsenal.attach_arsenal_tables import attach_arsenal_tables_to_phases
 
 
 
@@ -866,19 +871,6 @@ def populate_rcs_with_strategy(
     return scaffold
 
 
-# ---------- I/O helpers ----------
-def load_account_rcs_json(product_id: str, account_id: str) -> Dict[str, Any]:
-    # we import here to avoid a hard dependency at module import time
-    try:
-        from backend.utils.strategy_builder.comprehensive_plan_generator import load_account_rcs_from_disk
-    except Exception as e:  # pragma: no cover
-        raise ImportError("Missing comprehensive_plan_generator.load_account_rcs_from_disk") from e
-
-    print("Processing account_id:", account_id)
-    rcs, _ = load_account_rcs_from_disk(product_id, account_id)
-    print("Loaded RCS in strat load_ac cycle", account_id)
-    return rcs
-
 
 # ---------- End-to-end per account ----------
 def rcs_for_target_account(product_id: str, account_id: str) -> Dict[str, Any]:
@@ -891,6 +883,10 @@ def rcs_for_target_account(product_id: str, account_id: str) -> Dict[str, Any]:
       5) Populate scaffold with phases/campaigns
     """
     product_subgraph = build_product_graph(product_id)
+    if product_subgraph:
+        print("Product subgraph built for: ", product_id)
+    else:
+        print("Failed to build product subgraph for: ", product_id)
     product_id_actual = get_product_id_from_subgraph(product_subgraph)
 
     print("Running scaffold for ac")

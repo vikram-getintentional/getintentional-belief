@@ -1,6 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from "react"; 
 import { Menu } from "lucide-react";
 import SidebarActions from "../components/SidebarActions";
 import { cn } from '../../utils/cn'; // optional: or just use template strings
@@ -56,6 +55,78 @@ const navSections = [
       }
       return true;
     });
+    const [arsenalMetaCount, setArsenalMetaCount] = useState(0);
+
+    const refreshArsenalMetaCount = useCallback(async () => {
+      if (typeof window === "undefined") return 0;
+      const token = localStorage.getItem("token");
+      if (!token) return 0;
+
+      const headers = { Authorization: `Bearer ${token}` };
+      const meRes = await fetch("http://localhost:8000/me", { headers });
+      if (!meRes.ok) throw new Error("Failed to load user profile");
+      const me = await meRes.json();
+
+      const productsRes = await fetch(
+        `http://localhost:8000/get-products/${me.company_id}`,
+        { headers }
+      );
+      if (!productsRes.ok) throw new Error("Failed to load products");
+      const productsData = await productsRes.json();
+      const firstProductId = productsData.products?.[0]?.id;
+      if (!firstProductId) return 0;
+
+      const arsenalRes = await fetch(
+        `http://localhost:8000/get-arsenal-library/${firstProductId}`,
+        { headers }
+      );
+      if (!arsenalRes.ok) throw new Error("Failed to load arsenal");
+      const arsenalData = await arsenalRes.json();
+      const pendingAssets =
+        (arsenalData?.arsenal?.assets || []).filter(
+          (asset: any) => !asset.metadata_complete
+        ).length || 0;
+      const pendingChannels =
+        (arsenalData?.arsenal?.channels || []).filter(
+          (channel: any) => !channel.metadata_complete
+        ).length || 0;
+
+      return pendingAssets + pendingChannels;
+    }, []);
+
+    useEffect(() => {
+      let isMounted = true;
+      refreshArsenalMetaCount()
+        .then((count) => {
+          if (isMounted) setArsenalMetaCount(count);
+        })
+        .catch(() => {
+          if (isMounted) setArsenalMetaCount(0);
+        });
+      return () => {
+        isMounted = false;
+      };
+    }, [refreshArsenalMetaCount]);
+
+    useEffect(() => {
+      if (
+        location.pathname !== "/arsenal" &&
+        location.pathname !== "/engagements-setup"
+      ) {
+        return;
+      }
+      let isMounted = true;
+      refreshArsenalMetaCount()
+        .then((count) => {
+          if (isMounted) setArsenalMetaCount(count);
+        })
+        .catch(() => {
+          if (isMounted) setArsenalMetaCount(0);
+        });
+      return () => {
+        isMounted = false;
+      };
+    }, [location.pathname, refreshArsenalMetaCount]);
   
     useEffect(() => {
       const handleResize = () => {
@@ -102,13 +173,18 @@ const navSections = [
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`block pl-4 py-2 rounded-md text-sm font-medium transition ${
+                    className={`flex items-center justify-between pl-4 pr-3 py-2 rounded-md text-sm font-medium transition ${
                       location.pathname === item.path
                         ? "bg-indigo-100 text-indigo-700"
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    {item.name}
+                    <span>{item.name}</span>
+                    {item.name === "Arsenal" && arsenalMetaCount > 0 && (
+                      <span className="ml-3 inline-flex min-w-[1.75rem] justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                        {arsenalMetaCount > 99 ? "99+" : arsenalMetaCount}
+                      </span>
+                    )}
                   </Link>
                 ))}
               </nav>

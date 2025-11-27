@@ -1,4 +1,4 @@
-# backend/supermodels/company_value_prop.py
+# backend/super_models/company_value_prop.py
 
 from sqlalchemy import Column, String
 from backend.database import Base
