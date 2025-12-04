@@ -1,4 +1,7 @@
+import logging
+import os
 from typing import Any, Dict, List, Literal, Optional
+
 from fastapi import APIRouter, Body, Depends, Request, HTTPException
 from pydantic import BaseModel
 
@@ -15,6 +18,8 @@ from backend.utils.inference.rcs_generators.rcs_simulator import simulate_rcs
 from backend.utils.knowledge_base.arsenal_generation import get_all_arsenals
 from backend.utils.knowledge_base.arsenal.service import (
     enum_options_payload,
+    create_asset_record,
+    create_channel_record,
     update_asset_metadata,
     update_channel_metadata,
 )
@@ -29,10 +34,13 @@ import networkx as nx
 
 # Hardcoded path to graph data folder - to be updated in production
 
-import os
-
 from backend.utils.knowledge_base.zmot_icp_generation import Chip, collect_zmots_for_attribute_combo, mine_icp_attribute_uplifts
 from backend.utils.crm_management.engagement_service import get_account_engagements, save_and_update_account_engagements, save_engagements_bulk
+from backend.utils.crm_management.enrichment_service import (
+    build_account_enrichment,
+    upsert_persona_match,
+    delete_persona_match,
+)
 from backend.utils.crm_management.hubspot_engagements_ingestion import ingest_hubspot_company
 from backend.utils.inference.belief_manager.belief_manager import build_belief_thesis_for_account, incremental_learnings_from_thesis
 from backend.utils.inference.belief_manager.journey.learn_service import (
@@ -44,6 +52,15 @@ from backend.utils.inference.belief_manager.journey.learn_service import (
 from backend.utils.inference.belief_manager.journey.bgn_service import rebuild_global_thesis
 from backend.utils.inference.belief_manager.journey.shm_service import write_meta_episode_from_thesis
 from backend.utils.inference.belief_manager.journey.storage import load_global_thesis
+from backend.utils.inference.belief_manager.journey.activity_story import (
+    build_activity_story,
+    infer_latent_activity,
+)
+from backend.utils.inference.belief_manager.journey.storyline import (
+    collect_filter_options,
+    compose_portfolio_story,
+    compose_storyline,
+)
 from backend.utils.strategy_builder.comprehensive_plan_generator import (
     build_product_marketing_plan,
 )
@@ -52,12 +69,34 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
 
 router = APIRouter()
+LOGGER = logging.getLogger(__name__)
 
 
 class ApplyRecommendationBody(BaseModel):
     product_id: str
     type: Literal["persona", "edge"]
     recommendation: Dict[str, Any]
+
+
+class StorylineRequest(BaseModel):
+    filters: Optional[Dict[str, str]] = None
+    account_id: Optional[str] = None
+
+
+class PersonaMatchUpsert(BaseModel):
+    product_id: str
+    persona_id: str
+    person_id: Optional[str] = None
+    persona_label: Optional[str] = None
+    stage: Optional[str] = None
+    match_confidence: Optional[float] = None
+    source: Optional[str] = "user"
+    notes: Optional[str] = None
+    match_id: Optional[str] = None
+    person_name: Optional[str] = None
+    person_title: Optional[str] = None
+    person_department: Optional[str] = None
+    person_seniority: Optional[str] = None
 
 # ========================
 # PRODUCT GRAPH ROUTES
@@ -108,10 +147,14 @@ def analyze(payload: dict, request: Request, db: Session = Depends(get_db)):
     # Call the core logic function
     try:
         result = generate_product_value_prop(company_id, url, text, plg_cta, footer_features)
-        print("Dict output summary:", result["summary"]," \n Dict output capabilitites: ", result["capabilities"])
+        LOGGER.debug(
+            "Dict output summary: %s\nDict output capabilities: %s",
+            result.get("summary"),
+            result.get("capabilities"),
+        )
         return result
     except Exception as e:
-        print("❌ Analyze error:", e)
+        LOGGER.exception("Analyze error")
         raise HTTPException(status_code=500, detail="Could not run analysis")
 
 # ========================
@@ -135,8 +178,8 @@ def get_confidence(product_id: str, request: Request):
         report = compute_graph_confidence(product_subgraph)
 
         return report.__dict__
-    except Exception as e:
-        print("❌ Get confidence error:", e)
+    except Exception:
+        LOGGER.exception("Get confidence error")
         raise HTTPException(status_code=500, detail="Could not retrieve confidence report")
 
 @router.post("/graph/confidence")
@@ -153,7 +196,7 @@ async def analyze_deep(payload: dict = Body(..., embed=False), request: Request 
     Run agentic analysis for a product. Expects JSON body: { "product_id": "<id>" }.
     """
     product_id = (payload or {}).get("product_id")
-    print("Deep analyzing product_id:", product_id)
+    LOGGER.info("Deep analyzing product_id: %s", product_id)
     if not product_id:
         raise HTTPException(status_code=400, detail="Product ID required in body as {\"product_id\": \"...\"}")
 
@@ -173,19 +216,19 @@ async def analyze_deep(payload: dict = Body(..., embed=False), request: Request 
     product_subgraph = build_product_graph(product_id)
     if not product_subgraph:
         raise HTTPException(status_code=404, detail=f"Product subgraph not found for product_id: {product_id}")
-    print("Product subgraph built successfully for product_id:", product_id,". Starting agent")
+    LOGGER.info("Product subgraph built successfully for product_id: %s. Starting agent", product_id)
     # Run the agentic loop (update_graph inside that flow should now receive a valid subgraph)
     try:
         run_agentic_loop(product_subgraph)
-    except Exception as e:
-        print("❌ Agentic analysis error:", e)
+    except Exception:
+        LOGGER.exception("Agentic analysis error")
         raise HTTPException(status_code=500, detail="Agentic analysis failed")
 
     return {"status": "Agentic analysis complete"}
 
 @router.post("/graph/expand-frontier/{product_id}")
 async def expand_frontier(product_id: str, request: Request, body: dict = Body(..., embed=False)):
-    print("Expanding frontier for product_id:", product_id)
+    LOGGER.info("Expanding frontier for product_id: %s", product_id)
     auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
     if not auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
@@ -198,7 +241,7 @@ async def expand_frontier(product_id: str, request: Request, body: dict = Body(.
     only_types = body.get("only_types")
     waves = int(body.get("waves", 1))
     max_items = int(body.get("max_items_per_source", 5))
-    print("Seed IDs:", seed_ids)
+    LOGGER.debug("Seed IDs: %s", seed_ids)
 
     G = build_product_graph(product_id)
 
@@ -212,7 +255,7 @@ async def expand_frontier(product_id: str, request: Request, body: dict = Body(.
                 term.append(n)
         # keep bounded
         seed_ids = term[: max_items * (len(allow) if allow else 3) or 5]
-        print("[Frontier] Auto-seeded terminals:", seed_ids)
+        LOGGER.debug("[Frontier] Auto-seeded terminals: %s", seed_ids)
 
    
 
@@ -251,9 +294,9 @@ async def get_products(company_id: str, request: Request):
         # 🧠 Inference
         product_lookup = get_product_id_from_company_id(company_id)
         if product_lookup:
-            print("Product ID found for company_id:", company_id)
+            LOGGER.info("Product ID found for company_id: %s", company_id)
             product_subgraph = build_product_graph(product_lookup)
-            print("Product subgraph data loaded")
+            LOGGER.debug("Product subgraph data loaded")
             product_id = get_product_id_from_subgraph(product_subgraph)
             
             product_node = product_subgraph.nodes[product_id]
@@ -266,16 +309,16 @@ async def get_products(company_id: str, request: Request):
             }]
         else: products = []
         
-        print("Products found:", products)
+        LOGGER.debug("Products found: %s", products)
         return {"products": products}
     except Exception as e:
-        print("❌ Get products error:", e)
+        LOGGER.exception("Get products error")
         raise HTTPException(status_code=500, detail="Could not retrieve products")
 
 # GET /get-product-capabilities/{product_id}
 @router.get("/get-product-capabilities/{product_id}")
 async def get_product_capabilities(product_id: str, request: Request):
-    print("Getting product capabilities for product_id:", product_id)
+    LOGGER.info("Getting product capabilities for product_id: %s", product_id)
     """
     Returns a list of capabilities for the given product_id.
     """
@@ -298,8 +341,8 @@ async def get_product_capabilities(product_id: str, request: Request):
         product_summary = get_product_value_prop_capabilities(product_subgraph)
 
         return product_summary
-    except Exception as e:
-        print("❌ Get capabilities error:", e)
+    except Exception:
+        LOGGER.exception("Get capabilities error")
         raise HTTPException(status_code=500, detail="Could not retrieve capabilities")
 
 
@@ -321,8 +364,8 @@ async def export_product_graph(product_id: str, request: Request):
         product_subgraph = build_product_graph(product_id)
         payload = serialize_graph_for_frontend(product_subgraph)
         return payload
-    except Exception as e:
-        print("❌ export-product-graph error:", e)
+    except Exception:
+        LOGGER.exception("export-product-graph error")
         raise HTTPException(status_code=500, detail="Could not export product graph")
     
 @router.post("/graph/bulk-upsert-graph/{product_id}")
@@ -353,10 +396,10 @@ async def bulk_upsert_graph(product_id: str, graph_payload: dict, request: Reque
     
     try:
         add_or_update_graph(product_graph, nodes, edges)
-        print("Graph updated successfully with bulk upsert.")
+        LOGGER.info("Graph updated successfully with bulk upsert for product_id %s", product_id)
         return {"message": "Graph updated successfully."}
-    except Exception as e:
-        print("❌ Error in add_or_update_graph:", e)
+    except Exception:
+        LOGGER.exception("Error in add_or_update_graph")
         raise HTTPException(status_code=500, detail="Error updating graph data")
 
 
@@ -447,8 +490,8 @@ async def get_zmot_icp(product_id: str, request: Request, max_len: int = 3, top_
 
     except HTTPException:
         raise
-    except Exception as e:
-        print("❌ Get ZMOT ICP error:", e)
+    except Exception:
+        LOGGER.exception("Get ZMOT ICP error")
         raise HTTPException(status_code=500, detail="Could not retrieve ZMOT ICP")
 
 # ========================
@@ -461,7 +504,7 @@ async def get_icp_attributes(product_id: str, request: Request, max_len: int = 3
     Returns ICP attribute bundles (industry, revenue, employees, funding, geography)
     with win rates + relevant ZMOTs.
     """
-    print("Fetching ICP Options")
+    LOGGER.debug("Fetching ICP Options")
     auth_header = request.headers.get("authorization")
     if not auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
@@ -534,7 +577,7 @@ async def get_zmots_for_attributes(product_id: str, payload: dict, request: Requ
     product_subgraph = build_product_graph(product_id)
     chips = [Chip(family="attribute", node_id=a, label=a) for a in attribute_ids]
     zmot_ops = collect_zmots_for_attribute_combo(product_subgraph, chips)
-    print("ZMOT ops:", zmot_ops)
+    LOGGER.debug("ZMOT ops: %s", zmot_ops)
     return zmot_ops
 
 # ========================
@@ -546,7 +589,7 @@ async def get_reverse_case_study(product_id: str, payload: dict, request: Reques
     """
     Generates reverse case studies for product_id, using attribute sets + engaged nodes.
     """
-    print("Generating RCS for product_id:", product_id)
+    LOGGER.info("Generating RCS for product_id: %s", product_id)
     engaged_nodes = payload.get("selected_node_ids", [])
     attributes = payload.get("attribute_ids", [])
     zmot_id = payload.get("zmot_event_id")
@@ -565,7 +608,7 @@ async def get_reverse_case_study(product_id: str, payload: dict, request: Reques
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
     product_subgraph = build_product_graph(product_id)
-    print("simulating rcs with engaged nodes:", engaged_nodes, "and attr: ", attributes)
+    LOGGER.debug("Simulating RCS with engaged nodes: %s and attributes: %s", engaged_nodes, attributes)
     output = simulate_rcs(product_subgraph, engaged_nodes=engaged_nodes, attributes=attributes)
     return output
 
@@ -578,7 +621,7 @@ async def get_arsenal_library(product_id: str, request: Request):
     """
     Returns the arsenal library for the given company.
     """
-    print("Product ID for arsenal library:", product_id)
+    LOGGER.debug("Product ID for arsenal library: %s", product_id)
     try:
         auth_header = request.headers.get("authorization")
         if not auth_header:
@@ -594,13 +637,13 @@ async def get_arsenal_library(product_id: str, request: Request):
 
         arsenal_library = get_all_arsenals(product_id_actual)
         return {"arsenal": arsenal_library}
-    except Exception as e:
-        print("❌ Get Arsenal Library error:", e)
+    except Exception:
+        LOGGER.exception("Get Arsenal Library error")
         raise HTTPException(status_code=500, detail="Could not retrieve arsenal library")
 
 
 @router.get("/arsenal/options")
-async def get_arsenal_options(request: Request):
+async def get_arsenal_options(request: Request, db: Session = Depends(get_db)):
     auth_header = request.headers.get("authorization")
     if not auth_header:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
@@ -608,7 +651,69 @@ async def get_arsenal_options(request: Request):
     decoded = decode_token(token)
     if not decoded.get("company_id"):
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-    return enum_options_payload()
+    return enum_options_payload(db)
+
+
+@router.post("/arsenal/assets")
+async def create_arsenal_asset_endpoint(
+    payload: Dict[str, Any] = Body(...),
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    if request is None:
+        raise HTTPException(status_code=400, detail="Request context required")
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    product_id = (payload.get("product_id") or "").strip()
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    try:
+        asset = create_asset_record(db, product_id=product_id, payload=payload)
+        db.commit()
+        return {"asset": asset}
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception:
+        db.rollback()
+        LOGGER.exception("Asset creation error")
+        raise HTTPException(status_code=500, detail="Failed to create asset")
+
+
+@router.post("/arsenal/channels")
+async def create_arsenal_channel_endpoint(
+    payload: Dict[str, Any] = Body(...),
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    if request is None:
+        raise HTTPException(status_code=400, detail="Request context required")
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    product_id = (payload.get("product_id") or "").strip()
+    if not product_id:
+        raise HTTPException(status_code=400, detail="product_id is required")
+    try:
+        channel = create_channel_record(db, product_id=product_id, payload=payload)
+        db.commit()
+        return {"channel": channel}
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception:
+        db.rollback()
+        LOGGER.exception("Channel creation error")
+        raise HTTPException(status_code=500, detail="Failed to create channel")
 
 
 @router.patch("/arsenal/assets/{asset_id}")
@@ -640,8 +745,36 @@ async def patch_arsenal_asset(
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
         db.rollback()
-        print("❌ Asset metadata update error:", repr(exc))
+        LOGGER.exception("Asset metadata update error")
         raise HTTPException(status_code=500, detail="Failed to update asset metadata")
+
+
+@router.post("/arsenal/assets/{asset_id}/approve")
+async def approve_arsenal_asset(
+    asset_id: str,
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    if request is None:
+        raise HTTPException(status_code=400, detail="Request context required")
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    try:
+        updated = update_asset_metadata(db, asset_id=asset_id, patch={"approval_status": "approved"})
+        db.commit()
+        return {"asset": updated}
+    except LookupError as exc:
+        db.rollback()
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception:
+        db.rollback()
+        LOGGER.exception("Asset approval failed")
+        raise HTTPException(status_code=500, detail="Failed to approve asset")
 
 
 @router.patch("/arsenal/channels/{channel_id}")
@@ -673,8 +806,36 @@ async def patch_arsenal_channel(
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
         db.rollback()
-        print("❌ Channel metadata update error:", repr(exc))
+        LOGGER.exception("Channel metadata update error")
         raise HTTPException(status_code=500, detail="Failed to update channel metadata")
+
+
+@router.post("/arsenal/channels/{channel_id}/approve")
+async def approve_arsenal_channel(
+    channel_id: str,
+    request: Request = None,
+    db: Session = Depends(get_db),
+):
+    if request is None:
+        raise HTTPException(status_code=400, detail="Request context required")
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    try:
+        updated = update_channel_metadata(db, channel_id=channel_id, patch={"approval_status": "approved"})
+        db.commit()
+        return {"channel": updated}
+    except LookupError as exc:
+        db.rollback()
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception:
+        db.rollback()
+        LOGGER.exception("Channel approval failed")
+        raise HTTPException(status_code=500, detail="Failed to approve channel")
 
 
 # ========================
@@ -739,6 +900,113 @@ async def get_accounts_for_rcs(product_id: str, request: Request):
 
     
     return {"accounts": accounts}
+
+
+@router.get("/accounts/{account_id}/enrichment")
+async def get_account_enrichment(
+    account_id: str,
+    product_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    try:
+        payload = build_account_enrichment(
+            product_id=product_id,
+            account_id=account_id,
+            db=db,
+        )
+        return payload
+    except Exception as exc:
+        print("❌ Account enrichment error:", exc)
+        raise HTTPException(status_code=500, detail="Failed to build account enrichment summary")
+
+
+@router.post("/accounts/{account_id}/enrichment/matches")
+async def upsert_account_persona_match(
+    account_id: str,
+    payload: PersonaMatchUpsert,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+
+    if not payload.persona_label:
+        raise HTTPException(status_code=400, detail="persona_label is required")
+
+    try:
+        match_payload = upsert_persona_match(
+            db,
+            product_id=payload.product_id,
+            account_id=account_id,
+            persona_id=payload.persona_id,
+            person_id=payload.person_id,
+            persona_label=payload.persona_label,
+            stage=payload.stage,
+            match_confidence=payload.match_confidence,
+            source=payload.source,
+            notes=payload.notes,
+            match_id=payload.match_id,
+            person_name=payload.person_name,
+            person_title=payload.person_title,
+            person_department=payload.person_department,
+            person_seniority=payload.person_seniority,
+        )
+        db.commit()
+        return {"match": match_payload}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        db.rollback()
+        print("❌ Upsert persona match error:", exc)
+        raise HTTPException(status_code=500, detail="Failed to save persona match")
+
+
+@router.delete("/accounts/{account_id}/enrichment/matches/{match_id}")
+async def delete_account_persona_match(
+    account_id: str,
+    match_id: str,
+    product_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    auth_header = request.headers.get("authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    try:
+        delete_persona_match(
+            db,
+            product_id=product_id,
+            account_id=account_id,
+            match_id=match_id,
+        )
+        db.commit()
+        return {"status": "deleted"}
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        db.rollback()
+        print("❌ Delete persona match error:", exc)
+        raise HTTPException(status_code=500, detail="Failed to delete persona match")
+
 
 @router.post("/save-target-accounts/{company_id}")
 async def save_target_accounts(company_id: str, product_id: str, payload: dict, request: Request):
@@ -889,12 +1157,34 @@ async def get_persona_matches(product_id: str, account_id: str, request: Request
         activity = (thesis.get("journey") or {}).get("steps") or []
         print("Activity feed extracted, total steps:", len(activity))
 
+        latent_activity = infer_latent_activity(thesis)
+        activity_story = build_activity_story(thesis)
+        print(
+            "Latent activity inferred:",
+            len(latent_activity),
+            "entries; combined story length:",
+            len(activity_story),
+        )
+        account_record = get_account_by_id(product_id, account_id) or {}
+        storyline = compose_storyline(
+            account_name=account_record.get("account_name") or account_id,
+            account_meta=account_record,
+            deal_status=account_record.get("deal_status"),
+            journey_steps=activity,
+            activity_story=activity_story,
+            product_id=product_id,
+        )
+        thesis["storyline"] = storyline
+
         return {
             "product_id": product_id,
             "account_id": account_id,
             "global": global_insights,
             "incremental": incremental,
             "activity": activity,
+            "latent_activity": latent_activity,
+            "activity_story": activity_story,
+            "storyline": storyline,
             "thesis": thesis,  # optional if FE wants the full object
         }
     except Exception as e:
@@ -1017,6 +1307,74 @@ async def get_comprehensive_execution_plan(
     except Exception as exc:
         print("❌ get_comprehensive_execution_plan error:", exc)
         raise HTTPException(status_code=500, detail="Failed to build marketing plan")
+
+
+def _matches_story_filters(meta: Optional[Dict[str, Any]], filters: Dict[str, str]) -> bool:
+    if not filters:
+        return True
+    meta = meta or {}
+    for key, value in filters.items():
+        if not value:
+            continue
+        current = meta.get(key)
+        if current is None or current == "":
+            return False
+        if isinstance(current, (list, tuple)):
+            normalized = {str(item).lower() for item in current if item}
+            if str(value).lower() not in normalized:
+                return False
+        else:
+            if str(current).lower() != str(value).lower():
+                return False
+    return True
+
+
+@router.post("/journey/storyline/{product_id}")
+async def generate_storyline_view(
+    product_id: str,
+    body: StorylineRequest,
+    request: Request,
+):
+    auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not auth_header or " " not in auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ", 1)[1]
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    filters = {k: v for k, v in (body.filters or {}).items() if v} if body else {}
+    try:
+        plan = build_product_marketing_plan(product_id)
+    except Exception as exc:
+        print("❌ storyline generation failed:", exc)
+        raise HTTPException(status_code=500, detail="Failed to build storyline")
+
+    accounts = plan.get("accounts", [])
+    available_filters = collect_filter_options(accounts)
+
+    if body and body.account_id:
+        matched_accounts = [
+            acct for acct in accounts if acct.get("account_id") == body.account_id
+        ]
+    else:
+        matched_accounts = [
+            acct for acct in accounts if _matches_story_filters(acct.get("meta"), filters)
+        ]
+
+    if not matched_accounts:
+        return {
+            "storyline": None,
+            "available_filters": available_filters,
+            "match_count": 0,
+        }
+
+    storyline = compose_portfolio_story(matched_accounts, filters)
+    return {
+        "storyline": storyline,
+        "available_filters": available_filters,
+        "match_count": len(matched_accounts),
+    }
 
 #---- Math Models Routes -----
 

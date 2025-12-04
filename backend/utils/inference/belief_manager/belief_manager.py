@@ -6,6 +6,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Tuple
+from collections import Counter, defaultdict
 from collections.abc import Mapping
 import typing as t
 from uuid import UUID
@@ -40,10 +41,15 @@ except Exception:
     class _NP_SCALAR:  # type: ignore
         pass
 
+from backend.database import SessionLocal
 from backend.utils.graph_base.network_graph import (
     _set_node_label,
     build_product_graph,
     get_product_id_from_subgraph,
+    get_target_nodes_by_source_and_type,
+    get_source_nodes_by_target_and_type,
+    get_edge_weight,
+    get_edge_attribute,
 )
 from backend.utils.crm_management.target_account_manager import (
     get_account_by_id,
@@ -54,6 +60,10 @@ from backend.utils.crm_management.engagement_service import (
 )
 from backend.utils.crm_management.person_service import (
     match_persona_for_actor_in_graph,
+)
+from backend.utils.crm_management.person_models import (
+    AccountPersonaMatch,
+    AccountPerson,
 )
 
 from backend.utils.inference.belief_manager.learn.graph_learning import (
@@ -146,6 +156,12 @@ class BeliefThesisCore:
 
     # Learning artifacts from GraphStore/Bayesian layer
     learning: LearningArtifacts
+
+    # Persona/person involvement projections
+    persona_committee_probs: Dict[str, float]
+    persona_posteriors: Dict[str, float]
+    person_committee_probs: List[Dict[str, Any]]
+    persona_belief_posteriors: Dict[str, Dict[str, Any]]
 
 
 # ---------------------------------------------------------------------
@@ -312,6 +328,97 @@ def _estimate_offpath_rate(account_id: str, product_id: str) -> float:
     return 0.2
 
 
+BELIEF_PHASE_SEQUENCE: Tuple[str, ...] = (
+    "Unaware",
+    "Problem Realization",
+    "Pain Realization",
+    "Resolution Discovery",
+    "Execution Guidance",
+)
+
+BELIEF_PHASE_WEIGHTS: Dict[str, float] = {
+    "Unaware": 0.1,
+    "Problem Realization": 0.35,
+    "Pain Realization": 0.55,
+    "Resolution Discovery": 0.75,
+    "Execution Guidance": 0.95,
+}
+
+PHASE_LABEL_NORMALIZATION: Dict[str, str] = {
+    "zero moment": "Unaware",
+    "zero moment of truth": "Unaware",
+    "unaware": "Unaware",
+    "problem realization": "Problem Realization",
+    "problem": "Problem Realization",
+    "early funnel": "Problem Realization",
+    "pain realization": "Pain Realization",
+    "mid funnel": "Pain Realization",
+    "resolution discovery": "Resolution Discovery",
+    "late funnel": "Resolution Discovery",
+    "execution guidance": "Execution Guidance",
+}
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        if value is None:
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _canonical_phase(label: Optional[str]) -> str:
+    if not label:
+        return "Unaware"
+    normalized = str(label).strip().lower()
+    if not normalized:
+        return "Unaware"
+    return PHASE_LABEL_NORMALIZATION.get(normalized, "Unaware")
+
+
+def _phase_from_position(order: int, total: int) -> str:
+    if total <= 1:
+        return "Problem Realization"
+    ratio = order / max(total - 1, 1)
+    if ratio <= 0.2:
+        return "Problem Realization"
+    if ratio <= 0.5:
+        return "Pain Realization"
+    if ratio <= 0.8:
+        return "Resolution Discovery"
+    return "Execution Guidance"
+
+
+def _persona_phase_lookup(paths: List[Dict[str, Any]]) -> Dict[str, str]:
+    lookup: Dict[str, str] = {}
+    for path in paths or []:
+        personas = path.get("personas") or path.get("path") or []
+        total = len(personas)
+        for idx, persona in enumerate(personas):
+            persona_id = None
+            if isinstance(persona, dict):
+                persona_id = persona.get("id") or persona.get("persona_id")
+                base_phase = persona.get("journey_phase") or persona.get("stage_label")
+            else:
+                persona_id = str(persona)
+                base_phase = None
+            if not persona_id or persona_id in lookup:
+                continue
+            if base_phase:
+                lookup[persona_id] = _canonical_phase(base_phase)
+            else:
+                lookup[persona_id] = _phase_from_position(idx, total)
+    return lookup
+
+
+def _dominant_phase_from_probs(probs: Dict[str, float]) -> str:
+    if not probs:
+        return "Unaware"
+    phase, _ = max(probs.items(), key=lambda kv: kv[1])
+    return phase
+
+
 # ---Label Setters for Graph Nodes ----
 def _L(G: nx.DiGraph, nid: str) -> str:
     try:
@@ -377,6 +484,188 @@ def _label_neighborhoods(G: nx.DiGraph, nbs: Any) -> Any:
             }
         labeled[band] = lbucket
     return labeled
+
+
+def _job_ids_for_persona(G: nx.DiGraph, persona_id: str) -> List[str]:
+    return [
+        node_id
+        for node_id in get_source_nodes_by_target_and_type(G, persona_id, "performed_by")
+        if node_id in G
+    ]
+
+
+def _pain_ids_for_job(G: nx.DiGraph, job_id: str) -> List[str]:
+    pains: set[str] = set()
+    pains.update(
+        nid
+        for nid in get_source_nodes_by_target_and_type(G, job_id, "felt_in")
+        if nid in G
+    )
+    pains.update(
+        nid
+        for nid in get_target_nodes_by_source_and_type(G, job_id, "solves")
+        if nid in G
+    )
+    return list(pains)
+
+
+def _trigger_ids_for_pain(G: nx.DiGraph, pain_id: str) -> List[str]:
+    return [
+        nid
+        for nid in get_target_nodes_by_source_and_type(G, pain_id, "triggered_by")
+        if nid in G
+    ]
+
+
+def _zmot_links_for_trigger(G: nx.DiGraph, trigger_id: str) -> List[Tuple[str, str]]:
+    """
+    Returns a list of (zmot_id, source_id) pairs. The source_id indicates
+    whether the ZMOT edge originates from the trigger itself or from an
+    attribute_value node associated with the trigger.
+    """
+    pairs: List[Tuple[str, str]] = []
+    for zmot_id in get_target_nodes_by_source_and_type(G, trigger_id, "leads_to_zmot"):
+        if zmot_id in G:
+            pairs.append((zmot_id, trigger_id))
+
+    for attr_id in get_target_nodes_by_source_and_type(G, trigger_id, "prevalent_in"):
+        if attr_id not in G:
+            continue
+        for zmot_id in get_target_nodes_by_source_and_type(G, attr_id, "associated_zmot"):
+            if zmot_id in G:
+                pairs.append((zmot_id, attr_id))
+    return pairs
+
+
+def _observable_payloads_for_zmot(G: nx.DiGraph, zmot_id: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    observables: List[Dict[str, Any]] = []
+    for obs_id in get_target_nodes_by_source_and_type(G, zmot_id, "observed_in"):
+        node = G.nodes.get(obs_id, {})
+        observables.append(
+            {
+                "id": obs_id,
+                "label": _L(G, obs_id),
+                "channels": node.get("channels") or node.get("sources") or [],
+                "description": node.get("description"),
+            }
+        )
+    keywords: List[Dict[str, Any]] = []
+    for kw_id in get_target_nodes_by_source_and_type(G, zmot_id, "keyword"):
+        node = G.nodes.get(kw_id, {})
+        keywords.append(
+            {
+                "id": kw_id,
+                "label": _L(G, kw_id),
+                "keyword": node.get("keyword"),
+            }
+        )
+    return observables, keywords
+
+
+def _collect_zmot_candidates_for_persona(
+    G: nx.DiGraph,
+    persona_id: str,
+    *,
+    limit: int = 3,
+) -> List[Dict[str, Any]]:
+    if persona_id not in G:
+        return []
+
+    suggestions: List[Dict[str, Any]] = []
+    seen: set[Tuple[str, str, str]] = set()
+
+    for job_id in _job_ids_for_persona(G, persona_id):
+        job_label = _L(G, job_id)
+        for pain_id in _pain_ids_for_job(G, job_id):
+            pain_label = _L(G, pain_id)
+            for trigger_id in _trigger_ids_for_pain(G, pain_id):
+                trigger_label = _L(G, trigger_id)
+                trigger_boost = (
+                    get_edge_attribute(G, pain_id, trigger_id, "boost")
+                    or get_edge_attribute(G, pain_id, trigger_id, "likelihood")
+                    or get_edge_weight(G, pain_id, trigger_id)
+                )
+                for zmot_id, source_id in _zmot_links_for_trigger(G, trigger_id):
+                    key = (persona_id, trigger_id, zmot_id)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    zmot_label = _L(G, zmot_id)
+                    zmot_boost = (
+                        get_edge_attribute(G, source_id, zmot_id, "boost")
+                        or get_edge_attribute(G, source_id, zmot_id, "likelihood")
+                        or get_edge_weight(G, source_id, zmot_id)
+                    )
+                    observables, keywords = _observable_payloads_for_zmot(G, zmot_id)
+
+                    suggestions.append(
+                        {
+                            "persona_id": persona_id,
+                            "persona_label": _L(G, persona_id),
+                            "job_id": job_id,
+                            "job_label": job_label,
+                            "pain_id": pain_id,
+                            "pain_label": pain_label,
+                            "pain_trigger_id": trigger_id,
+                            "pain_trigger_label": trigger_label,
+                            "zmot_event_id": zmot_id,
+                            "zmot_label": zmot_label,
+                            "boost": _safe_float(zmot_boost, 0.0),
+                            "trigger_boost": _safe_float(trigger_boost, 0.0),
+                            "observable_moments": observables[:5],
+                            "keywords": keywords[:8],
+                        }
+                    )
+
+    if not suggestions:
+        return []
+
+    suggestions.sort(
+        key=lambda row: (
+            _safe_float(row.get("boost"), 0.0),
+            _safe_float(row.get("trigger_boost"), 0.0),
+        ),
+        reverse=True,
+    )
+    return suggestions[:limit]
+
+
+def _ordered_persona_candidates(paths: List[Dict[str, Any]]) -> List[str]:
+    ordered: List[str] = []
+    seen: set[str] = set()
+    for path in paths or []:
+        personas = path.get("personas") or path.get("persona_ids") or path.get("path") or []
+        for persona_id in personas:
+            pid = str(persona_id)
+            if pid not in seen:
+                ordered.append(pid)
+                seen.add(pid)
+    return ordered
+
+
+def _forecast_zmot_events(
+    G: nx.DiGraph,
+    *,
+    current_paths: List[Dict[str, Any]],
+    observed_personas: Iterable[str],
+    max_per_persona: int = 3,
+) -> List[Dict[str, Any]]:
+    persona_priority = _ordered_persona_candidates(current_paths)
+    observed_set = {str(pid) for pid in observed_personas or []}
+
+    forecasts: List[Dict[str, Any]] = []
+    for persona_id in persona_priority:
+        entries = _collect_zmot_candidates_for_persona(
+            G,
+            persona_id,
+            limit=max_per_persona,
+        )
+        if not entries:
+            continue
+        for entry in entries:
+            entry["already_observed"] = entry["persona_id"] in observed_set
+            forecasts.append(entry)
+    return forecasts
 
 
 # ------------------
@@ -668,6 +957,38 @@ def _persona_resolution_stats(
 # ---------------------------------------------------------------------
 # Helpers for belief thesis
 # ---------------------------------------------------------------------
+def _normalize_persona_component(value: Any) -> str:
+    if value is None:
+        return ""
+    try:
+        return str(value).strip().lower()
+    except Exception:
+        return str(value)
+
+
+def _candidate_persona_id_from_match(
+    match: Dict[str, Any],
+    actor: Dict[str, Any],
+) -> Optional[str]:
+    canonical = (match.get("canonical_meta") or {}) if isinstance(match, dict) else {}
+    title = (
+        canonical.get("title")
+        or actor.get("title")
+        or actor.get("role")
+        or ""
+    )
+    department = canonical.get("department") or actor.get("department") or ""
+    seniority = canonical.get("seniority") or actor.get("seniority") or ""
+
+    title_norm = _normalize_persona_component(title)
+    dept_norm = _normalize_persona_component(department)
+    snr_norm = _normalize_persona_component(seniority)
+
+    if not (title_norm or dept_norm or snr_norm):
+        return None
+    return f"{title_norm}|{dept_norm}|{snr_norm}"
+
+
 def _observed_personas_from_engagements(
     product_id: str,
     account_id: str,
@@ -734,8 +1055,10 @@ def _observed_personas_from_engagements(
         # - If resolver says "new_node_candidate", we DON'T push into the journey
         #   because there is no reliable persona node in the graph yet.
         # - Otherwise, use resolved_id if present, else fall back to per-episode best.
+        candidate_pid: Optional[str] = None
         if status == "new_node_candidate":
-            effective_pid: Optional[str] = None
+            candidate_pid = _candidate_persona_id_from_match(match, actor) or None
+            effective_pid = candidate_pid
         else:
             effective_pid = resolved_id or match.get("best")
 
@@ -750,6 +1073,8 @@ def _observed_personas_from_engagements(
             enriched = dict(match)
             enriched["effective_persona_id"] = effective_pid
             enriched["resolution_status"] = status
+            if candidate_pid:
+                enriched["candidate_persona_id"] = candidate_pid
             out.append(enriched)
 
     return out
@@ -798,8 +1123,10 @@ def _engagement_timeline_with_personas(
         if state:
             resolver_states[actor_key] = state
 
+        candidate_pid: Optional[str] = None
         if status == "new_node_candidate":
-            effective_pid: Optional[str] = None
+            candidate_pid = _candidate_persona_id_from_match(match, actor) or None
+            effective_pid = candidate_pid
         else:
             effective_pid = resolution.get("resolved_persona_id") or match.get("best")
 
@@ -822,11 +1149,150 @@ def _engagement_timeline_with_personas(
                 "match": match,
                 "resolution_status": status,
                 "effective_persona_id": effective_pid,
+                "candidate_persona_id": candidate_pid,
                 "committee_personas": list(committee_set),
             }
         )
 
     return timeline
+
+
+def _compute_persona_committee_probs(
+    observed_persona_ids: List[str],
+    timeline: List[Dict[str, Any]],
+    current_paths: List[Dict[str, Any]],
+    current_expected_next: List[Dict[str, Any]],
+) -> Dict[str, float]:
+    scores: Dict[str, float] = defaultdict(float)
+
+    if observed_persona_ids:
+        counts = Counter(observed_persona_ids)
+        total = sum(counts.values()) or 1.0
+        for pid, count in counts.items():
+            scores[pid] += 0.5 * (count / total)
+
+    committee_seen: set[str] = set()
+    for step in timeline or []:
+        committee_seen.update(step.get("committee_personas") or [])
+    for pid in committee_seen:
+        scores[pid] = max(scores.get(pid, 0.0), 0.05)
+
+    for path in current_paths or []:
+        prob = _safe_float(path.get("probability"), 0.0)
+        personas = list(path.get("personas") or [])
+        if not personas and path.get("persona_ids"):
+            personas = list(path.get("persona_ids") or [])
+        for idx, persona in enumerate(personas):
+            if isinstance(persona, str):
+                pid = persona
+            elif isinstance(persona, Mapping):
+                pid = persona.get("id") or persona.get("persona_id")
+            else:
+                pid = None
+            if not pid:
+                continue
+            decay = max(0.25, 1.0 - 0.15 * idx)
+            scores[str(pid)] += 0.25 * prob * decay
+
+    for row in current_expected_next or []:
+        pid = str(row.get("persona"))
+        if not pid:
+            continue
+        scores[pid] += 0.25 * _safe_float(row.get("prob"), 0.0)
+
+    filtered = {pid: max(score, 0.0) for pid, score in scores.items() if score > 0}
+    if not filtered:
+        return {}
+    total_score = sum(filtered.values()) or 1.0
+    normalized = {
+        pid: round(score / total_score, 6) for pid, score in filtered.items()
+    }
+    return dict(
+        sorted(normalized.items(), key=lambda kv: kv[1], reverse=True)
+    )
+
+
+def _load_account_person_matches(
+    product_id: str,
+    account_id: str,
+) -> List[Dict[str, Any]]:
+    try:
+        with SessionLocal() as db:
+            rows = (
+                db.query(AccountPersonaMatch, AccountPerson)
+                .outerjoin(AccountPerson, AccountPersonaMatch.person_id == AccountPerson.id)
+                .filter(
+                    AccountPersonaMatch.product_id == product_id,
+                    AccountPersonaMatch.account_id == account_id,
+                )
+                .all()
+            )
+    except Exception:
+        return []
+
+    payloads: List[Dict[str, Any]] = []
+    for match, person in rows:
+        payloads.append(
+            {
+                "match_id": str(match.id),
+                "persona_id": match.persona_id,
+                "persona_label": match.persona_label,
+                "stage": match.stage,
+                "person_id": person.id if person else match.person_id,
+                "person_name": (person.name if person else None) or None,
+                "person_title": person.title if person else None,
+                "person_department": person.department if person else None,
+                "person_seniority": person.seniority if person else None,
+                "match_confidence": _safe_float(match.match_confidence, 0.5),
+                "source": match.source,
+                "notes": match.notes,
+                "engagement_count": person.engagement_count if person else None,
+                "last_seen_at": (
+                    person.last_seen_at.isoformat()
+                    if person and person.last_seen_at
+                    else None
+                ),
+            }
+        )
+    return payloads
+
+
+def _project_person_committee_probs(
+    persona_probs: Dict[str, float],
+    match_rows: List[Dict[str, Any]],
+    product_graph: nx.DiGraph,
+    persona_belief_posteriors: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    if not match_rows:
+        return []
+    entries: List[Dict[str, Any]] = []
+    for row in match_rows:
+        persona_id = row.get("persona_id")
+        if not persona_id:
+            continue
+        persona_prob = persona_probs.get(persona_id, 0.0)
+        confidence = _safe_float(row.get("match_confidence"), 0.5)
+        engagement_count = _safe_float(row.get("engagement_count"), 0.0)
+        engagement_factor = 1.0 + min(engagement_count, 12.0) * 0.03
+        raw_prob = persona_prob * (0.5 + 0.5 * confidence) * engagement_factor
+        probability = min(1.0, max(raw_prob, 0.0))
+        belief_data = persona_belief_posteriors.get(persona_id) or {}
+        base_belief_level = _safe_float(belief_data.get("belief_level"), 0.5) or 0.5
+        projected_belief = min(
+            1.0,
+            max(0.0, base_belief_level * (0.5 + 0.5 * confidence) * engagement_factor),
+        )
+        projected = dict(row)
+        projected["persona_label"] = (
+            projected.get("persona_label") or _L(product_graph, persona_id)
+        )
+        projected["probability"] = round(probability, 6)
+        projected["phase_probs"] = belief_data.get("phase_probs")
+        projected["belief_level"] = round(projected_belief, 6)
+        projected["dominant_phase"] = belief_data.get("dominant_phase")
+        entries.append(projected)
+    entries.sort(key=lambda item: item.get("probability", 0.0), reverse=True)
+    return entries
 
 
 def _paths_from_persona_scores(
@@ -1291,6 +1757,8 @@ def compute_belief_thesis_core(
         return annotated
 
     baseline_paths = _annotate_paths_with_metrics(baseline["walk_paths"])
+    persona_phase_lookup = _persona_phase_lookup(baseline_paths)
+    persona_phase_mass: Dict[str, Counter[str]] = defaultdict(Counter)
     baseline_expected_next = baseline.get("expected_next", [])
 
     if debug:
@@ -1382,6 +1850,13 @@ def compute_belief_thesis_core(
             }
         else:
             posterior_distribution = dict(hidden_state_prior)
+
+        for persona_id, prob in posterior_distribution.items():
+            if not persona_id:
+                continue
+            phase_label = _canonical_phase(persona_phase_lookup.get(persona_id))
+            persona_phase_mass[persona_id][phase_label] += float(prob)
+            persona_phase_lookup.setdefault(persona_id, phase_label)
 
         prediction_record = PersonaPrediction(
             account_id=account_id,
@@ -1559,6 +2034,9 @@ def compute_belief_thesis_core(
 
         if actual_persona:
             engaged_sequence.append(actual_persona)
+            phase_label = _canonical_phase(persona_phase_lookup.get(actual_persona))
+            persona_phase_mass[actual_persona][phase_label] += 1.0
+            persona_phase_lookup.setdefault(actual_persona, phase_label)
             if enable_pg_online_learning and len(engaged_sequence) >= 2:
                 PG.learn_from_sequence(
                     observed_personas_in_order=engaged_sequence[-2:],
@@ -1617,6 +2095,8 @@ def compute_belief_thesis_core(
     )
     print("Compute Belief Thesis Core: Step 5: Predicted Snapshot")
     current_paths = _annotate_paths_with_metrics(current["walk_paths"])
+    for pid, phase in _persona_phase_lookup(current_paths).items():
+        persona_phase_lookup.setdefault(pid, phase)
     current_expected_next = current["expected_next"]
     print("Compute Belief Thesis Core: completed 5")
     # 6) GraphStore-based learning (Bayesian) over the full product graph
@@ -1943,6 +2423,46 @@ def compute_belief_thesis_core(
         apply_errors=learning_apply_errors,
     )
 
+    persona_committee_probs = _compute_persona_committee_probs(
+        observed_persona_ids,
+        timeline,
+        current_paths,
+        current_expected_next,
+    )
+    for pid in persona_committee_probs.keys():
+        persona_phase_lookup.setdefault(pid, "Problem Realization")
+
+    persona_belief_posteriors: Dict[str, Dict[str, Any]] = {}
+    for persona_id, default_phase in persona_phase_lookup.items():
+        counter = persona_phase_mass.get(persona_id, Counter())
+        if not counter:
+            counter = Counter({default_phase: 1.0})
+        total = sum(counter.values()) or 1.0
+        normalized = {
+            phase: round(value / total, 6)
+            for phase, value in counter.items()
+        }
+        belief_level = round(
+            sum(
+                BELIEF_PHASE_WEIGHTS.get(phase, 0.5) * prob
+                for phase, prob in normalized.items()
+            ),
+            6,
+        )
+        persona_belief_posteriors[persona_id] = {
+            "phase_probs": normalized,
+            "belief_level": belief_level,
+            "dominant_phase": _dominant_phase_from_probs(normalized),
+        }
+
+    match_rows = _load_account_person_matches(product_id, account_id)
+    person_committee_probs = _project_person_committee_probs(
+        persona_committee_probs,
+        match_rows,
+        product_graph,
+        persona_belief_posteriors,
+    )
+
     core = BeliefThesisCore(
         account_id=account_id,
         product_id=product_id,
@@ -1970,6 +2490,10 @@ def compute_belief_thesis_core(
         walk_paths=simple_walk_paths,
         fit=fit,
         learning=learning,
+        persona_committee_probs=persona_committee_probs,
+        persona_posteriors=persona_committee_probs,
+        person_committee_probs=person_committee_probs,
+        persona_belief_posteriors=persona_belief_posteriors,
     )
 
     if debug:
@@ -2009,6 +2533,10 @@ def belief_thesis_to_ui_dict(
         # down the road you can specialize this.
         "human_readable_learning": core.learning.summary,
         "persona_resolution_stats": core.persona_resolution_stats,
+        "persona_committee_probs": core.persona_committee_probs,
+        "persona_posteriors": core.persona_posteriors,
+        "person_committee_probs": core.person_committee_probs,
+        "persona_belief_posteriors": core.persona_belief_posteriors,
     }
 
     if core.learning.diffs:
@@ -2063,6 +2591,13 @@ def belief_thesis_to_ui_dict(
         out["learning_neighborhoods"] = _label_neighborhoods(
             product_graph, out["learning_neighborhoods"]
         )
+
+    out["zmot_forecasts"] = _forecast_zmot_events(
+        product_graph,
+        current_paths=out.get("current_paths") or [],
+        observed_personas=out.get("observed_persona_ids") or [],
+        max_per_persona=3,
+    )
 
     return out
 

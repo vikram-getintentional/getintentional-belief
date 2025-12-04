@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import logging
 import math
 import networkx as nx
 import numpy as np
@@ -19,6 +20,9 @@ from backend.utils.graph_base.network_graph import (
     get_target_nodes_by_source_and_type,
 )
 from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime import _blend, _norm_filter, _uniform_PJP_prior, get_graphwin, project_context_to_pjp
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 # ------------------------------------------------------------
@@ -200,14 +204,14 @@ def compute_node_strengths(
       - perceptibility(n): PPR(n | engaged_any on reversed)   (Perc)   0..1 normalized
       - proximity(n):      PPR(n | product on forward)        (Prox)   0..1 normalized
     """
-    print("Computing node strengths for product:", product_id)
+    LOGGER.debug("Computing node strengths for product %s", product_id)
     R = product_graph
     _ensure_edge_weights(R, weight_key=weight_key)
     F = _build_reversed(R)
 
     # ---- Proximity: forward from product on original orientation (R)
     forward_raw_R = _ppr(R, {product_id: 1.0}, alpha=alpha_forward, weight_key="weight")
-    print("Computed forward PPR for proximity.")
+    LOGGER.debug("Computed forward PPR for proximity.")
     # ---- Perceptibility: from ANY observed (attributes + zmots + other) on reversed orientation (F)
     engaged_attributes = engaged_attributes or {}
     engaged_zmots = engaged_zmots or {}
@@ -219,7 +223,7 @@ def compute_node_strengths(
     engaged_any.update({k: float(v) for k, v in engaged_other.items() if k in R})
 
     backward_raw_F = _ppr(F, engaged_any, alpha=alpha_backward, weight_key="weight") if engaged_any else {n: 0.0 for n in F.nodes}
-    print("Computed backward PPR for perceptibility.")
+    LOGGER.debug("Computed backward PPR for perceptibility.")
     # ---- Normalize Perc/Prox to 0..1 over node set
     # Build observed PJP from engaged_other (already only PJP if you kept your last split)
     observed_pjp = {}
@@ -241,7 +245,7 @@ def compute_node_strengths(
     backward_raw_F = _ppr(F, piF, alpha=alpha_backward, weight_key="weight")
     perc_norm = _normalize_01(backward_raw_F)
     prox_norm = _normalize_01(forward_raw_R)   # proximity
-    print("Normalized perceptibility and proximity scores. Sample Perc: ", list(perc_norm.items())[:5], " Sample Prox: ", list(prox_norm.items())[:5])
+    LOGGER.debug("Normalized perceptibility and proximity scores. Sample Perc: %s Sample Prox: %s", list(perc_norm.items())[:5], list(prox_norm.items())[:5])
     # ---- Edge-flow based involvement (forward × weight × backward on edge head)
     edge_contrib = {}
     total_flow = 0.0
@@ -263,7 +267,7 @@ def compute_node_strengths(
             inv_raw[v] += normc
     else:
         inv_raw = {n: 0.0 for n in R.nodes}
-    print("crossed that random edge loop")
+    LOGGER.debug("Crossed random edge loop")
     # ---- Activation via GraphWin deltas
     # Build a full observed engaged list for the baseline call
     engaged_list_full = []
@@ -646,13 +650,13 @@ def get_involvement_activation_report(
     Works with or without attribute seeds. Observed nodes (personas/jobs/pains/capabilities/ZMOTs)
     will seed perceptibility and GraphWin baselines.
     """
-    print("Starting involvement & activation report computation...")
+    LOGGER.debug("Starting involvement & activation report computation...")
     engaged_nodes = engaged_nodes or []
 
     # Identify product node
     product_id = get_product_id_from_subgraph(Original_G)
     if not product_id:
-        print("No product node found in original graph; aborting report.")
+        LOGGER.debug("No product node found in original graph; aborting report.")
         return {"core_scores": {}, "persona_scores": {}}
     product_node = get_node_by_id(Original_G, product_id)
     if not product_node:
@@ -728,15 +732,15 @@ def get_involvement_activation_report(
         nd["persona_strength"]      = float(ps.get("strength", 0.0))
         nd["persona_perceptibility"]= float(ps.get("perceptibility", 0.0))
         nd["persona_proximity"]     = float(ps.get("proximity", 0.0))
-    print("Annotated graph nodes with core and persona scores.")
-    print("Returning:", len(core_scores), "core scores and", len(persona_scores_ret['persona_scores']), "persona scores.")
+    LOGGER.debug("Annotated graph nodes with core and persona scores.")
+    LOGGER.debug("Returning %d core scores and %d persona scores.", len(core_scores), len(persona_scores_ret['persona_scores']))
     output = {
         "graph": G,  # the working graph annotated for this run
         "core_scores": core_scores,
         "persona_scores": persona_scores_ret["persona_scores"],
         "activation_breakdown": persona_scores_ret["persona_activation_breakdown"],
     }
-    print("Composed output report.")
+    LOGGER.debug("Composed output report.")
     return output
 
 

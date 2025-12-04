@@ -488,9 +488,39 @@ def get_node_subgraph_to_product(
         print(f"Error computing depth: {e}")
     return subG
 
+def _format_freeform_label(node_id) -> str:
+    if node_id is None:
+        return ""
+    raw = str(node_id)
+    if "|" not in raw:
+        return raw
+    segments = [seg.strip() for seg in raw.split("|") if seg and seg.strip()]
+    if not segments:
+        return raw
+
+    def _titleize(token: str) -> str:
+        if not token:
+            return token
+        token = token.strip()
+        if not token:
+            return token
+        if len(token) <= 3 and token.isalpha():
+            return token.upper()
+        return token[:1].upper() + token[1:]
+
+    cleaned = []
+    for seg in segments:
+        tokens = seg.replace("_", " ").split()
+        if not tokens:
+            cleaned.append(seg)
+            continue
+        cleaned.append(" ".join(_titleize(tok) for tok in tokens if tok))
+    return " | ".join(cleaned) if cleaned else raw
+
+
 def _set_node_label(G: nx.DiGraph, node_id: str) -> str:
     if node_id not in G:
-        return str(node_id)
+        return _format_freeform_label(node_id)
     node = G.nodes[node_id]
     node_type = (node.get("node_type") or node.get("type") or "").lower()
     if node_type == "persona":

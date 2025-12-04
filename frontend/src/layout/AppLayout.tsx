@@ -10,6 +10,7 @@ const navSections = [
       items: [
         { name: 'Dashboard', path: '/dashboard' },
         { name: 'Marketing Planner', path: '/marketing-planner' },
+        { name: 'Account Plan', path: '/account-plan' },
         { name: 'Insights Inbox', path: '/insights-inbox' },
       ],
     },
@@ -56,6 +57,7 @@ const navSections = [
       return true;
     });
     const [arsenalMetaCount, setArsenalMetaCount] = useState(0);
+    const [insightsPendingCount, setInsightsPendingCount] = useState(0);
 
     const refreshArsenalMetaCount = useCallback(async () => {
       if (typeof window === "undefined") return 0;
@@ -94,6 +96,39 @@ const navSections = [
       return pendingAssets + pendingChannels;
     }, []);
 
+    const refreshInsightsPendingCount = useCallback(async () => {
+      if (typeof window === "undefined") return 0;
+      const token = localStorage.getItem("token");
+      if (!token) return 0;
+
+      const headers = { Authorization: `Bearer ${token}` };
+      const meRes = await fetch("http://localhost:8000/me", { headers });
+      if (!meRes.ok) throw new Error("Failed to load profile");
+      const me = await meRes.json();
+
+      const productsRes = await fetch(
+        `http://localhost:8000/get-products/${me.company_id}`,
+        { headers }
+      );
+      if (!productsRes.ok) throw new Error("Failed to load products");
+      const productsData = await productsRes.json();
+      const firstProductId = productsData.products?.[0]?.id;
+      if (!firstProductId) return 0;
+
+      const insightsRes = await fetch(
+        `http://localhost:8000/journey/global-thesis/${firstProductId}`,
+        { headers }
+      );
+      if (!insightsRes.ok) throw new Error("Failed to load insights");
+      const insightsData = await insightsRes.json();
+      const insights = insightsData?.insights;
+      if (!insights) return 0;
+      return (
+        (insights?.persona_recommendations?.length || 0) +
+        (insights?.edge_recommendations?.length || 0)
+      );
+    }, []);
+
     useEffect(() => {
       let isMounted = true;
       refreshArsenalMetaCount()
@@ -103,30 +138,62 @@ const navSections = [
         .catch(() => {
           if (isMounted) setArsenalMetaCount(0);
         });
+      refreshInsightsPendingCount()
+        .then((count) => {
+          if (isMounted) setInsightsPendingCount(count);
+        })
+        .catch(() => {
+          if (isMounted) setInsightsPendingCount(0);
+        });
       return () => {
         isMounted = false;
       };
-    }, [refreshArsenalMetaCount]);
+    }, [refreshArsenalMetaCount, refreshInsightsPendingCount]);
 
     useEffect(() => {
       if (
         location.pathname !== "/arsenal" &&
-        location.pathname !== "/engagements-setup"
+        location.pathname !== "/engagements-setup" &&
+        location.pathname !== "/insights-inbox"
       ) {
         return;
       }
       let isMounted = true;
-      refreshArsenalMetaCount()
-        .then((count) => {
-          if (isMounted) setArsenalMetaCount(count);
-        })
-        .catch(() => {
-          if (isMounted) setArsenalMetaCount(0);
-        });
+      if (location.pathname === "/arsenal" || location.pathname === "/engagements-setup") {
+        refreshArsenalMetaCount()
+          .then((count) => {
+            if (isMounted) setArsenalMetaCount(count);
+          })
+          .catch(() => {
+            if (isMounted) setArsenalMetaCount(0);
+          });
+      }
+      if (location.pathname === "/insights-inbox") {
+        refreshInsightsPendingCount()
+          .then((count) => {
+            if (isMounted) setInsightsPendingCount(count);
+          })
+          .catch(() => {
+            if (isMounted) setInsightsPendingCount(0);
+          });
+      }
       return () => {
         isMounted = false;
       };
-    }, [location.pathname, refreshArsenalMetaCount]);
+    }, [location.pathname, refreshArsenalMetaCount, refreshInsightsPendingCount]);
+
+    useEffect(() => {
+      const handler = (event: Event) => {
+        const custom = event as CustomEvent<number>;
+        if (typeof custom.detail === "number") {
+          setInsightsPendingCount(custom.detail);
+        }
+      };
+      window.addEventListener("insights:refresh-count", handler as EventListener);
+      return () => {
+        window.removeEventListener("insights:refresh-count", handler as EventListener);
+      };
+    }, []);
   
     useEffect(() => {
       const handleResize = () => {
@@ -183,6 +250,11 @@ const navSections = [
                     {item.name === "Arsenal" && arsenalMetaCount > 0 && (
                       <span className="ml-3 inline-flex min-w-[1.75rem] justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
                         {arsenalMetaCount > 99 ? "99+" : arsenalMetaCount}
+                      </span>
+                    )}
+                    {item.name === "Insights Inbox" && insightsPendingCount > 0 && (
+                      <span className="ml-3 inline-flex min-w-[1.75rem] justify-center rounded-full bg-blue-500 px-2 py-0.5 text-xs font-semibold text-white">
+                        {insightsPendingCount > 99 ? "99+" : insightsPendingCount}
                       </span>
                     )}
                   </Link>

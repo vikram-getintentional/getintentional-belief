@@ -2,7 +2,18 @@
 # person_models.py
 from datetime import datetime, timezone
 from backend.database import Base
-from sqlalchemy import Column, DateTime, ForeignKey, String, JSON, Boolean, Integer, Index, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    String,
+    JSON,
+    Boolean,
+    Integer,
+    Float,
+    Index,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Session
 import uuid
 
@@ -69,4 +80,40 @@ class AccountPersonJob(Base):
 
     __table_args__ = (
         Index("ix_account_person_jobs_identity", "product_id", "account_id", "person_id"),
+    )
+
+
+class AccountPersonaMatch(Base):
+    """
+    Manual or inferred mapping between a target persona node and one or more real people
+    inside the account. Used for enrichment workflows.
+    """
+
+    __tablename__ = "account_persona_matches"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    product_id = Column(String, index=True, nullable=False)
+    account_id = Column(String, index=True, nullable=False)
+
+    persona_id = Column(String, index=True, nullable=False)
+    persona_label = Column(String, nullable=True)
+    stage = Column(String, nullable=True)  # problem|execution|pain|resolution
+
+    person_id = Column(String, ForeignKey("account_people.id"), index=True, nullable=True)
+    match_confidence = Column(Float, nullable=True)
+    source = Column(String, default="user", nullable=True)  # user|engagement|heuristic
+    notes = Column(String, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), default=_now)
+    updated_at = Column(DateTime(timezone=True), default=_now)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "product_id",
+            "account_id",
+            "persona_id",
+            "person_id",
+            name="uq_persona_match_identity",
+        ),
+        Index("ix_persona_matches_prod_acct", "product_id", "account_id"),
     )

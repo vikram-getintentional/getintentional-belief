@@ -5,6 +5,8 @@ from typing import Dict, Any, Iterable, List, Tuple, Optional
 from collections import defaultdict, Counter
 import itertools
 import json
+import re
+from copy import deepcopy
 
 from sqlalchemy.orm import Session
 
@@ -33,6 +35,7 @@ from backend.super_models.shm.episode import (
     ShmEpisodeStep,
     ShmLearningUpdate,
     ShmUpdateType,
+    EpisodeOutcome,
 )
 from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph
 from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import save_graph_as_json
@@ -50,7 +53,950 @@ from backend.utils.knowledge_base.arsenal.service import (
     get_or_create_channel,
     record_asset_channel_impact,
 )
+from backend.utils.inference.rcs_generators.generate_rcs_fast import generate_rcs_new
+from backend.utils.crm_management.target_account_manager import (
+    TargetAccount as TargetAccountORM,
+)
 
+
+BELIEF_STAGE_LABELS = {
+    "problem": "Problem Realization",
+    "pain": "Pain Realization",
+    "resolution": "Resolution Discovery",
+    "execution": "Execution Guidance",
+}
+
+DEFAULT_PRODUCT_INSIGHTS = {
+    "ideal_customer_patterns": {
+        "works_well": [
+            "SaaS companies with 1–5K employees and Series B–E funding convert 42% faster than average.",
+            "North American accounts in recurring revenue models show the highest belief momentum.",
+            "Companies with mature RevOps teams show twice the mid-stage acceleration.",
+        ],
+        "gaps": [
+            "Retail/eCommerce companies in APAC have the lowest conversion probability — primarily due to lack of urgency in billing consolidation.",
+            "Companies under 100 employees rarely complete evaluation — most stall at ‘Aware → Pain Realization.’",
+        ],
+    },
+    "persona_landscape": {
+        "frequency": [
+            "Billing Specialist → 82%",
+            "Manager Finance → 76%",
+            "RevOps Manager → 63%",
+            "Product Manager → 49%",
+            "CFO → 38%",
+        ],
+        "critical_leads": [
+            "Billing Specialist (Operator)",
+            "RevOps Manager",
+            "Finance Manager",
+        ],
+        "decision_personas": [
+            "VP Finance",
+            "CFO",
+            "Head of RevOps",
+        ],
+        "blockers": [
+            "IT Manager (Security)",
+            "Engineering Lead (API/Scaling concerns)",
+            "Procurement (Compliance friction)",
+        ],
+        "coalitions": [
+            "Operations Manager + Finance Manager activate together in 61% of accounts — usually within 3 days.",
+            "Product Manager + Engineering Lead form a technical coalition late in deals — they appear as a pair.",
+            "Billing Specialist + RevOps Manager have the strongest mid-stage acceleration effect.",
+        ],
+    },
+    "belief_transitions": {
+        "hardest": "Across all deals, the hardest jump is Pain Realization → Resolution. This is where 47% of deals stall.",
+        "easiest": "Once ‘Problem Realization → Execution Guidance’ begins, Finance personas accelerate belief faster than any other group.",
+        "top_pains": [
+            "Inconsistent billing cycles",
+            "Manual revenue recognition",
+            "Multi-entity complexity",
+            "Personalized pricing limitations",
+        ],
+    },
+    "asset_channel_effectiveness": {
+        "high_assets": [
+            "Case Study Decks consistently produce the highest belief lift (avg +8bps).",
+            "Scenario-based POC Kickoffs are the strongest late-stage accelerators.",
+        ],
+        "underperforming_channels": [
+            "LinkedIn Ads generate views but almost no belief progression for Product or Engineering personas.",
+            "Email newsletters show low conversion for executive personas.",
+        ],
+        "channel_persona_matches": [
+            "Webinars → RevOps & Finance Managers",
+            "Direct Sales Calls → Product & Engineering leads",
+            "Short audits/frameworks → Executives",
+        ],
+    },
+    "journey_structure": {
+        "common_paths": [
+            "Billing Specialist → Manager Finance → VP Finance",
+            "RevOps Manager → Product Manager → CFO",
+            "Ops Manager → RevOps → Finance",
+        ],
+        "deviations": "Engineering often activates before Finance in larger companies — a reverse pattern compared to your baseline model.",
+        "average_duration_days": 32.0,
+    },
+    "global_patterns": {
+        "biggest_barrier": "Most stalls originate from compliance complexity — not functional capability gaps.",
+        "hidden_blocker": "API and integration concerns appear in mid-stage transcripts even when not surfaced explicitly.",
+        "missed_opportunity": "Product personas are under-engaged across 70% of accounts despite having strong belief influence.",
+    },
+    "product_strengths": {
+        "strengths": [
+            "Strong finance automation story — Finance personas move fastest once engaged.",
+            "RevOps personas consistently show natural alignment with the value proposition.",
+        ],
+        "weaknesses": [
+            "Technical personas (IT/Eng) have the lowest belief momentum, indicating a potential messaging gap.",
+            "Pricing personalization story resonates poorly in EMEA.",
+        ],
+    },
+    "strategic_moves": {
+        "segment_priorities": "Prioritize: Mid-market SaaS (1K–5K employees), North America, Series C–E.",
+        "persona_priorities": "Invest early in Billing + RevOps coalition — they shape the earliest narratives.",
+        "asset_priorities": "Create more risk-framing content for CFOs to unlock late-stage belief transitions.",
+        "channel_priorities": "Shift technical content toward hands-on demos, away from whitepapers.",
+    },
+}
+
+
+def _canonical_stage(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    key = str(value).strip().lower().replace(" ", "_")
+    if key in {"problem_realization", "problem"}:
+        return "problem"
+    if key in {"pain_realization", "pain"}:
+        return "pain"
+    if key in {"resolution_discovery", "resolution"}:
+        return "resolution"
+    if key in {"execution_guidance", "execution"}:
+        return "execution"
+    return key or None
+
+
+def _stage_label(stage: str) -> str:
+    return BELIEF_STAGE_LABELS.get(stage, stage.replace("_", " ").title())
+
+
+def _format_meta_value(meta: str) -> str:
+    if not meta:
+        return ""
+    meta = meta.strip()
+    if meta.lower().startswith("attr "):
+        meta = meta[5:]
+    if "|" in meta:
+        parts = [
+            part.strip().replace("_", " ").title()
+            for part in meta.split("|")
+            if part and part.strip()
+        ]
+        if parts:
+            return " | ".join(parts)
+    if ":" in meta:
+        key, value = meta.split(":", 1)
+        key_label = key.replace("_", " ").title()
+        value = value.strip()
+        if key == "revenue_range":
+            tokens = [tok for tok in re.split(r"[_\-]", value) if tok]
+            formatted_tokens = []
+            for token in tokens:
+                token = token.strip().upper()
+                if token.endswith("M") or token.endswith("B") or token.endswith("K"):
+                    formatted_tokens.append(f"${token}")
+                elif token.replace(".", "", 1).isdigit():
+                    formatted_tokens.append(f"${token}")
+                else:
+                    formatted_tokens.append(token.replace("_", " ").title())
+            if len(formatted_tokens) == 2:
+                value_label = f"{formatted_tokens[0]}–{formatted_tokens[1]}"
+            else:
+                value_label = " – ".join(formatted_tokens)
+        elif key in {"employee_range", "company_size"}:
+            tokens = [tok.strip().title() for tok in re.split(r"[_\-]", value) if tok]
+            value_label = " – ".join(tokens)
+        else:
+            value_label = value.replace("_", " ").title()
+        return f"{key_label} {value_label}".strip()
+    return meta.replace("_", " ").title()
+
+
+def _percent(value: float, decimals: int = 0) -> str:
+    return f"{round(value * 100, decimals)}%"
+
+
+def _safe_ratio(numerator: float, denominator: float) -> float:
+    if not denominator:
+        return 0.0
+    return float(numerator) / float(denominator)
+
+
+def _mean_safe(values: Iterable[float]) -> Optional[float]:
+    arr = [v for v in values if isinstance(v, (int, float))]
+    if not arr:
+        return None
+    return sum(arr) / len(arr)
+
+
+def _build_product_insights(
+    *,
+    account_meta_stats: Dict[str, Dict[str, Any]],
+    meta_account_map: Optional[Dict[str, List[str]]],
+    persona_stats: Dict[str, Dict[str, Any]],
+    engaged_counter: Counter,
+    persona_sequences_by_episode: Dict[str, List[str]],
+    classification_counts: Counter,
+    arsenal_impact: List[Dict[str, Any]],
+    episode_durations: List[float],
+    persona_node_info: Dict[str, Dict[str, Any]],
+    rcs_paths: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    insights = deepcopy(DEFAULT_PRODUCT_INSIGHTS)
+    insights["ideal_customer_patterns"]["works_well"] = []
+    insights["ideal_customer_patterns"]["gaps"] = []
+    insights["persona_landscape"]["frequency"] = []
+    insights["persona_landscape"]["critical_leads"] = []
+    insights["persona_landscape"]["decision_personas"] = []
+    insights["persona_landscape"]["blockers"] = []
+    insights["persona_landscape"]["coalitions"] = []
+    insights["belief_transitions"]["hardest"] = ""
+    insights["belief_transitions"]["easiest"] = ""
+    insights["belief_transitions"]["top_pains"] = []
+    insights["asset_channel_effectiveness"]["high_assets"] = []
+    insights["asset_channel_effectiveness"]["underperforming_channels"] = []
+    insights["asset_channel_effectiveness"]["channel_persona_matches"] = []
+    insights["journey_structure"]["common_paths"] = []
+    insights["journey_structure"]["deviations"] = ""
+    insights["journey_structure"]["average_duration_days"] = None
+    insights["journey_structure"]["typical_path"] = []
+    insights["global_patterns"]["biggest_barrier"] = ""
+    insights["global_patterns"]["hidden_blocker"] = ""
+    insights["global_patterns"]["missed_opportunity"] = ""
+    insights["product_strengths"]["strengths"] = []
+    insights["product_strengths"]["weaknesses"] = []
+    insights["strategic_moves"]["segment_priorities"] = ""
+    insights["strategic_moves"]["persona_priorities"] = ""
+    insights["strategic_moves"]["asset_priorities"] = ""
+    insights["strategic_moves"]["channel_priorities"] = ""
+
+    meta_account_map = meta_account_map or {}
+
+    channel_scores: Dict[str, List[float]] = defaultdict(list)
+    channel_persona_counts: Counter[Tuple[str, str]] = Counter()
+    channel_persona_deltas: Dict[Tuple[str, str], List[float]] = defaultdict(list)
+    concern_counter: Counter[str] = Counter()
+    stage_counter: Counter[str] = Counter()
+
+    def _persona_label(pid: str) -> str:
+        info = persona_node_info.get(pid) or {}
+        label = info.get("label")
+        if isinstance(label, str) and label.strip():
+            return label
+        return _format_meta_value(pid)
+
+    def _fmt_metric(value: Optional[float]) -> str:
+        if value is None:
+            return "—"
+        try:
+            return f"{float(value):.2f}"
+        except Exception:
+            return "—"
+
+    def _persona_line(pid: str, *, involvement_share: Optional[float] = None) -> str:
+        stats = persona_stats.get(pid, {})
+        if involvement_share is None:
+            observed = stats.get("observed", 0)
+            total = total_persona_events or 1
+            involvement_share = observed / total if total else 0.0
+        info = persona_node_info.get(pid) or {}
+        perc = info.get("perceptibility")
+        prox = info.get("proximity")
+        if perc is None:
+            perc = _safe_ratio(
+                stats.get("hit_at_1", 0) + stats.get("hit_at_3", 0),
+                max(stats.get("observed", 0), 1),
+            )
+        if prox is None:
+            prox = 1.0 - _safe_ratio(
+                stats.get("off_path", 0),
+                max(stats.get("observed", 0), 1),
+            )
+        return (
+            f"{_persona_label(pid)} — Perc {_fmt_metric(perc)} | "
+            f"Prox {_fmt_metric(prox)} | Involvement {_percent(involvement_share or 0.0, 0)}"
+        )
+
+    total_persona_events = (
+        sum(stats.get("observed", 0) for stats in persona_stats.values()) or 1
+    )
+    observed_counts = [stats.get("observed", 0) for stats in persona_stats.values()]
+    max_persona_observed = max(observed_counts) if observed_counts else 1
+
+    def _typical_step_payload(
+        pid: str,
+        idx: int,
+        *,
+        highlight: Optional[str] = None,
+        path_probability: Optional[float] = None,
+        override_perceptibility: Optional[float] = None,
+        override_proximity: Optional[float] = None,
+        override_involvement: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        stats = persona_stats.get(pid, {})
+        observed = stats.get("observed", 0)
+        if isinstance(override_involvement, (int, float)):
+            involvement_share = float(override_involvement)
+        else:
+            involvement_share = (
+                observed / total_persona_events if total_persona_events else 0.0
+            )
+        involvement_share = max(0.0, min(1.0, involvement_share))
+        info = persona_node_info.get(pid) or {}
+        perc_val = (
+            float(override_perceptibility)
+            if isinstance(override_perceptibility, (int, float))
+            else info.get("perceptibility")
+        )
+        prox_val = (
+            float(override_proximity)
+            if isinstance(override_proximity, (int, float))
+            else info.get("proximity")
+        )
+
+        hit1_ratio = _safe_ratio(stats.get("hit_at_1", 0), observed)
+        hit3_ratio = _safe_ratio(stats.get("hit_at_3", 0), observed)
+        off_ratio_local = _safe_ratio(stats.get("off_path", 0), observed)
+
+        confidence_components: List[float] = []
+        if observed and max_persona_observed:
+            confidence_components.append(observed / max_persona_observed)
+        if hit3_ratio:
+            confidence_components.append(hit3_ratio)
+        if path_probability is not None:
+            try:
+                prob_val = float(path_probability)
+                if prob_val >= 0:
+                    confidence_components.append(max(0.0, min(1.0, prob_val)))
+            except (TypeError, ValueError):
+                pass
+
+        confidence = 0.0
+        if confidence_components:
+            confidence = sum(confidence_components) / len(confidence_components)
+        confidence = max(0.05, min(0.95, round(confidence, 3)))
+
+        reason_bits: List[str] = []
+        if hit1_ratio >= 0.5:
+            reason_bits.append(f"Hit@1 {_percent(hit1_ratio, 0)} alignment")
+        elif hit3_ratio >= 0.6:
+            reason_bits.append(f"Hit@3 {_percent(hit3_ratio, 0)} coverage")
+        if off_ratio_local >= 0.25:
+            reason_bits.append(f"{_percent(off_ratio_local, 0)} stall risk")
+        elif involvement_share >= 0.2:
+            reason_bits.append(f"Appears in {_percent(involvement_share, 0)} of journeys")
+        if path_probability is not None:
+            try:
+                prob_pct = _percent(float(path_probability), 0)
+                reason_bits.append(f"{prob_pct} path weight")
+            except Exception:
+                pass
+
+        impact_text = (
+            f"Perc {_fmt_metric(perc_val)} | Prox {_fmt_metric(prox_val)} | "
+            f"Involvement {_percent(involvement_share, 0)}"
+        )
+        fatigue_numerator = max(
+            0.0,
+            float(observed)
+            - float(stats.get("hit_at_1", 0) + stats.get("hit_at_3", 0)),
+        )
+        fatigue = _safe_ratio(fatigue_numerator, observed or 1)
+        fatigue = max(0.0, min(0.95, fatigue))
+
+        payload: Dict[str, Any] = {
+            "step": idx + 1,
+            "persona_id": pid,
+            "persona": _persona_label(pid),
+            "persona_label": _persona_label(pid),
+            "highlight": highlight,
+            "impact": impact_text,
+            "confidence": confidence,
+            "perceptibility": perc_val,
+            "proximity": prox_val,
+            "involvement": involvement_share,
+            "fatigue": round(fatigue, 3),
+        }
+        if reason_bits:
+            payload["reason"] = " • ".join(reason_bits)
+            if not payload["highlight"]:
+                payload["highlight"] = reason_bits[0]
+        if not payload["highlight"]:
+            payload["highlight"] = "Key activation step"
+        return payload
+
+    # Section A - Ideal customer patterns
+    meta_rows: List[Tuple[str, float, Optional[float], int]] = []
+    backlog_rows: List[Tuple[str, int]] = []
+    total_wins = 0
+    total_decisions = 0
+    for meta, stats in account_meta_stats.items():
+        wins = stats.get("wins", 0)
+        losses = stats.get("losses", 0)
+        total = wins + losses
+        if total < 1:
+            pipeline = stats.get("open", 0)
+            if pipeline:
+                backlog_rows.append((meta, pipeline))
+            continue
+        rate = _safe_ratio(wins, total)
+        avg_duration = _mean_safe(stats.get("durations", []))
+        meta_rows.append((meta, rate, avg_duration, total))
+        total_wins += wins
+        total_decisions += total
+    overall_rate = _safe_ratio(total_wins, total_decisions) if total_decisions else 0.0
+
+    if meta_rows:
+        meta_rows.sort(key=lambda row: row[1], reverse=True)
+        works_lines: List[str] = []
+        works_items: List[Dict[str, Any]] = []
+        for meta, rate, avg_duration, total in meta_rows[:3]:
+            delta = rate - overall_rate
+            duration_text = ""
+            if avg_duration:
+                duration_text = f" and typically close in {avg_duration:.1f} days"
+            label = _format_meta_value(meta)
+            text = (
+                f"{label} convert at {_percent(rate, 1)} (Δ {delta:+.1%}){duration_text}."
+            )
+            works_lines.append(text)
+            stats = account_meta_stats.get(meta, {})
+            signal_count = (
+                stats.get("wins", 0)
+                + stats.get("losses", 0)
+                + stats.get("open", 0)
+            )
+            works_items.append(
+                {
+                    "text": text,
+                    "label": label,
+                    "meta_key": meta,
+                    "signals": signal_count,
+                    "support": {
+                        "wins": stats.get("wins", 0),
+                        "losses": stats.get("losses", 0),
+                        "open": stats.get("open", 0),
+                        "avg_duration_days": avg_duration,
+                        "accounts": meta_account_map.get(meta, [])[:6],
+                    },
+                }
+            )
+        insights["ideal_customer_patterns"]["works_well"] = works_lines
+        insights["ideal_customer_patterns"]["works_well_items"] = works_items
+
+        meta_rows.sort(key=lambda row: row[1])
+        gaps_lines: List[str] = []
+        gaps_items: List[Dict[str, Any]] = []
+        for meta, rate, avg_duration, total in meta_rows[:3]:
+            delta = overall_rate - rate
+            duration_text = ""
+            if avg_duration:
+                duration_text = f"; average cycle stretches to {avg_duration:.1f} days"
+            label = _format_meta_value(meta)
+            text = (
+                f"{label} underperform with only {_percent(rate, 1)} conversion (Δ -{delta:.1%}){duration_text}."
+            )
+            gaps_lines.append(text)
+            stats = account_meta_stats.get(meta, {})
+            signal_count = (
+                stats.get("wins", 0)
+                + stats.get("losses", 0)
+                + stats.get("open", 0)
+            )
+            gaps_items.append(
+                {
+                    "text": text,
+                    "label": label,
+                    "meta_key": meta,
+                    "signals": signal_count,
+                    "support": {
+                        "wins": stats.get("wins", 0),
+                        "losses": stats.get("losses", 0),
+                        "open": stats.get("open", 0),
+                        "avg_duration_days": avg_duration,
+                        "accounts": meta_account_map.get(meta, [])[:6],
+                    },
+                }
+            )
+        insights["ideal_customer_patterns"]["gaps"] = gaps_lines
+        insights["ideal_customer_patterns"]["gaps_items"] = gaps_items
+    elif arsenal_impact:
+        meta_effect: Dict[str, List[float]] = defaultdict(list)
+        meta_counts: Dict[str, int] = defaultdict(int)
+        for row in arsenal_impact:
+            delta = row.get("avg_delta")
+            if delta is None:
+                continue
+            for meta in row.get("account_meta") or []:
+                key = str(meta)
+                meta_effect[key].append(delta)
+                meta_counts[key] += 1
+        scored_rows: List[Tuple[str, float, int]] = []
+        for meta, samples in meta_effect.items():
+            avg = _mean_safe(samples) or 0.0
+            scored_rows.append((meta, avg, meta_counts.get(meta, len(samples))))
+        pos = [row for row in scored_rows if row[1] > 0]
+        neg = [row for row in scored_rows if row[1] < 0]
+        pos.sort(key=lambda row: row[1], reverse=True)
+        neg.sort(key=lambda row: row[1])
+        if pos:
+            insights["ideal_customer_patterns"]["works_well"] = [
+                f"{_format_meta_value(meta)} shows average belief lift of {(avg * 100):.1f} bps across {count} signals."
+                for meta, avg, count in pos[:3]
+            ]
+            insights["ideal_customer_patterns"]["works_well_items"] = [
+                {
+                    "text": f"{_format_meta_value(meta)} shows average belief lift of {(avg * 100):.1f} bps across {count} signals.",
+                    "label": _format_meta_value(meta),
+                    "meta_key": meta,
+                    "signals": count,
+                    "support": {
+                        "wins": None,
+                        "losses": None,
+                        "open": None,
+                        "avg_duration_days": None,
+                        "accounts": meta_account_map.get(meta, [])[:6],
+                    },
+                }
+                for meta, avg, count in pos[:3]
+            ]
+        if neg:
+            insights["ideal_customer_patterns"]["gaps"] = [
+                f"{_format_meta_value(meta)} drags belief by {(abs(avg) * 100):.1f} bps across {count} signals."
+                for meta, avg, count in neg[:3]
+            ]
+            insights["ideal_customer_patterns"]["gaps_items"] = [
+                {
+                    "text": f"{_format_meta_value(meta)} drags belief by {(abs(avg) * 100):.1f} bps across {count} signals.",
+                    "label": _format_meta_value(meta),
+                    "meta_key": meta,
+                    "signals": count,
+                    "support": {
+                        "wins": None,
+                        "losses": None,
+                        "open": None,
+                        "avg_duration_days": None,
+                        "accounts": meta_account_map.get(meta, [])[:6],
+                    },
+                }
+                for meta, avg, count in neg[:3]
+            ]
+    if (
+        not insights["ideal_customer_patterns"]["works_well"]
+        and backlog_rows
+    ):
+        backlog_rows.sort(key=lambda row: row[1], reverse=True)
+        insights["ideal_customer_patterns"]["works_well"] = [
+            f"{_format_meta_value(meta)} show active momentum with {count} open journeys awaiting resolution."
+            for meta, count in backlog_rows[:3]
+        ]
+    if not insights["ideal_customer_patterns"]["works_well"]:
+        insights["ideal_customer_patterns"]["works_well"] = [
+            "Not enough closed-won journeys yet to identify strong-fit account segments."
+        ]
+    if not insights["ideal_customer_patterns"]["gaps"]:
+        insights["ideal_customer_patterns"]["gaps"] = [
+            "No underperforming segments detected yet — continue ingesting more deals."
+        ]
+    if "works_well_items" not in insights["ideal_customer_patterns"]:
+        insights["ideal_customer_patterns"]["works_well_items"] = [
+            {
+                "text": line,
+                "label": line,
+                "meta_key": None,
+                "signals": None,
+                "support": {},
+            }
+            for line in insights["ideal_customer_patterns"]["works_well"]
+        ]
+    if "gaps_items" not in insights["ideal_customer_patterns"]:
+        insights["ideal_customer_patterns"]["gaps_items"] = [
+            {
+                "text": line,
+                "label": line,
+                "meta_key": None,
+                "signals": None,
+                "support": {},
+            }
+            for line in insights["ideal_customer_patterns"]["gaps"]
+        ]
+
+    # Section B - Persona landscape
+    persona_counts = [
+        (pid, stats.get("observed", 0))
+        for pid, stats in persona_stats.items()
+        if stats.get("observed", 0)
+    ]
+    persona_counts.sort(key=lambda row: row[1], reverse=True)
+    top_personas = persona_counts[:5]
+    if top_personas:
+        insights["persona_landscape"]["frequency"] = [
+            _persona_line(pid, involvement_share=count / total_persona_events)
+            for pid, count in top_personas
+        ]
+
+    def _persona_ratio(key: str) -> List[Tuple[str, float]]:
+        rows = []
+        for pid, stats in persona_stats.items():
+            observed = stats.get("observed", 0)
+            if not observed:
+                continue
+            value = stats.get(key, 0)
+            ratio = _safe_ratio(value, observed)
+            rows.append((pid, ratio))
+        rows.sort(key=lambda row: row[1], reverse=True)
+        return rows
+
+    lead_rows = _persona_ratio("hit_at_1")
+    if lead_rows:
+        insights["persona_landscape"]["critical_leads"] = [
+            f"{_persona_line(pid)} — Hit@1 {_percent(score, 0)}"
+            for pid, score in lead_rows[:3]
+        ]
+
+    decision_rows = _persona_ratio("hit_at_3")
+    if decision_rows:
+        insights["persona_landscape"]["decision_personas"] = [
+            f"{_persona_line(pid)} — Hit@3 {_percent(score, 0)}"
+            for pid, score in decision_rows[:3]
+        ]
+
+    blocker_rows = []
+    for pid, stats in persona_stats.items():
+        observed = stats.get("observed", 0)
+        if not observed:
+            continue
+        off_ratio = _safe_ratio(stats.get("off_path", 0), observed)
+        blocker_rows.append((pid, off_ratio))
+    blocker_rows.sort(key=lambda row: row[1], reverse=True)
+    if blocker_rows:
+        insights["persona_landscape"]["blockers"] = [
+            f"{_persona_line(pid)} — Stall {_percent(score, 0)}"
+            for pid, score in blocker_rows[:3]
+        ]
+
+    pair_counts: Counter = Counter()
+    for seq in persona_sequences_by_episode.values():
+        if len(seq) < 2:
+            continue
+        for a, b in zip(seq, seq[1:]):
+            if a == b:
+                continue
+            pair_counts[(a, b)] += 1
+    if pair_counts:
+        insights["persona_landscape"]["coalitions"] = [
+            f"{_persona_label(a)} + {_persona_label(b)} co-activate in {count} journeys."
+            for (a, b), count in pair_counts.most_common(3)
+        ]
+
+    # Section C - Belief transitions (we rely on defaults unless we have explicit signals)
+    total_classifications = sum(classification_counts.values()) or 0
+    off_ratio = _safe_ratio(classification_counts.get("off_path", 0), total_classifications)
+    expected_share = _safe_ratio(classification_counts.get("expected", 0), total_classifications)
+    jump_share = _safe_ratio(
+        classification_counts.get("jump_ahead", 0) + classification_counts.get("near_path", 0),
+        total_classifications,
+    )
+
+    # Section D - Asset & channel effectiveness
+    if arsenal_impact:
+        sorted_assets = sorted(
+            arsenal_impact,
+            key=lambda row: abs(row.get("total_delta") or 0.0),
+            reverse=True,
+        )
+        insights["asset_channel_effectiveness"]["high_assets"] = [
+            f"{row.get('asset_label') or row.get('asset_id')} lifts belief by {(row.get('avg_delta') or 0.0) * 100:.1f} bps."
+            for row in sorted_assets[:3]
+        ]
+        for row in arsenal_impact:
+            concerns_payload = row.get("concerns") or []
+            if isinstance(concerns_payload, list):
+                for item in concerns_payload:
+                    if isinstance(item, dict):
+                        label = item.get("label")
+                        count = item.get("count") or 0
+                    else:
+                        label = str(item)
+                        count = 0
+                    if label:
+                        concern_counter[label] += int(count) if count else 1
+            stages_payload = row.get("stages") or []
+            if isinstance(stages_payload, list):
+                for entry in stages_payload:
+                    if isinstance(entry, dict):
+                        stage_code = entry.get("code")
+                        count = entry.get("count") or 0
+                    else:
+                        stage_code = entry
+                        count = 0
+                    if stage_code:
+                        stage_counter[str(stage_code)] += int(count) if count else 1
+
+        for row in arsenal_impact:
+            delta = row.get("avg_delta")
+            if delta is None:
+                continue
+            channels = row.get("channels") or []
+            personas = row.get("persona_labels") or row.get("persona_ids") or []
+            persona_labels = [
+                _format_meta_value(str(persona))
+                for persona in personas
+                if persona
+            ]
+            num_engagements = row.get("num_engagements") or 1
+            for ch in channels:
+                channel_name = str(ch).strip()
+                if not channel_name:
+                    continue
+                pretty_channel = channel_name.replace("_", " ").title()
+                channel_scores[pretty_channel].append(delta)
+                for persona in persona_labels:
+                    key = (pretty_channel, persona)
+                    channel_persona_counts[key] += num_engagements
+                    channel_persona_deltas[key].append(delta)
+        if channel_scores:
+            channel_avg = [
+                (ch, _mean_safe(vals) or 0.0) for ch, vals in channel_scores.items()
+            ]
+            channel_avg.sort(key=lambda row: row[1])
+            insights["asset_channel_effectiveness"]["underperforming_channels"] = [
+                f"{ch} averages {(avg * 100):.1f} bps impact."
+                for ch, avg in channel_avg[:3]
+            ]
+        if channel_persona_counts:
+            combo_rows: List[Tuple[str, str, float, int]] = []
+            for key, count in channel_persona_counts.items():
+                ch, persona = key
+                avg_delta = _mean_safe(channel_persona_deltas.get(key, [])) or 0.0
+                combo_rows.append((ch, persona, avg_delta, count))
+            combo_rows.sort(key=lambda row: (row[2], row[3]), reverse=True)
+            insights["asset_channel_effectiveness"]["channel_persona_matches"] = [
+                f"{ch} → {persona} ({count} engagements, {delta * 100:.1f} bps)"
+                for ch, persona, delta, count in combo_rows[:3]
+            ]
+
+    if concern_counter:
+        total_concerns = sum(concern_counter.values()) or 1
+        insights["belief_transitions"]["top_pains"] = [
+            f"{label} ({_percent(_safe_ratio(count, total_concerns), 0)} of signals)"
+            for label, count in concern_counter.most_common(4)
+        ]
+
+    if stage_counter:
+        stage_total = sum(stage_counter.values()) or 1
+        stage_code, stage_count = stage_counter.most_common(1)[0]
+        stage_label = _stage_label(stage_code)
+        hardest_parts = [
+            f"{stage_label} absorbs {_percent(_safe_ratio(stage_count, stage_total), 0)} of concern signals"
+        ]
+        if off_ratio:
+            hardest_parts.append(f"{_percent(off_ratio, 0)} of steps still drift off-path")
+        insights["belief_transitions"]["hardest"] = f"{' while '.join(hardest_parts)}."
+    elif off_ratio:
+        insights["belief_transitions"]["hardest"] = (
+            f"Off-path detours account for {_percent(off_ratio, 0)} of observed steps, indicating the toughest shift occurs mid-journey."
+        )
+
+    if expected_share:
+        insights["belief_transitions"]["easiest"] = (
+            f"On-path progress holds steady across {_percent(expected_share, 0)} of recorded steps."
+        )
+
+    if jump_share:
+        insights["journey_structure"]["deviations"] = (
+            f"Jump-ahead sequences appear in {_percent(jump_share, 0)} of engagements — monitor fast-track personas."
+        )
+    if not insights["belief_transitions"]["hardest"]:
+        insights["belief_transitions"]["hardest"] = DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["hardest"]
+    if not insights["belief_transitions"]["easiest"]:
+        insights["belief_transitions"]["easiest"] = DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["easiest"]
+    if not insights["belief_transitions"]["top_pains"]:
+        insights["belief_transitions"]["top_pains"] = DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["top_pains"][:]
+
+    # Section E - Journey structure
+    if persona_sequences_by_episode:
+        triple_counts: Counter = Counter()
+        for seq in persona_sequences_by_episode.values():
+            if len(seq) < 3:
+                continue
+            for idx in range(len(seq) - 2):
+                triple = tuple(seq[idx : idx + 3])
+                triple_counts[triple] += 1
+        if triple_counts:
+            insights["journey_structure"]["common_paths"] = [
+                " → ".join(_persona_label(pid) for pid in triple)
+                for triple, _ in triple_counts.most_common(3)
+            ]
+    if persona_sequences_by_episode:
+        sequence_counter: Counter[Tuple[str, ...]] = Counter()
+        for seq in persona_sequences_by_episode.values():
+            cleaned = [pid for pid in seq if pid]
+            if len(cleaned) >= 2:
+                sequence_counter[tuple(cleaned)] += 1
+        if sequence_counter:
+            top_sequence = list(sequence_counter.most_common(1)[0][0])
+            typical_steps = [
+                _typical_step_payload(pid, idx)
+                for idx, pid in enumerate(top_sequence)
+            ]
+            if typical_steps:
+                insights["journey_structure"]["typical_path"] = typical_steps
+
+    if not insights["journey_structure"]["common_paths"]:
+        fallback_paths: List[str] = []
+        for path in rcs_paths[:3]:
+            personas = path.get("personas") or path.get("path") or []
+            if not personas:
+                continue
+            labels: List[str] = []
+            for entry in personas:
+                pid = entry.get("id") if isinstance(entry, dict) else entry
+                if not pid:
+                    continue
+                labels.append(_persona_label(pid))
+            if labels:
+                fallback_paths.append(" → ".join(labels))
+        if fallback_paths:
+            insights["journey_structure"]["common_paths"] = fallback_paths
+
+    if not insights["journey_structure"].get("typical_path"):
+        typical_steps: List[Dict[str, Any]] = []
+        if rcs_paths:
+            best_path = rcs_paths[0]
+            personas = best_path.get("personas") or best_path.get("path") or []
+            for idx, entry in enumerate(personas):
+                if isinstance(entry, dict):
+                    pid = entry.get("id")
+                    perc = entry.get("perceptibility")
+                    prox = entry.get("proximity")
+                    highlight = entry.get("phase") or entry.get("stage")
+                    probability = entry.get("probability") or entry.get("score")
+                    involvement = entry.get("involvement")
+                else:
+                    pid = entry
+                    perc = prox = None
+                    highlight = None
+                    probability = None
+                    involvement = None
+                if not pid:
+                    continue
+                payload = _typical_step_payload(
+                    str(pid),
+                    idx,
+                    highlight=highlight,
+                    path_probability=probability,
+                    override_perceptibility=perc,
+                    override_proximity=prox,
+                    override_involvement=involvement,
+                )
+                typical_steps.append(payload)
+        if typical_steps:
+            insights["journey_structure"]["typical_path"] = typical_steps
+    if (
+        not insights["journey_structure"].get("typical_path")
+        and persona_sequences_by_episode
+    ):
+        longest_seq = max(
+            persona_sequences_by_episode.values(),
+            key=lambda seq: len(seq),
+        )
+        fallback_steps: List[Dict[str, Any]] = []
+        for idx, pid in enumerate(longest_seq):
+            if not pid:
+                continue
+            payload = _typical_step_payload(str(pid), idx)
+            fallback_steps.append(payload)
+        if fallback_steps:
+            insights["journey_structure"]["typical_path"] = fallback_steps
+    avg_duration = _mean_safe(episode_durations)
+    if avg_duration:
+        insights["journey_structure"]["average_duration_days"] = round(avg_duration, 1)
+
+    if concern_counter:
+        total_concerns = sum(concern_counter.values()) or 1
+        top_label, top_count = concern_counter.most_common(1)[0]
+        concern_share = _safe_ratio(top_count, total_concerns)
+        insights["global_patterns"]["biggest_barrier"] = (
+            f"{top_label} surfaces in {_percent(concern_share, 0)} of flagged engagements."
+        )
+    if blocker_rows:
+        blocker_id, blocker_ratio = blocker_rows[0]
+        insights["global_patterns"]["hidden_blocker"] = (
+            f"{_format_meta_value(blocker_id)} shows the highest stall rate at {_percent(blocker_ratio, 0)}."
+        )
+
+    missed_candidates: List[Tuple[str, float, float]] = []
+    total_persona_events = sum(engaged_counter.values()) or 1
+    for pid, stats in persona_stats.items():
+        observed = stats.get("observed", 0)
+        if observed < 3:
+            continue
+        hit_rate = _safe_ratio(stats.get("hit_at_1", 0), observed)
+        frequency = _safe_ratio(observed, total_persona_events)
+        if hit_rate >= 0.45 and frequency < 0.25:
+            missed_candidates.append((pid, hit_rate, frequency))
+    if missed_candidates:
+        missed_candidates.sort(key=lambda row: (row[1], -row[2]), reverse=True)
+        pid, hit_rate, frequency = missed_candidates[0]
+        insights["global_patterns"]["missed_opportunity"] = (
+            f"{_format_meta_value(pid)} convert at {_percent(hit_rate, 0)} when engaged yet appear in only {_percent(frequency, 0)} of engagements."
+        )
+
+    # Section G - strengths/weaknesses from persona stats
+    strength_rows = sorted(
+        decision_rows,
+        key=lambda row: row[1],
+        reverse=True,
+    )
+    if strength_rows:
+        insights["product_strengths"]["strengths"] = [
+            f"{_format_meta_value(pid)} drive late-stage belief ({_percent(score, 0)} success rate)."
+            for pid, score in strength_rows[:3]
+        ]
+    if blocker_rows:
+        insights["product_strengths"]["weaknesses"] = [
+            f"{_format_meta_value(pid)} frequently stall journeys ({_percent(score, 0)} off-path)."
+            for pid, score in blocker_rows[:3]
+        ]
+
+    # Section H - strategic moves (derive from earlier sections)
+    if meta_rows:
+        top_meta = max(meta_rows, key=lambda row: row[1])[0]
+        insights["strategic_moves"]["segment_priorities"] = (
+            f"Prioritize { _format_meta_value(top_meta) } accounts based on observed win rates."
+        )
+    if lead_rows:
+        insights["strategic_moves"]["persona_priorities"] = (
+            f"Focus early enablement on {', '.join(_format_meta_value(pid) for pid, _ in lead_rows[:3])}."
+        )
+
+    if arsenal_impact:
+        top_asset = sorted_assets[0]
+        insights["strategic_moves"]["asset_priorities"] = (
+            f"Scale {top_asset.get('asset_label') or top_asset.get('asset_id')} which leads current belief lifts."
+        )
+    if channel_scores:
+        best_channel = max(channel_scores.items(), key=lambda item: _mean_safe(item[1]) or 0.0)[0]
+        insights["strategic_moves"]["channel_priorities"] = (
+            f"Double down on {best_channel} where belief lift is strongest."
+        )
+
+    return insights
 
 def _to_float(value: Optional[Any]) -> Optional[float]:
     try:
@@ -64,6 +1010,55 @@ def _to_float(value: Optional[Any]) -> Optional[float]:
 def _safe_mean(values: Iterable[Any]) -> Optional[float]:
     numeric = [v for v in (_to_float(x) for x in values) if v is not None]
     return mean(numeric) if numeric else None
+
+
+_FUNNEL_STAGE_LABELS: Dict[str, str] = {
+    "early": "Early Cycle",
+    "mid": "Mid Cycle",
+    "late": "Late Cycle",
+}
+
+
+def _avg_persona_metrics(
+    product_graph: Optional[nx.DiGraph],
+    persona_ids: Iterable[str],
+) -> Tuple[Optional[float], Optional[float]]:
+    if product_graph is None:
+        return (None, None)
+    perc_values: List[float] = []
+    prox_values: List[float] = []
+    for pid in persona_ids:
+        if not pid or pid not in product_graph:
+            continue
+        node = product_graph.nodes[pid]
+        perc = _to_float(node.get("perceptibility"))
+        prox = _to_float(node.get("proximity"))
+        if perc is not None:
+            perc_values.append(perc)
+        if prox is not None:
+            prox_values.append(prox)
+    avg_perc = sum(perc_values) / len(perc_values) if perc_values else None
+    avg_prox = sum(prox_values) / len(prox_values) if prox_values else None
+    return (avg_perc, avg_prox)
+
+
+def _funnel_stage_from_metrics(
+    perceptibility: Optional[float],
+    proximity: Optional[float],
+) -> Tuple[str, str]:
+    perc = _to_float(perceptibility)
+    prox = _to_float(proximity)
+    if perc is None and prox is None:
+        return ("mid", _FUNNEL_STAGE_LABELS["mid"])
+    perc = perc or 0.0
+    prox = prox or 0.0
+    if perc >= 0.6 and prox <= 0.45:
+        code = "early"
+    elif prox >= 0.6 or (prox >= 0.55 and perc < 0.5):
+        code = "late"
+    else:
+        code = "mid"
+    return (code, _FUNNEL_STAGE_LABELS.get(code, code.title()))
 
 
 def update_bayesian_journey_for_account(
@@ -265,6 +1260,8 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
     """
     print("summarizing global insights for product:", product_id)
 
+    meta_account_map: Dict[str, List[str]] = defaultdict(list)
+
     try:
         # --- episodes & counts ---
         episodes = (
@@ -276,6 +1273,17 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
 
         account_ids = {e.account_id for e in episodes}
         num_accounts = len(account_ids)
+
+        account_status_map: Dict[str, str] = {}
+        if account_ids:
+            status_rows = (
+                db.query(TargetAccountORM.id, TargetAccountORM.deal_status)
+                .filter(TargetAccountORM.id.in_(account_ids))
+                .all()
+            )
+            for account_id, deal_status in status_rows:
+                if account_id:
+                    account_status_map[str(account_id)] = (deal_status or "").strip()
 
         # if you store num_steps on the episode, use that
         steps = (
@@ -314,6 +1322,8 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
         classification_logloss_sum: Dict[str, float] = defaultdict(float)
         classification_logloss_count: Dict[str, int] = defaultdict(int)
         arsenal_stats: Dict[str, Dict[str, Any]] = {}
+        engaged_counter: Counter[str] = Counter()
+        persona_node_info: Dict[str, Dict[str, Any]] = {}
 
         try:
             product_graph = build_product_graph(product_id)
@@ -329,6 +1339,18 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 except Exception:
                     pass
             return str(node_id) if node_id is not None else None
+
+        def _ensure_persona_node(pid: Optional[str]) -> None:
+            if not pid:
+                return
+            if pid in persona_node_info:
+                return
+            info: Dict[str, Any] = {"label": _label(pid)}
+            if product_graph is not None and product_graph.has_node(pid):
+                node_data = product_graph.nodes[pid]
+                info["perceptibility"] = _to_float(node_data.get("perceptibility"))
+                info["proximity"] = _to_float(node_data.get("proximity"))
+            persona_node_info[pid] = info
 
         def _normalize_account_meta(meta: Any) -> List[str]:
             if not meta:
@@ -355,7 +1377,34 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             return [str(meta)]
 
         account_meta_by_account: Dict[str, List[str]] = {}
+        account_meta_stats: Dict[str, Dict[str, Any]] = defaultdict(
+            lambda: {"wins": 0, "losses": 0, "open": 0, "durations": []}
+        )
+        episode_durations: List[float] = []
         for episode in episodes:
+            outcome = getattr(episode, "outcome", None)
+            outcome_value = (
+                outcome.value if hasattr(outcome, "value") else str(outcome or "")
+            )
+            if (
+                outcome_value in (EpisodeOutcome.unknown.value, "", None)
+                and episode.account_id in account_status_map
+            ):
+                status_hint = account_status_map[episode.account_id].lower()
+                if "won" in status_hint:
+                    outcome_value = EpisodeOutcome.won.value
+                elif "lost" in status_hint:
+                    outcome_value = EpisodeOutcome.lost.value
+            started_at = getattr(episode, "started_at", None)
+            ended_at = getattr(episode, "ended_at", None)
+            duration_days: Optional[float] = None
+            if started_at and ended_at:
+                try:
+                    duration_days = max((ended_at - started_at).total_seconds() / 86400.0, 0.01)
+                except Exception:
+                    duration_days = None
+            if duration_days is not None:
+                episode_durations.append(duration_days)
             meta_strings = _normalize_account_meta(getattr(episode, "account_meta", None))
             if not meta_strings:
                 continue
@@ -363,6 +1412,19 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             for entry in meta_strings:
                 if entry not in existing:
                     existing.append(entry)
+            for entry in existing:
+                stats = account_meta_stats[entry]
+                if duration_days is not None:
+                    stats["durations"].append(duration_days)
+                if outcome_value == EpisodeOutcome.won.value:
+                    stats["wins"] += 1
+                elif outcome_value == EpisodeOutcome.lost.value:
+                    stats["losses"] += 1
+                else:
+                    stats["open"] += 1
+        for account_id, metas in account_meta_by_account.items():
+            for entry in metas:
+                meta_account_map[entry].append(account_id)
 
         def _class_from_bucket(bucket: Optional[str]) -> str:
             mapping = {
@@ -379,12 +1441,22 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 return "no_path"
             return mapping.get(bucket.lower(), bucket.lower())
 
+        persona_sequences_by_episode: Dict[str, List[str]] = defaultdict(list)
+
         for step in steps:
             raw_bucket = step.bucket.value if hasattr(step.bucket, "value") else step.bucket
             bucket = (raw_bucket or "").lower()
             cls = _class_from_bucket(raw_bucket)
             classification_counts[cls] += 1
             persona_id = step.observed_persona_id
+            seq = persona_sequences_by_episode.setdefault(step.episode_id, [])
+            if persona_id:
+                persona_key = str(persona_id)
+                _ensure_persona_node(persona_key)
+                if not seq or seq[-1] != persona_key:
+                    seq.append(persona_key)
+            if persona_id:
+                engaged_counter[persona_id] += 1
             if not persona_id:
                 continue
             stats = persona_stats.setdefault(
@@ -424,6 +1496,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     else:
                         predicted = str(head)
             if predicted:
+                _ensure_persona_node(str(predicted))
                 stats["pred_counts"][predicted] += 1
 
             metrics_payload = step.metrics or {}
@@ -458,6 +1531,8 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                             "total_delta": 0.0,
                             "conf_values": [],
                             "count": 0,
+                            "stage_counts": Counter(),
+                            "concern_counts": Counter(),
                         },
                     )
                     stat["count"] += 1
@@ -485,6 +1560,14 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                                 delta_val = ev.get("deltaLogProb")
                             if isinstance(delta_val, (int, float)):
                                 delta_total_step += float(delta_val)
+                            from_id = ev.get("from")
+                            to_id = ev.get("to")
+                            if from_id:
+                                engaged_counter[str(from_id)] += 1
+                                _ensure_persona_node(str(from_id))
+                            if to_id:
+                                engaged_counter[str(to_id)] += 1
+                                _ensure_persona_node(str(to_id))
                     stat["total_delta"] += delta_total_step
                     stat["delta_samples"].append(delta_total_step)
                     conf_val: Optional[float] = None
@@ -511,7 +1594,14 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
 
         for update in updates:
             payload = _coerce_payload(update.payload)
+            for key in ("jobs", "pains_solved", "triggers"):
+                values = payload.get(key) or []
+                if isinstance(values, list):
+                    for node_id in values:
+                        if node_id:
+                            engaged_counter[str(node_id)] += 1
             if update.node_id:
+                _ensure_persona_node(update.node_id)
                 bucket = persona_updates.setdefault(
                     update.node_id,
                     {
@@ -610,6 +1700,35 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 meta_strings = account_meta_by_account.get(update.account_id) or []
                 bucket["account_meta"].update(meta_strings)
 
+        concerns_by_persona: Dict[str, List[Dict[str, Any]]] = {}
+        rcs_paths: List[Dict[str, Any]] = []
+        if product_graph is not None:
+            try:
+                original_graph = product_graph.copy(as_view=False)
+                engaged_nodes = [
+                    {"id": nid, "occurrence": count}
+                    for nid, count in engaged_counter.items()
+                    if nid and product_graph.has_node(nid)
+                ]
+                if engaged_nodes:
+                    rcs_report = generate_rcs_new(
+                        product_graph=product_graph.copy(as_view=False),
+                        original_graph=original_graph,
+                        engaged_nodes=engaged_nodes,
+                        top_k_per_persona=6,
+                    )
+                    concerns_by_persona = rcs_report.get("concerns_by_persona") or {}
+                    rcs_paths = rcs_report.get("paths") or []
+                    for path in rcs_paths:
+                        for entry in path.get("personas") or path.get("path") or []:
+                            pid = entry.get("id") if isinstance(entry, dict) else entry
+                            if pid:
+                                _ensure_persona_node(pid)
+            except Exception as exc:
+                print("⚠️ generate_rcs_new failed during SHM summarization:", repr(exc))
+                concerns_by_persona = {}
+                rcs_paths = []
+
         def _summarize_field(values: List[Dict[str, Any]]) -> Dict[str, Any]:
             band_counts = Counter(
                 v.get("band") for v in values if v.get("band")
@@ -650,6 +1769,9 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
 
         persona_recommendations = []
         for persona_id, data in persona_updates.items():
+            if product_graph is not None and persona_id and product_graph.has_node(persona_id):
+                # Existing persona in graph – treat learning as edge tuning, not persona addition.
+                continue
             stats = persona_stats.get(
                 persona_id,
                 {
@@ -704,6 +1826,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     "pains": sorted(data["pains_solved"]),
                     "triggers": sorted(data["triggers"]),
                     "account_meta": account_meta_top,
+                    "recommendation_type": "graph_update",
                 }
             )
 
@@ -738,33 +1861,49 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 meta for meta, _ in data["account_meta"].most_common(6)
             ]
 
+            meaningful_change = False
+            if recommended_likelihood is not None:
+                if current_likelihood is None or abs(recommended_likelihood - current_likelihood) > 1e-6:
+                    meaningful_change = True
+            if recommended_relevance is not None:
+                if current_relevance is None or abs(recommended_relevance - current_relevance) > 1e-6:
+                    meaningful_change = True
+            if not meaningful_change and abs(avg_delta) > 1e-6:
+                meaningful_change = True
+            if not meaningful_change:
+                continue
+
             edge_recommendations.append(
                 {
                     "source_id": u_id,
                     "target_id": v_id,
                     "pair_labels": data.get("pair_labels") or [_label(u_id), _label(v_id)],
                     "band": data["band_counts"].most_common(1)[0][0]
-                    if data["band_counts"]
-                    else None,
-                    "seen": data["seen"],
-                    "avg_confidence": avg_confidence,
-                    "avg_delta": avg_delta,
-                    "predicted_boost_pct": avg_delta * 100.0,
-                    "scope": _safe_mean(data["scope_samples"]),
-                    "reason": next(iter(data["reasons"]), None),
-                    "reasons": sorted(data["reasons"]),
-                    "edge_labels": [list(lbl) for lbl in data["edge_labels"]],
-                    "current_relevance": current_relevance,
-                    "current_likelihood": current_likelihood,
-                    "recommended_likelihood": recommended_likelihood,
-                    "recommended_relevance": recommended_relevance,
-                    "recommendation_events": data["seen"],
-                    "account_meta": account_meta_top,
-                }
-            )
+                        if data["band_counts"]
+                        else None,
+                        "seen": data["seen"],
+                        "avg_confidence": avg_confidence,
+                        "avg_delta": avg_delta,
+                        "predicted_boost_pct": avg_delta * 100.0,
+                        "scope": _safe_mean(data["scope_samples"]),
+                        "reason": next(iter(data["reasons"]), None),
+                        "reasons": sorted(data["reasons"]),
+                        "edge_labels": [list(lbl) for lbl in data["edge_labels"]],
+                        "current_relevance": current_relevance,
+                        "current_likelihood": current_likelihood,
+                        "recommended_likelihood": recommended_likelihood,
+                        "recommended_relevance": recommended_relevance,
+                        "recommendation_events": data["seen"],
+                        "account_meta": account_meta_top,
+                    }
+                )
 
         persona_recommendations.sort(
-            key=lambda r: (r["predicted_boost_pct"], r["recommendation_events"]), reverse=True
+            key=lambda r: (
+                r.get("predicted_boost_pct") if r.get("predicted_boost_pct") is not None else float("-inf"),
+                r.get("recommendation_events", 0),
+            ),
+            reverse=True,
         )
         edge_recommendations.sort(
             key=lambda r: (
@@ -774,6 +1913,97 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             ),
             reverse=True,
         )
+
+        persona_meta_map: Dict[str, Dict[str, Counter]] = {}
+        for rec in persona_recommendations:
+            pid = rec.get("persona_id")
+            if not pid:
+                continue
+            stage_counter = Counter()
+            triggers = rec.get("triggers") or []
+            pains = rec.get("pains") or []
+            jobs = rec.get("jobs") or []
+            if triggers:
+                stage_counter["problem"] += len(triggers)
+            if pains:
+                stage_counter["pain"] += len(pains)
+            if jobs:
+                stage_counter["execution"] += len(jobs)
+            concern_counter = Counter()
+            for pain_id in pains:
+                label = _label(pain_id)
+                if label:
+                    concern_counter[label] += 1
+            for job_id in jobs:
+                label = _label(job_id)
+                if label:
+                    concern_counter[label] += 1
+            persona_meta_map[pid] = {
+                "stage_counts": stage_counter,
+                "concerns": concern_counter,
+            }
+
+        for pid, concern_rows in (concerns_by_persona or {}).items():
+            stage_counter = Counter()
+            concern_counter = Counter()
+            for row in concern_rows or []:
+                stage_code = _canonical_stage(row.get("stage") or row.get("concern_stage"))
+                if stage_code:
+                    stage_counter[stage_code] += 1
+                label = row.get("concern_label") or row.get("label")
+                if label:
+                    concern_counter[label] += 1
+            if not stage_counter and not concern_counter:
+                continue
+            entry = persona_meta_map.setdefault(
+                pid, {"stage_counts": Counter(), "concerns": Counter()}
+            )
+            entry["stage_counts"].update(stage_counter)
+            entry["concerns"].update(concern_counter)
+
+        observed_only_recs: List[Dict[str, Any]] = []
+        existing_persona_ids = {rec["persona_id"] for rec in persona_recommendations}
+        for pid, stats in persona_stats.items():
+            if not pid:
+                continue
+            if product_graph is not None and product_graph.has_node(pid):
+                continue
+            if pid in persona_updates or pid in existing_persona_ids:
+                continue
+            observed = stats.get("observed", 0)
+            if observed < 3:
+                continue
+            hit_rate = _safe_ratio(stats.get("hit_at_1", 0), observed)
+            off_ratio_local = _safe_ratio(stats.get("off_path", 0), observed)
+            persona_label = persona_node_info.get(pid, {}).get("label") or _format_meta_value(pid)
+            reasons: List[str] = []
+            reasons.append(f"Observed in {observed} engagements without graph node.")
+            if hit_rate:
+                reasons.append(f"Matches predicted next {_percent(hit_rate, 0)} of the time.")
+            if off_ratio_local:
+                reasons.append(f"Stalls {_percent(off_ratio_local, 0)} of journeys when absent.")
+            observed_only_recs.append(
+                {
+                    "persona_id": pid,
+                    "persona_label": persona_label,
+                    "observed_events": observed,
+                    "seen": observed,
+                    "recommendation_events": observed,
+                    "current_best_fit": persona_label,
+                    "current_fitness": hit_rate,
+                    "avg_confidence": None,
+                    "avg_delta": 0.0,
+                    "predicted_boost_pct": None,
+                    "reasons": reasons,
+                    "field_summaries": [],
+                    "jobs": [],
+                    "pains": [],
+                    "triggers": [],
+                    "account_meta": [],
+                    "recommendation_type": "add_persona_node",
+                }
+            )
+        persona_recommendations.extend(observed_only_recs)
 
         print("finished summarizing global insights for product:", product_id)
 
@@ -813,16 +2043,38 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             key=lambda row: row.get("share") or 0, reverse=True
         )
 
+        for data in arsenal_stats.values():
+            stage_counter = Counter()
+            concern_counter = Counter()
+            for persona_id in data.get("persona_ids", set()):
+                meta = persona_meta_map.get(persona_id)
+                if not meta:
+                    continue
+                stage_counter.update(meta.get("stage_counts", Counter()))
+                concern_counter.update(meta.get("concerns", Counter()))
+            data["stage_counts"] = stage_counter
+            data["concern_counts"] = concern_counter
+
         arsenal_impact: List[Dict[str, Any]] = []
         for asset_id, data in arsenal_stats.items():
             count = data["count"] or 1
             avg_conf = _safe_mean(data["conf_values"]) if data["conf_values"] else None
             avg_delta = _safe_mean(data["delta_samples"]) or 0.0
+            persona_id_list = sorted(data["persona_ids"])
+            avg_perc, avg_prox = _avg_persona_metrics(product_graph, persona_id_list)
+            funnel_code, funnel_label = _funnel_stage_from_metrics(avg_perc, avg_prox)
+            funnel_stage_payload = {
+                "code": funnel_code,
+                "label": funnel_label,
+                "avg_perceptibility": avg_perc,
+                "avg_proximity": avg_prox,
+            }
+            data["funnel_stage"] = funnel_stage_payload
             arsenal_impact.append(
                 {
                     "asset_id": asset_id,
                     "asset_label": data["label"],
-                    "persona_ids": sorted(data["persona_ids"]),
+                    "persona_ids": persona_id_list,
                     "persona_labels": sorted(data["persona_labels"]),
                     "total_delta": data["total_delta"],
                     "avg_delta": avg_delta,
@@ -830,6 +2082,21 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     "channels": sorted(data["channels"]),
                     "account_meta": sorted(data["account_meta"]),
                     "num_engagements": count,
+                    "funnel_stage": funnel_stage_payload,
+                    "stages": [
+                        {
+                            "code": stage,
+                            "label": _stage_label(stage),
+                            "count": cnt,
+                        }
+                        for stage, cnt in data.get("stage_counts", Counter()).most_common()
+                        if stage
+                    ],
+                    "concerns": [
+                        {"label": label, "count": cnt}
+                        for label, cnt in data.get("concern_counts", Counter()).most_common(12)
+                        if label
+                    ],
                 }
             )
         arsenal_impact.sort(
@@ -840,6 +2107,19 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             reverse=True,
         )
 
+        product_insights = _build_product_insights(
+            account_meta_stats=account_meta_stats,
+            meta_account_map=meta_account_map,
+            persona_stats=persona_stats,
+            engaged_counter=engaged_counter,
+            persona_sequences_by_episode=persona_sequences_by_episode,
+            classification_counts=classification_counts,
+            arsenal_impact=arsenal_impact,
+            episode_durations=episode_durations,
+            persona_node_info=persona_node_info,
+            rcs_paths=rcs_paths,
+        )
+
         # Persist aggregated arsenal evidence back into the structured tables so that
         # downstream strategy modules can query strengths without recomputing.
         channel_cache: Dict[str, Any] = {}
@@ -847,6 +2127,27 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             asset_obj = db.get(ArsenalAsset, asset_id)
             if not asset_obj:
                 continue
+            funnel_stage_payload = data.get("funnel_stage") or {}
+            stage_code = funnel_stage_payload.get("code")
+            if isinstance(stage_code, str) and stage_code:
+                normalized_code = stage_code.lower()
+                asset_obj.org_conversion_maturity = normalized_code
+                existing = list(asset_obj.target_belief_stages or [])
+                if existing:
+                    cleaned = [
+                        entry
+                        for entry in existing
+                        if not (
+                            isinstance(entry, str)
+                            and (
+                                "funnel" in entry.lower()
+                                or entry.lower() in _FUNNEL_STAGE_LABELS
+                                or entry.lower()
+                                in {label.lower() for label in _FUNNEL_STAGE_LABELS.values()}
+                            )
+                        )
+                    ]
+                    asset_obj.target_belief_stages = cleaned or None
             personas = sorted(data.get("persona_ids") or [])
             channels = sorted(data.get("channels") or [])
             if not personas or not channels:
@@ -854,10 +2155,22 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             avg_delta = _safe_mean(data.get("delta_samples") or []) or 0.0
             if avg_delta == 0.0 and not data.get("delta_samples"):
                 continue
+            stage_counts_payload = {
+                stage: int(cnt)
+                for stage, cnt in data.get("stage_counts", Counter()).items()
+                if cnt
+            }
+            concern_payload = {
+                label: int(cnt)
+                for label, cnt in data.get("concern_counts", Counter()).items()
+                if label
+            }
             evidence_payload = {
                 "num_engagements": data.get("count"),
                 "total_delta": data.get("total_delta"),
                 "account_meta": sorted(data.get("account_meta") or []),
+                "stages": stage_counts_payload,
+                "concerns": concern_payload,
             }
             for channel_label in channels:
                 if not channel_label:
@@ -902,6 +2215,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             "edge_recommendations": edge_recommendations,
             "engagement_insights": engagement_insights,
             "arsenal_impact": arsenal_impact,
+            "product_insights": product_insights,
         }
 
     except Exception as e:
@@ -918,6 +2232,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             "edge_recommendations": [],
             "engagement_insights": [],
             "arsenal_impact": [],
+            "product_insights": DEFAULT_PRODUCT_INSIGHTS,
         }
 
 def _infer_node_type(node_id: Optional[str]) -> str:
@@ -938,7 +2253,7 @@ def _ensure_placeholder_node(G, node_id: Optional[str]) -> Optional[str]:
         "id": node_id,
         "node_type": ntype,
         "type": ntype,
-        "data_source": "belief_update",
+        "data_source": "bayesian_inferred",
         "last_updated": current_timestamp(),
     }
     if ntype == "job":
@@ -1010,7 +2325,7 @@ def apply_persona_recommendation_to_graph(
         department=department,
         seniority=seniority,
         sample_profiles=recommendation.get("sample_profiles"),
-        data_source="belief_update",
+        data_source="bayesian_inferred",
     )
     _note_node(persona_node_id)
     if persona_id and persona_id in G and persona_id != persona_node_id:
@@ -1043,10 +2358,10 @@ def apply_persona_recommendation_to_graph(
             attrs={
                 "likelihood": likelihood,
                 "relevance": relevance,
-                "data_source": "belief_update",
+                "data_source": "bayesian_inferred",
             },
             prevent_cycles=False,
-            data_source="belief_update",
+            data_source="bayesian_inferred",
         )
         _note_edge(ensured_job, "performed_by", persona_node_id, edge_existed)
 
@@ -1062,9 +2377,9 @@ def apply_persona_recommendation_to_graph(
                 "solves",
                 ensured_pain,
                 weight=1.0,
-                attrs={"data_source": "belief_update"},
+                attrs={"data_source": "bayesian_inferred"},
                 prevent_cycles=False,
-                data_source="belief_update",
+                data_source="bayesian_inferred",
             )
             _note_edge(ensured_job, "solves", ensured_pain, edge_existed)
             edge_existed = G.has_edge(ensured_pain, ensured_job)
@@ -1074,9 +2389,9 @@ def apply_persona_recommendation_to_graph(
                 "felt_in",
                 ensured_job,
                 weight=1.0,
-                attrs={"data_source": "belief_update"},
+                attrs={"data_source": "bayesian_inferred"},
                 prevent_cycles=False,
-                data_source="belief_update",
+                data_source="bayesian_inferred",
             )
             _note_edge(ensured_pain, "felt_in", ensured_job, edge_existed)
             for trigger_id in triggers:
@@ -1091,9 +2406,9 @@ def apply_persona_recommendation_to_graph(
                     "triggered_by",
                     ensured_trigger,
                     weight=1.0,
-                    attrs={"data_source": "belief_update"},
+                    attrs={"data_source": "bayesian_inferred"},
                     prevent_cycles=False,
-                    data_source="belief_update",
+                    data_source="bayesian_inferred",
                 )
                 _note_edge(ensured_pain, "triggered_by", ensured_trigger, edge_existed)
 
@@ -1196,7 +2511,7 @@ def apply_edge_recommendation_to_graph(
     recommended_likelihood = recommendation.get("recommended_likelihood")
     recommended_relevance = recommendation.get("recommended_relevance")
 
-    attrs: Dict[str, Any] = {"data_source": "belief_update"}
+    attrs: Dict[str, Any] = {"data_source": "bayesian_inferred"}
     if recommended_likelihood is not None:
         attrs["likelihood"] = recommended_likelihood
     if recommended_relevance is not None:
@@ -1220,7 +2535,7 @@ def apply_edge_recommendation_to_graph(
         weight=weight,
         attrs=attrs,
         prevent_cycles=False,
-        data_source="belief_update",
+        data_source="bayesian_inferred",
     )
     if source_id and target_id:
         _note_edge(source_id, relation, target_id, existed)

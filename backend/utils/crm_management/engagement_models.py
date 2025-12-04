@@ -1,7 +1,7 @@
 # backend/utils/crm_management/engagement_models.py
 from datetime import datetime, timezone
 from backend.database import Base
-from sqlalchemy import Column, DateTime, String, JSON, Boolean, Integer, Index
+from sqlalchemy import Column, DateTime, String, JSON, Boolean, Integer, Float, Index
 from sqlalchemy.orm import Session
 import uuid
 
@@ -25,6 +25,8 @@ class TargetAccountEngagement(Base):
 
     source = Column(String, index=True)              # marketing|sales|cs|product|other
     channel = Column(String, nullable=True, index=True)
+    channel_id = Column(String, nullable=True, index=True)
+    engagement_verb = Column(String, nullable=True, index=True)
     inferred = Column(Boolean, default=False, index=True)
 
     # actor quick filters
@@ -37,6 +39,10 @@ class TargetAccountEngagement(Base):
     # activity
     raw_activity = Column(String)
     asset_id = Column(String, nullable=True)
+    activity_label = Column(String, nullable=True)
+    asset_category = Column(String, nullable=True)
+    parser_version = Column(String, nullable=True)
+    parser_confidence = Column(Float, nullable=True)
 
     # original payload for forward-compat flexibility
     payload = Column(JSON)

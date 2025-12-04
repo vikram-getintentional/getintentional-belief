@@ -1,26 +1,26 @@
 // EngagementsSetup.tsx — FULL REPLACEMENT (with Global Insights + per-account learnings/feed)
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Box,
-  Card,
-  CardHeader,
-  CardContent,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Switch,
-  FormControlLabel,
-  Button,
-  Divider,
-  Chip,
-  Snackbar,
   Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Chip,
   CircularProgress,
+  Collapse,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
   Stack,
-  Tabs,
+  Switch,
   Tab,
   Table,
   TableBody,
@@ -28,8 +28,15 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
+  Tabs,
+  TextField,
+  Tooltip,
+  Typography,
 } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import StorylineNarrative, {
+  StorylinePayload,
+} from "../components/StorylineNarrative";
 
 const personaLabelOverrides = new Map<string, string>();
 
@@ -98,9 +105,16 @@ function registerPersonaLabel(id?: PersonaIdentifier, label?: string | null) {
 export type PersonaMatchesResponse = {
   product_id: string;
   account_id: string;
-  global: GlobalInsights;
+  global: {
+    persona_recommendations: Array<{
+      persona_id: string;
+      persona_label?: string | null;
+    }>;
+  };
   incremental: any;   // your existing type from incremental_learnings_from_thesis
   activity: any[];    // journey steps
+  latent_activity?: LatentActivityItem[];
+  activity_story?: ActivityStoryItem[];
   thesis: any;        // full thesis if you want it
 };
 
@@ -369,6 +383,53 @@ type JourneyStep = {
   win_likelihood?: number; // snapshot proxy
 };
 
+type LatentEdgeEvidence = {
+  from?: string;
+  to?: string;
+  supports?: boolean;
+  delta_log_prob?: number;
+  path_probability?: number;
+  rel?: string;
+};
+
+export type LatentActivityItem = {
+  id: string;
+  kind: "latent";
+  insert_before_step_index: number;
+  step_t?: number | null;
+  persona_id?: string | null;
+  persona_label?: string | null;
+  target_persona_id?: string | null;
+  target_persona_label?: string | null;
+  confidence?: number | null;
+  path_probability?: number | null;
+  narrative?: string | null;
+  reason?: string | null;
+  edge_evidence?: LatentEdgeEvidence | null;
+  path_excerpt?: string[];
+};
+
+export type ActivityStoryObservedItem = {
+  id: string;
+  kind: "observed";
+  step_index: number;
+  step_t?: number | null;
+  timestamp?: string | null;
+  persona_id?: string | null;
+  persona_label?: string | null;
+  bucket?: string | null;
+  engagement_meta?: any;
+};
+
+export type ActivityStoryItem = LatentActivityItem | ActivityStoryObservedItem;
+type TimelineRow =
+  | { key: string; type: "latent"; latent: LatentActivityItem }
+  | {
+      key: string;
+      type: "observed";
+      observed: { annotated?: AnnotatedEngagement; engagement: Engagement };
+    };
+
 type AccountBeliefThesis = {
   persons: PersonaMatchRow[];
   paths: CandidatePath[]; // existing (walk_paths)
@@ -383,93 +444,13 @@ type AccountBeliefThesis = {
   current_paths?: CandidatePath[];
   current_expected_next?: string[];
   overall_fit?: OverallFit | null;
+  latent_activity?: LatentActivityItem[];
+  activity_story?: ActivityStoryItem[];
+  storyline?: StorylinePayload | null;
 };
 
-// Global insights types
-type PersonaFieldSummary = {
-  field?: string | null;
-  band?: LearningBand | null;
-  avg_delta?: number | null;
-  avg_confidence?: number | null;
-  reason?: string | null;
-};
-
-export type GlobalPersonaRecommendation = {
-  persona_id: string;
-  persona_label?: string | null;
-  observed_events: number;
-  seen?: number;
-  recommendation_events?: number;
-  current_best_fit?: string | null;
-  current_fitness?: number | null;
-  avg_confidence?: number | null;
-  avg_delta?: number | null;
-  predicted_boost_pct?: number | null;
-  reasons: string[];
-  field_summaries: PersonaFieldSummary[];
-  jobs: string[];
-  pains: string[];
-  triggers: string[];
-  account_meta?: string[];
-};
-
-export type GlobalEdgeRecommendation = {
-  source_id: string;
-  target_id: string;
-  pair_labels?: string[] | null;
-  band?: string | null;
-  seen: number;
-  avg_confidence?: number | null;
-  avg_delta?: number | null;
-  predicted_boost_pct?: number | null;
-  scope?: number | null;
-  reason?: string | null;
-  reasons: string[];
-  edge_labels: string[][];
-  current_relevance?: number | null;
-  current_likelihood?: number | null;
-  recommended_likelihood?: number | null;
-  recommended_relevance?: number | null;
-  recommendation_events?: number;
-  account_meta?: string[];
-};
-
-type GlobalEngagementInsight = {
-  classification: string;
-  count: number;
-  share?: number | null;
-  avg_log_loss?: number | null;
-};
-
-type ArsenalImpactRow = {
-  asset_id: string;
-  asset_label?: string | null;
-  persona_ids?: string[];
-  persona_labels?: string[];
-  total_delta?: number | null;
-  avg_delta?: number | null;
-  avg_confidence?: number | null;
-  channels?: string[];
-  account_meta?: string[];
-  num_engagements: number;
-};
-
-export type GlobalInsights = {
-  meta: {
-    num_accounts: number;
-    num_engagements: number;
-    num_persona_recommendations: number;
-    num_edge_recommendations: number;
-    stability_score?: number | null;
-    hit_at_1?: number | null;
-    hit_at_3?: number | null;
-    log_loss?: number | null;
-  };
-  persona_recommendations: GlobalPersonaRecommendation[];
-  edge_recommendations: GlobalEdgeRecommendation[];
-  engagement_insights?: GlobalEngagementInsight[];
-  arsenal_impact?: ArsenalImpactRow[];
-};
+type StoryTabState = Record<string, "activity" | "story">;
+type StoryEditState = Record<string, Record<string, string>>;
 
 // -----------------------------------------
 // Helpers
@@ -640,6 +621,34 @@ function personaLabelFromId(rawId?: PersonaIdentifier) {
   return titleCase(id.replace(/[_/|]+/g, " "));
 }
 
+function normalizeStorylinePersona(raw?: string | null) {
+  if (!raw) return raw || null;
+  const label = personaLabelFromId(raw);
+  return label || raw;
+}
+
+function decorateStoryline(
+  storyline?: StorylinePayload | null
+): StorylinePayload | null {
+  if (!storyline) return storyline ?? null;
+  const convertList = (list?: string[]) =>
+    (list || []).map((entry) => normalizeStorylinePersona(entry) || entry);
+  return {
+    ...storyline,
+    stakeholders: {
+      early: convertList(storyline.stakeholders?.early),
+      mid: convertList(storyline.stakeholders?.mid),
+      late: convertList(storyline.stakeholders?.late),
+    },
+    nodes: (storyline.nodes || []).map((node) => ({
+      ...node,
+      persona: node.persona
+        ? normalizeStorylinePersona(node.persona) || node.persona
+        : node.persona,
+    })),
+  };
+}
+
 function fmtScore(x?: number | null) {
   return typeof x === "number" ? x.toFixed(3) : "";
 }
@@ -669,8 +678,249 @@ function fmtCount(value?: number | null) {
   return Math.round(Number(value)).toLocaleString();
 }
 
-function fmtScope(value?: number | null) {
-  return fmtPercent(value, { inputIsFraction: true, decimals: 0 });
+type LevelMeta = {
+  label: string;
+  helper: string;
+};
+
+function describePathConfidence(score?: number | null): LevelMeta {
+  if (score === null || score === undefined) {
+    return {
+      label: "Unknown",
+      helper: "Model did not emit a probability for this engagement.",
+    };
+  }
+  if (score >= 0.7) {
+    return {
+      label: "High",
+      helper: "Model was confident this persona would appear next on the best-fit path.",
+    };
+  }
+  if (score >= 0.4) {
+    return {
+      label: "Medium",
+      helper: "Persona was plausible on the predicted path, but not guaranteed.",
+    };
+  }
+  return {
+    label: "Low",
+    helper: "Model saw this persona as unlikely in this slot.",
+  };
+}
+
+function describeSurpriseLevel(score?: number | null): LevelMeta {
+  if (score === null || score === undefined) {
+    return {
+      label: "Unknown",
+      helper: "No surprise score recorded for this event.",
+    };
+  }
+  if (score >= 0.7) {
+    return {
+      label: "High",
+      helper: `Highly surprising (${fmtPercent(score, {
+        inputIsFraction: true,
+        decimals: 0,
+      })}). Worth investigating.`,
+    };
+  }
+  if (score >= 0.4) {
+    return {
+      label: "Medium",
+      helper: `Moderately surprising (${fmtPercent(score, {
+        inputIsFraction: true,
+        decimals: 0,
+      })}).`,
+    };
+  }
+  return {
+    label: "Low",
+    helper: `Close to expected (${fmtPercent(score, {
+      inputIsFraction: true,
+      decimals: 0,
+    })}).`,
+  };
+}
+
+function verdictFromClassification(
+  classification: EngagementBeliefAnnotation["classification"],
+  note?: string
+): string {
+  switch (classification) {
+    case "expected":
+      return "As expected and in the right order.";
+    case "jump_ahead":
+      return "Expected persona, but earlier or later than we thought.";
+    case "off_path":
+      return "Unexpected persona — this is where the deal veered off our predicted script.";
+    case "no_persona":
+      return "We couldn't map this engagement to a known persona yet.";
+    case "no_path":
+    default:
+      return note?.trim()
+        ? note
+        : "We don't have a confident belief path for this engagement yet.";
+  }
+}
+
+type ImpactSummary = {
+  badge: {
+    label: string;
+    color: "default" | "primary" | "secondary" | "warning";
+  } | null;
+  totalDelta: number;
+  bullets: string[];
+  tooltipLines: string[];
+};
+
+function summarizeImpact(
+  belief: EngagementBeliefAnnotation,
+  engagement: Engagement,
+  match?: PersonaMatchRow
+): ImpactSummary {
+  const edges = belief.impact?.edges || [];
+  const totalDelta = edges.reduce(
+    (acc, edge) => acc + Math.abs(edge.deltaLogProb ?? 0),
+    0
+  );
+
+  let badge: ImpactSummary["badge"] = null;
+  if (totalDelta >= 0.25) {
+    badge = { label: `High belief shift (+${totalDelta.toFixed(2)})`, color: "secondary" };
+  } else if (totalDelta >= 0.08) {
+    badge = { label: `Moderate belief shift (+${totalDelta.toFixed(2)})`, color: "primary" };
+  } else if (totalDelta > 0) {
+    badge = { label: `Minimal belief shift (+${totalDelta.toFixed(2)})`, color: "default" };
+  }
+
+  const bullets: string[] = [];
+
+  edges.slice(0, 3).forEach((edge) => {
+    const target =
+      edge.toLabel || personaLabelFromId(edge.to) || "downstream persona";
+    const actor =
+      engagement.actor?.name ||
+      match?.graph_persona_label ||
+      personaLabelFromId(edge.from) ||
+      "This engagement";
+    const verb = edge.supports ? "strengthened" : "raised doubts about";
+    bullets.push(`${verb[0].toUpperCase() + verb.slice(1)} ${target}'s belief via ${actor}.`);
+  });
+
+  if (bullets.length === 0 && belief.classification === "off_path") {
+    bullets.push(
+      "Unexpected persona involvement — validate why this role leaned in now."
+    );
+  } else if (bullets.length === 0 && belief.classification === "no_persona") {
+    bullets.push(
+      "Weak signal: model could not confidently tie this to a known persona."
+    );
+  }
+
+  const tooltipLines =
+    edges.length > 0
+      ? edges.map((edge) => {
+          const delta =
+            typeof edge.deltaLogProb === "number"
+              ? `Δ log p ${edge.deltaLogProb >= 0 ? "+" : ""}${edge.deltaLogProb.toFixed(3)}`
+              : "";
+          return `${edge.fromLabel || edge.from} → ${edge.toLabel || edge.to} ${delta}`;
+        })
+      : [];
+
+  return { badge, totalDelta, bullets: bullets.slice(0, 3), tooltipLines };
+}
+
+function personaChipLabel(
+  engagement: Engagement,
+  bestLabel?: string | null
+): string | null {
+  const pieces: string[] = [];
+  if (engagement.actor?.name) {
+    pieces.push(engagement.actor.name);
+  }
+  if (engagement.actor?.title) {
+    pieces.push(engagement.actor.title);
+  }
+  if (bestLabel) {
+    pieces.push(`(${bestLabel})`);
+  }
+  if (pieces.length === 0) return bestLabel || null;
+  return pieces.join(" — ");
+}
+
+function latentHintsFromIndicates(
+  indicates?: {
+    upstream?: EngagementEdgeIndication[];
+    handoff?: EngagementEdgeIndication[];
+    downstream?: EngagementEdgeIndication[];
+  }
+): string[] {
+  if (!indicates) return [];
+  const bands: Array<{ key: keyof typeof indicates; label: string }> = [
+    { key: "upstream", label: "Guessed previous step" },
+    { key: "handoff", label: "Likely handoff" },
+    { key: "downstream", label: "Downstream impact" },
+  ];
+  const lines: string[] = [];
+  bands.forEach(({ key, label }) => {
+    const entries = indicates[key];
+    if (!entries || entries.length === 0) return;
+    const first = entries[0];
+    const from =
+      first.fromLabel || (first.fromId ? personaLabelFromId(first.fromId) : null);
+    const to =
+      first.toLabel || (first.toId ? personaLabelFromId(first.toId) : first.edge);
+    const reason = first.reason || "";
+    const textParts = [
+      `${label}:`,
+      [from, to].filter(Boolean).join(" → ") || first.edge,
+      reason,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    lines.push(textParts);
+  });
+  return lines;
+}
+
+function deriveLatentItemsFromBelief(
+  belief: EngagementBeliefAnnotation | undefined,
+  insertIdx: number
+): LatentActivityItem[] {
+  if (!belief || !belief.indicates) return [];
+  const entries: LatentActivityItem[] = [];
+  (["upstream", "handoff"] as const).forEach((band, order) => {
+    const list = belief.indicates?.[band];
+    if (!list || list.length === 0) return;
+    const entry = list[0];
+    const personaId = entry.fromId || entry.edge?.split("→")[0]?.trim() || null;
+    const targetId = entry.toId || entry.edge?.split("→")[1]?.trim() || null;
+    const personaLabel =
+      entry.fromLabel || (personaId ? personaLabelFromId(personaId) : null);
+    const targetLabel =
+      entry.toLabel || (targetId ? personaLabelFromId(targetId) : null);
+    entries.push({
+      id: `derived-latent-${band}-${insertIdx}-${order}`,
+      kind: "latent",
+      insert_before_step_index: insertIdx,
+      step_t: null,
+      persona_id: personaId,
+      persona_label: personaLabel,
+      target_persona_id: targetId,
+      target_persona_label: targetLabel,
+      confidence: entry.confidence ?? null,
+      narrative:
+        entry.reason ||
+        (personaLabel
+          ? `${personaLabel} likely prepared ${targetLabel || "the next persona"}`
+          : "Hidden persona likely advanced the context."),
+      reason: entry.reason || `Inferred ${band} step`,
+      edge_evidence: null,
+      path_excerpt: [],
+    });
+  });
+  return entries;
 }
 
 // Attach a match row to an engagement's actor
@@ -1293,8 +1543,8 @@ function IncrementalLearningsCard({
   thesis?: AccountBeliefThesis;
   annotatedFeed: AnnotatedEngagement[];
 }) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const ls = thesis?.learning_summary;
-  const neighborhoods = thesis?.learning_neighborhoods;
 
   const personaInferences: PersonaPathThesis[] =
     ls?.persona_graph_inferences || [];
@@ -1304,10 +1554,6 @@ function IncrementalLearningsCard({
   const hasAny =
     (personaInferences && personaInferences.length > 0) ||
     (fullInferences && fullInferences.length > 0) ||
-    (neighborhoods &&
-      (Object.keys(neighborhoods.upstream || {}).length > 0 ||
-        Object.keys(neighborhoods.handoff || {}).length > 0 ||
-        Object.keys(neighborhoods.downstream || {}).length > 0)) ||
     annotatedFeed.length > 0;
 
   const totalEvents = annotatedFeed.length;
@@ -1386,12 +1632,6 @@ function IncrementalLearningsCard({
     )
     .slice(0, 4);
 
-  const bandShortLabel: Record<LearningBand, string> = {
-    upstream: "Upstream",
-    handoff: "Handoff",
-    downstream: "Downstream",
-  };
-
   const engagementImpactRows = annotatedFeed.map(({ engagement, belief }) => {
     const edges = belief.impact?.edges || [];
     const impactSummary =
@@ -1436,71 +1676,44 @@ function IncrementalLearningsCard({
     };
   });
 
-  const renderNeighborhoodSection = (
-    title: string,
-    entries: Record<string, LearningNeighborhoodEntry> | undefined
-  ) => {
-    if (!entries || Object.keys(entries).length === 0) return null;
-    return (
-      <Box mb={2}>
-        <Typography variant="subtitle2" gutterBottom>
-          {title}
-        </Typography>
-        <Stack spacing={1.5}>
-          {Object.values(entries).map((entry) => (
-            <Box
-              key={`${entry.anchor}-${entry.band}`}
-              p={1}
-              borderRadius={1}
-              border={1}
-              borderColor="divider"
-            >
-              <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                <Box>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2">{entry.anchor_label}</Typography>
-                    <Chip
-                      size="small"
-                      label={bandShortLabel[entry.band]}
-                      variant="outlined"
-                    />
-                  </Stack>
-                  {entry.rationale && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: "block", mt: 0.5 }}
-                    >
-                      {entry.rationale}
-                    </Typography>
-                  )}
-                </Box>
-                <Typography variant="body2">
-                  Δ {entry.delta_sum > 0 ? "+" : ""}
-                  {entry.delta_sum.toFixed(3)}
-                </Typography>
-              </Stack>
+  const pathFitnessSummary = totalEvents
+    ? (() => {
+        let descriptor = "with low confidence";
+        if (onPathRate && onPathRate >= 0.55) descriptor = "reasonably well";
+        else if (onPathRate && onPathRate >= 0.35) descriptor = "with mixed confidence";
+        return `We predicted this account ${descriptor}: ${fmtCount(
+          expectedCount
+        )}/${fmtCount(totalEvents)} events on-path, ${fmtCount(
+          partialCount
+        )} partial jumps, ${fmtCount(offPathCount)} off-path, and ${fmtCount(
+          noPersonaCount
+        )} without persona matches.`;
+      })()
+    : "No engagements recorded yet for this account.";
 
-              {entry.edge_labels && entry.edge_labels.length > 0 && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: "block", mt: 0.75 }}
-                >
-                  Impacted edges:{" "}
-                  {entry.edge_labels
-                    .slice(0, 4)
-                    .map(([uLabel, vLabel, rel]) => `${uLabel} → ${vLabel} (${rel})`)
-                    .join("; ")}
-                  {entry.edge_labels.length > 4 ? " …" : ""}
-                </Typography>
-              )}
-            </Box>
-          ))}
-        </Stack>
-      </Box>
+  const topSurprises = surprisingEngagements.slice(0, 2);
+  const weakSignals = poorPersonaFits.slice(0, 3);
+  const topImpactMoments = engagementImpactRows
+    .slice()
+    .sort((a, b) => Math.abs(b.totalDelta) - Math.abs(a.totalDelta))
+    .slice(0, 3);
+  const netGraphBullets: string[] = [];
+  (personaInferences || []).slice(0, 3).forEach((inf) => {
+    netGraphBullets.push(
+      `${inf.anchor_label || "Persona"}: ${inf.diagnosis}${
+        inf.rationale ? ` (${inf.rationale})` : ""
+      }`
     );
-  };
+  });
+  if (netGraphBullets.length === 0 && fullInferences.length > 0) {
+    fullInferences.slice(0, 2).forEach((inf) =>
+      netGraphBullets.push(
+        `${inf.anchor_label || "Graph"}: ${inf.diagnosis}${
+          inf.rationale ? ` (${inf.rationale})` : ""
+        }`
+      )
+    );
+  }
 
   if (!hasAny && annotatedFeed.length === 0) return null;
 
@@ -1515,11 +1728,115 @@ function IncrementalLearningsCard({
           <Typography variant="subtitle2" gutterBottom>
             Path prediction fitness
           </Typography>
-          {totalEvents === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              No engagements recorded yet for this account.
+          <Typography variant="body2">{pathFitnessSummary}</Typography>
+        </Box>
+
+        {weakSignals.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Personas with weak signals
             </Typography>
-          ) : (
+            <Stack spacing={0.5}>
+              {weakSignals.map((p) => (
+                <Typography variant="body2" key={p.personaId || p.label}>
+                  • {p.label}: seen {fmtCount(p.sampleCount)} time(s) with{" "}
+                  {fmtPercent(p.neighborhoodFit, {
+                    inputIsFraction: true,
+                    decimals: 0,
+                  })}{" "}
+                  confidence. Confirm with the rep whether this persona truly mattered.
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
+        {topSurprises.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Moments to investigate
+            </Typography>
+            <Stack spacing={0.5}>
+              {topSurprises.map(({ engagement, belief }, idx) => (
+                <Typography variant="body2" key={`surprise-${idx}`}>
+                  • {engagement.raw_activity || "Engagement"} — we expected{" "}
+                  {belief.expectedBefore
+                    ? personaLabelFromId(belief.expectedBefore)
+                    : "another persona"}
+                  , but{" "}
+                  {belief.actualPersona
+                    ? personaLabelFromId(belief.actualPersona)
+                    : "an unmapped role"}
+                  {" "}took ownership ({fmtPercent(belief.surpriseScore, {
+                    inputIsFraction: true,
+                    decimals: 0,
+                  })} surprise).
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
+        {topImpactMoments.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Most belief-shifting engagements
+            </Typography>
+            <Stack spacing={0.5}>
+              {topImpactMoments.map((row, idx) => (
+                <Typography variant="body2" key={`impact-${idx}`}>
+                  • {row.engagementLabel} ({fmtWhen(row.timestamp)}): {row.impactSummary}
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
+        {netGraphBullets.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Net effect on the graph
+            </Typography>
+            <Stack spacing={0.5}>
+              {netGraphBullets.map((line, idx) => (
+                <Typography variant="body2" key={`net-${idx}`}>
+                  • {line}
+                </Typography>
+              ))}
+            </Stack>
+          </Box>
+        )}
+
+        {personaInferences.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              How this account moved internally
+            </Typography>
+            <Stack spacing={0.5}>
+              {personaInferences.slice(0, 5).map((inf, idx) => (
+                <Typography variant="body2" key={`path-${idx}`}>
+                  • {inf.diagnosis}
+                </Typography>
+              ))}
+            </Stack>
+            {personaInferences.length > 5 && (
+              <Typography variant="caption" color="text.secondary">
+                {personaInferences.length - 5} more persona insights available in Insights Inbox.
+              </Typography>
+            )}
+          </Box>
+        )}
+
+        <Button
+          size="small"
+          onClick={() => setShowAdvanced((prev) => !prev)}
+          sx={{ mt: 1 }}
+        >
+          {showAdvanced ? "Hide detailed tables" : "Show detailed tables"}
+        </Button>
+
+        <Collapse in={showAdvanced} unmountOnExit sx={{ mt: 2 }}>
+          {totalEvents > 0 && (
             <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
               <Table size="small">
                 <TableHead>
@@ -1576,13 +1893,8 @@ function IncrementalLearningsCard({
               </Table>
             </TableContainer>
           )}
-        </Box>
 
-        {poorPersonaFits.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Personas with weak fit signals
-            </Typography>
+          {poorPersonaFits.length > 0 && (
             <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
               <Table size="small">
                 <TableHead>
@@ -1617,14 +1929,9 @@ function IncrementalLearningsCard({
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
-        )}
+          )}
 
-        {surprisingEngagements.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Highly surprising engagements
-            </Typography>
+          {surprisingEngagements.length > 0 && (
             <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
               <Table size="small">
                 <TableHead>
@@ -1662,14 +1969,9 @@ function IncrementalLearningsCard({
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
-        )}
+          )}
 
-        {engagementImpactRows.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Engagement-level insights
-            </Typography>
+          {engagementImpactRows.length > 0 && (
             <TableContainer component={Paper} variant="outlined">
               <Table size="small">
                 <TableHead>
@@ -1722,110 +2024,8 @@ function IncrementalLearningsCard({
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
-        )}
-
-        {personaInferences.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{ mb: 0.5 }}
-            >
-              <Typography variant="subtitle2">Persona path inferences</Typography>
-              <Chip size="small" label={personaInferences.length} />
-            </Stack>
-            <Stack spacing={1.5}>
-              {personaInferences.map((inf, idx) => (
-                <Box key={idx}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2">
-                      {inf.anchor_label || inf.anchor_persona_id || "Persona"}
-                    </Typography>
-                    {inf.band && (
-                      <Chip
-                        size="small"
-                        label={bandShortLabel[inf.band]}
-                        variant="outlined"
-                      />
-                    )}
-                  </Stack>
-                  <Typography variant="caption" color="text.secondary">
-                    {inf.diagnosis}
-                    {inf.rationale ? ` · ${inf.rationale}` : ""}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        )}
-
-        {fullInferences.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{ mb: 0.5 }}
-            >
-              <Typography variant="subtitle2">Graph-level inferences</Typography>
-              <Chip size="small" label={fullInferences.length} />
-            </Stack>
-            <Stack spacing={1.5}>
-              {fullInferences.map((inf, idx) => (
-                <Box key={idx}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2">
-                      {inf.anchor_label || "Graph motif"}
-                    </Typography>
-                    {inf.band && (
-                      <Chip
-                        size="small"
-                        label={bandShortLabel[inf.band]}
-                        variant="outlined"
-                      />
-                    )}
-                  </Stack>
-                  <Typography variant="caption" color="text.secondary">
-                    {inf.diagnosis}
-                    {inf.rationale ? ` · ${inf.rationale}` : ""}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        )}
-
-        {neighborhoods && (
-          <>
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="subtitle2" gutterBottom>
-              Neighborhoods of impact
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", mb: 1.5 }}
-            >
-              Local regions where edge weights are most likely misestimated for this
-              account&apos;s journey.
-            </Typography>
-
-            {renderNeighborhoodSection(
-              "Upstream (starting personas / triggers)",
-              neighborhoods.upstream
-            )}
-            {renderNeighborhoodSection(
-              "Handoff (persona→persona chains)",
-              neighborhoods.handoff
-            )}
-            {renderNeighborhoodSection(
-              "Downstream (persona→product influence)",
-              neighborhoods.downstream
-            )}
-          </>
-        )}
+          )}
+        </Collapse>
       </CardContent>
     </Card>
   );
@@ -1854,82 +2054,14 @@ export default function EngagementsSetup() {
     null
   );
 
-  const [globalInsights, setGlobalInsights] = useState<GlobalInsights | null>(null);
   const [arsenalMetaGaps, setArsenalMetaGaps] = useState<{
     assets: string[];
     channels: string[];
   }>({ assets: [], channels: [] });
-  const [showAllEdgeRecs, setShowAllEdgeRecs] = useState(false);
-
-  const refreshGlobalInsights = useCallback(
-    async (productId: string | null) => {
-      if (!productId || !token) return;
-      try {
-        const res = await fetch(
-          `http://localhost:8000/journey/global-thesis/${productId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data?.insights) {
-          const insights = data.insights as GlobalInsights;
-          insights.persona_recommendations.forEach((rec) => {
-            registerPersonaLabel(rec.persona_id, rec.persona_label || null);
-          });
-          setGlobalInsights(insights);
-          setShowAllEdgeRecs(false);
-        }
-      } catch (err) {
-        console.warn("Failed to refresh global insights", err);
-      }
-    },
-    [token]
-  );
-
-  const applyGlobalRecommendation = useCallback(
-    async (type: "persona" | "edge", recommendation: any) => {
-      if (!selectedProductId || !token) return;
-      try {
-        const res = await fetch(
-          "http://localhost:8000/journey/apply-recommendation",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              product_id: selectedProductId,
-              type,
-              recommendation,
-            }),
-          }
-        );
-        if (!res.ok) {
-          throw new Error("Failed to apply recommendation");
-        }
-        const payload = await res.json();
-        if (payload?.applied) {
-          console.log("[journey/apply-recommendation] applied", payload.applied);
-        }
-        setSnack({
-          open: true,
-          msg: payload?.message || "Graph updated",
-          sev: "success",
-        });
-        await refreshGlobalInsights(selectedProductId);
-      } catch (err: any) {
-        setSnack({
-          open: true,
-          msg: err?.message || "Unable to update graph",
-          sev: "error",
-        });
-      }
-    },
-    [selectedProductId, token, refreshGlobalInsights]
-  );
+  const [showLatentStory, setShowLatentStory] = useState(true);
+  const [storyTabByAccount, setStoryTabByAccount] = useState<StoryTabState>({});
+  const [storyEdits, setStoryEdits] = useState<StoryEditState>({});
+  const [, setGlobalInsights] = useState<PersonaMatchesResponse["global"] | null>(null);
 
   const [snack, setSnack] = useState<{
     open: boolean;
@@ -1962,7 +2094,6 @@ export default function EngagementsSetup() {
         }
         const picked = (prodData.products[0]?.id as string) || null;
         setSelectedProductId(picked);
-        await refreshGlobalInsights(picked);
 
         const tRes = await fetch(
           `http://localhost:8000/get-target-accounts/${me.company_id}?product_id=${picked}`,
@@ -1988,7 +2119,7 @@ export default function EngagementsSetup() {
         setLoading(false);
       }
     })();
-  }, [token, refreshGlobalInsights]);
+  }, [token]);
 
   const accountsById = useMemo(() => {
     const m = new Map<string, TargetAccount>();
@@ -2001,41 +2132,9 @@ export default function EngagementsSetup() {
     return targets.filter((t) => !used.has(t.id));
   }, [targets, sections]);
 
-  const arsenalImpact = useMemo(
-    () => globalInsights?.arsenal_impact ?? [],
-    [globalInsights]
-  );
-
   useEffect(() => {
     setArsenalMetaGaps({ assets: [], channels: [] });
   }, [selectedProductId]);
-
-  const highScopeEdgeRecs = useMemo(() => {
-    if (!globalInsights) return [];
-    return globalInsights.edge_recommendations.filter(
-      (edge) => (edge.scope ?? 0) >= 0.999
-    );
-  }, [globalInsights]);
-
-  const edgesForDisplay = useMemo(() => {
-    if (!globalInsights) return [];
-    if (showAllEdgeRecs) return globalInsights.edge_recommendations;
-    if (highScopeEdgeRecs.length === 0) return globalInsights.edge_recommendations;
-    return highScopeEdgeRecs;
-  }, [globalInsights, showAllEdgeRecs, highScopeEdgeRecs]);
-
-  const hasAdditionalEdgeRecs = useMemo(() => {
-    if (!globalInsights) return false;
-    return (
-      highScopeEdgeRecs.length > 0 &&
-      highScopeEdgeRecs.length < globalInsights.edge_recommendations.length
-    );
-  }, [globalInsights, highScopeEdgeRecs]);
-
-/*const globalInsights = useMemo(
-  () => computeGlobalInsights(beliefByAccount, sections),
-  [beliefByAccount, sections]
-);*/
 
   // ---------- loaders ----------
   async function fetchEngagementsForAccount(
@@ -2094,20 +2193,24 @@ export default function EngagementsSetup() {
       console.log("Fetched persona matches / belief thesis:", data);
 
       if (data && Object.prototype.hasOwnProperty.call(data, "global")) {
-        const insights = (data.global as GlobalInsights) ?? null;
+        const insights =
+          (data.global as PersonaMatchesResponse["global"]) ?? null;
         if (insights) {
           insights.persona_recommendations.forEach((rec) => {
             registerPersonaLabel(rec.persona_id, rec.persona_label || null);
           });
           setGlobalInsights(insights);
-          setShowAllEdgeRecs(false);
-        } else {
-          setGlobalInsights(null);
-          setShowAllEdgeRecs(false);
         }
+      } else {
+        setGlobalInsights(null);
       }
 
       const payload = data?.thesis ?? data ?? {};
+      const storylineRaw: StorylinePayload | null =
+        (payload?.storyline as StorylinePayload | null) ??
+        (data?.storyline as StorylinePayload | null) ??
+        null;
+      const storyline = decorateStoryline(storylineRaw);
 
       // Map "persons" → PersonaMatchRow[]
       const personsSource = Array.isArray(payload?.persons)
@@ -2196,6 +2299,190 @@ export default function EngagementsSetup() {
         win_likelihood:
           typeof s.win_likelihood === "number" ? s.win_likelihood : undefined,
       }));
+
+      const sanitizeLatentEdge = (edge: any): LatentEdgeEvidence | null => {
+        if (!edge || typeof edge !== "object") return null;
+        const fromRaw = edge.from ?? edge.u ?? edge.source ?? null;
+        const toRaw = edge.to ?? edge.v ?? edge.target ?? null;
+        const supports =
+          typeof edge.supports === "boolean"
+            ? edge.supports
+            : typeof edge.support === "boolean"
+            ? edge.support
+            : undefined;
+        const deltaRaw =
+          typeof edge.delta_log_prob === "number"
+            ? edge.delta_log_prob
+            : typeof edge.deltaLogProb === "number"
+            ? edge.deltaLogProb
+            : typeof edge.delta_log_prob === "string"
+            ? Number(edge.delta_log_prob)
+            : undefined;
+        const pathProbRaw =
+          typeof edge.path_probability === "number"
+            ? edge.path_probability
+            : typeof edge.pathProbability === "number"
+            ? edge.pathProbability
+            : typeof edge.path_probability === "string"
+            ? Number(edge.path_probability)
+            : undefined;
+
+        return {
+          from: fromRaw != null ? String(fromRaw) : undefined,
+          to: toRaw != null ? String(toRaw) : undefined,
+          supports,
+          delta_log_prob:
+            typeof deltaRaw === "number" && Number.isFinite(deltaRaw)
+              ? deltaRaw
+              : undefined,
+          path_probability:
+            typeof pathProbRaw === "number" && Number.isFinite(pathProbRaw)
+              ? pathProbRaw
+              : undefined,
+          rel: typeof edge.rel === "string" ? edge.rel : undefined,
+        };
+      };
+
+      const normalizeLatent = (row: any, idx: number): LatentActivityItem => {
+        const insertIdxRaw =
+          row?.insert_before_step_index ?? row?.step_index ?? row?.step ?? idx;
+        const insertIdx =
+          typeof insertIdxRaw === "number"
+            ? insertIdxRaw
+            : Number.isFinite(Number(insertIdxRaw))
+            ? Number(insertIdxRaw)
+            : idx;
+        const stepTRaw = row?.step_t;
+        const step_t =
+          typeof stepTRaw === "number"
+            ? stepTRaw
+            : Number.isFinite(Number(stepTRaw))
+            ? Number(stepTRaw)
+            : null;
+        const personaVal = row?.persona_id ?? row?.personaId ?? null;
+        const targetVal = row?.target_persona_id ?? row?.targetPersonaId ?? null;
+        const personaId = personaVal != null ? String(personaVal) : null;
+        const targetId = targetVal != null ? String(targetVal) : null;
+        const confidenceRaw = row?.confidence;
+        const pathProbRaw = row?.path_probability ?? row?.pathProbability;
+        const narrative =
+          typeof row?.narrative === "string" ? row.narrative : null;
+        const reason = typeof row?.reason === "string" ? row.reason : null;
+        const pathExcerpt = Array.isArray(row?.path_excerpt)
+          ? row.path_excerpt.map((x: any) => String(x))
+          : [];
+
+        return {
+          id:
+            typeof row?.id === "string" && row.id.trim()
+              ? row.id
+              : `latent-${idx}-${insertIdx}`,
+          kind: "latent",
+          insert_before_step_index: insertIdx,
+          step_t,
+          persona_id: personaId,
+          persona_label:
+            typeof row?.persona_label === "string"
+              ? row.persona_label
+              : personaId
+              ? personaLabelFromId(personaId)
+              : null,
+          target_persona_id: targetId,
+          target_persona_label:
+            typeof row?.target_persona_label === "string"
+              ? row.target_persona_label
+              : targetId
+              ? personaLabelFromId(targetId)
+              : null,
+          confidence:
+            typeof confidenceRaw === "number"
+              ? confidenceRaw
+              : typeof confidenceRaw === "string"
+              ? Number(confidenceRaw)
+              : null,
+          path_probability:
+            typeof pathProbRaw === "number"
+              ? pathProbRaw
+              : typeof pathProbRaw === "string"
+              ? Number(pathProbRaw)
+              : null,
+          narrative,
+          reason,
+          edge_evidence: sanitizeLatentEdge(row?.edge_evidence),
+          path_excerpt: pathExcerpt,
+        };
+      };
+
+      const normalizeStoryItem = (row: any, idx: number): ActivityStoryItem => {
+        if (row && row.kind === "latent") {
+          return normalizeLatent(row, idx);
+        }
+        const stepIdxRaw =
+          row?.step_index ?? row?.stepIndex ?? row?.insert_before_step_index ?? idx;
+        const stepIdx =
+          typeof stepIdxRaw === "number"
+            ? stepIdxRaw
+            : Number.isFinite(Number(stepIdxRaw))
+            ? Number(stepIdxRaw)
+            : idx;
+        const stepTRaw = row?.step_t;
+        const step_t =
+          typeof stepTRaw === "number"
+            ? stepTRaw
+            : Number.isFinite(Number(stepTRaw))
+            ? Number(stepTRaw)
+            : null;
+        const personaVal = row?.persona_id ?? row?.personaId ?? null;
+        const personaId = personaVal != null ? String(personaVal) : null;
+
+        return {
+          id:
+            typeof row?.id === "string" && row.id.trim()
+              ? row.id
+              : `observed-${idx}-${stepIdx}`,
+          kind: "observed",
+          step_index: stepIdx,
+          step_t,
+          timestamp:
+            typeof row?.timestamp === "string" ? row.timestamp : null,
+          persona_id: personaId,
+          persona_label:
+            typeof row?.persona_label === "string"
+              ? row.persona_label
+              : personaId
+              ? personaLabelFromId(personaId)
+              : null,
+          bucket: typeof row?.bucket === "string" ? row.bucket : null,
+          engagement_meta: row?.engagement_meta ?? null,
+        };
+      };
+
+      const latentActivitySource = Array.isArray(data?.latent_activity)
+        ? data.latent_activity
+        : Array.isArray(payload?.latent_activity)
+        ? payload.latent_activity
+        : [];
+      const latentActivity: LatentActivityItem[] = latentActivitySource.map(
+        (row: any, idx: number) => normalizeLatent(row, idx)
+      );
+
+      latentActivity.forEach((row) => {
+        if (row.persona_id && row.persona_label) {
+          registerPersonaLabel(row.persona_id, row.persona_label);
+        }
+        if (row.target_persona_id && row.target_persona_label) {
+          registerPersonaLabel(row.target_persona_id, row.target_persona_label);
+        }
+      });
+
+      const activityStorySource = Array.isArray(data?.activity_story)
+        ? data.activity_story
+        : Array.isArray(payload?.activity_story)
+        ? payload.activity_story
+        : [];
+      const activityStory: ActivityStoryItem[] = activityStorySource.map(
+        (row: any, idx: number) => normalizeStoryItem(row, idx)
+      );
 
         // ---- learning_summary + learning_neighborhoods (with fallback) ----
       let learning_summary: LearningSummary | undefined;
@@ -2389,12 +2676,14 @@ export default function EngagementsSetup() {
             }
           : null,
         journey_steps: steps,
+        latent_activity: latentActivity,
+        activity_story: activityStory,
+        storyline,
       };
 
       setBeliefByAccount((prev) => ({ ...prev, [accountId]: thesis }));
 
       // Refresh global rollups so the recommendations card stays in sync with the latest run.
-      await refreshGlobalInsights(productId);
     } catch (err: any) {
       setSnack({
         open: true,
@@ -2408,6 +2697,9 @@ export default function EngagementsSetup() {
           paths: [],
           overall_fit: null,
           journey_steps: [],
+          latent_activity: [],
+          activity_story: [],
+          storyline: null,
         } as AccountBeliefThesis,
       }));
     } finally {
@@ -2541,6 +2833,29 @@ export default function EngagementsSetup() {
     const nextId = freeAccounts[0].id;
     setSections((prev) => [...prev, newSection(nextId)]);
   }
+
+  const handleStoryTabChange = useCallback(
+    (accountKey: string, nextTab: "activity" | "story") => {
+      setStoryTabByAccount((prev) => {
+        if (prev[accountKey] === nextTab) return prev;
+        return { ...prev, [accountKey]: nextTab };
+      });
+    },
+    []
+  );
+
+  const handleStoryEditChange = useCallback(
+    (accountKey: string, nodeId: string, value: string) => {
+      setStoryEdits((prev) => ({
+        ...prev,
+        [accountKey]: {
+          ...(prev[accountKey] || {}),
+          [nodeId]: value,
+        },
+      }));
+    },
+    []
+  );
 
   async function handleSaveAndAnalyze() {
     try {
@@ -2736,6 +3051,46 @@ export default function EngagementsSetup() {
   }
 
   // ---------- Feed item ----------
+  function TimelineRail({
+    color,
+    dashed = false,
+  }: {
+    color: string;
+    dashed?: boolean;
+  }) {
+    return (
+      <Box
+        sx={{
+          width: 16,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            bgcolor: dashed ? "background.paper" : color,
+            border: dashed ? "2px solid" : "none",
+            borderColor: color,
+            mt: 0.75,
+          }}
+        />
+        <Box
+          sx={{
+            flex: 1,
+            width: dashed ? 0 : 2,
+            bgcolor: dashed ? "transparent" : color,
+            borderLeft: dashed ? `2px dashed ${color}` : "none",
+            mt: 0.5,
+          }}
+        />
+      </Box>
+    );
+  }
+
   function FeedItem({
     e,
     match,
@@ -2772,153 +3127,27 @@ export default function EngagementsSetup() {
       match?.canonical_persona_label ||
       (nodeId ? personaLabelFromId(nodeId) : "");
 
-    const classificationChip =
-      belief &&
-      (() => {
-        const common = {
-          size: "small" as const,
-          variant: "outlined" as const,
-        };
-        switch (belief.classification) {
-          case "expected":
-            return <Chip {...common} color="success" label="On-path" />;
-          case "jump_ahead":
-            return <Chip {...common} color="warning" label="On-path (jumped)" />;
-          case "off_path":
-            return <Chip {...common} color="error" label="Off-path" />;
-          case "no_persona":
-            return <Chip {...common} color="default" label="No persona match" />;
-          case "no_path":
-          default:
-            return <Chip {...common} color="default" label="No belief path yet" />;
-        }
-      })();
-
-    const qualityChip =
-      typeof belief?.quality === "number" ? (
-        <Chip
-          size="small"
-          variant="outlined"
-          label={`quality ${(belief.quality * 100).toFixed(0)}%`}
-        />
-      ) : null;
-
-    const surpriseChip =
-    typeof belief?.surpriseScore === "number" ? (
-        <Chip
-        size="small"
-        color={
-            belief.surpriseScore > 0.7
-            ? "error"
-            : belief.surpriseScore > 0.4
-            ? "warning"
-            : "default"
-        }
-        variant="outlined"
-        label={`surprise ${(belief.surpriseScore * 100).toFixed(0)}%`}
-        />
-    ) : null;
-
+    const personaChip = personaChipLabel(e, bestLabel);
+    const pathMeta = describePathConfidence(belief?.quality);
+    const surpriseMeta = describeSurpriseLevel(belief?.surpriseScore);
+    const verdict = belief
+      ? verdictFromClassification(belief.classification, belief.note)
+      : null;
+    const impactSummary = belief
+      ? summarizeImpact(belief, e, match)
+      : { badge: null, totalDelta: 0, bullets: [], tooltipLines: [] };
+    const latentHints = belief ? latentHintsFromIndicates(belief.indicates) : [];
+    const guessedPrev = belief?.expectedBefore
+      ? personaLabelFromId(belief.expectedBefore)
+      : "Model unsure";
+    const guessedNext = belief?.nextExpectedAfter
+      ? personaLabelFromId(belief.nextExpectedAfter)
+      : "Model unsure";
 
     return (
       <Box sx={{ display: "flex", gap: 2 }}>
-        {/* timeline rail */}
-        <Box
-          sx={{
-            width: 16,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              bgcolor: "primary.main",
-              mt: 0.75,
-            }}
-          />
-          <Box sx={{ flex: 1, width: 2, bgcolor: "divider" }} />
-        </Box>
-
+        <TimelineRail color="primary.main" />
         <Box sx={{ flex: 1, pb: 2 }}>
-          {/* Belief context */}
-          {belief && (
-            <Box
-              sx={{
-                mb: 0.5,
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                Expected before:&nbsp;
-                <strong>
-                  {belief.expectedBefore
-                    ? personaLabelFromId(belief.expectedBefore)
-                    : "—"}
-                </strong>
-              </Typography>
-              {classificationChip}
-              {qualityChip}
-              {surpriseChip}
-              {belief.nextExpectedAfter && (
-                <Typography variant="caption" color="text.secondary">
-                  Next expected:&nbsp;
-                  <strong>{personaLabelFromId(belief.nextExpectedAfter)}</strong>
-                </Typography>
-              )}
-              {belief.note && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: "block", width: "100%" }}
-                >
-                  {belief.note}
-                </Typography>
-              )}
-              {belief.impact && (
-                <Box sx={{ width: "100%", mt: 0.75 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Graph impact:
-                  </Typography>
-                  {belief.impact.edges.length === 0 ? (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: "block" }}
-                    >
-                      No meaningful edge adjustments recorded.
-                    </Typography>
-                  ) : (
-                    <Stack spacing={0.25} sx={{ mt: 0.5 }}>
-                      {belief.impact.edges.slice(0, 4).map((edge, idx) => (
-                        <Typography
-                          key={`${edge.from}-${edge.to}-${idx}`}
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: "block" }}
-                        >
-                          {(edge.fromLabel || personaLabelFromId(edge.from)) ??
-                            edge.from}{" "}
-                          → {(edge.toLabel || personaLabelFromId(edge.to)) ?? edge.to}{" "}
-                          {edge.supports ? "(supports)" : "(contradicts)"}{" "}
-                          {typeof edge.deltaLogProb === "number"
-                            ? `Δ log p ${edge.deltaLogProb >= 0 ? "+" : ""}${edge.deltaLogProb.toFixed(3)}`
-                            : ""}
-                        </Typography>
-                      ))}
-                    </Stack>
-                  )}
-                </Box>
-              )}
-            </Box>
-          )}
-
           {/* header row: activity + time */}
           <Box
             sx={{
@@ -3041,6 +3270,179 @@ export default function EngagementsSetup() {
             {e.channel && <Chip size="small" label={e.channel} />}
             {e.asset_id && <Chip size="small" label={`asset: ${e.asset_id}`} />}
           </Box>
+
+          {personaChip && (
+            <Box sx={{ mt: 1 }}>
+              <Chip size="small" label={personaChip} />
+            </Box>
+          )}
+
+          {verdict && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {verdict}
+            </Typography>
+          )}
+
+          {impactSummary.badge && (
+            <Chip
+              sx={{ mt: 1 }}
+              color={impactSummary.badge.color}
+              label={impactSummary.badge.label}
+              size="small"
+            />
+          )}
+
+          {impactSummary.bullets.length > 0 && (
+            <Stack spacing={0.5} sx={{ mt: 1 }}>
+              {impactSummary.bullets.map((line, idx) => (
+                <Typography variant="body2" key={idx}>
+                  • {line}
+                </Typography>
+              ))}
+            </Stack>
+          )}
+
+          {latentHints.length > 0 && (
+            <Stack spacing={0.5} sx={{ mt: 1 }}>
+              {latentHints.map((hint, idx) => (
+                <Typography variant="caption" color="text.secondary" key={`hint-${idx}`}>
+                  {hint}
+                </Typography>
+              ))}
+            </Stack>
+          )}
+
+          <Box
+            sx={{
+              mt: 1.5,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Guessed previous step
+              </Typography>
+              <Typography variant="body2">{guessedPrev}</Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Who to engage next
+              </Typography>
+              <Typography variant="body2">{guessedNext}</Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Path confidence
+              </Typography>
+              <Tooltip title={pathMeta.helper}>
+                <Typography variant="body2">{pathMeta.label}</Typography>
+              </Tooltip>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                Surprise
+              </Typography>
+              <Tooltip title={surpriseMeta.helper}>
+                <Typography variant="body2">{surpriseMeta.label}</Typography>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          {impactSummary.tooltipLines.length > 0 && (
+            <Tooltip
+              title={
+                <Box sx={{ p: 1 }}>
+                  {impactSummary.tooltipLines.map((line, idx) => (
+                    <Typography
+                      key={`math-${idx}`}
+                      variant="caption"
+                      color="inherit"
+                      sx={{ display: "block" }}
+                    >
+                      {line}
+                    </Typography>
+                  ))}
+                </Box>
+              }
+            >
+              <Button
+                size="small"
+                startIcon={<InfoOutlinedIcon fontSize="small" />}
+                sx={{ mt: 1 }}
+              >
+                Show math
+              </Button>
+            </Tooltip>
+          )}
+        </Box>
+      </Box>
+    );
+  }
+
+  function LatentTimelineItem({ item }: { item: LatentActivityItem }) {
+    const personaLabel =
+      item.persona_label ||
+      (item.persona_id ? personaLabelFromId(item.persona_id) : "Hidden persona");
+    const targetLabel =
+      item.target_persona_label ||
+      (item.target_persona_id ? personaLabelFromId(item.target_persona_id) : null);
+    const confidencePct =
+      typeof item.confidence === "number"
+        ? Math.round(item.confidence * 100)
+        : null;
+    const pathPct =
+      typeof item.path_probability === "number"
+        ? Math.round(item.path_probability * 100)
+        : null;
+    const pathLabels =
+      Array.isArray(item.path_excerpt) && item.path_excerpt.length > 0
+        ? item.path_excerpt.map((pid) => personaLabelFromId(pid))
+        : [];
+
+    return (
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <TimelineRail color="grey.400" dashed />
+        <Box
+          sx={{
+            flex: 1,
+            pb: 2,
+            px: 2,
+            py: 1.5,
+            borderRadius: 1,
+            bgcolor: "action.hover",
+            border: "1px dashed",
+            borderColor: "divider",
+          }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5, opacity: 0.9 }}>
+            <Chip size="small" variant="outlined" label="Inferred" />
+            {confidencePct !== null && (
+              <Chip size="small" variant="outlined" label={`confidence ${confidencePct}%`} />
+            )}
+            {pathPct !== null && pathPct > 0 && (
+              <Chip size="small" variant="outlined" label={`path ${pathPct}%`} />
+            )}
+          </Stack>
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
+            {item.narrative ||
+              `${personaLabel} likely progressed the belief state before the next recorded step.`}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75 }}>
+            {personaLabel}
+            {targetLabel ? ` → ${targetLabel}` : ""}
+          </Typography>
+          {item.reason && (
+            <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 0.5 }}>
+              {item.reason}
+            </Typography>
+          )}
+          {pathLabels.length > 0 && (
+            <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 0.5 }}>
+              Path hint: {pathLabels.join(" → ")}
+            </Typography>
+          )}
         </Box>
       </Box>
     );
@@ -3110,355 +3512,7 @@ export default function EngagementsSetup() {
         </Alert>
       )}
 
-      {/* 1. Global Insights */}
-      <Card variant="outlined" sx={{ mb: 3 }}>
-        <CardHeader title="Global Recommendations" />
-        <CardContent>
-          {!globalInsights ? (
-            <Typography variant="body2" color="text.secondary">
-              Global insights populate after you save engagements and run the
-              journey analysis.
-            </Typography>
-          ) : (
-            <>
-              <Box
-                display="flex"
-                flexWrap="wrap"
-                gap={4}
-                alignItems="flex-start"
-                mb={3}
-              >
-                <Box>
-                  <Typography variant="overline">Accounts observed</Typography>
-                  <Typography variant="h5">
-                    {fmtCount(globalInsights.meta.num_accounts)}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="overline">Total engagements</Typography>
-                  <Typography variant="h5">
-                    {fmtCount(globalInsights.meta.num_engagements)}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="overline">Persona recs</Typography>
-                  <Typography variant="h6">
-                    {fmtCount(globalInsights.meta.num_persona_recommendations)}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="overline">Edge recs</Typography>
-                  <Typography variant="h6">
-                    {fmtCount(globalInsights.meta.num_edge_recommendations)}
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Typography variant="subtitle1" gutterBottom>
-                Persona addition recommendations
-              </Typography>
-              {globalInsights.persona_recommendations.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  No persona-level recommendations yet. Feed more qualified
-                  journeys to surface patterns.
-                </Typography>
-              ) : (
-                <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
-                  <Table size="small">
-                    <TableHead>
-                    <TableRow>
-                      <TableCell>Persona</TableCell>
-                      <TableCell>Current best-fit</TableCell>
-                      <TableCell align="right">Fitness</TableCell>
-                      <TableCell align="right">Observed</TableCell>
-                      <TableCell align="right">Updates</TableCell>
-                      <TableCell align="right">Pred. boost</TableCell>
-                      <TableCell align="right">Confidence</TableCell>
-                      <TableCell align="left">Account meta</TableCell>
-                      <TableCell align="right">Action</TableCell>
-                    </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {globalInsights.persona_recommendations.map((rec) => {
-                        const personaLabel =
-                          rec.persona_label || personaLabelFromId(rec.persona_id);
-                        const observedCount =
-                          typeof rec.observed_events === "number"
-                            ? rec.observed_events
-                            : rec.seen ?? 0;
-                        const updateCount =
-                          typeof rec.recommendation_events === "number"
-                            ? rec.recommendation_events
-                            : rec.seen ?? 0;
-                        return (
-                          <TableRow key={rec.persona_id}>
-                            <TableCell sx={{ maxWidth: 280 }}>
-                              <Typography variant="body2">{personaLabel}</Typography>
-                              {rec.reasons.length > 0 && (
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ display: "block" }}
-                                >
-                                  {rec.reasons[0]}
-                                </Typography>
-                              )}
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 200 }}>
-                              {rec.current_best_fit || "—"}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(rec.current_fitness, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtCount(observedCount)}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtCount(updateCount)}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(rec.predicted_boost_pct, {
-                                sign: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                        <TableCell align="right">
-                          {fmtPercent(rec.avg_confidence, {
-                            inputIsFraction: true,
-                            decimals: 0,
-                          })}
-                        </TableCell>
-                        <TableCell sx={{ maxWidth: 260 }}>
-                          {rec.account_meta && rec.account_meta.length > 0
-                            ? rec.account_meta.join(", ")
-                            : "—"}
-                        </TableCell>
-                        <TableCell align="right">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            disabled={
-                              !selectedProductId || !rec.jobs || rec.jobs.length === 0
-                            }
-                            onClick={() => applyGlobalRecommendation("persona", rec)}
-                          >
-                            Update graph
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-            </TableBody>
-          </Table>
-                </TableContainer>
-              )}
-
-              <Typography variant="subtitle1" gutterBottom>
-                Edge update recommendations
-              </Typography>
-              {globalInsights.edge_recommendations.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No edge-level updates yet. You&apos;ll see recommended handoffs
-                  once the engine spots recurring misweighted paths.
-                </Typography>
-              ) : (
-                <TableContainer component={Paper} variant="outlined">
-                  <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Relationship</TableCell>
-                    <TableCell align="right">Current lik.</TableCell>
-                    <TableCell align="right">Current rel.</TableCell>
-                    <TableCell align="right">Recommended lik.</TableCell>
-                    <TableCell align="right">Recommended rel.</TableCell>
-                    <TableCell align="right">Pred. boost</TableCell>
-                    <TableCell align="right">Scope</TableCell>
-                    <TableCell align="right">Confidence</TableCell>
-                    <TableCell align="left">Account meta</TableCell>
-                    <TableCell align="right">Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                    <TableBody>
-                      {edgesForDisplay.map((edge) => (
-                        <TableRow key={`${edge.source_id}-${edge.target_id}`}>
-                          <TableCell sx={{ maxWidth: 320 }}>
-                            <Typography variant="body2">
-                              {(edge.pair_labels || [])
-                                .filter(Boolean)
-                                .join(" → ") || "Proposed handoff"}
-                            </Typography>
-                            {edge.reason && (
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ display: "block" }}
-                              >
-                                {edge.reason}
-                              </Typography>
-                              )}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(edge.current_likelihood, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(edge.current_relevance, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(edge.recommended_likelihood, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(edge.recommended_relevance, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(edge.predicted_boost_pct, {
-                                sign: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtScope(edge.scope)}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(edge.avg_confidence, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 260 }}>
-                              {edge.account_meta && edge.account_meta.length > 0
-                                ? edge.account_meta.join(", ")
-                                : "—"}
-                            </TableCell>
-                            <TableCell align="right">
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                disabled={!selectedProductId || (edge.scope ?? 0) < 0.95}
-                                onClick={() => applyGlobalRecommendation("edge", edge)}
-                              >
-                                Update graph
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-              {hasAdditionalEdgeRecs && (
-                <Box sx={{ mt: 1 }}>
-                  <Button
-                    size="small"
-                    onClick={() => setShowAllEdgeRecs((prev) => !prev)}
-                  >
-                    {showAllEdgeRecs
-                      ? "Hide lower scope recommendations"
-                      : "View all recommendations"}
-                  </Button>
-                </Box>
-              )}
-
-              <Typography variant="subtitle1" gutterBottom sx={{ mt: 3 }}>
-                Arsenal impact
-              </Typography>
-              {arsenalImpact.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No arsenal-level impact recorded yet. Once engagements are logged with assets,
-                  we’ll estimate belief shifts per playbook.
-                </Typography>
-              ) : (
-                <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Arsenal asset</TableCell>
-                        <TableCell>Personas impacted</TableCell>
-                        <TableCell align="right">Total Δ log&nbsp;p</TableCell>
-                        <TableCell align="right">Avg confidence</TableCell>
-                        <TableCell>Channels</TableCell>
-                        <TableCell>Account meta</TableCell>
-                        <TableCell align="right">Engagements</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {arsenalImpact.map((row) => {
-                        const personaLabels =
-                          (row.persona_labels && row.persona_labels.length > 0
-                            ? row.persona_labels
-                            : (row.persona_ids || []).map((pid) =>
-                                personaLabelFromId(pid)
-                              )) || [];
-                        const channels = row.channels || [];
-                        const accountMeta = row.account_meta || [];
-                        return (
-                          <TableRow key={row.asset_id}>
-                            <TableCell sx={{ maxWidth: 280 }}>
-                              <Typography variant="body2">
-                                {row.asset_label || row.asset_id}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ display: "block" }}
-                              >
-                                id: {row.asset_id}
-                              </Typography>
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 260 }}>
-                              {personaLabels.length === 0
-                                ? "—"
-                                : personaLabels.join(", ")}
-                            </TableCell>
-                            <TableCell align="right">
-                              {row.total_delta === undefined ||
-                              row.total_delta === null
-                                ? "—"
-                                : `${row.total_delta >= 0 ? "+" : ""}${row.total_delta.toFixed(3)}`}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtPercent(row.avg_confidence, {
-                                inputIsFraction: true,
-                                decimals: 0,
-                              })}
-                            </TableCell>
-                            <TableCell>
-                              {channels.length === 0 ? "—" : channels.join(", ")}
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 260 }}>
-                              {accountMeta.length === 0
-                                ? "—"
-                                : accountMeta.join(", ")}
-                            </TableCell>
-                            <TableCell align="right">
-                              {fmtCount(row.num_engagements)}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
+      {/* Global insights moved to Insights Inbox */}
       {/* 2. Add accounts / engagements sections */}
       {sections.map((s, idx) => {
         const account = s.account_id ? accountsById.get(s.account_id) : undefined;
@@ -3471,16 +3525,209 @@ export default function EngagementsSetup() {
         const isMatchesLoading = loadingMatchesFor === s.account_id;
         const journeySteps = thesis?.journey_steps || [];
 
+        const engagementsChrono = s.added.slice().sort(sortAscByTimestamp);
         const annotatedFeed =
-          s.added.length && matches
+          engagementsChrono.length
             ? annotateEngagementsForAccount(
-                s.added,
+                engagementsChrono,
                 matches,
                 candidatePaths,
                 journeySteps,
                 thesis?.learning_summary?.top_edge_updates
               )
             : [];
+        const activityStory = thesis?.activity_story ?? [];
+        const latentActivity = thesis?.latent_activity ?? [];
+
+        const enrichLatentRow = (row: LatentActivityItem, fallbackId: string): LatentActivityItem => ({
+          ...row,
+          id:
+            typeof row.id === "string" && row.id.trim()
+              ? row.id
+              : fallbackId,
+          persona_label:
+            row.persona_label ||
+            (row.persona_id ? personaLabelFromId(row.persona_id) : row.persona_label),
+          target_persona_label:
+            row.target_persona_label ||
+            (row.target_persona_id
+              ? personaLabelFromId(row.target_persona_id)
+              : row.target_persona_label),
+        });
+
+        const buildLatentsByStep = (rowsToIndex: LatentActivityItem[]) => {
+          const latentsByStep = new Map<number, LatentActivityItem[]>();
+          rowsToIndex.forEach((row, latentIdx) => {
+            const insertIdxRaw =
+              row.insert_before_step_index !== undefined &&
+              row.insert_before_step_index !== null
+                ? row.insert_before_step_index
+                : (row as any)?.step_index;
+            const insertIdx = Number.isFinite(Number(insertIdxRaw))
+              ? Math.max(0, Number(insertIdxRaw))
+              : 0;
+            const enriched = enrichLatentRow(row, `latent-${insertIdx}-${latentIdx}`);
+            const bucket = latentsByStep.get(insertIdx) || [];
+            bucket.push(enriched);
+            latentsByStep.set(insertIdx, bucket);
+          });
+          return latentsByStep;
+        };
+
+        const pushLatentBucketRows = (
+          targetRows: TimelineRow[],
+          bucket: LatentActivityItem[],
+          fallbackIdx: number
+        ) => {
+          bucket
+            .slice()
+            .sort((a, b) => {
+              const aT = a.step_t ?? fallbackIdx;
+              const bT = b.step_t ?? fallbackIdx;
+              if (aT !== bT) return aT - bT;
+              return (a.confidence ?? 0) > (b.confidence ?? 0) ? -1 : 1;
+            })
+            .forEach((latent) => {
+              const key =
+                latent.id && latent.id.trim()
+                  ? latent.id
+                  : `latent-${fallbackIdx}-${targetRows.length}`;
+              targetRows.push({
+                key,
+                type: "latent",
+                latent,
+              });
+            });
+        };
+
+        const storyHasLatentSteps = activityStory.some((item) => item.kind === "latent");
+        const fallbackLatentsByStep: Map<number, LatentActivityItem[]> =
+          showLatentStory && !storyHasLatentSteps
+            ? buildLatentsByStep(latentActivity)
+            : new Map<number, LatentActivityItem[]>();
+
+        const timelineRows: TimelineRow[] = (() => {
+          if (activityStory.length > 0) {
+            const rows: TimelineRow[] = [];
+            activityStory.forEach((item, storyIdx) => {
+              if (item.kind === "latent") {
+                if (!showLatentStory) return;
+                const latentRow = enrichLatentRow(item, `latent-${storyIdx}`);
+                rows.push({
+                  key: latentRow.id || `latent-${storyIdx}`,
+                  type: "latent",
+                  latent: latentRow,
+                });
+                return;
+              }
+              const stepIdxRaw =
+                typeof item.step_index === "number"
+                  ? item.step_index
+                  : Number.isFinite(Number((item as any)?.step_index))
+                  ? Number((item as any)?.step_index)
+                  : storyIdx;
+              const stepIdx = Math.max(0, stepIdxRaw);
+              if (fallbackLatentsByStep.size > 0) {
+                const bucket = fallbackLatentsByStep.get(stepIdx);
+                if (bucket && bucket.length > 0) {
+                  pushLatentBucketRows(rows, bucket, stepIdx);
+                  fallbackLatentsByStep.delete(stepIdx);
+                }
+              }
+              const annotated = annotatedFeed[stepIdx];
+              const engagement =
+                annotated?.engagement ?? engagementsChrono[stepIdx];
+              if (!engagement) {
+                return;
+              }
+              rows.push({
+                key: item.id || `observed-${storyIdx}-${stepIdx}`,
+                type: "observed",
+                observed: {
+                  annotated,
+                  engagement,
+                },
+              });
+            });
+
+            if (fallbackLatentsByStep.size > 0) {
+              Array.from(fallbackLatentsByStep.entries())
+                .sort((a, b) => a[0] - b[0])
+                .forEach(([insertIdx, bucket]) => {
+                  pushLatentBucketRows(rows, bucket, insertIdx);
+                });
+            }
+
+            return rows;
+          }
+
+          const latentsToInsert =
+            showLatentStory && latentActivity.length > 0 ? latentActivity : [];
+          if (latentsToInsert.length === 0) {
+            return annotatedFeed.map((row, idx) => ({
+              key: `observed-${idx}`,
+              type: "observed" as const,
+              observed: {
+                annotated: row,
+                engagement: row.engagement,
+              },
+            }));
+          }
+
+          const latentsByStep = buildLatentsByStep(latentsToInsert);
+          const rows: TimelineRow[] = [];
+
+          annotatedFeed.forEach((row, idx) => {
+            const bucket = latentsByStep.get(idx);
+            if (bucket && bucket.length > 0) {
+              pushLatentBucketRows(rows, bucket, idx);
+              latentsByStep.delete(idx);
+            }
+            if (showLatentStory) {
+              const derived = deriveLatentItemsFromBelief(
+                row.belief,
+                idx
+              );
+              derived.forEach((latent) => {
+                rows.push({
+                  key: latent.id,
+                  type: "latent",
+                  latent,
+                });
+              });
+            }
+            rows.push({
+              key: `observed-${idx}`,
+              type: "observed",
+              observed: {
+                annotated: row,
+                engagement: row.engagement,
+              },
+            });
+          });
+
+          if (latentsByStep.size > 0) {
+            Array.from(latentsByStep.entries())
+              .sort((a, b) => a[0] - b[0])
+              .forEach(([insertIdx, bucket]) => {
+                pushLatentBucketRows(rows, bucket, insertIdx);
+              });
+          }
+
+          return rows;
+        })();
+        const accountStoryline = thesis?.storyline ?? null;
+        const storyKey = s.account_id || `section-${idx}`;
+        const storyTab = storyTabByAccount[storyKey] ?? "activity";
+        const storyEditsForAccount = storyEdits[storyKey] || {};
+        const { observedCount, latentCount } = timelineRows.reduce(
+          (acc, row) => {
+            if (row.type === "observed") acc.observedCount += 1;
+            else acc.latentCount += 1;
+            return acc;
+          },
+          { observedCount: 0, latentCount: 0 }
+        );
 
         return (
           <Card key={idx} variant="outlined" sx={{ mb: 3 }}>
@@ -3764,22 +4011,49 @@ export default function EngagementsSetup() {
                 <Box mt={3}>
                   <Divider sx={{ mb: 2 }} />
                   <Stack
-                    direction="row"
-                    alignItems="center"
+                    direction={{ xs: "column", md: "row" }}
+                    alignItems={{ xs: "flex-start", md: "center" }}
                     justifyContent="space-between"
+                    spacing={1}
                     sx={{ mb: 1 }}
                   >
-                    <Typography variant="subtitle2">
-                      Activity ({s.added.length}) — earliest → latest
-                    </Typography>
-                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    <Tabs
+                      value={storyTab}
+                      onChange={(_, val) =>
+                        handleStoryTabChange(
+                          storyKey,
+                          (val as "activity" | "story") || "activity"
+                        )
+                      }
+                      variant="standard"
+                    >
+                      <Tab label="Activity Timeline" value="activity" />
+                      <Tab label="Predicted Story" value="story" />
+                    </Tabs>
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
                       {thesis?.overall_fit &&
                         Number.isFinite(thesis.overall_fit.best_path_probability) && (
                           <Typography variant="caption" color="text.secondary">
-                            Fit: p(best){" "}
-                            {thesis.overall_fit.best_path_probability.toFixed(2)}
+                            Fit: p(best) {thesis.overall_fit.best_path_probability.toFixed(2)}
                           </Typography>
                         )}
+                      {storyTab === "activity" && (
+                        <FormControlLabel
+                          sx={{ ml: 1 }}
+                          control={
+                            <Switch
+                              size="small"
+                              checked={showLatentStory}
+                              onChange={(e) => setShowLatentStory(e.target.checked)}
+                            />
+                          }
+                          label={
+                            <Typography variant="caption" color="text.secondary">
+                              Show inferred
+                            </Typography>
+                          }
+                        />
+                      )}
                       <Button
                         size="small"
                         variant="outlined"
@@ -3792,18 +4066,48 @@ export default function EngagementsSetup() {
                       </Button>
                     </Box>
                   </Stack>
-                  {s.added.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary">
-                      No activity yet.
-                    </Typography>
+                  {storyTab === "activity" ? (
+                    <>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Likely Activity Story — observed {observedCount}
+                        {latentCount > 0 ? ` • inferred ${latentCount}` : ""} — earliest → latest
+                      </Typography>
+                      {timelineRows.length === 0 ? (
+                        <Typography variant="body2" color="text.secondary">
+                          No activity yet.
+                        </Typography>
+                      ) : (
+                        <Box>
+                          {timelineRows.map((row, i) => (
+                            <React.Fragment key={row.key}>
+                              {row.type === "latent" ? (
+                                <LatentTimelineItem item={row.latent} />
+                              ) : (
+                                <FeedItem
+                                  e={row.observed.engagement}
+                                  match={row.observed.annotated?.match}
+                                  belief={row.observed.annotated?.belief}
+                                />
+                              )}
+                              {i !== timelineRows.length - 1 && <Divider sx={{ ml: 2 }} />}
+                            </React.Fragment>
+                          ))}
+                        </Box>
+                      )}
+                    </>
                   ) : (
                     <Box>
-                      {annotatedFeed.map(({ engagement, match, belief }, i) => (
-                        <React.Fragment key={i}>
-                          <FeedItem e={engagement} match={match} belief={belief} />
-                          {i !== annotatedFeed.length - 1 && <Divider sx={{ ml: 2 }} />}
-                        </React.Fragment>
-                      ))}
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Predicted Story — ZMOT → Win/Loss narrative
+                      </Typography>
+                      <StorylineNarrative
+                        storyline={accountStoryline}
+                        allowEdits
+                        edits={storyEditsForAccount}
+                        onEdit={(nodeId, value) => handleStoryEditChange(storyKey, nodeId, value)}
+                        loading={isMatchesLoading && storyTab === "story"}
+                        emptyMessage="No storyline yet. Run analysis to generate one."
+                      />
                     </Box>
                   )}
                 </Box>

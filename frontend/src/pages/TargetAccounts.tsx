@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from "react";
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TextField, Autocomplete, Chip, IconButton, CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  Autocomplete,
+  Chip,
+  IconButton,
+  CircularProgress,
   Button,
   MenuItem,
-  Select
+  Select,
+  Typography,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AccountEnrichmentDialog from "../components/AccountEnrichmentDialog";
+import type { EnrichmentAccount } from "../components/AccountEnrichmentDialog";
 
 type Archetype = {
   label: string;
@@ -40,6 +53,7 @@ function TargetAccounts() {
 
   const [rows, setRows] = useState<TargetAccountRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [enrichmentAccount, setEnrichmentAccount] = useState<TargetAccountRow | null>(null);
 
   // 1. Get company ID on mount
   useEffect(() => {
@@ -159,7 +173,17 @@ function TargetAccounts() {
     ]);
   };
 
+  const handleOpenEnrichment = (row: TargetAccountRow) => {
+    if (!row.id) return;
+    setEnrichmentAccount(row);
+  };
+
+  const handleCloseEnrichment = () => {
+    setEnrichmentAccount(null);
+  };
+
   return (
+    <>
     <TableContainer component={Paper} sx={{ mt: 2 }}>
       <Table>
         <TableHead>
@@ -173,6 +197,8 @@ function TargetAccounts() {
             <TableCell>Competitor Used</TableCell>
             <TableCell>Other Tech Stack</TableCell>
             <TableCell>Deal Status</TableCell>
+            <TableCell align="right">Enrichment</TableCell>
+            <TableCell align="right">Delete</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -333,7 +359,22 @@ function TargetAccounts() {
                     <MenuItem value="Closed-Lost">Closed-Lost</MenuItem>
                   </Select>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
+                  {row.id ? (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleOpenEnrichment(row)}
+                    >
+                      Enrich Account
+                    </Button>
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      Save account to enrich
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="right">
                     <IconButton
                         color="error"
                         onClick={async () => {
@@ -356,7 +397,7 @@ function TargetAccounts() {
             );
           })}
           <TableRow>
-            <TableCell colSpan={9}>
+            <TableCell colSpan={11}>
               <IconButton onClick={handleAddRow} color="primary">
                 <SaveIcon /> Add Row
               </IconButton>
@@ -375,7 +416,18 @@ function TargetAccounts() {
         Save All
     </Button>
     </TableContainer>
-    
+    <AccountEnrichmentDialog
+      open={Boolean(enrichmentAccount)}
+      onClose={handleCloseEnrichment}
+      account={
+        enrichmentAccount
+          ? ({ id: enrichmentAccount.id, account_name: enrichmentAccount.account_name } as EnrichmentAccount)
+          : null
+      }
+      productId={selectedProductId}
+      token={token}
+    />
+    </>
   );
 }
 

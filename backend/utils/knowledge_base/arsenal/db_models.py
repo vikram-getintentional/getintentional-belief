@@ -86,6 +86,12 @@ class ChannelDelivery(enum.Enum):
     IN_PRODUCT = "in_product"
 
 
+class ApprovalStatus(enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
 def _slugify(value: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return slug[:120] or str(uuid.uuid4())
@@ -99,9 +105,13 @@ class ArsenalAsset(Base):
     name = Column(String, nullable=False)
     slug = Column(String, nullable=False, unique=True, index=True)
     category = Column(Enum(AssetCategory), nullable=True)
+    category_text = Column(String, nullable=True)
     content_type = Column(Enum(ContentType), nullable=True)
+    content_type_text = Column(String, nullable=True)
     time_to_consume = Column(Enum(TimeToConsume), nullable=True)
+    time_to_consume_text = Column(String, nullable=True)
     depth = Column(Enum(AssetDepth), nullable=True)
+    depth_text = Column(String, nullable=True)
     description = Column(String, nullable=True)
     metadata_complete = Column(Boolean, default=False, nullable=False)
     created_from_engagement_id = Column(String, nullable=True)
@@ -114,11 +124,25 @@ class ArsenalAsset(Base):
     call_stage = Column(String, nullable=True)
     target_personas = Column(JSON, nullable=True)
     target_account_segments = Column(JSON, nullable=True)
+    target_belief_stages = Column(JSON, nullable=True)
+    target_concerns = Column(JSON, nullable=True)
+    org_conversion_maturity = Column(String, nullable=True)
+    typical_channels = Column(JSON, nullable=True)
+    approval_status = Column(
+        Enum(ApprovalStatus), default=ApprovalStatus.PENDING, nullable=False, index=True
+    )
+    derived_metadata = Column(JSON, nullable=True)
+    auto_classification_confidence = Column(Float, nullable=True)
 
     channel_impacts = relationship("AssetChannelImpact", back_populates="asset")
 
     def update_metadata_status(self) -> None:
-        required_fields = [self.category, self.content_type, self.time_to_consume, self.depth]
+        required_fields = [
+            self.category or self.category_text,
+            self.content_type or self.content_type_text,
+            self.time_to_consume or self.time_to_consume_text,
+            self.depth or self.depth_text,
+        ]
         if self.category == AssetCategory.SALES_CALL:
             required_fields.append(self.call_stage)
         self.metadata_complete = all(field not in (None, "", []) for field in required_fields)
@@ -126,6 +150,10 @@ class ArsenalAsset(Base):
     @staticmethod
     def slug_for(name: str) -> str:
         return _slugify(name)
+
+    def mark_approved(self) -> None:
+        self.approval_status = ApprovalStatus.APPROVED
+        self.metadata_complete = bool(self.metadata_complete)
 
 
 class ArsenalChannel(Base):
@@ -136,7 +164,9 @@ class ArsenalChannel(Base):
     name = Column(String, nullable=False)
     slug = Column(String, nullable=False, unique=True, index=True)
     channel_type = Column(Enum(ChannelType), nullable=True)
+    channel_type_text = Column(String, nullable=True)
     delivery_mode = Column(Enum(ChannelDelivery), nullable=True)
+    delivery_mode_text = Column(String, nullable=True)
     reach_score_estimate = Column(Float, nullable=True)
     metadata_complete = Column(Boolean, default=False, nullable=False)
     created_from_engagement_id = Column(String, nullable=True)
@@ -148,16 +178,32 @@ class ArsenalChannel(Base):
     )
     target_personas = Column(JSON, nullable=True)
     target_account_segments = Column(JSON, nullable=True)
+    target_belief_stages = Column(JSON, nullable=True)
+    target_concerns = Column(JSON, nullable=True)
+    org_conversion_maturity = Column(String, nullable=True)
+    typical_assets = Column(JSON, nullable=True)
+    approval_status = Column(
+        Enum(ApprovalStatus), default=ApprovalStatus.PENDING, nullable=False, index=True
+    )
+    derived_metadata = Column(JSON, nullable=True)
+    auto_classification_confidence = Column(Float, nullable=True)
 
     asset_impacts = relationship("AssetChannelImpact", back_populates="channel")
 
     def update_metadata_status(self) -> None:
-        required_fields = [self.channel_type, self.delivery_mode]
-        self.metadata_complete = all(field is not None for field in required_fields)
+        required_fields = [
+            self.channel_type or self.channel_type_text,
+            self.delivery_mode or self.delivery_mode_text,
+        ]
+        self.metadata_complete = all(field not in (None, "", []) for field in required_fields)
 
     @staticmethod
     def slug_for(name: str) -> str:
         return _slugify(name)
+
+    def mark_approved(self) -> None:
+        self.approval_status = ApprovalStatus.APPROVED
+        self.metadata_complete = bool(self.metadata_complete)
 
 
 class AssetChannelImpact(Base):

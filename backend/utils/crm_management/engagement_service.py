@@ -1,17 +1,24 @@
 # backend/utils/crm_management/engagement_service.py
-from typing import List, Dict, Any, Optional, Tuple, Set
+from typing import List, Dict, Any, Optional, Tuple, Set, Iterable
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from backend.database import get_db
+import re
+from backend.database import get_db, engine
 from backend.utils.crm_management.engagement_models import TargetAccountEngagement
 from backend.utils.crm_management.target_account_models_dto import TargetAccount
 from backend.utils.crm_management.target_account_manager import get_account_by_id  # your ORM model
-from backend.utils.knowledge_base.arsenal.db_models import ArsenalAsset, ArsenalChannel
+from backend.utils.knowledge_base.arsenal.db_models import (
+    ApprovalStatus,
+    ArsenalAsset,
+    ArsenalChannel,
+)
+from backend.utils.knowledge_base.arsenal.channel_catalog import resolve_canonical_channel
 from backend.utils.knowledge_base.arsenal.service import (
     get_or_create_asset,
     get_or_create_channel,
 )
+from backend.utils.knowledge_base.arsenal.parser import parse_engagement_activity
 import traceback
 
 def _to_conf(x) -> int:
@@ -38,7 +45,70 @@ def _normalize_text(value: Optional[str]) -> Optional[str]:
     text = value.strip()
     return text or None
 
-def _resolve_asset_labels(payload: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+def _title_case(value: str) -> str:
+    return " ".join(segment.capitalize() for segment in value.replace("_", " ").split() if segment)
+
+def _persona_id_from_row(row: TargetAccountEngagement) -> Optional[str]:
+    parts = [
+        (row.actor_title or "").strip(),
+        (row.actor_department or "").strip(),
+        (row.actor_seniority or "").strip(),
+    ]
+    filtered = [p for p in parts if p]
+    if not filtered:
+        return None
+    return "|".join(filtered)
+
+def _persona_label(persona_id: Optional[str]) -> Optional[str]:
+    if not persona_id:
+        return None
+    segments = [seg.strip() for seg in persona_id.split("|") if seg and seg.strip()]
+    if not segments:
+        return persona_id
+    return " | ".join(_title_case(seg) for seg in segments)
+
+def _segments_from_account_meta(account_meta: Optional[Dict[str, Any]]) -> List[str]:
+    if not account_meta:
+        return []
+    mapping = [
+        ("industry", "Industry"),
+        ("revenue_range", "Revenue"),
+        ("employee_range", "Employees"),
+        ("geography", "Region"),
+        ("deal_status", "Deal Stage"),
+        ("funding_stage", "Funding"),
+    ]
+    segments: List[str] = []
+    for key, label in mapping:
+        value = account_meta.get(key)
+        if value:
+            segments.append(f"{label}: {value}")
+    return segments
+
+def _merge_string_lists(existing: Optional[Iterable[str]], additions: Iterable[str]) -> List[str]:
+    merged: List[str] = []
+    seen: Set[str] = set()
+    for source in (existing or []):
+        if not source:
+            continue
+        if source in seen:
+            continue
+        seen.add(source)
+        merged.append(source)
+    for item in additions:
+        if not item:
+            continue
+        if item in seen:
+            continue
+        seen.add(item)
+        merged.append(item)
+    return merged
+
+def _resolve_asset_labels(
+    payload: Dict[str, Any],
+    inferred_asset_name: Optional[str] = None,
+    inferred_slug_seed: Optional[str] = None,
+) -> Tuple[Optional[str], Optional[str]]:
     """
     Returns a tuple of (display_name, slug_seed) for asset creation.
     """
@@ -52,10 +122,103 @@ def _resolve_asset_labels(payload: Dict[str, Any]) -> Tuple[Optional[str], Optio
     raw_label = raw_label.strip() if isinstance(raw_label, str) else raw_label
     slug_seed = payload.get("asset_id") or raw_label
     slug_seed = slug_seed.strip() if isinstance(slug_seed, str) else slug_seed
+    if not raw_label and inferred_asset_name:
+        raw_label = inferred_asset_name
+    if not slug_seed and inferred_slug_seed:
+        slug_seed = inferred_slug_seed
     return raw_label, slug_seed
 
-def _resolve_channel_label(payload: Dict[str, Any]) -> Optional[str]:
-    return _normalize_text(payload.get("channel") or payload.get("source"))
+def _resolve_channel_metadata(
+    payload: Dict[str, Any],
+    inferred_channel_label: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    raw_label = _normalize_text(payload.get("channel"))
+    if not raw_label:
+        # fallback to explicit source when it resembles a channel (e.g., "email")
+        raw_label = _normalize_text(payload.get("source"))
+    if not raw_label:
+        raw_label = inferred_channel_label
+    if not raw_label:
+        return None
+    slug_hint, canonical = resolve_canonical_channel(raw_label)
+    return {
+        "slug": slug_hint,
+        "name": canonical.get("name") or raw_label,
+        "channel_type_label": canonical.get("channel_type_label") or canonical.get("name") or raw_label,
+        "channel_type": canonical.get("channel_type"),
+        "delivery_mode": canonical.get("delivery_mode"),
+        "raw_label": raw_label,
+    }
+
+
+def _resolve_engagement_verb(payload: Dict[str, Any]) -> Optional[str]:
+    raw_activity = _normalize_text(payload.get("raw_activity"))
+    action = _normalize_text(payload.get("action"))
+    activity = _normalize_text(payload.get("activity"))
+    for candidate in (payload.get("verb"), action, activity, raw_activity):
+        normalized = _normalize_text(candidate)
+        if not normalized:
+            continue
+        tokens = normalized.split()
+        verb = tokens[0].lower()
+        if verb.endswith("ed"):
+            return verb
+        mapped = {
+            "download": "downloaded",
+            "attend": "attended",
+            "reply": "replied",
+            "open": "opened",
+            "view": "viewed",
+            "click": "clicked",
+        }.get(verb)
+        if mapped:
+            return mapped
+    return None
+
+
+def _ensure_reference_entry(
+    existing: Optional[List[Dict[str, str]]],
+    ref_id: str,
+    label: str,
+) -> List[Dict[str, str]]:
+    records = list(existing or [])
+    if any(entry.get("id") == ref_id for entry in records):
+        return records
+    records.append({"id": ref_id, "label": label})
+    return records
+
+
+def _ensure_engagement_columns() -> None:
+    ddl = {
+        "channel_id": "ALTER TABLE target_account_engagements ADD COLUMN channel_id VARCHAR",
+        "engagement_verb": "ALTER TABLE target_account_engagements ADD COLUMN engagement_verb VARCHAR",
+        "activity_label": "ALTER TABLE target_account_engagements ADD COLUMN activity_label VARCHAR",
+        "asset_category": "ALTER TABLE target_account_engagements ADD COLUMN asset_category VARCHAR",
+        "parser_version": "ALTER TABLE target_account_engagements ADD COLUMN parser_version VARCHAR",
+        "parser_confidence": "ALTER TABLE target_account_engagements ADD COLUMN parser_confidence FLOAT",
+    }
+    try:
+        with engine.connect() as conn:
+            existing = {
+                row["name"]
+                for row in conn.execute(text("PRAGMA table_info(target_account_engagements);"))
+            }
+        missing = {col: stmt for col, stmt in ddl.items() if col not in existing}
+        if not missing:
+            return
+        with engine.begin() as conn:
+            for statement in missing.values():
+                try:
+                    conn.execute(text(statement))
+                except Exception:
+                    # column may have been added concurrently; ignore
+                    pass
+    except Exception:
+        # best-effort; if introspection fails we silently continue
+        return
+
+
+_ensure_engagement_columns()
 
 def _attach_arsenal_references(
     db: Session,
@@ -65,15 +228,41 @@ def _attach_arsenal_references(
     engagement_row: TargetAccountEngagement,
     asset_tracker: Dict[str, Set[str]],
     channel_tracker: Dict[str, Set[str]],
+    account_meta: Optional[Dict[str, Any]] = None,
 ) -> None:
-    asset_name, asset_slug_seed = _resolve_asset_labels(engagement_payload)
+    persona_id = _persona_id_from_row(engagement_row)
+    persona_label = _persona_label(persona_id)
+    account_segments = _segments_from_account_meta(account_meta)
+    engagement_row.engagement_verb = _resolve_engagement_verb(engagement_payload)
+
+    parsed_activity = parse_engagement_activity(engagement_payload)
+    engagement_row.activity_label = parsed_activity.activity_label.label
+    engagement_row.asset_category = parsed_activity.asset_category.label
+    engagement_row.parser_version = parsed_activity.parser_version
+    engagement_row.parser_confidence = parsed_activity.asset_name.confidence
+
+    asset_name, asset_slug_seed = _resolve_asset_labels(
+        engagement_payload,
+        parsed_activity.asset_name.label,
+        parsed_activity.asset_slug_seed,
+    )
     asset_identifier = engagement_payload.get("asset_id")
+    asset: Optional[ArsenalAsset] = None
     if asset_name or asset_identifier:
-        defaults = {}
+        defaults: Dict[str, Any] = {}
         if asset_slug_seed:
             defaults["slug"] = ArsenalAsset.slug_for(str(asset_slug_seed))
         defaults["created_from_engagement_id"] = getattr(engagement_row, "id", None)
         defaults.setdefault("description", engagement_payload.get("raw_activity"))
+        if persona_label:
+            defaults["target_personas"] = [persona_label]
+        if account_segments:
+            defaults["target_account_segments"] = account_segments
+        if parsed_activity.asset_category.label:
+            defaults["category"] = parsed_activity.asset_category.label
+        defaults["derived_metadata"] = parsed_activity.derived_metadata()
+        defaults["auto_classification_confidence"] = parsed_activity.asset_name.confidence
+        defaults["approval_status"] = ApprovalStatus.PENDING
         asset, created = get_or_create_asset(
             db,
             product_id=product_id,
@@ -87,6 +276,15 @@ def _attach_arsenal_references(
             asset.name = asset_name
         if not asset.description and engagement_payload.get("raw_activity"):
             asset.description = engagement_payload.get("raw_activity")
+        if not created:
+            if persona_label:
+                asset.target_personas = _merge_string_lists(
+                    asset.target_personas, [persona_label]
+                )
+            if account_segments:
+                asset.target_account_segments = _merge_string_lists(
+                    asset.target_account_segments, account_segments
+                )
         asset.update_metadata_status()
         if created:
             asset_tracker["created"].add(asset.id)
@@ -98,16 +296,29 @@ def _attach_arsenal_references(
             asset.created_from_engagement_id = engagement_row.id
         db.add(asset)
 
-    channel_name = _resolve_channel_label(engagement_payload)
-    if channel_name:
+    channel_info = _resolve_channel_metadata(
+        engagement_payload, parsed_activity.channel_label.label
+    )
+    channel: Optional[ArsenalChannel] = None
+    if channel_info:
+        canonical_slug = ArsenalChannel.slug_for(channel_info["slug"] or channel_info["name"])
+        channel_identifier = f"channel:{canonical_slug}"
         defaults = {
             "created_from_engagement_id": getattr(engagement_row, "id", None),
+            "channel_type": channel_info.get("channel_type"),
+            "delivery_mode": channel_info.get("delivery_mode"),
+            "derived_metadata": {
+                "parser_version": parsed_activity.parser_version,
+                "channel": parsed_activity.channel_label.as_dict(),
+                "activity": parsed_activity.activity_label.as_dict(),
+            },
+            "auto_classification_confidence": parsed_activity.channel_label.confidence,
+            "approval_status": ApprovalStatus.PENDING,
         }
-        channel_identifier = f"channel:{ArsenalChannel.slug_for(channel_name)}"
         channel, created = get_or_create_channel(
             db,
             product_id=product_id,
-            name=channel_name,
+            name=channel_info["name"],
             defaults=defaults,
             explicit_id=channel_identifier,
         )
@@ -123,7 +334,14 @@ def _attach_arsenal_references(
             channel.notes = engagement_payload.get("raw_activity")
         channel.update_metadata_status()
         db.add(channel)
-        # retain original friendly channel label in engagement row for UI
+        engagement_row.channel = channel_info.get("channel_type_label") or channel.name
+        engagement_row.channel_id = channel.id
+
+    if asset and channel:
+        asset.typical_channels = _ensure_reference_entry(asset.typical_channels, channel.id, channel.name)
+        channel.typical_assets = _ensure_reference_entry(channel.typical_assets, asset.id, asset.name)
+        db.add(asset)
+        db.add(channel)
 def save_and_update_account_engagements(product_id: str, engagements: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Persist a batch of engagements (append-only).
@@ -177,6 +395,7 @@ def save_and_update_account_engagements(product_id: str, engagements: List[Dict[
                 engagement_row=row,
                 asset_tracker=asset_tracker,
                 channel_tracker=channel_tracker,
+                account_meta=account,
             )
             created += 1
             touched.add(acc_id)
@@ -236,6 +455,8 @@ def get_account_engagements(product_id: str, account_id: str, limit: int = 200) 
                 "timestamp": r.timestamp,
                 "source": r.source,
                 "channel": r.channel,
+                "channel_id": r.channel_id,
+                "verb": r.engagement_verb,
                 "inferred": r.inferred,
                 "actor": {
                     "name": r.actor_name,
@@ -307,7 +528,8 @@ def save_engagements_bulk(product_id: str, account_id: str, engagements: List[Di
 
     try:
         # Guard: target account must exist for this product
-        if not get_account_by_id(product_id, account_id):
+        account_meta = get_account_by_id(product_id, account_id)
+        if not account_meta:
             print(f"[warn] account_id {account_id} not found for product {product_id}; skipping")
             return 0
 
@@ -399,6 +621,7 @@ def save_engagements_bulk(product_id: str, account_id: str, engagements: List[Di
                 engagement_row=row,
                 asset_tracker=asset_tracker,
                 channel_tracker=channel_tracker,
+                account_meta=account_meta,
             )
             inserted += 1
             print("Inserted engagement row:", row.id if hasattr(row, "id") else "<pending>")

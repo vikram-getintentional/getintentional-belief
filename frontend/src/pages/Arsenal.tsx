@@ -1,8 +1,10 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
+  Chip,
   Container,
   Dialog,
   DialogActions,
@@ -19,6 +21,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Stack from "@mui/material/Stack";
 import AssetsLibrary from "../components/AssetsLibrary";
 import ChannelsLibrary from "../components/ChannelsLibrary";
 
@@ -30,6 +33,7 @@ type AssetOptionGroups = {
   time_to_consume: EnumOption[];
   depth: EnumOption[];
   sales_call_stage: EnumOption[];
+  belief_stage: EnumOption[];
 };
 
 type ChannelOptionGroups = {
@@ -37,7 +41,57 @@ type ChannelOptionGroups = {
   delivery_mode: EnumOption[];
 };
 
+const BELIEF_STAGE_OPTIONS: EnumOption[] = [
+  { value: "Problem Realization", label: "Problem Realization" },
+  { value: "Pain Realization", label: "Pain Realization" },
+  { value: "Resolution Discovery", label: "Resolution Discovery" },
+  { value: "Execution Guidance", label: "Execution Guidance" },
+];
+
+const ORG_CONVERSION_OPTIONS: EnumOption[] = [
+  { value: "early", label: "Early Cycle" },
+  { value: "mid", label: "Mid Cycle" },
+  { value: "late", label: "Late Cycle" },
+];
+
+const dedupeStrings = (values: Array<string | null | undefined>): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  values.forEach((value) => {
+    if (!value) return;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    out.push(trimmed);
+  });
+  return out;
+};
+
+const formatOptionLabel = (value: string) => {
+  const cleaned = value.replace(/[_\s]+/g, " ").trim();
+  if (!cleaned) return value;
+  return cleaned
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
+
+const buildLabelMap = (options: EnumOption[]) => {
+  return options.reduce<Record<string, string>>((acc, option) => {
+    const key = option.value.toLowerCase();
+    acc[key] = option.label || formatOptionLabel(option.value);
+    return acc;
+  }, {});
+};
+
+const labelFromMap = (map: Record<string, string>, value: string) => {
+  if (!value) return "";
+  return map[value.toLowerCase()] || formatOptionLabel(value);
+};
+
 type AssetFormState = {
+  name: string;
   category: string;
   content_type: string;
   time_to_consume: string;
@@ -45,13 +99,25 @@ type AssetFormState = {
   description: string;
   notes: string;
   callStage: string;
+  targetPersonas: string[];
+  targetAccountSegments: string[];
+  targetStages: string[];
+  targetConcerns: string[];
+  orgConversionMaturity: string;
+  typicalChannels: string[];
 };
 
 type ChannelFormState = {
+  name: string;
   channel_type: string;
   delivery_mode: string;
   reach_score_estimate: string;
   notes: string;
+  targetPersonas: string[];
+  targetAccountSegments: string[];
+  targetStages: string[];
+  orgConversionMaturity: string;
+  typicalAssets: string[];
 };
 
 type SnackState = {
@@ -66,6 +132,7 @@ const emptyAssetOptions: AssetOptionGroups = {
   time_to_consume: [],
   depth: [],
   sales_call_stage: [],
+  belief_stage: BELIEF_STAGE_OPTIONS,
 };
 
 const emptyChannelOptions: ChannelOptionGroups = {
@@ -74,6 +141,7 @@ const emptyChannelOptions: ChannelOptionGroups = {
 };
 
 const createDefaultAssetForm = (): AssetFormState => ({
+  name: "",
   category: "",
   content_type: "",
   time_to_consume: "",
@@ -81,13 +149,25 @@ const createDefaultAssetForm = (): AssetFormState => ({
   description: "",
   notes: "",
   callStage: "",
+  targetPersonas: [],
+  targetAccountSegments: [],
+  targetStages: [],
+  targetConcerns: [],
+  orgConversionMaturity: "",
+  typicalChannels: [],
 });
 
 const createDefaultChannelForm = (): ChannelFormState => ({
+  name: "",
   channel_type: "",
   delivery_mode: "",
   reach_score_estimate: "",
   notes: "",
+  targetPersonas: [],
+  targetAccountSegments: [],
+  targetStages: [],
+  orgConversionMaturity: "",
+  typicalAssets: [],
 });
 
 const Arsenal = () => {
@@ -107,6 +187,8 @@ const Arsenal = () => {
 
   const [editingAsset, setEditingAsset] = useState<any | null>(null);
   const [editingChannel, setEditingChannel] = useState<any | null>(null);
+  const [assetModalMode, setAssetModalMode] = useState<"edit" | "create">("edit");
+  const [channelModalMode, setChannelModalMode] = useState<"edit" | "create">("edit");
   const [assetForm, setAssetForm] = useState<AssetFormState>(createDefaultAssetForm());
   const [channelForm, setChannelForm] = useState<ChannelFormState>(createDefaultChannelForm());
   const [assetSaving, setAssetSaving] = useState(false);
@@ -117,6 +199,188 @@ const Arsenal = () => {
     message: "",
     severity: "success",
   });
+  const [assetCategoryInput, setAssetCategoryInput] = useState("");
+  const [assetContentTypeInput, setAssetContentTypeInput] = useState("");
+  const [channelTypeInput, setChannelTypeInput] = useState("");
+  const [deliveryModeInput, setDeliveryModeInput] = useState("");
+
+  const assetCategoryValues = useMemo(
+    () => assetOptions.category.map((option) => option.value),
+    [assetOptions.category]
+  );
+  const assetCategoryLabelMap = useMemo(
+    () => buildLabelMap(assetOptions.category),
+    [assetOptions.category]
+  );
+  const assetContentTypeValues = useMemo(
+    () => assetOptions.content_type.map((option) => option.value),
+    [assetOptions.content_type]
+  );
+  const assetContentTypeLabelMap = useMemo(
+    () => buildLabelMap(assetOptions.content_type),
+    [assetOptions.content_type]
+  );
+  const channelTypeValues = useMemo(
+    () => channelOptions.channel_type.map((option) => option.value),
+    [channelOptions.channel_type]
+  );
+  const channelTypeLabelMap = useMemo(
+    () => buildLabelMap(channelOptions.channel_type),
+    [channelOptions.channel_type]
+  );
+  const deliveryModeValues = useMemo(
+    () => channelOptions.delivery_mode.map((option) => option.value),
+    [channelOptions.delivery_mode]
+  );
+  const deliveryModeLabelMap = useMemo(
+    () => buildLabelMap(channelOptions.delivery_mode),
+    [channelOptions.delivery_mode]
+  );
+
+  const assetStageOptions = useMemo(
+    () =>
+      (assetOptions.belief_stage && assetOptions.belief_stage.length > 0
+        ? assetOptions.belief_stage
+        : BELIEF_STAGE_OPTIONS
+      ).map((option) => option.label || option.value),
+    [assetOptions.belief_stage]
+  );
+
+  const assetPersonaOptions = useMemo(() => {
+    const usagePersonas =
+      (editingAsset?.usage?.personas || []).map(
+        (persona: { label?: string | null; id: string }) => persona.label || persona.id
+      ) || [];
+    return dedupeStrings([...assetForm.targetPersonas, ...usagePersonas]);
+  }, [assetForm.targetPersonas, editingAsset]);
+
+  const assetSegmentOptions = useMemo(() => {
+    const usageSegments =
+      (editingAsset?.usage?.segments || []).map((segment: { label: string }) => segment.label) || [];
+    return dedupeStrings([...assetForm.targetAccountSegments, ...usageSegments]);
+  }, [assetForm.targetAccountSegments, editingAsset]);
+
+  const channelStageOptions = assetStageOptions;
+  const isCreatingAsset = Boolean(editingAsset && assetModalMode === "create");
+  const isCreatingChannel = Boolean(editingChannel && channelModalMode === "create");
+
+  useEffect(() => {
+    setAssetCategoryInput(
+      assetForm.category
+        ? labelFromMap(assetCategoryLabelMap, assetForm.category)
+        : ""
+    );
+  }, [assetForm.category, assetCategoryLabelMap]);
+
+  useEffect(() => {
+    setAssetContentTypeInput(
+      assetForm.content_type
+        ? labelFromMap(assetContentTypeLabelMap, assetForm.content_type)
+        : ""
+    );
+  }, [assetForm.content_type, assetContentTypeLabelMap]);
+
+  useEffect(() => {
+    setChannelTypeInput(
+      channelForm.channel_type
+        ? labelFromMap(channelTypeLabelMap, channelForm.channel_type)
+        : ""
+    );
+  }, [channelForm.channel_type, channelTypeLabelMap]);
+
+  useEffect(() => {
+    setDeliveryModeInput(
+      channelForm.delivery_mode
+        ? labelFromMap(deliveryModeLabelMap, channelForm.delivery_mode)
+        : ""
+    );
+  }, [channelForm.delivery_mode, deliveryModeLabelMap]);
+
+  const assetUsageStageLabels = useMemo(
+    () => (editingAsset?.usage?.stages || []).map((stage: { label: string }) => stage.label) || [],
+    [editingAsset]
+  );
+  const assetUsageConcernLabels = useMemo(
+    () => (editingAsset?.usage?.concerns || []).map((concern: { label: string }) => concern.label) || [],
+    [editingAsset]
+  );
+  const assetUsagePersonaMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (editingAsset?.usage?.personas || []).forEach(
+      (persona: { id: string; label?: string | null }) => map.set(persona.id, persona.label || persona.id)
+    );
+    return map;
+  }, [editingAsset]);
+
+  const assetConcernOptions = useMemo(() => {
+    return dedupeStrings([...assetForm.targetConcerns, ...assetUsageConcernLabels]);
+  }, [assetForm.targetConcerns, assetUsageConcernLabels]);
+
+  const channelPersonaOptions = useMemo(() => {
+    const usagePersonas =
+      (editingChannel?.usage?.personas || []).map(
+        (persona: { label?: string | null; id: string }) => persona.label || persona.id
+      ) || [];
+    return dedupeStrings([...channelForm.targetPersonas, ...usagePersonas]);
+  }, [channelForm.targetPersonas, editingChannel]);
+
+  const channelSegmentOptions = useMemo(() => {
+    const usageSegments =
+      (editingChannel?.usage?.segments || []).map((segment: { label: string }) => segment.label) || [];
+    return dedupeStrings([...channelForm.targetAccountSegments, ...usageSegments]);
+  }, [channelForm.targetAccountSegments, editingChannel]);
+
+  const channelUsageStageLabels = useMemo(
+    () => (editingChannel?.usage?.stages || []).map((stage: { label: string }) => stage.label) || [],
+    [editingChannel]
+  );
+  const channelUsagePersonaMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (editingChannel?.usage?.personas || []).forEach(
+      (persona: { id: string; label?: string | null }) => map.set(persona.id, persona.label || persona.id)
+    );
+    return map;
+  }, [editingChannel]);
+
+  const channelLabelMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    arsenalChannels.forEach((channel) => {
+      map[channel.id] = channel.name || channel.slug || channel.id;
+    });
+    return map;
+  }, [arsenalChannels]);
+
+  const channelOptionsForSelect = useMemo(() => {
+    const base = arsenalChannels.map((channel) => channel.id);
+    const seen = new Set(base);
+    assetForm.typicalChannels.forEach((id) => {
+      if (!seen.has(id)) {
+        base.push(id);
+        seen.add(id);
+      }
+    });
+    return base;
+  }, [arsenalChannels, assetForm.typicalChannels]);
+
+  const assetLabelMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    arsenalAssets.forEach((asset) => {
+      map[asset.id] = asset.name || asset.slug || asset.id;
+    });
+    return map;
+  }, [arsenalAssets]);
+
+  const assetOptionsForSelect = useMemo(() => {
+    const base = arsenalAssets.map((asset) => asset.id);
+    const seen = new Set(base);
+    channelForm.typicalAssets.forEach((id) => {
+      if (!seen.has(id)) {
+        base.push(id);
+        seen.add(id);
+      }
+    });
+    return base;
+  }, [arsenalAssets, channelForm.typicalAssets]);
 
   const recomputeMetaGaps = (assetsList: any[], channelsList: any[]) => {
     setAssetMetaGaps(assetsList.filter((asset) => !asset.metadata_complete).length);
@@ -172,6 +436,7 @@ const Arsenal = () => {
           time_to_consume: assetOpts.time_to_consume ?? [],
           depth: assetOpts.depth ?? [],
           sales_call_stage: assetOpts.sales_call_stage ?? [],
+          belief_stage: assetOpts.belief_stage ?? BELIEF_STAGE_OPTIONS,
         });
         setChannelOptions({
           channel_type: channelOpts.channel_type ?? [],
@@ -209,6 +474,7 @@ const Arsenal = () => {
   useEffect(() => {
     if (editingAsset) {
       setAssetForm({
+        name: editingAsset.name || "",
         category: editingAsset.category || "",
         content_type: editingAsset.content_type || "",
         time_to_consume: editingAsset.time_to_consume || "",
@@ -216,15 +482,37 @@ const Arsenal = () => {
         description: editingAsset.description || "",
         notes: editingAsset.notes || "",
         callStage: editingAsset.call_stage || "",
+        targetPersonas: dedupeStrings(
+          (editingAsset.target_personas || []).map(
+            (value: string) => assetUsagePersonaMap.get(value) || value
+          )
+        ),
+        targetAccountSegments: editingAsset.target_account_segments || [],
+        targetStages: dedupeStrings([
+          ...(editingAsset.target_belief_stages || []),
+          ...assetUsageStageLabels,
+        ]),
+        targetConcerns: dedupeStrings([
+          ...(editingAsset.target_concerns || []),
+          ...assetUsageConcernLabels,
+        ]),
+        orgConversionMaturity:
+          editingAsset.org_conversion_maturity?.code ||
+          editingAsset.funnel_stage?.code ||
+          "",
+        typicalChannels: (editingAsset.typical_channels || []).map(
+          (entry: { id: string }) => entry.id
+        ),
       });
     } else {
       setAssetForm(createDefaultAssetForm());
     }
-  }, [editingAsset]);
+  }, [editingAsset, assetUsagePersonaMap, assetUsageStageLabels, assetUsageConcernLabels]);
 
   useEffect(() => {
     if (editingChannel) {
       setChannelForm({
+        name: editingChannel.name || "",
         channel_type: editingChannel.channel_type || "",
         delivery_mode: editingChannel.delivery_mode || "",
         reach_score_estimate:
@@ -233,60 +521,270 @@ const Arsenal = () => {
             ? ""
             : String(editingChannel.reach_score_estimate),
         notes: editingChannel.notes || "",
+        targetPersonas: dedupeStrings(
+          (editingChannel.target_personas || []).map(
+            (value: string) => channelUsagePersonaMap.get(value) || value
+          )
+        ),
+        targetAccountSegments: editingChannel.target_account_segments || [],
+        targetStages: dedupeStrings([
+          ...(editingChannel.target_belief_stages || []),
+          ...channelUsageStageLabels,
+        ]),
+        orgConversionMaturity:
+          editingChannel.org_conversion_maturity?.code ||
+          editingChannel.funnel_stage?.code ||
+          "",
+        typicalAssets: (editingChannel.typical_assets || []).map(
+          (entry: { id: string }) => entry.id
+        ),
       });
     } else {
       setChannelForm(createDefaultChannelForm());
     }
-  }, [editingChannel]);
+  }, [
+    editingChannel,
+    channelUsagePersonaMap,
+    channelUsageStageLabels,
+  ]);
 
-  const handleAssetFieldChange = (field: keyof AssetFormState, value: string) => {
+  const handleAssetFieldChange = (
+    field: keyof AssetFormState,
+    value: string,
+    opts?: { displayLabel?: string }
+  ) => {
+    const enumFields: Array<keyof AssetFormState> = [
+      "category",
+      "content_type",
+      "time_to_consume",
+      "depth",
+    ];
+    let normalized = value;
+    if (enumFields.includes(field)) {
+      normalized = value.trim();
+    }
     setAssetForm((prev) => {
-      const next = { ...prev, [field]: value };
-      if (field === "category" && value !== "sales_call" && prev.callStage) {
+      const next = { ...prev, [field]: normalized };
+      if (field === "category" && normalized !== "sales_call" && prev.callStage) {
         next.callStage = "";
       }
       return next;
     });
+    if (enumFields.includes(field) && normalized) {
+      setAssetOptions((prev) => {
+        const optionKeyMap: Record<
+          "category" | "content_type" | "time_to_consume" | "depth",
+          keyof AssetOptionGroups
+        > = {
+          category: "category",
+          content_type: "content_type",
+          time_to_consume: "time_to_consume",
+          depth: "depth",
+        };
+        const optionKey =
+          optionKeyMap[field as "category" | "content_type" | "time_to_consume" | "depth"];
+        const list = prev[optionKey] || [];
+        const exists = list.some(
+          (option) => option.value.toLowerCase() === normalized.toLowerCase()
+        );
+        if (exists) return prev;
+        const updatedList = [
+          ...list,
+          {
+            value: normalized,
+            label: opts?.displayLabel?.trim() || formatOptionLabel(normalized),
+          },
+        ];
+        return {
+          ...prev,
+          [optionKey]: updatedList,
+        };
+      });
+    }
   };
 
-  const handleChannelFieldChange = (field: keyof ChannelFormState, value: string) => {
-    setChannelForm((prev) => ({ ...prev, [field]: value }));
+  const handleAssetListChange = (
+    field: "targetPersonas" | "targetAccountSegments" | "targetStages" | "targetConcerns",
+    values: string[]
+  ) => {
+    setAssetForm((prev) => ({
+      ...prev,
+      [field]: dedupeStrings(values.map((value) => value.trim()).filter(Boolean)),
+    }));
+  };
+
+  const handleAssetIdListChange = (field: "typicalChannels", values: string[]) => {
+    setAssetForm((prev) => ({
+      ...prev,
+      [field]: values.map((value) => value.trim()).filter(Boolean),
+    }));
+  };
+
+  const handleChannelFieldChange = (
+    field: keyof ChannelFormState,
+    value: string,
+    opts?: { displayLabel?: string }
+  ) => {
+    const enumFields: Array<keyof ChannelFormState> = ["channel_type", "delivery_mode"];
+    let normalized = value;
+    if (enumFields.includes(field)) {
+      normalized = value.trim();
+    } else if (field === "name") {
+      normalized = value.trim();
+    }
+    setChannelForm((prev) => ({ ...prev, [field]: normalized }));
+    if (enumFields.includes(field) && normalized) {
+      setChannelOptions((prev) => {
+        const optionKeyMap: Record<
+          "channel_type" | "delivery_mode",
+          keyof ChannelOptionGroups
+        > = {
+          channel_type: "channel_type",
+          delivery_mode: "delivery_mode",
+        };
+        const optionKey = optionKeyMap[field as "channel_type" | "delivery_mode"];
+        const list = prev[optionKey] || [];
+        const exists = list.some(
+          (option) => option.value.toLowerCase() === normalized.toLowerCase()
+        );
+        if (exists) return prev;
+        const updatedList = [
+          ...list,
+          {
+            value: normalized,
+            label: opts?.displayLabel?.trim() || formatOptionLabel(normalized),
+          },
+        ];
+        return {
+          ...prev,
+          [optionKey]: updatedList,
+        };
+      });
+    }
+  };
+
+  const handleChannelListChange = (
+    field: "targetPersonas" | "targetAccountSegments" | "targetStages",
+    values: string[]
+  ) => {
+    setChannelForm((prev) => ({
+      ...prev,
+      [field]: dedupeStrings(values.map((value) => value.trim()).filter(Boolean)),
+    }));
+  };
+
+  const handleChannelIdListChange = (field: "typicalAssets", values: string[]) => {
+    setChannelForm((prev) => ({
+      ...prev,
+      [field]: values.map((value) => value.trim()).filter(Boolean),
+    }));
+  };
+
+  const handleCreateAssetClick = () => {
+    if (!selectedProductId) {
+      setSnack({
+        open: true,
+        message: "Select a product before creating assets.",
+        severity: "error",
+      });
+      return;
+    }
+    setAssetModalMode("create");
+    setEditingAsset({
+      id: "__new__",
+      product_id: selectedProductId,
+      usage: {},
+      __isNew: true,
+    });
+  };
+
+  const handleCreateChannelClick = () => {
+    if (!selectedProductId) {
+      setSnack({
+        open: true,
+        message: "Select a product before creating channels.",
+        severity: "error",
+      });
+      return;
+    }
+    setChannelModalMode("create");
+    setEditingChannel({
+      id: "__new__",
+      product_id: selectedProductId,
+      usage: {},
+      __isNew: true,
+    });
   };
 
   const handleAssetSave = async () => {
     if (!editingAsset || !token) return;
+    if (assetModalMode === "create" && !selectedProductId) {
+      setSnack({
+        open: true,
+        message: "Select a product before creating assets.",
+        severity: "error",
+      });
+      return;
+    }
     setAssetSaving(true);
     try {
-      const res = await fetch(
-        `http://localhost:8000/arsenal/assets/${editingAsset.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            category: assetForm.category || null,
-            content_type: assetForm.content_type || null,
-            time_to_consume: assetForm.time_to_consume || null,
-            depth: assetForm.depth || null,
-            description: assetForm.description,
-            notes: assetForm.notes,
-            call_stage: assetForm.callStage || null,
-          }),
-        }
-      );
+      const payload = {
+        name: assetForm.name || null,
+        category: assetForm.category || null,
+        content_type: assetForm.content_type || null,
+        time_to_consume: assetForm.time_to_consume || null,
+        depth: assetForm.depth || null,
+        description: assetForm.description,
+        notes: assetForm.notes,
+        call_stage: assetForm.callStage || null,
+        target_personas: assetForm.targetPersonas,
+        target_account_segments: assetForm.targetAccountSegments,
+        target_belief_stages: assetForm.targetStages,
+        target_concerns: assetForm.targetConcerns,
+        org_conversion_maturity: assetForm.orgConversionMaturity || null,
+        typical_channels: assetForm.typicalChannels,
+      };
+      const endpoint =
+        assetModalMode === "create"
+          ? "http://localhost:8000/arsenal/assets"
+          : `http://localhost:8000/arsenal/assets/${editingAsset.id}`;
+      const method = assetModalMode === "create" ? "POST" : "PATCH";
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          assetModalMode === "create"
+            ? { product_id: selectedProductId, ...payload }
+            : payload
+        ),
+      });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error((data && data.detail) || "Failed to update asset metadata");
       }
       const updated = data.asset;
       setArsenalAssets((prev) => {
-        const next = prev.map((asset) => (asset.id === updated.id ? updated : asset));
+        let next: any[];
+        if (assetModalMode === "create") {
+          next = [updated, ...prev];
+        } else {
+          next = prev.map((asset) => (asset.id === updated.id ? updated : asset));
+        }
         recomputeMetaGaps(next, arsenalChannels);
         return next;
       });
-      setSnack({ open: true, message: "Asset metadata updated", severity: "success" });
+      setSnack({
+        open: true,
+        message:
+          assetModalMode === "create"
+            ? "Asset created"
+            : "Asset metadata updated",
+        severity: "success",
+      });
+      setAssetModalMode("edit");
       setEditingAsset(null);
     } catch (err: any) {
       setSnack({
@@ -301,6 +799,14 @@ const Arsenal = () => {
 
   const handleChannelSave = async () => {
     if (!editingChannel || !token) return;
+    if (channelModalMode === "create" && !selectedProductId) {
+      setSnack({
+        open: true,
+        message: "Select a product before creating channels.",
+        severity: "error",
+      });
+      return;
+    }
     setChannelSaving(true);
     try {
       const reachValue = channelForm.reach_score_estimate.trim();
@@ -313,33 +819,61 @@ const Arsenal = () => {
         reachPayload = parsed;
       }
 
-      const res = await fetch(
-        `http://localhost:8000/arsenal/channels/${editingChannel.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            channel_type: channelForm.channel_type || null,
-            delivery_mode: channelForm.delivery_mode || null,
-            reach_score_estimate: reachPayload,
-            notes: channelForm.notes,
-          }),
-        }
-      );
+      const payload = {
+        name: channelForm.name || null,
+        channel_type: channelForm.channel_type || null,
+        delivery_mode: channelForm.delivery_mode || null,
+        reach_score_estimate: reachPayload,
+        notes: channelForm.notes,
+        target_personas: channelForm.targetPersonas,
+        target_account_segments: channelForm.targetAccountSegments,
+        target_belief_stages: channelForm.targetStages,
+        target_concerns: channelForm.targetConcerns,
+        org_conversion_maturity: channelForm.orgConversionMaturity || null,
+        typical_assets: channelForm.typicalAssets,
+      };
+
+      const endpoint =
+        channelModalMode === "create"
+          ? "http://localhost:8000/arsenal/channels"
+          : `http://localhost:8000/arsenal/channels/${editingChannel.id}`;
+      const method = channelModalMode === "create" ? "POST" : "PATCH";
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          channelModalMode === "create"
+            ? { product_id: selectedProductId, ...payload }
+            : payload
+        ),
+      });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         throw new Error((data && data.detail) || "Failed to update channel metadata");
       }
       const updated = data.channel;
       setArsenalChannels((prev) => {
-        const next = prev.map((channel) => (channel.id === updated.id ? updated : channel));
+        let next: any[];
+        if (channelModalMode === "create") {
+          next = [updated, ...prev];
+        } else {
+          next = prev.map((channel) => (channel.id === updated.id ? updated : channel));
+        }
         recomputeMetaGaps(arsenalAssets, next);
         return next;
       });
-      setSnack({ open: true, message: "Channel metadata updated", severity: "success" });
+      setSnack({
+        open: true,
+        message:
+          channelModalMode === "create"
+            ? "Channel created"
+            : "Channel metadata updated",
+        severity: "success",
+      });
+      setChannelModalMode("edit");
       setEditingChannel(null);
     } catch (err: any) {
       setSnack({
@@ -349,6 +883,70 @@ const Arsenal = () => {
       });
     } finally {
       setChannelSaving(false);
+    }
+  };
+
+  const handleAssetApprove = async (asset: any) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`http://localhost:8000/arsenal/assets/${asset.id}/approve`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      const updated = data.asset;
+      setArsenalAssets((prev) => {
+        const next = prev.map((item) => (item.id === updated.id ? updated : item));
+        recomputeMetaGaps(next, arsenalChannels);
+        return next;
+      });
+      if (editingAsset?.id === updated.id) {
+        setEditingAsset(updated);
+      }
+      setSnack({
+        open: true,
+        message: "Asset approved",
+        severity: "success",
+      });
+    } catch (err) {
+      console.error("Asset approval failed", err);
+      setSnack({ open: true, message: "Unable to approve asset", severity: "error" });
+    }
+  };
+
+  const handleChannelApprove = async (channel: any) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`http://localhost:8000/arsenal/channels/${channel.id}/approve`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      const updated = data.channel;
+      setArsenalChannels((prev) => {
+        const next = prev.map((item) => (item.id === updated.id ? updated : item));
+        recomputeMetaGaps(arsenalAssets, next);
+        return next;
+      });
+      if (editingChannel?.id === updated.id) {
+        setEditingChannel(updated);
+      }
+      setSnack({
+        open: true,
+        message: "Channel approved",
+        severity: "success",
+      });
+    } catch (err) {
+      console.error("Channel approval failed", err);
+      setSnack({ open: true, message: "Unable to approve channel", severity: "error" });
     }
   };
 
@@ -406,25 +1004,55 @@ const Arsenal = () => {
         </Alert>
       )}
 
-      <Tabs
-        value={tabIndex}
-        onChange={(_, newValue) => setTabIndex(newValue)}
-        indicatorColor="primary"
-        textColor="primary"
-        variant="fullWidth"
-        sx={{ mb: 3 }}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+          flexWrap: "wrap",
+          mb: 3,
+        }}
       >
-        <Tab label="Assets" />
-        <Tab label="Channels" />
-        <Tab label="Campaigns" />
-      </Tabs>
+        <Tabs
+          value={tabIndex}
+          onChange={(_, newValue) => setTabIndex(newValue)}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
+          sx={{ minWidth: 240 }}
+        >
+          <Tab label="Assets" />
+          <Tab label="Channels" />
+          <Tab label="Campaigns" />
+        </Tabs>
+        <Stack direction="row" spacing={1}>
+          {tabIndex === 0 && (
+            <Button variant="contained" onClick={handleCreateAssetClick} disabled={!selectedProductId}>
+              New Asset
+            </Button>
+          )}
+          {tabIndex === 1 && (
+            <Button variant="contained" onClick={handleCreateChannelClick} disabled={!selectedProductId}>
+              New Channel
+            </Button>
+          )}
+        </Stack>
+      </Box>
 
       <Box hidden={tabIndex !== 0}>
         <Typography variant="h5" gutterBottom>
           Assets
         </Typography>
         <Grid container spacing={2} mb={4} alignItems="stretch">
-          <AssetsLibrary assets={arsenalAssets} onEdit={setEditingAsset} />
+          <AssetsLibrary
+            assets={arsenalAssets}
+            onEdit={(asset) => {
+              setAssetModalMode("edit");
+              setEditingAsset(asset);
+            }}
+            onApprove={handleAssetApprove}
+          />
         </Grid>
       </Box>
 
@@ -433,60 +1061,122 @@ const Arsenal = () => {
           Channels
         </Typography>
         <Grid container spacing={2}>
-          <ChannelsLibrary channels={arsenalChannels} onEdit={setEditingChannel} />
+          <ChannelsLibrary
+            channels={arsenalChannels}
+            onEdit={(channel) => {
+              setChannelModalMode("edit");
+              setEditingChannel(channel);
+            }}
+            onApprove={handleChannelApprove}
+          />
         </Grid>
       </Box>
 
       <Dialog
         open={Boolean(editingAsset)}
-        onClose={() => !assetSaving && setEditingAsset(null)}
+        onClose={() => {
+          if (assetSaving) return;
+          setAssetModalMode("edit");
+          setEditingAsset(null);
+        }}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Edit Asset Metadata</DialogTitle>
+        <DialogTitle>{isCreatingAsset ? "Create Asset" : "Edit Asset Metadata"}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: "grid", gap: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel id="asset-category-label">Category</InputLabel>
-              <Select
-                labelId="asset-category-label"
-                label="Category"
-                value={assetForm.category}
-                onChange={(event) =>
-                  handleAssetFieldChange("category", event.target.value as string)
-                }
-              >
-                <MenuItem value="">
-                  <em>Unspecified</em>
-                </MenuItem>
-                {assetOptions.category.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <TextField
+              label="Asset title"
+              value={assetForm.name}
+              onChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+                handleAssetFieldChange("name", event.target.value)
+              }
+              required
+            />
 
-            <FormControl fullWidth>
-              <InputLabel id="asset-content-type-label">Content Type</InputLabel>
-              <Select
-                labelId="asset-content-type-label"
-                label="Content Type"
-                value={assetForm.content_type}
-                onChange={(event) =>
-                  handleAssetFieldChange("content_type", event.target.value as string)
+            <Autocomplete<string, false, false, true>
+              freeSolo
+              selectOnFocus
+              clearOnBlur
+              handleHomeEndKeys
+              options={assetCategoryValues}
+              value={assetForm.category || null}
+              inputValue={assetCategoryInput}
+              onInputChange={(_, newInput) => setAssetCategoryInput(newInput)}
+              onChange={(_, newValue) => {
+                if (!newValue) {
+                  setAssetCategoryInput("");
+                  handleAssetFieldChange("category", "");
+                  return;
                 }
-              >
-                <MenuItem value="">
-                  <em>Unspecified</em>
-                </MenuItem>
-                {assetOptions.content_type.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                const label =
+                  labelFromMap(assetCategoryLabelMap, newValue) ||
+                  newValue.trim() ||
+                  assetCategoryInput;
+                setAssetCategoryInput(label);
+                handleAssetFieldChange("category", newValue.trim(), {
+                  displayLabel: label,
+                });
+              }}
+              renderOption={(props, option) => (
+                <li {...props}>{labelFromMap(assetCategoryLabelMap, option)}</li>
+              )}
+              getOptionLabel={(option) =>
+                typeof option === "string"
+                  ? labelFromMap(assetCategoryLabelMap, option)
+                  : labelFromMap(assetCategoryLabelMap, option)
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Category"
+                  placeholder="Select or type a category"
+                  required
+                />
+              )}
+            />
+
+            <Autocomplete<string, false, false, true>
+              freeSolo
+              selectOnFocus
+              clearOnBlur
+              handleHomeEndKeys
+              options={assetContentTypeValues}
+              value={assetForm.content_type || null}
+              inputValue={assetContentTypeInput}
+              onInputChange={(_, newInput) => setAssetContentTypeInput(newInput)}
+              onChange={(_, newValue) => {
+                if (!newValue) {
+                  setAssetContentTypeInput("");
+                  handleAssetFieldChange("content_type", "");
+                  return;
+                }
+                const label =
+                  labelFromMap(assetContentTypeLabelMap, newValue) ||
+                  newValue.trim() ||
+                  assetContentTypeInput;
+                setAssetContentTypeInput(label);
+                handleAssetFieldChange("content_type", newValue.trim(), {
+                  displayLabel: label,
+                });
+              }}
+              renderOption={(props, option) => (
+                <li {...props}>{labelFromMap(assetContentTypeLabelMap, option)}</li>
+              )}
+              getOptionLabel={(option) =>
+                typeof option === "string"
+                  ? labelFromMap(assetContentTypeLabelMap, option)
+                  : labelFromMap(assetContentTypeLabelMap, option)
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Content Type"
+                  placeholder="Select or type a content type"
+                  required
+                />
+              )}
+            />
 
             {assetForm.category === "sales_call" && (
               <FormControl fullWidth>
@@ -532,24 +1222,162 @@ const Arsenal = () => {
               </Select>
             </FormControl>
 
+            <Autocomplete<EnumOption, false, false, false>
+              options={assetOptions.depth}
+              value={
+                assetOptions.depth.find(
+                  (option) =>
+                    option.value.toLowerCase() === assetForm.depth.toLowerCase()
+                ) || null
+              }
+              onChange={(_, option) =>
+                handleAssetFieldChange("depth", option?.value || "")
+              }
+              getOptionLabel={(option) => option.label || option.value}
+              isOptionEqualToValue={(option, value) => option.value === value.value}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Depth"
+                  placeholder="Select a depth"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={assetPersonaOptions}
+              value={assetForm.targetPersonas}
+              onChange={(_, value) =>
+                handleAssetListChange(
+                  "targetPersonas",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Target personas"
+                  placeholder="Add persona labels"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={assetSegmentOptions}
+              value={assetForm.targetAccountSegments}
+              onChange={(_, value) =>
+                handleAssetListChange(
+                  "targetAccountSegments",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Target account segments"
+                  placeholder="Add segments like 'Industry: Finance'"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={dedupeStrings([...assetStageOptions, ...assetUsageStageLabels])}
+              value={assetForm.targetStages}
+              onChange={(_, value) =>
+                handleAssetListChange(
+                  "targetStages",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Target belief stages"
+                  placeholder="Select stages this asset supports"
+                />
+              )}
+            />
+
             <FormControl fullWidth>
-              <InputLabel id="asset-depth-label">Depth</InputLabel>
+              <InputLabel id="asset-org-conversion-label">
+                Org Conversion Maturity
+              </InputLabel>
               <Select
-                labelId="asset-depth-label"
-                label="Depth"
-                value={assetForm.depth}
-                onChange={(event) => handleAssetFieldChange("depth", event.target.value as string)}
+                labelId="asset-org-conversion-label"
+                value={assetForm.orgConversionMaturity}
+                label="Org Conversion Maturity"
+                onChange={(event) =>
+                  handleAssetFieldChange(
+                    "orgConversionMaturity",
+                    event.target.value as string
+                  )
+                }
               >
                 <MenuItem value="">
-                  <em>Unspecified</em>
+                  <em>Not set</em>
                 </MenuItem>
-                {assetOptions.depth.map((option) => (
+                {ORG_CONVERSION_OPTIONS.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={assetConcernOptions}
+              value={assetForm.targetConcerns}
+              onChange={(_, value) =>
+                handleAssetListChange(
+                  "targetConcerns",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Key concerns / pains"
+                  placeholder="Add pains, jobs, or triggers this asset addresses"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, false>
+              multiple
+              options={channelOptionsForSelect}
+              value={assetForm.typicalChannels}
+              onChange={(_, value) =>
+                handleAssetIdListChange(
+                  "typicalChannels",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              getOptionLabel={(option) => channelLabelMap[option] || option}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    {...getTagProps({ index })}
+                    label={channelLabelMap[option] || option}
+                    size="small"
+                  />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Typical distribution channels"
+                  placeholder="Select channels that usually deliver this asset"
+                />
+              )}
+            />
 
             <TextField
               label="Description"
@@ -573,66 +1401,240 @@ const Arsenal = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditingAsset(null)} disabled={assetSaving}>
+          <Button
+            onClick={() => {
+              setAssetModalMode("edit");
+              setEditingAsset(null);
+            }}
+            disabled={assetSaving}
+          >
             Cancel
           </Button>
           <Button onClick={handleAssetSave} variant="contained" disabled={assetSaving}>
-            Save
+            {isCreatingAsset ? "Create" : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog
         open={Boolean(editingChannel)}
-        onClose={() => !channelSaving && setEditingChannel(null)}
+        onClose={() => {
+          if (channelSaving) return;
+          setChannelModalMode("edit");
+          setEditingChannel(null);
+        }}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Edit Channel Metadata</DialogTitle>
+        <DialogTitle>{isCreatingChannel ? "Create Channel" : "Edit Channel Metadata"}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: "grid", gap: 2 }}>
+            <TextField
+              label="Channel name"
+              value={channelForm.name}
+              onChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+                handleChannelFieldChange("name", event.target.value)
+              }
+              required
+            />
+
+            <Autocomplete<string, false, false, true>
+              freeSolo
+              selectOnFocus
+              clearOnBlur
+              handleHomeEndKeys
+              options={channelTypeValues}
+              value={channelForm.channel_type || null}
+              inputValue={channelTypeInput}
+              onInputChange={(_, newInput) => setChannelTypeInput(newInput)}
+              onChange={(_, newValue) => {
+                if (!newValue) {
+                  setChannelTypeInput("");
+                  handleChannelFieldChange("channel_type", "");
+                  return;
+                }
+                const label =
+                  labelFromMap(channelTypeLabelMap, newValue) ||
+                  newValue.trim() ||
+                  channelTypeInput;
+                setChannelTypeInput(label);
+                handleChannelFieldChange("channel_type", newValue.trim(), {
+                  displayLabel: label,
+                });
+              }}
+              renderOption={(props, option) => (
+                <li {...props}>{labelFromMap(channelTypeLabelMap, option)}</li>
+              )}
+              getOptionLabel={(option) =>
+                typeof option === "string"
+                  ? labelFromMap(channelTypeLabelMap, option)
+                  : labelFromMap(channelTypeLabelMap, option)
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Channel Type"
+                  placeholder="Select or type a channel type"
+                  required
+                />
+              )}
+            />
+
+            <Autocomplete<string, false, false, true>
+              freeSolo
+              selectOnFocus
+              clearOnBlur
+              handleHomeEndKeys
+              options={deliveryModeValues}
+              value={channelForm.delivery_mode || null}
+              inputValue={deliveryModeInput}
+              onInputChange={(_, newInput) => setDeliveryModeInput(newInput)}
+              onChange={(_, newValue) => {
+                if (!newValue) {
+                  setDeliveryModeInput("");
+                  handleChannelFieldChange("delivery_mode", "");
+                  return;
+                }
+                const label =
+                  labelFromMap(deliveryModeLabelMap, newValue) ||
+                  newValue.trim() ||
+                  deliveryModeInput;
+                setDeliveryModeInput(label);
+                handleChannelFieldChange("delivery_mode", newValue.trim(), {
+                  displayLabel: label,
+                });
+              }}
+              renderOption={(props, option) => (
+                <li {...props}>{labelFromMap(deliveryModeLabelMap, option)}</li>
+              )}
+              getOptionLabel={(option) =>
+                typeof option === "string"
+                  ? labelFromMap(deliveryModeLabelMap, option)
+                  : labelFromMap(deliveryModeLabelMap, option)
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Delivery Mode"
+                  placeholder="Select or type a delivery mode"
+                  required
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={channelPersonaOptions}
+              value={channelForm.targetPersonas}
+              onChange={(_, value) =>
+                handleChannelListChange(
+                  "targetPersonas",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Target personas"
+                  placeholder="Add persona labels"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={channelSegmentOptions}
+              value={channelForm.targetAccountSegments}
+              onChange={(_, value) =>
+                handleChannelListChange(
+                  "targetAccountSegments",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Target account segments"
+                  placeholder="Add segments like 'Industry: Finance'"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={dedupeStrings([...channelStageOptions, ...channelUsageStageLabels])}
+              value={channelForm.targetStages}
+              onChange={(_, value) =>
+                handleChannelListChange(
+                  "targetStages",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Target belief stages"
+                  placeholder="Select stages this channel supports"
+                />
+              )}
+            />
+
+            <Autocomplete<string, true, false, false>
+              multiple
+              options={assetOptionsForSelect}
+              value={channelForm.typicalAssets}
+              onChange={(_, value) =>
+                handleChannelIdListChange(
+                  "typicalAssets",
+                  (value as string[]).map((entry) => entry.trim()).filter(Boolean)
+                )
+              }
+              getOptionLabel={(option) => assetLabelMap[option] || option}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    {...getTagProps({ index })}
+                    label={assetLabelMap[option] || option}
+                    size="small"
+                  />
+                ))
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Typically paired assets"
+                  placeholder="Select assets this channel usually distributes"
+                />
+              )}
+            />
             <FormControl fullWidth>
-              <InputLabel id="channel-type-label">Channel Type</InputLabel>
+              <InputLabel id="channel-org-conversion-label">
+                Org Conversion Maturity
+              </InputLabel>
               <Select
-                labelId="channel-type-label"
-                label="Channel Type"
-                value={channelForm.channel_type}
+                labelId="channel-org-conversion-label"
+                value={channelForm.orgConversionMaturity}
+                label="Org Conversion Maturity"
                 onChange={(event) =>
-                  handleChannelFieldChange("channel_type", event.target.value as string)
+                  handleChannelFieldChange(
+                    "orgConversionMaturity",
+                    event.target.value as string
+                  )
                 }
               >
                 <MenuItem value="">
-                  <em>Unspecified</em>
+                  <em>Not set</em>
                 </MenuItem>
-                {channelOptions.channel_type.map((option) => (
+                {ORG_CONVERSION_OPTIONS.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="channel-delivery-label">Delivery Mode</InputLabel>
-              <Select
-                labelId="channel-delivery-label"
-                label="Delivery Mode"
-                value={channelForm.delivery_mode}
-                onChange={(event) =>
-                  handleChannelFieldChange("delivery_mode", event.target.value as string)
-                }
-              >
-                <MenuItem value="">
-                  <em>Unspecified</em>
-                </MenuItem>
-                {channelOptions.delivery_mode.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
             <TextField
               label="Reach Score Estimate"
               value={channelForm.reach_score_estimate}
@@ -656,11 +1658,17 @@ const Arsenal = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditingChannel(null)} disabled={channelSaving}>
+          <Button
+            onClick={() => {
+              setChannelModalMode("edit");
+              setEditingChannel(null);
+            }}
+            disabled={channelSaving}
+          >
             Cancel
           </Button>
           <Button onClick={handleChannelSave} variant="contained" disabled={channelSaving}>
-            Save
+            {isCreatingChannel ? "Create" : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
