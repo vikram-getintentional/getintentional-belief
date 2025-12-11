@@ -9,9 +9,15 @@ import numpy as np
 import networkx as nx
 
 from backend.utils.graph_base.network_graph import (
-    _set_node_label, get_edge_attribute, get_node_by_id, get_node_subgraph_to_product,
-    get_nodes_list_ids, get_product_id_from_subgraph,
-    get_source_nodes_by_target_and_type, get_target_nodes_by_source_and_type
+    _set_node_label,
+    get_edge_attribute,
+    get_node_by_id,
+    get_node_subgraph_to_product,
+    get_product_id_from_subgraph,
+    get_source_nodes_by_target_and_type,
+    get_target_nodes_by_source_and_type,
+    get_persona_node_ids,
+    persona_meta_from_node,
 )
 from backend.utils.knowledge_base.arsenal.execution_arsenal_repository import get_best_plays_for_concern
 
@@ -143,7 +149,7 @@ def generate_rcs(
     pr_all = _ppr(G_final, seeds_for_ppr, conv_id=conv_id)
 
     # --- Personas: involvement, activation, care ----------------------------
-    persona_ids = get_nodes_list_ids(G_final, "persona", {})
+    persona_ids = get_persona_node_ids(G_final)
     involvement = {pid: _persona_involvement_from_jobs(G_final, pr_all, pid) for pid in persona_ids}
 
     # use centralized vector helper for activation/care
@@ -190,10 +196,11 @@ def generate_rcs(
     for row in topI:
         pid = row["id"]
         persona_node = get_node_by_id(G_final, pid) or {}
+        display_meta = persona_meta_from_node(persona_node, pid)
         persona_meta = {
-            "title": persona_node.get("title") or persona_node.get("name") or pid,
-            "department": persona_node.get("department") or "General",
-            "seniority": persona_node.get("seniority") or "Manager",
+            "title": display_meta["title"],
+            "department": display_meta["department"],
+            "seniority": display_meta["seniority"],
         }
 
         cons = _concerns_for_persona_cf(

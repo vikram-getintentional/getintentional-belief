@@ -88,6 +88,7 @@ class ShmEpisode(Base):
     # roll-up metrics and learning summaries (opaque JSON blobs)
     metrics = Column(JSON, nullable=True)
     learning_summary = Column(JSON, nullable=True)
+    candidate_personas = Column(JSON, nullable=True)
 
     # convenience count of steps in this journey
     num_steps = Column(Integer, nullable=True)

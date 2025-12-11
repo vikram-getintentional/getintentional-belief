@@ -28,6 +28,8 @@ type SidebarActionsProps = {
   buildButtonLabel?: string;
   /** className passthrough for styling in your sidebar */
   className?: string;
+  /** endpoint returning graph confidence */
+  confidenceUrl?: (productId: string) => string;
 };
 
 export default function SidebarActions({

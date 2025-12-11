@@ -42,9 +42,11 @@ def _make_labeler(product_id: Optional[str]):
                 label = _set_node_label(graph, text)
             except Exception:
                 label = None
-        if not label and text.startswith("persona:"):
-            tail = text.split(":", 1)[1]
-            label = tail.replace("_", " ").title()
+        if not label and ":" in text:
+            prefix, tail = text.split(":", 1)
+            if prefix in {"persona", "canonical_persona"}:
+                tail = tail or ""
+                label = tail.replace("_", " ").title()
         if not label:
             label = _persona_label_from_id(text)
         cache[text] = label

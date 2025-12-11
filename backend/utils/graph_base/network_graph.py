@@ -1,5 +1,5 @@
 import math
-from typing import Set
+from typing import Set, List, Dict, Any
 import networkx as nx
 import os
 from collections import defaultdict, deque
@@ -8,6 +8,9 @@ from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import sav
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph_data")
+
+PERSONA_NODE_TYPES = {"persona", "canonical_persona"}
+PERSONA_VARIANT_NODE_TYPE = "persona_variant"
 
 
 def build_product_graph(product_lookup_id: str):
@@ -85,6 +88,73 @@ def get_nodes_list_ids(G, node_type: str, properties: dict) -> list:
         for node_id, node_data in G.nodes(data=True)
         if node_data.get("node_type") == node_type and all(node_data.get(k) == v for k, v in properties.items())
     ]
+
+def _node_type_from_data(data: Dict[str, Any]) -> str:
+    return (data.get("node_type") or data.get("type") or "").strip().lower()
+
+def get_persona_node_ids(G: nx.DiGraph, include_legacy: bool = True) -> List[str]:
+    """
+    Returns persona node ids, preferring canonical personas when available.
+    """
+    canonical = get_nodes_list_ids(G, "canonical_persona", {}) if include_legacy else []
+    persona_ids: List[str] = list(canonical)
+    seen = set(canonical)
+    if include_legacy:
+        legacy = get_nodes_list_ids(G, "persona", {})
+        for pid in legacy:
+            if pid not in seen:
+                persona_ids.append(pid)
+    return persona_ids
+
+def get_persona_nodes(G: nx.DiGraph) -> List[tuple]:
+    """
+    Returns [(node_id, node_data), ...] for persona-like nodes (canonical first).
+    """
+    nodes: List[tuple] = []
+    seen: Set[str] = set()
+    for node_id, node_data in get_nodes_list(G, "canonical_persona", {}):
+        nodes.append((node_id, node_data))
+        seen.add(node_id)
+    for node_id, node_data in get_nodes_list(G, "persona", {}):
+        if node_id not in seen:
+            nodes.append((node_id, node_data))
+            seen.add(node_id)
+    return nodes
+
+def is_persona_node(G: nx.DiGraph, node_id: str) -> bool:
+    if node_id not in G:
+        return False
+    return _node_type_from_data(G.nodes[node_id]) in PERSONA_NODE_TYPES
+
+def persona_meta_from_node(node: Dict[str, Any], default_id: str = "") -> Dict[str, str]:
+    """
+    Extracts display-friendly persona metadata from either canonical or legacy persona nodes.
+    """
+    label = (
+        node.get("label")
+        or node.get("name")
+        or node.get("title")
+        or default_id
+    )
+    title = node.get("title") or label or default_id
+    department = node.get("department")
+    if not department:
+        depts = node.get("typical_departments") or []
+        if depts:
+            department = depts[0]
+    seniority = node.get("seniority")
+    if not seniority:
+        dist = node.get("typical_seniority_distribution") or {}
+        if dist:
+            seniority = max(dist.items(), key=lambda kv: kv[1])[0]
+    if not seniority:
+        seniority = "operator"
+    return {
+        "label": label or default_id or title,
+        "title": title or label or default_id,
+        "department": department or "General",
+        "seniority": seniority,
+    }
 
 def get_edge_weight(G, source_id, target_id):
     """

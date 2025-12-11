@@ -255,9 +255,7 @@ class MultiHeadEngagementParser:
         _extract_topic_from_text(activity, matched_keyword)
         or _extract_topic_from_text(raw_activity, matched_keyword)
       )
-      display_name = hint["asset_prefix"]
-      if topic:
-        display_name = f"{hint['asset_prefix']} — {topic}"
+      display_name = topic or hint["asset_prefix"]
       result.update(
         {
           "asset_name": display_name,

@@ -23,7 +23,11 @@ import {
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import AssetsLibrary from "../components/AssetsLibrary";
-import ChannelsLibrary from "../components/ChannelsLibrary";
+import CategoryLibrary from "../components/CategoryLibrary";
+import type {
+  ArsenalAssetCategoryMeta,
+  ArsenalChannelCategoryMeta,
+} from "../types/apiContracts";
 
 type EnumOption = { value: string; label: string };
 
@@ -105,6 +109,8 @@ type AssetFormState = {
   targetConcerns: string[];
   orgConversionMaturity: string;
   typicalChannels: string[];
+  channelId: string;
+  activities: string[];
 };
 
 type ChannelFormState = {
@@ -155,6 +161,8 @@ const createDefaultAssetForm = (): AssetFormState => ({
   targetConcerns: [],
   orgConversionMaturity: "",
   typicalChannels: [],
+  channelId: "",
+  activities: [],
 });
 
 const createDefaultChannelForm = (): ChannelFormState => ({
@@ -181,6 +189,8 @@ const Arsenal = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [assetMetaGaps, setAssetMetaGaps] = useState(0);
   const [channelMetaGaps, setChannelMetaGaps] = useState(0);
+  const [assetCategories, setAssetCategories] = useState<ArsenalAssetCategoryMeta[]>([]);
+  const [channelCategories, setChannelCategories] = useState<ArsenalChannelCategoryMeta[]>([]);
 
   const [assetOptions, setAssetOptions] = useState<AssetOptionGroups>(emptyAssetOptions);
   const [channelOptions, setChannelOptions] = useState<ChannelOptionGroups>(emptyChannelOptions);
@@ -350,6 +360,16 @@ const Arsenal = () => {
     return map;
   }, [arsenalChannels]);
 
+  const channelLookup = useMemo(() => {
+    const map: Record<string, { channel_category_meta?: { key?: string } }> = {};
+    arsenalChannels.forEach((channel) => {
+      if (channel.id) {
+        map[channel.id] = channel;
+      }
+    });
+    return map;
+  }, [arsenalChannels]);
+
   const channelOptionsForSelect = useMemo(() => {
     const base = arsenalChannels.map((channel) => channel.id);
     const seen = new Set(base);
@@ -381,6 +401,19 @@ const Arsenal = () => {
     });
     return base;
   }, [arsenalAssets, channelForm.typicalAssets]);
+
+  const activityOptions = useMemo(() => {
+    const existing = assetForm.activities || [];
+    const derived = Array.isArray(editingAsset?.activity_labels)
+      ? (editingAsset?.activity_labels as string[])
+      : [];
+    const autoActivity =
+      editingAsset?.derived_metadata?.activity?.label &&
+      !derived.includes(editingAsset.derived_metadata.activity.label)
+        ? [editingAsset.derived_metadata.activity.label]
+        : [];
+    return dedupeStrings([...existing, ...derived, ...autoActivity]);
+  }, [assetForm.activities, editingAsset]);
 
   const recomputeMetaGaps = (assetsList: any[], channelsList: any[]) => {
     setAssetMetaGaps(assetsList.filter((asset) => !asset.metadata_complete).length);
@@ -461,8 +494,12 @@ const Arsenal = () => {
         const data = await res.json();
         const assets = data.arsenal.assets ?? [];
         const channels = data.arsenal.channels ?? [];
+        const assetCategoryEntries = data.arsenal.asset_categories ?? [];
+        const channelCategoryEntries = data.arsenal.channel_categories ?? [];
         setArsenalAssets(assets);
         setArsenalChannels(channels);
+        setAssetCategories(assetCategoryEntries);
+        setChannelCategories(channelCategoryEntries);
         recomputeMetaGaps(assets, channels);
       } catch (err) {
         setStatusMsg("Error fetching Arsenal Library.");
@@ -473,8 +510,22 @@ const Arsenal = () => {
 
   useEffect(() => {
     if (editingAsset) {
+      const primaryChannelId =
+        editingAsset.primary_channel?.id ||
+        editingAsset.typical_channels?.[0]?.id ||
+        "";
+      const derivedActivity =
+        editingAsset.activity_labels && editingAsset.activity_labels.length
+          ? editingAsset.activity_labels
+          : editingAsset.derived_metadata?.activity?.label
+          ? [editingAsset.derived_metadata.activity.label]
+          : [];
+      const derivedName =
+        editingAsset.derived_metadata?.asset_name?.label ||
+        editingAsset.name ||
+        "";
       setAssetForm({
-        name: editingAsset.name || "",
+        name: derivedName,
         category: editingAsset.category || "",
         content_type: editingAsset.content_type || "",
         time_to_consume: editingAsset.time_to_consume || "",
@@ -503,6 +554,8 @@ const Arsenal = () => {
         typicalChannels: (editingAsset.typical_channels || []).map(
           (entry: { id: string }) => entry.id
         ),
+        channelId: primaryChannelId || "",
+        activities: dedupeStrings(derivedActivity),
       });
     } else {
       setAssetForm(createDefaultAssetForm());
@@ -547,6 +600,25 @@ const Arsenal = () => {
     channelUsagePersonaMap,
     channelUsageStageLabels,
   ]);
+
+  const channelCategoryAssets = useMemo(() => {
+    const map: Record<string, Array<{ assetId: string; score: number }>> = {};
+    arsenalAssets.forEach((asset) => {
+      const score = asset.usage?.total_engagements || 0;
+      const categoryKeys = (asset.typical_channels || [])
+        .map((entry) => channelLookup[entry.id])
+        .filter((channel): channel is { channel_category_meta?: { key?: string } } => Boolean(channel))
+        .map((channel) => channel.channel_category_meta?.key)
+        .filter((key): key is string => Boolean(key));
+      const uniqueKeys = Array.from(new Set(categoryKeys));
+      uniqueKeys.forEach((key) => {
+        const bucket = map[key] || [];
+        bucket.push({ assetId: asset.id, score });
+        map[key] = bucket;
+      });
+    });
+    return map;
+  }, [arsenalAssets, channelLookup]);
 
   const handleAssetFieldChange = (
     field: keyof AssetFormState,
@@ -743,6 +815,8 @@ const Arsenal = () => {
         target_concerns: assetForm.targetConcerns,
         org_conversion_maturity: assetForm.orgConversionMaturity || null,
         typical_channels: assetForm.typicalChannels,
+        primary_channel_id: assetForm.channelId || null,
+        activity_labels: assetForm.activities,
       };
       const endpoint =
         assetModalMode === "create"
@@ -1022,9 +1096,9 @@ const Arsenal = () => {
           variant="fullWidth"
           sx={{ minWidth: 240 }}
         >
-          <Tab label="Assets" />
-          <Tab label="Channels" />
-          <Tab label="Campaigns" />
+          <Tab label="Arsenal Repo" />
+          <Tab label="Asset Categories" />
+          <Tab label="Channel Categories" />
         </Tabs>
         <Stack direction="row" spacing={1}>
           {tabIndex === 0 && (
@@ -1032,7 +1106,7 @@ const Arsenal = () => {
               New Asset
             </Button>
           )}
-          {tabIndex === 1 && (
+          {tabIndex === 2 && (
             <Button variant="contained" onClick={handleCreateChannelClick} disabled={!selectedProductId}>
               New Channel
             </Button>
@@ -1042,34 +1116,40 @@ const Arsenal = () => {
 
       <Box hidden={tabIndex !== 0}>
         <Typography variant="h5" gutterBottom>
-          Assets
+          Arsenal Repo
         </Typography>
-        <Grid container spacing={2} mb={4} alignItems="stretch">
-          <AssetsLibrary
-            assets={arsenalAssets}
-            onEdit={(asset) => {
-              setAssetModalMode("edit");
-              setEditingAsset(asset);
-            }}
-            onApprove={handleAssetApprove}
-          />
-        </Grid>
+        <AssetsLibrary
+          assets={arsenalAssets}
+          onEdit={(asset) => {
+            setAssetModalMode("edit");
+            setEditingAsset(asset);
+          }}
+          onApprove={handleAssetApprove}
+          channelLookup={channelLookup}
+        />
       </Box>
 
       <Box hidden={tabIndex !== 1}>
         <Typography variant="h5" gutterBottom>
-          Channels
+          Asset Categories
         </Typography>
-        <Grid container spacing={2}>
-          <ChannelsLibrary
-            channels={arsenalChannels}
-            onEdit={(channel) => {
-              setChannelModalMode("edit");
-              setEditingChannel(channel);
-            }}
-            onApprove={handleChannelApprove}
-          />
-        </Grid>
+        <CategoryLibrary
+          categories={assetCategories}
+          type="asset"
+          assetLabelMap={assetLabelMap}
+        />
+      </Box>
+
+      <Box hidden={tabIndex !== 2}>
+        <Typography variant="h5" gutterBottom>
+          Channel Categories
+        </Typography>
+        <CategoryLibrary
+          categories={channelCategories}
+          type="channel"
+          channelCategoryAssets={channelCategoryAssets}
+          assetLabelMap={assetLabelMap}
+        />
       </Box>
 
       <Dialog
@@ -1085,6 +1165,9 @@ const Arsenal = () => {
         <DialogTitle>{isCreatingAsset ? "Create Asset" : "Edit Asset Metadata"}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: "grid", gap: 2 }}>
+            {!isCreatingAsset && editingAsset?.id && (
+              <TextField label="Asset ID" value={editingAsset.id} InputProps={{ readOnly: true }} />
+            )}
             <TextField
               label="Asset title"
               value={assetForm.name}
@@ -1350,6 +1433,27 @@ const Arsenal = () => {
               )}
             />
 
+            <FormControl fullWidth>
+              <InputLabel id="asset-primary-channel-label">Primary channel</InputLabel>
+              <Select
+                labelId="asset-primary-channel-label"
+                label="Primary channel"
+                value={assetForm.channelId}
+                onChange={(event) =>
+                  setAssetForm((prev) => ({ ...prev, channelId: event.target.value as string }))
+                }
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {arsenalChannels.map((channel) => (
+                  <MenuItem key={channel.id} value={channel.id}>
+                    {channel.name || channel.slug || channel.id}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             <Autocomplete<string, true, false, false>
               multiple
               options={channelOptionsForSelect}
@@ -1376,6 +1480,22 @@ const Arsenal = () => {
                   label="Typical distribution channels"
                   placeholder="Select channels that usually deliver this asset"
                 />
+              )}
+            />
+
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={activityOptions}
+              value={assetForm.activities}
+              onChange={(_, value) =>
+                setAssetForm((prev) => ({
+                  ...prev,
+                  activities: (value as string[]).map((entry) => entry.trim()).filter(Boolean),
+                }))
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Activities" placeholder="e.g., Download, Attend demo" />
               )}
             />
 

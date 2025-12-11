@@ -12,6 +12,8 @@ interface Asset {
   industries?: string[];
   personas?: string[];
   distribution_channels?: string[];
+  funnel_stage?: string;
+  other_assets?: string;
   notes?: string;
 }
 
@@ -39,7 +41,9 @@ const initialForm = {
   best_used_for: "",
   industries: "",
   personas: "",
+  funnel_stage: "",
   distribution_channels: "",
+  other_assets: "",
   notes: "",
 };
 
@@ -117,7 +121,7 @@ const AssetsTemplate = ({ productID }: AssetsTemplateProps) => {
         </Grid>
 
         <Divider sx={{ mt: 1.5, mb: 1.5 }} />
-        <Typography variant="body1" gutterBottom xs={12}>Production Estimates</Typography>
+        <Typography variant="body1" gutterBottom>Production Estimates</Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label="Typical Production Cost (USD)" name="cost" value={form.cost} onChange={handleChange} fullWidth type="number" />
@@ -127,7 +131,7 @@ const AssetsTemplate = ({ productID }: AssetsTemplateProps) => {
           </Grid>
         </Grid>
         <Divider sx={{ mt: 1.5, mb: 1.5 }} />
-        <Typography variant="body1" gutterBottom xs={12}>Target & Expectations</Typography>
+        <Typography variant="body1" gutterBottom>Target & Expectations</Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 6, sm: 4 }}>
             <TextField label="Typical Industries" name="industries" value={form.industries} onChange={handleChange} fullWidth />
@@ -159,7 +163,7 @@ const AssetsTemplate = ({ productID }: AssetsTemplateProps) => {
             </Grid>
         </Grid>
         <Divider sx={{ mt: 1.5, mb: 1.5 }} />
-        <Typography variant="body1" gutterBottom xs={12}>Distribution & Channel</Typography>
+        <Typography variant="body1" gutterBottom>Distribution & Channel</Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label="Channels" name="distribution_channels" value={form.distribution_channels} onChange={handleChange} fullWidth />

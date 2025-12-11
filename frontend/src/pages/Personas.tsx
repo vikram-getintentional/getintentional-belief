@@ -1,148 +1,418 @@
-// pages/Personas.tsx
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Box, Grid, Card, CardHeader, CardContent, Typography, Chip, Stack,
-  Select, MenuItem, FormControl, InputLabel, LinearProgress, Toolbar, Drawer, Button
+  Box,
+  Button,
+  Card,
+  CardActionArea,
+  CardContent,
+  Chip,
+  Grid,
+  LinearProgress,
+  Stack,
+  Typography,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Toolbar,
+  Divider,
+  Paper,
 } from "@mui/material";
-import type { PersonaCardRCSPayload } from "../types/index";
 
-const drawerWidth = 240;
+const SHOW_BATCH = 6;
 
-export default function Personas() {
-  const token = localStorage.getItem("token");
-  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+type PersonaFrequency = {
+  label: string;
+  frequency: number;
+};
+
+type PersonaSamplePerson = {
+  person_name?: string | null;
+  title?: string | null;
+  department?: string | null;
+  seniority?: string | null;
+  account_name?: string | null;
+};
+
+type PersonaSampleAccount = {
+  account_id?: string;
+  account_name?: string | null;
+  meta?: Record<string, string | null | undefined>;
+};
+
+type PersonaInsight = {
+  persona_id: string;
+  label: string;
+  title?: string | null;
+  department?: string | null;
+  seniority?: string | null;
+  scores: {
+    perceptibility?: number;
+    proximity?: number;
+    involvement?: number;
+    wolves_score?: number;
+    wolves_delta_bp?: number;
+    wolves_involvement_rate?: number;
+    wolves_blocker_rate?: number;
+  };
+  concerns: Array<{
+    label?: string | null;
+    stage?: string | null;
+    phase?: string | null;
+    score?: number | null;
+  }>;
+  coalitions: Array<{
+    persona_id: string;
+    persona_label: string;
+    frequency: number;
+  }>;
+  seen_in: {
+    overall: PersonaFrequency;
+    segments: PersonaFrequency[];
+  };
+  people_samples: PersonaSamplePerson[];
+  account_samples: PersonaSampleAccount[];
+};
+
+type PersonaInsightsResponse = {
+  product_id: string;
+  wolves_metrics_updated_at?: string | null;
+  personas: PersonaInsight[];
+};
+
+const formatPercent = (value?: number | null) => {
+  if (value === null || value === undefined) return "—";
+  return `${Math.round(value * 100)}%`;
+};
+
+const scoreLabel = (value?: number | null) =>
+  value === null || value === undefined ? "—" : value.toFixed(2);
+
+const PersonasPage: React.FC = () => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const [products, setProducts] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
-  const [cards, setCards] = useState<PersonaCardRCSPayload[]>([]);
-  const [statusMsg, setStatusMsg] = useState("");
+  const [personas, setPersonas] = useState<PersonaInsight[]>([]);
   const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string>("");
+  const [visibleCount, setVisibleCount] = useState(SHOW_BATCH);
+  const [selectedPersona, setSelectedPersona] = useState<PersonaInsight | null>(null);
 
-  // company + products
   useEffect(() => {
+    if (!token) return;
     (async () => {
       try {
         const me = await fetch("http://localhost:8000/me", {
           headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.json());
-        const prod = await fetch(`http://localhost:8000/get-products/${me.company_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).then(r => r.json());
-        if (!prod.products?.length) {
-          setStatusMsg("No products found. Please run Value Prop first.");
-          return;
+        }).then((r) => r.json());
+        const prod = await fetch(
+          `http://localhost:8000/get-products/${me.company_id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        ).then((r) => r.json());
+        const list = prod.products ?? [];
+        setProducts(list);
+        if (list.length === 1) {
+          setSelectedProductId(list[0].id);
         }
-        setProducts(prod.products);
-        if (prod.products.length === 1) setSelectedProductId(prod.products[0].id);
-      } catch {
-        setStatusMsg("Error fetching company or products.");
+      } catch (err) {
+        console.error(err);
+        setStatusMsg("Unable to load products. Please refresh.");
       }
     })();
   }, [token]);
 
-  // fetch personas (RCS-based)
   useEffect(() => {
-    if (!selectedProductId) return;
+    if (!selectedProductId || !token) return;
     setLoading(true);
+    setStatusMsg("");
+    setSelectedPersona(null);
+    setVisibleCount(SHOW_BATCH);
     (async () => {
       try {
-        const data: PersonaCardRCSPayload[] = await fetch(
-          `http://localhost:8000/get-personas/${selectedProductId}`,
+        const data: PersonaInsightsResponse = await fetch(
+          `http://localhost:8000/products/${selectedProductId}/persona_insights`,
           { headers: { Authorization: `Bearer ${token}` } }
-        ).then(r => r.json());
-
-        // Expecting the new per-node payload from get_personas_rcs_priority
-        console.log("Fetched personas data:", data);
-        const mapped = (data || []).map(card => ({
-          ...card,
-          persona: {
-            title: card.persona_title,
-            department: Array.isArray(card.persona_departments) ? card.persona_departments[0] : card.persona_departments,
-            seniority: Array.isArray(card.persona_seniority) ? card.persona_seniority[0] : card.persona_seniority,
-          },
-          jobs: (card.jobs || []).map(j => typeof j === "string" ? JSON.parse(j) : j),
-          pains: (card.pains || []).map(p => typeof p === "string" ? JSON.parse(p) : p),
-        }));
-        setCards(mapped.slice().sort((a, b) => b.priority_score - a.priority_score));
-        setStatusMsg("");
-      } catch {
-        setStatusMsg("Error fetching personas.");
-        setCards([]);
+        ).then((r) => {
+          if (!r.ok) throw new Error(r.statusText);
+          return r.json();
+        });
+        const sorted = (data.personas || []).slice().sort((a, b) => {
+          const aw = a.scores?.wolves_score ?? 0;
+          const bw = b.scores?.wolves_score ?? 0;
+          if (bw !== aw) return bw - aw;
+          const ai = a.scores?.involvement ?? 0;
+          const bi = b.scores?.involvement ?? 0;
+          return bi - ai;
+        });
+        setPersonas(sorted);
+        if (!sorted.length) {
+          setStatusMsg("No personas found for this product yet.");
+        }
+      } catch (err) {
+        console.error(err);
+        setStatusMsg("Unable to load personas for this product.");
+        setPersonas([]);
       } finally {
         setLoading(false);
       }
     })();
   }, [selectedProductId, token]);
 
+  const visiblePersonas = useMemo(
+    () => personas.slice(0, visibleCount),
+    [personas, visibleCount]
+  );
+
+  const handleShowMore = () => {
+    setVisibleCount((prev) => Math.min(personas.length, prev + SHOW_BATCH));
+  };
+
+  const handleShowLess = () => {
+    setVisibleCount(SHOW_BATCH);
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
-
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-        <Typography variant="h5" fontWeight={700} gutterBottom>Personas</Typography>
-
-        {products.length > 1 && (
-          <Box sx={{ mb: 2, maxWidth: 360 }}>
-            <FormControl fullWidth>
-              <InputLabel id="prod-label">Select Product</InputLabel>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5" fontWeight={700} gutterBottom>
+            Personas
+          </Typography>
+          {products.length > 1 && (
+            <FormControl size="small" sx={{ minWidth: 240 }}>
+              <InputLabel id="persona-prod-label">Select Product</InputLabel>
               <Select
-                labelId="prod-label"
-                label="Select Product"
+                labelId="persona-prod-label"
                 value={selectedProductId}
+                label="Select Product"
                 onChange={(e) => setSelectedProductId(e.target.value)}
               >
-                {products.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+                {products.map((product) => (
+                  <MenuItem key={product.id} value={product.id}>
+                    {product.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
-          </Box>
-        )}
+          )}
+        </Stack>
 
-        {statusMsg && <Typography color="error" sx={{ mb: 2 }}>{statusMsg}</Typography>}
+        {statusMsg && (
+          <Typography color="error" sx={{ mb: 2 }}>
+            {statusMsg}
+          </Typography>
+        )}
         {loading && <LinearProgress sx={{ my: 2 }} />}
 
-        <Grid container spacing={2}>
-          {cards.map((card) => (
-            <Grid size={{xs:12, md:6, lg:4}} key={`${card.persona_title}-${card.persona_departments?.[0] || ""}-${card.persona_seniority?.[0] || ""}`}>
-              <PersonaMuiCard data={card} />
+        {selectedPersona ? (
+          <PersonaDetail persona={selectedPersona} onBack={() => setSelectedPersona(null)} />
+        ) : (
+          <>
+            <Grid container spacing={2}>
+              {visiblePersonas.map((persona) => (
+                <Grid item xs={12} md={6} lg={4} key={persona.persona_id}>
+                  <PersonaCard persona={persona} onSelect={setSelectedPersona} />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
+            {!loading && personas.length > visibleCount && (
+              <Box sx={{ mt: 2, textAlign: "center" }}>
+                <Button variant="outlined" onClick={handleShowMore}>
+                  Show more personas
+                </Button>
+              </Box>
+            )}
+            {!loading && personas.length > SHOW_BATCH && visibleCount > SHOW_BATCH && (
+              <Box sx={{ mt: 1, textAlign: "center" }}>
+                <Button variant="text" onClick={handleShowLess}>
+                  Show fewer
+                </Button>
+              </Box>
+            )}
+          </>
+        )}
       </Box>
     </Box>
   );
-}
+};
 
-function PersonaMuiCard({ data }: { data: PersonaCardRCSPayload }) {
-  const { persona, importance, activation, care, marginal_lift, priority_score, jobs, pains } = data;
-
+const PersonaCard: React.FC<{
+  persona: PersonaInsight;
+  onSelect: (persona: PersonaInsight) => void;
+}> = ({ persona, onSelect }) => {
+  const { scores, seen_in } = persona;
   return (
-    <Card variant="outlined" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <CardHeader
-        title={
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Typography variant="subtitle1" fontWeight={700}>{persona.title}</Typography>
-            {persona.department && <Chip size="small" label={persona.department} />}
-            {persona.seniority && <Chip size="small" label={persona.seniority} />}
+    <Card variant="outlined">
+      <CardActionArea onClick={() => onSelect(persona)} sx={{ p: 2 }}>
+        <Stack spacing={1}>
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              {persona.title || persona.label}
+            </Typography>
+            <Stack direction="row" spacing={0.5} flexWrap="wrap">
+              {persona.department && <Chip size="small" label={persona.department} />}
+              {persona.seniority && <Chip size="small" label={persona.seniority} />}
+            </Stack>
           </Stack>
-        }
-        subheader={<Typography variant="caption">Priority: {(priority_score).toFixed(3)}</Typography>}
-      />
-      <CardContent sx={{ pt: 0 }}>
-        <Stack spacing={0.5} sx={{ mb: 1 }}>
-          <Typography variant="body2">Importance (involvement): <b>{importance.toFixed(3)}</b></Typography>
-          <Typography variant="body2">Activation: <b>{activation.toFixed(3)}</b></Typography>
-          <Typography variant="body2">Care: <b>{care.toFixed(3)}</b></Typography>
-          <Typography variant="body2">Marginal lift: <b>{marginal_lift.toFixed(3)}</b></Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Chip
+              size="small"
+              color="primary"
+              label={`Wolves ${scoreLabel(scores.wolves_score)}`}
+            />
+            <Chip size="small" label={`Perceptibility ${scoreLabel(scores.perceptibility)}`} />
+            <Chip size="small" label={`Proximity ${scoreLabel(scores.proximity)}`} />
+            <Chip size="small" label={`Involvement ${scoreLabel(scores.involvement)}`} />
+          </Stack>
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Seen in
+            </Typography>
+            <Typography variant="body2">
+              {seen_in.overall.label}: {formatPercent(seen_in.overall.frequency)}
+            </Typography>
+            {seen_in.segments.slice(0, 1).map((segment) => (
+              <Typography key={segment.label} variant="body2" color="text.secondary">
+                {segment.label}: {formatPercent(segment.frequency)}
+              </Typography>
+            ))}
+          </Box>
         </Stack>
-
-        <Typography variant="subtitle2" sx={{ mt: 1 }}>Top Jobs</Typography>
-        {jobs.slice(0, 4).map((j, i) => (
-          <Typography key={i} variant="body2" color="text.secondary">• {j.description} (rel {j.relevance.toFixed(2)})</Typography>
-        ))}
-
-        <Typography variant="subtitle2" sx={{ mt: 1 }}>Top Pains</Typography>
-        {pains.slice(0, 4).map((p, i) => (
-          <Typography key={i} variant="body2" color="text.secondary">• {p.description} (rel {p.relevance.toFixed(2)})</Typography>
-        ))}
-      </CardContent>
+      </CardActionArea>
     </Card>
   );
-}
+};
+
+const PersonaDetail: React.FC<{ persona: PersonaInsight; onBack: () => void }> = ({
+  persona,
+  onBack,
+}) => {
+  const { scores, seen_in, people_samples, account_samples, concerns, coalitions } = persona;
+  return (
+    <Box>
+      <Button variant="text" size="small" sx={{ mb: 2 }} onClick={onBack}>
+        ← Back to personas
+      </Button>
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <Stack spacing={2}>
+          <Stack spacing={1}>
+            <Typography variant="h5" fontWeight={700}>
+              {persona.label}
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {persona.title && <Chip label={persona.title} size="small" />}
+              {persona.department && <Chip label={persona.department} size="small" />}
+              {persona.seniority && <Chip label={persona.seniority} size="small" />}
+            </Stack>
+          </Stack>
+
+          <Box>
+            <Typography variant="subtitle2">Scores</Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 0.5 }}>
+              <Chip label={`Perceptibility ${scoreLabel(scores.perceptibility)}`} />
+              <Chip label={`Proximity ${scoreLabel(scores.proximity)}`} />
+              <Chip label={`Involvement ${scoreLabel(scores.involvement)}`} />
+              <Chip label={`Wolves ${scoreLabel(scores.wolves_score)}`} color="primary" />
+              {scores.wolves_delta_bp !== undefined && scores.wolves_delta_bp !== null && (
+                <Chip label={`Δ Win ${scoreLabel(scores.wolves_delta_bp)}`} />
+              )}
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2">Seen in</Typography>
+            <Typography variant="body2">
+              {seen_in.overall.label}: {formatPercent(seen_in.overall.frequency)}
+            </Typography>
+            {seen_in.segments.map((segment) => (
+              <Typography key={segment.label} variant="body2" color="text.secondary">
+                {segment.label}: {formatPercent(segment.frequency)}
+              </Typography>
+            ))}
+          </Box>
+
+          {!!coalitions.length && (
+            <Box>
+              <Typography variant="subtitle2">Coalitions</Typography>
+              <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 0.5 }}>
+                {coalitions.map((coal) => (
+                  <Chip
+                    key={`${persona.persona_id}-coal-${coal.persona_id}`}
+                    label={`${coal.persona_label} (${formatPercent(coal.frequency)})`}
+                    variant="outlined"
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
+          {!!concerns.length && (
+            <Box>
+              <Typography variant="subtitle2">Typical Concerns</Typography>
+              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                {concerns.map((concern, idx) => (
+                  <Typography key={`${persona.persona_id}-concern-${idx}`} variant="body2">
+                    • {concern.label || "Concern"}
+                    {concern.stage ? ` (${concern.stage})` : ""}
+                  </Typography>
+                ))}
+              </Stack>
+            </Box>
+          )}
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2">Sample People</Typography>
+              {people_samples.length ? (
+                <Stack spacing={0.5} sx={{ mt: 1 }}>
+                  {people_samples.map((person, idx) => (
+                    <Paper key={`${persona.persona_id}-person-${idx}`} variant="outlined" sx={{ p: 1 }}>
+                      <Typography variant="body2" fontWeight={600}>
+                        {person.person_name || "Unknown"}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {person.title || "—"}
+                        {person.account_name ? ` · ${person.account_name}` : ""}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Stack>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  No mapped people yet.
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2">Sample Accounts</Typography>
+              {account_samples.length ? (
+                <Stack spacing={0.5} sx={{ mt: 1 }}>
+                  {account_samples.map((account, idx) => (
+                    <Paper key={`${persona.persona_id}-acct-${idx}`} variant="outlined" sx={{ p: 1 }}>
+                      <Typography variant="body2" fontWeight={600}>
+                        {account.account_name || "Account"}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {META_KEYS.map((key) => account.meta?.[key]).filter(Boolean).join(" · ") || "—"}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Stack>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  No account examples yet.
+                </Typography>
+              )}
+            </Grid>
+          </Grid>
+        </Stack>
+      </Paper>
+    </Box>
+  );
+};
+
+const META_KEYS = ["industry", "geography", "revenue_range", "employee_range", "funding_stage"];
+
+export default PersonasPage;

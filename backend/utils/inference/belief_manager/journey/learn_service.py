@@ -1,13 +1,18 @@
 # backend/utils/inference/belief_manager/journey/learn_service.py
 from __future__ import annotations
 from statistics import mean
-from typing import Dict, Any, Iterable, List, Tuple, Optional
+from typing import Dict, Any, Iterable, List, Tuple, Optional, Literal, Sequence, Set
 from collections import defaultdict, Counter
+from dataclasses import asdict
+from datetime import datetime, timedelta
 import itertools
 import json
 import re
 from copy import deepcopy
+import os
+import traceback
 
+import networkx as nx
 from sqlalchemy.orm import Session
 
 from backend.database import get_db  # only needed if you later persist to DB
@@ -37,7 +42,12 @@ from backend.super_models.shm.episode import (
     ShmUpdateType,
     EpisodeOutcome,
 )
-from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph
+from backend.utils.graph_base.network_graph import (
+    GRAPH_DATA_PATH,
+    build_product_graph,
+    get_product_id_from_subgraph,
+    get_source_nodes_by_target_and_type,
+)
 from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import save_graph_as_json
 from backend.utils.graph_base.agent_graph_builder import (
     _persona,
@@ -47,6 +57,11 @@ from backend.utils.graph_base.agent_graph_builder import (
     _upsert_edge,
     current_timestamp,
 )
+from backend.utils.graph_base.persona_learning import (
+    auto_add_persona_nodes_from_candidates,
+    compute_persona_impact_metrics,
+    save_persona_metrics,
+)
 from backend.utils.inference.belief_manager.graph_diff_mapper import _L
 from backend.utils.knowledge_base.arsenal.db_models import ArsenalAsset
 from backend.utils.knowledge_base.arsenal.service import (
@@ -54,8 +69,21 @@ from backend.utils.knowledge_base.arsenal.service import (
     record_asset_channel_impact,
 )
 from backend.utils.inference.rcs_generators.generate_rcs_fast import generate_rcs_new
+from backend.utils.crm_management.engagement_models import TargetAccountEngagement
 from backend.utils.crm_management.target_account_manager import (
     TargetAccount as TargetAccountORM,
+)
+from backend.utils.segment_utils import (
+    segment_keys_from_meta,
+    segment_label_from_key,
+    normalize_account_meta as normalize_meta_dict,
+)
+from backend.utils.inference.belief_manager.journey.win_regression import (
+    build_win_regression_summary,
+)
+from backend.utils.inference.belief_manager.types import (
+    Episode,
+    PersonaCandidateStat,
 )
 
 
@@ -65,6 +93,80 @@ BELIEF_STAGE_LABELS = {
     "resolution": "Resolution Discovery",
     "execution": "Execution Guidance",
 }
+
+InsightSource = Literal["data", "graph", "default", "mixed"]
+
+
+def _insight_text(
+    text: str,
+    *,
+    source: InsightSource = "default",
+    confidence: Optional[float] = None,
+    extra: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    payload: Dict[str, Any] = {"text": text, "source": source}
+    if confidence is not None:
+        payload["confidence"] = round(float(confidence), 4)
+    if extra:
+        payload.update(extra)
+    return payload
+
+
+def _format_list(items: Sequence[str], conjunction: str = "and") -> str:
+    parts = [item for item in items if item]
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0]
+    if len(parts) == 2:
+        return f"{parts[0]} {conjunction} {parts[1]}"
+    return f"{', '.join(parts[:-1])}, {conjunction} {parts[-1]}"
+
+
+def _node_label(G: Optional[nx.DiGraph], node_id: Optional[str]) -> str:
+    if not node_id:
+        return ""
+    if G is None or node_id not in G:
+        return node_id
+    node = G.nodes[node_id] or {}
+    return (
+        node.get("label")
+        or node.get("name")
+        or node.get("title")
+        or node.get("description")
+        or node_id
+    )
+
+
+def _build_job_spec(
+    G: Optional[nx.DiGraph],
+    job_id: Optional[str],
+    pains_fallback: Sequence[str],
+    *,
+    default_label: str = "",
+) -> Dict[str, Any]:
+    spec: Dict[str, Any] = {"id": job_id}
+    pains: List[Dict[str, Any]] = []
+    if G is not None and job_id and job_id in G:
+        node = G.nodes[job_id] or {}
+        spec["label"] = node.get("description") or node.get("label") or node.get("name") or job_id
+        spec["description"] = node.get("description")
+        spec["department"] = node.get("department")
+        pains = [
+            {"id": pain_id, "label": _node_label(G, pain_id)}
+            for pain_id in get_source_nodes_by_target_and_type(G, job_id, "felt_in")
+        ]
+    else:
+        spec["label"] = job_id or default_label or "Proposed job"
+    if not pains and pains_fallback:
+        pains = [{"id": pid, "label": _node_label(G, pid)} for pid in pains_fallback if pid]
+    spec["pains"] = pains
+    return spec
+
+
+def _build_pain_specs(G: Optional[nx.DiGraph], pain_ids: Sequence[str]) -> List[Dict[str, Any]]:
+    return [{"id": pid, "label": _node_label(G, pid)} for pid in pain_ids if pid]
+
 
 DEFAULT_PRODUCT_INSIGHTS = {
     "ideal_customer_patterns": {
@@ -108,13 +210,19 @@ DEFAULT_PRODUCT_INSIGHTS = {
         ],
     },
     "belief_transitions": {
-        "hardest": "Across all deals, the hardest jump is Pain Realization → Resolution. This is where 47% of deals stall.",
-        "easiest": "Once ‘Problem Realization → Execution Guidance’ begins, Finance personas accelerate belief faster than any other group.",
+        "hardest": _insight_text(
+            "Across all deals, the hardest jump is Pain Realization → Resolution. This is where 47% of deals stall.",
+            source="default",
+        ),
+        "easiest": _insight_text(
+            "Once ‘Problem Realization → Execution Guidance’ begins, Finance personas accelerate belief faster than any other group.",
+            source="default",
+        ),
         "top_pains": [
-            "Inconsistent billing cycles",
-            "Manual revenue recognition",
-            "Multi-entity complexity",
-            "Personalized pricing limitations",
+            _insight_text("Inconsistent billing cycles", source="default"),
+            _insight_text("Manual revenue recognition", source="default"),
+            _insight_text("Multi-entity complexity", source="default"),
+            _insight_text("Personalized pricing limitations", source="default"),
         ],
     },
     "asset_channel_effectiveness": {
@@ -142,9 +250,18 @@ DEFAULT_PRODUCT_INSIGHTS = {
         "average_duration_days": 32.0,
     },
     "global_patterns": {
-        "biggest_barrier": "Most stalls originate from compliance complexity — not functional capability gaps.",
-        "hidden_blocker": "API and integration concerns appear in mid-stage transcripts even when not surfaced explicitly.",
-        "missed_opportunity": "Product personas are under-engaged across 70% of accounts despite having strong belief influence.",
+        "biggest_barrier": _insight_text(
+            "Most stalls originate from compliance complexity — not functional capability gaps.",
+            source="default",
+        ),
+        "hidden_blocker": _insight_text(
+            "API and integration concerns appear in mid-stage transcripts even when not surfaced explicitly.",
+            source="default",
+        ),
+        "missed_opportunity": _insight_text(
+            "Product personas are under-engaged across 70% of accounts despite having strong belief influence.",
+            source="default",
+        ),
     },
     "product_strengths": {
         "strengths": [
@@ -163,6 +280,29 @@ DEFAULT_PRODUCT_INSIGHTS = {
         "channel_priorities": "Shift technical content toward hands-on demos, away from whitepapers.",
     },
 }
+
+PERSONA_METRICS_DIR = os.path.join(GRAPH_DATA_PATH, "persona_metrics")
+
+
+def _load_persona_metrics_snapshot(
+    product_id: str,
+) -> Tuple[Dict[str, Dict[str, Any]], Optional[str]]:
+    path = os.path.join(PERSONA_METRICS_DIR, f"{product_id}.json")
+    if not os.path.exists(path):
+        return {}, None
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except Exception:
+        return {}, None
+    updated_at = payload.get("updated_at")
+    metrics: Dict[str, Dict[str, Any]] = {}
+    for entry in payload.get("personas", []):
+        persona_id = str(entry.get("persona_id") or "")
+        if not persona_id:
+            continue
+        metrics[persona_id] = entry
+    return metrics, updated_at
 
 
 def _canonical_stage(value: Optional[str]) -> Optional[str]:
@@ -226,6 +366,110 @@ def _format_meta_value(meta: str) -> str:
     return meta.replace("_", " ").title()
 
 
+def _fallback_persona_label(pid: str) -> str:
+    if not pid:
+        return "Persona"
+    candidate = pid
+    if ":" in pid:
+        candidate = pid.split(":", 1)[-1]
+    candidate = candidate.replace("|", " · ")
+    candidate = candidate.replace("_", " ").strip()
+    return candidate.title() or "Persona"
+
+
+def _node_data_label(G: nx.DiGraph, node_id: str) -> str:
+    node_data = G.nodes.get(node_id, {}) or {}
+    return (
+        node_data.get("label")
+        or node_data.get("title")
+        or node_data.get("name")
+        or node_data.get("description")
+        or _fallback_persona_label(node_id)
+    )
+
+
+def _canonical_persona_lookup(
+    G: Optional[nx.DiGraph],
+) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:
+    if G is None:
+        return {}, {}, {}
+    canonical_lookup: Dict[str, str] = {}
+    canonical_labels: Dict[str, str] = {}
+    canonical_node_map: Dict[str, str] = {}
+
+    for node_id, node_data in G.nodes(data=True):
+        canonical_id = node_data.get("canonical_persona_id")
+        if canonical_id:
+            canonical_id = str(canonical_id)
+            canonical_lookup[node_id] = canonical_id
+            canonical_node_map.setdefault(canonical_id, node_id)
+            canonical_labels.setdefault(
+                canonical_id,
+                node_data.get("label")
+                or node_data.get("title")
+                or node_data.get("name")
+                or node_data.get("description")
+                or _fallback_persona_label(node_id),
+            )
+    for canonical_id in list(canonical_labels.keys()):
+        canonical_lookup.setdefault(canonical_id, canonical_id)
+
+    for u, v, data in G.edges(data=True):
+        typ = (data.get("type") or data.get("relation") or "").lower()
+        if typ == "has_variant":
+            canonical_id = canonical_lookup.get(u) or str(
+                G.nodes[u].get("canonical_persona_id") or u
+            )
+            if canonical_id:
+                canonical_lookup[v] = canonical_id
+                canonical_node_map.setdefault(canonical_id, u)
+                canonical_labels.setdefault(
+                    canonical_id,
+                    canonical_labels.get(canonical_id) or _node_data_label(G, u),
+                )
+        elif typ == "variant_of":
+            canonical_id = canonical_lookup.get(v) or str(
+                G.nodes[v].get("canonical_persona_id") or v
+            )
+            if canonical_id:
+                canonical_lookup[u] = canonical_id
+                canonical_node_map.setdefault(canonical_id, v)
+                canonical_labels.setdefault(
+                    canonical_id,
+                    canonical_labels.get(canonical_id) or _node_data_label(G, v),
+                )
+    return canonical_lookup, canonical_labels, canonical_node_map
+
+
+def _aggregate_persona_stats(
+    persona_stats: Dict[str, Dict[str, Any]],
+    canonical_lookup: Dict[str, str],
+) -> Dict[str, Dict[str, Any]]:
+    aggregated: Dict[str, Dict[str, Any]] = {}
+    for pid, stats in persona_stats.items():
+        canonical_id = canonical_lookup.get(pid, pid)
+        entry = aggregated.setdefault(
+            canonical_id,
+            {
+                "observed": 0,
+                "hit_at_1": 0,
+                "hit_at_3": 0,
+                "partial_off": 0,
+                "off_path": 0,
+                "pred_counts": Counter(),
+            },
+        )
+        entry["observed"] += stats.get("observed", 0)
+        entry["hit_at_1"] += stats.get("hit_at_1", 0)
+        entry["hit_at_3"] += stats.get("hit_at_3", 0)
+        entry["partial_off"] += stats.get("partial_off", 0)
+        entry["off_path"] += stats.get("off_path", 0)
+        for predicted, count in (stats.get("pred_counts") or {}).items():
+            canonical_pred = canonical_lookup.get(predicted, predicted)
+            entry["pred_counts"][canonical_pred] += count
+    return aggregated
+
+
 def _percent(value: float, decimals: int = 0) -> str:
     return f"{round(value * 100, decimals)}%"
 
@@ -243,6 +487,364 @@ def _mean_safe(values: Iterable[float]) -> Optional[float]:
     return sum(arr) / len(arr)
 
 
+META_FIELD_BLOCKLIST = {
+    "account_name",
+    "deal_status",
+    "status",
+    "account_id",
+    "accountid",
+    "id",
+    "target_account_id",
+    "opportunity_name",
+}
+
+META_FIELD_ALLOWLIST = {
+    "industry",
+    "revenue_range",
+    "employee_range",
+    "geography",
+    "funding_stage",
+    "segment",
+    "region",
+}
+
+
+def _filter_meta_fields(meta: Any) -> Dict[str, Any]:
+    if not isinstance(meta, dict):
+        return {}
+    filtered: Dict[str, Any] = {}
+    for key, value in meta.items():
+        if value in (None, "", [], {}, ()):
+            continue
+        norm_key = str(key).strip().lower()
+        if norm_key in META_FIELD_BLOCKLIST:
+            continue
+        filtered[key] = value
+    return filtered
+
+
+def _normalize_account_meta(meta: Any) -> List[str]:
+    filtered_meta = _filter_meta_fields(meta)
+    normalized = normalize_meta_dict(filtered_meta)
+    if not normalized:
+        return []
+    return [
+        f"{k}:{v}"
+        for k, v in normalized.items()
+        if v and k in META_FIELD_ALLOWLIST
+    ]
+
+
+def _segment_keys_from_meta_tokens(tokens: Optional[Iterable[str]]) -> List[str]:
+    if not tokens:
+        return []
+    meta_dict: Dict[str, Any] = {}
+    for token in tokens:
+        if not token or ":" not in token:
+            continue
+        field, value = token.split(":", 1)
+        cleaned = value.strip()
+        if not cleaned:
+            continue
+        meta_dict[field] = cleaned
+    return segment_keys_from_meta(meta_dict)
+
+
+def _normalize_deal_status(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    status = str(value).strip().lower()
+    if "won" in status:
+        return "won"
+    if "lost" in status:
+        return "lost"
+    return None
+
+
+def _build_account_feature_rows(
+    episodes: Sequence[ShmEpisode],
+    steps: Sequence[ShmEpisodeStep],
+    *,
+    account_meta_lookup: Dict[str, Dict[str, Any]],
+    account_raw_meta: Dict[str, Dict[str, Any]],
+    segment_keys_by_account: Dict[str, List[str]],
+    account_status_map: Dict[str, str],
+    arsenal_stats: Dict[str, Dict[str, Any]],
+    asset_metadata: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    if not (episodes or account_meta_lookup or account_status_map):
+        return []
+
+    def _segment_list(acc_id: str) -> List[str]:
+        values = segment_keys_by_account.get(acc_id) or []
+        return [str(v) for v in values if v]
+
+    asset_delta_lookup: Dict[str, float] = {}
+    for asset_id, stats in (arsenal_stats or {}).items():
+        count = stats.get("count") or 0
+        if not count:
+            continue
+        try:
+            avg_delta = float(stats.get("total_delta") or 0.0) / float(count)
+        except Exception:
+            avg_delta = 0.0
+        asset_delta_lookup[str(asset_id)] = avg_delta
+
+    account_ids: Set[str] = set()
+    episode_account_map: Dict[str, str] = {}
+    trackers: Dict[str, Dict[str, Any]] = {}
+
+    def _tracker(account_id: str) -> Dict[str, Any]:
+        tracker = trackers.get(account_id)
+        if tracker:
+            return tracker
+        tracker = {
+            "account_id": account_id,
+            "total_steps": 0,
+            "off_path_steps": 0,
+            "unique_personas": set(),
+            "unique_stages": set(),
+            "stage_transitions": set(),
+            "critical_transitions": set(),
+            "asset_steps": 0,
+            "channel_counts": Counter(),
+            "asset_category_counts": Counter(),
+            "asset_success_total": 0.0,
+            "asset_success_count": 0,
+            "duration_samples": [],
+            "segment_keys": _segment_list(account_id),
+        }
+        trackers[account_id] = tracker
+        return tracker
+
+    for episode in episodes:
+        account_id_raw = getattr(episode, "account_id", None)
+        if not account_id_raw:
+            continue
+        account_id = str(account_id_raw)
+        account_ids.add(account_id)
+        episode_id = getattr(episode, "id", None)
+        if episode_id:
+            episode_account_map[str(episode_id)] = account_id
+        tracker = _tracker(account_id)
+        started_at = getattr(episode, "started_at", None)
+        ended_at = getattr(episode, "ended_at", None)
+        if started_at and ended_at:
+            try:
+                duration_days = max(
+                    (ended_at - started_at).total_seconds() / 86400.0,
+                    0.01,
+                )
+            except Exception:
+                duration_days = None
+            if duration_days is not None:
+                tracker["duration_samples"].append(duration_days)
+
+    additional_ids = set()
+    additional_ids.update(str(key) for key in account_meta_lookup.keys())
+    additional_ids.update(str(key) for key in account_status_map.keys())
+    additional_ids.update(str(key) for key in account_raw_meta.keys())
+    additional_ids.update(str(key) for key in segment_keys_by_account.keys())
+    account_ids.update(additional_ids)
+    for acc_id in account_ids:
+        _tracker(acc_id)
+
+    stage_fields = (
+        "stage_code",
+        "stage",
+        "stage_label",
+        "journey_stage",
+        "journey_phase",
+        "belief_state",
+    )
+
+    def _stage_from_metrics(payload: Dict[str, Any], bucket: Optional[str]) -> Optional[str]:
+        for field in stage_fields:
+            value = payload.get(field)
+            if isinstance(value, dict):
+                value = value.get("code") or value.get("label") or value.get("value")
+            stage = _canonical_stage(value)
+            if stage:
+                return stage
+        if bucket:
+            bucket_norm = str(bucket).lower()
+            if "problem" in bucket_norm:
+                return "problem"
+            if "pain" in bucket_norm:
+                return "pain"
+            if "resolution" in bucket_norm:
+                return "resolution"
+            if "execution" in bucket_norm:
+                return "execution"
+        return None
+
+    def _bucket_class(bucket: Optional[str]) -> str:
+        mapping = {
+            "on_path": "expected",
+            "perfect_match": "expected",
+            "near_path": "jump_ahead",
+            "skip_hit": "jump_ahead",
+            "off_path": "off_path",
+            "off_path_known": "off_path",
+            "out_of_graph": "off_path",
+            "no_path": "no_path",
+        }
+        if not bucket:
+            return "no_path"
+        return mapping.get(str(bucket).lower(), str(bucket).lower())
+
+    ordered_steps = sorted(
+        steps,
+        key=lambda step: (
+            str(getattr(step, "episode_id", "")),
+            getattr(step, "t_index", getattr(step, "step_index", 0)) or 0,
+        ),
+    )
+    last_stage_by_episode: Dict[str, Optional[str]] = {}
+    for step in ordered_steps:
+        episode_id = getattr(step, "episode_id", None)
+        if not episode_id:
+            continue
+        account_id = episode_account_map.get(str(episode_id))
+        if not account_id:
+            continue
+        tracker = _tracker(account_id)
+        tracker["total_steps"] += 1
+        bucket = getattr(step, "bucket", None)
+        bucket_value = bucket.value if hasattr(bucket, "value") else bucket
+        metrics_payload = step.metrics or {}
+        stage_code = _stage_from_metrics(metrics_payload, bucket_value)
+        if stage_code:
+            tracker["unique_stages"].add(stage_code)
+            prev_stage = last_stage_by_episode.get(str(episode_id))
+            if prev_stage and prev_stage != stage_code:
+                tracker["stage_transitions"].add(f"{prev_stage}->{stage_code}")
+            last_stage_by_episode[str(episode_id)] = stage_code
+        persona_id = (
+            getattr(step, "observed_persona_id", None)
+            or getattr(step, "predicted_top_persona_id", None)
+        )
+        if persona_id:
+            tracker["unique_personas"].add(str(persona_id))
+        classification = _bucket_class(bucket_value)
+        if classification == "off_path":
+            tracker["off_path_steps"] += 1
+        transition_id = metrics_payload.get("belief_transition_id")
+        if not transition_id:
+            transition_obj = metrics_payload.get("belief_transition") or {}
+            transition_id = transition_obj.get("id")
+        if transition_id:
+            tracker["critical_transitions"].add(str(transition_id))
+        for ev in metrics_payload.get("edge_evidence") or []:
+            if isinstance(ev, dict):
+                from_id = ev.get("from")
+                to_id = ev.get("to")
+                if from_id and to_id:
+                    tracker["critical_transitions"].add(f"{from_id}->{to_id}")
+        engagement_meta = metrics_payload.get("engagement") or {}
+        asset_id = (
+            metrics_payload.get("asset_id")
+            or engagement_meta.get("asset_id")
+            or engagement_meta.get("id")
+        )
+        if asset_id:
+            asset_id = str(asset_id)
+            tracker["asset_steps"] += 1
+            asset_info = asset_metadata.get(asset_id) or {}
+            category_label = asset_info.get("category_label")
+            if category_label:
+                tracker["asset_category_counts"][category_label] += 1
+            delta_val = asset_delta_lookup.get(asset_id)
+            if isinstance(delta_val, (int, float)):
+                tracker["asset_success_total"] += float(delta_val)
+                tracker["asset_success_count"] += 1
+        channel_val = (
+            engagement_meta.get("channel")
+            or metrics_payload.get("channel")
+            or engagement_meta.get("source")
+            or getattr(step, "channel", None)
+        )
+        if channel_val:
+            tracker["channel_counts"][str(channel_val).strip().lower()] += 1
+
+    rows: List[Dict[str, Any]] = []
+    for account_id, tracker in trackers.items():
+        meta = dict(account_meta_lookup.get(account_id) or {})
+        raw_meta = account_raw_meta.get(account_id) or {}
+        for key in ("industry", "revenue_range", "employee_range", "geography", "funding_stage"):
+            if not meta.get(key):
+                value = raw_meta.get(key)
+                if value:
+                    meta[key] = value
+        account_name = meta.get("account_name") or raw_meta.get("account_name")
+        segments = tracker.get("segment_keys") or _segment_list(account_id)
+        segments = [seg for seg in segments if seg]
+        total_steps = tracker["total_steps"] or 0
+        off_ratio = (
+            float(tracker["off_path_steps"]) / float(total_steps)
+            if total_steps
+            else 0.0
+        )
+        asset_touch_ratio = (
+            float(tracker["asset_steps"]) / float(total_steps)
+            if total_steps
+            else 0.0
+        )
+        persona_activation = len(tracker["unique_personas"])
+        unique_stage_count = len(tracker["unique_stages"])
+        critical_count = len(tracker["critical_transitions"]) or len(tracker["stage_transitions"])
+        channel_diversity = len([ch for ch, cnt in tracker["channel_counts"].items() if cnt])
+        dominant_asset_category = None
+        if tracker["asset_category_counts"]:
+            dominant_asset_category = max(
+                tracker["asset_category_counts"].items(),
+                key=lambda item: item[1],
+            )[0]
+        primary_channel = None
+        if tracker["channel_counts"]:
+            primary_channel = max(
+                tracker["channel_counts"].items(),
+                key=lambda item: item[1],
+            )[0]
+        asset_success_score = (
+            tracker["asset_success_total"] / tracker["asset_success_count"]
+            if tracker["asset_success_count"]
+            else 0.0
+        )
+        duration_days = _mean_safe(tracker["duration_samples"])
+        status_label = _normalize_deal_status(account_status_map.get(account_id))
+
+        rows.append(
+            {
+                "account_id": account_id,
+                "account_name": account_name,
+                "label_raw": status_label,
+                "label": 1 if status_label == "won" else 0 if status_label == "lost" else None,
+                "feature_values": {
+                    "industry": meta.get("industry"),
+                    "revenue_range": meta.get("revenue_range"),
+                    "employee_range": meta.get("employee_range"),
+                    "geography": meta.get("geography"),
+                    "funding_stage": meta.get("funding_stage"),
+                    "primary_segment": segments[0] if segments else None,
+                    "dominant_asset_category": dominant_asset_category,
+                    "primary_channel": primary_channel,
+                    "critical_transition_count": critical_count,
+                    "off_path_ratio": off_ratio,
+                    "journey_duration_days": duration_days,
+                    "persona_activation": float(persona_activation),
+                    "asset_touch_ratio": asset_touch_ratio,
+                    "channel_diversity": float(channel_diversity),
+                    "unique_stage_count": float(unique_stage_count),
+                    "asset_success_score": asset_success_score,
+                    "engagement_depth": float(total_steps),
+                    "segment_count": float(len(segments)),
+                },
+            }
+        )
+    return rows
+
+
 def _build_product_insights(
     *,
     account_meta_stats: Dict[str, Dict[str, Any]],
@@ -255,7 +857,23 @@ def _build_product_insights(
     episode_durations: List[float],
     persona_node_info: Dict[str, Dict[str, Any]],
     rcs_paths: List[Dict[str, Any]],
+    segment_persona_stats: Optional[Dict[str, Dict[str, Dict[str, Any]]]] = None,
+    segment_classification_counts: Optional[Dict[str, Counter]] = None,
+    segment_sequences_by_segment: Optional[
+        Dict[str, Dict[str, List[str]]]
+    ] = None,
+    segment_concern_counter: Optional[Dict[str, Counter]] = None,
+    segment_stage_counter: Optional[Dict[str, Counter]] = None,
+    persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
+    wolves_metrics_updated_at: Optional[str] = None,
+    product_graph: Optional[nx.DiGraph] = None,
 ) -> Dict[str, Any]:
+    MIN_SEGMENT_DECISIONS = 2
+    MIN_SEGMENT_DELTA = 0.0
+    SIGNIFICANCE_DELTA = 0.05
+    KEYSTONE_MIN_SCORE = 0.35
+    KEYSTONE_MIN_SAMPLE = 2
+
     insights = deepcopy(DEFAULT_PRODUCT_INSIGHTS)
     insights["ideal_customer_patterns"]["works_well"] = []
     insights["ideal_customer_patterns"]["gaps"] = []
@@ -264,8 +882,8 @@ def _build_product_insights(
     insights["persona_landscape"]["decision_personas"] = []
     insights["persona_landscape"]["blockers"] = []
     insights["persona_landscape"]["coalitions"] = []
-    insights["belief_transitions"]["hardest"] = ""
-    insights["belief_transitions"]["easiest"] = ""
+    insights["belief_transitions"]["hardest"] = _insight_text("", source="default")
+    insights["belief_transitions"]["easiest"] = _insight_text("", source="default")
     insights["belief_transitions"]["top_pains"] = []
     insights["asset_channel_effectiveness"]["high_assets"] = []
     insights["asset_channel_effectiveness"]["underperforming_channels"] = []
@@ -274,30 +892,65 @@ def _build_product_insights(
     insights["journey_structure"]["deviations"] = ""
     insights["journey_structure"]["average_duration_days"] = None
     insights["journey_structure"]["typical_path"] = []
-    insights["global_patterns"]["biggest_barrier"] = ""
-    insights["global_patterns"]["hidden_blocker"] = ""
-    insights["global_patterns"]["missed_opportunity"] = ""
+    insights["global_patterns"]["biggest_barrier"] = _insight_text("", source="default")
+    insights["global_patterns"]["hidden_blocker"] = _insight_text("", source="default")
+    insights["global_patterns"]["missed_opportunity"] = _insight_text("", source="default")
     insights["product_strengths"]["strengths"] = []
     insights["product_strengths"]["weaknesses"] = []
     insights["strategic_moves"]["segment_priorities"] = ""
     insights["strategic_moves"]["persona_priorities"] = ""
     insights["strategic_moves"]["asset_priorities"] = ""
     insights["strategic_moves"]["channel_priorities"] = ""
+    insights["segment_patterns"] = {}
+    insights["keystone_personas"] = []
+    insights["wolves_metrics_updated_at"] = wolves_metrics_updated_at
+
+    segment_persona_stats = segment_persona_stats or {}
+    segment_classification_counts = segment_classification_counts or {}
+    segment_sequences_by_segment = segment_sequences_by_segment or {}
+    segment_concern_counter = segment_concern_counter or {}
+    segment_stage_counter = segment_stage_counter or {}
+    persona_wolves_metrics = persona_wolves_metrics or {}
 
     meta_account_map = meta_account_map or {}
+
+    canonical_lookup, canonical_labels, canonical_node_map = _canonical_persona_lookup(
+        product_graph
+    )
+    canonical_persona_stats = _aggregate_persona_stats(persona_stats, canonical_lookup)
+    canonical_persona_sequences = {
+        account_id: [
+            canonical_lookup.get(persona_id, persona_id) for persona_id in seq if persona_id
+        ]
+        for account_id, seq in persona_sequences_by_episode.items()
+    }
+
+    if product_graph:
+        for canonical_id, node_id in canonical_node_map.items():
+            info = persona_node_info.setdefault(canonical_id, {})
+            node_label = canonical_labels.get(
+                canonical_id, _node_data_label(product_graph, node_id)
+            )
+            if not info.get("label"):
+                info["label"] = node_label
+            node_data = product_graph.nodes.get(node_id, {})
+            info.setdefault("perceptibility", node_data.get("perceptibility"))
+            info.setdefault("proximity", node_data.get("proximity"))
 
     channel_scores: Dict[str, List[float]] = defaultdict(list)
     channel_persona_counts: Counter[Tuple[str, str]] = Counter()
     channel_persona_deltas: Dict[Tuple[str, str], List[float]] = defaultdict(list)
     concern_counter: Counter[str] = Counter()
     stage_counter: Counter[str] = Counter()
+    segment_concern_aggregate: Dict[str, Counter[str]] = defaultdict(Counter)
+    segment_stage_aggregate: Dict[str, Counter[str]] = defaultdict(Counter)
 
     def _persona_label(pid: str) -> str:
         info = persona_node_info.get(pid) or {}
         label = info.get("label")
         if isinstance(label, str) and label.strip():
             return label
-        return _format_meta_value(pid)
+        return _fallback_persona_label(pid)
 
     def _fmt_metric(value: Optional[float]) -> str:
         if value is None:
@@ -308,7 +961,7 @@ def _build_product_insights(
             return "—"
 
     def _persona_line(pid: str, *, involvement_share: Optional[float] = None) -> str:
-        stats = persona_stats.get(pid, {})
+        stats = canonical_persona_stats.get(pid, {})
         if involvement_share is None:
             observed = stats.get("observed", 0)
             total = total_persona_events or 1
@@ -332,9 +985,11 @@ def _build_product_insights(
         )
 
     total_persona_events = (
-        sum(stats.get("observed", 0) for stats in persona_stats.values()) or 1
+        sum(stats.get("observed", 0) for stats in canonical_persona_stats.values()) or 1
     )
-    observed_counts = [stats.get("observed", 0) for stats in persona_stats.values()]
+    observed_counts = [
+        stats.get("observed", 0) for stats in canonical_persona_stats.values()
+    ]
     max_persona_observed = max(observed_counts) if observed_counts else 1
 
     def _typical_step_payload(
@@ -346,8 +1001,9 @@ def _build_product_insights(
         override_perceptibility: Optional[float] = None,
         override_proximity: Optional[float] = None,
         override_involvement: Optional[float] = None,
+        source: InsightSource = "data",
     ) -> Dict[str, Any]:
-        stats = persona_stats.get(pid, {})
+        stats = canonical_persona_stats.get(pid, {})
         observed = stats.get("observed", 0)
         if isinstance(override_involvement, (int, float)):
             involvement_share = float(override_involvement)
@@ -367,6 +1023,13 @@ def _build_product_insights(
             if isinstance(override_proximity, (int, float))
             else info.get("proximity")
         )
+        if perc_val is None:
+            perc_val = _safe_ratio(
+                (stats.get("hit_at_1", 0) or 0) + (stats.get("hit_at_3", 0) or 0),
+                observed or 1,
+            )
+        if prox_val is None:
+            prox_val = 1.0 - _safe_ratio(stats.get("off_path", 0), observed or 1)
 
         hit1_ratio = _safe_ratio(stats.get("hit_at_1", 0), observed)
         hit3_ratio = _safe_ratio(stats.get("hit_at_3", 0), observed)
@@ -430,6 +1093,7 @@ def _build_product_insights(
             "proximity": prox_val,
             "involvement": involvement_share,
             "fatigue": round(fatigue, 3),
+            "source": source,
         }
         if reason_bits:
             payload["reason"] = " • ".join(reason_bits)
@@ -461,17 +1125,43 @@ def _build_product_insights(
     overall_rate = _safe_ratio(total_wins, total_decisions) if total_decisions else 0.0
 
     if meta_rows:
-        meta_rows.sort(key=lambda row: row[1], reverse=True)
+        predictive_rows = [
+            row
+            for row in meta_rows
+            if row[3] >= MIN_SEGMENT_DECISIONS
+        ]
+
+        def _dedupe_rows(rows: List[Tuple[str, float, Optional[float], int]]) -> List[Tuple[str, float, Optional[float], int]]:
+            seen = set()
+            deduped = []
+            for row in rows:
+                if row[0] in seen:
+                    continue
+                deduped.append(row)
+                seen.add(row[0])
+            return deduped
+
+        positive_rows = _dedupe_rows(
+            sorted(predictive_rows, key=lambda row: row[1], reverse=True)
+        )[:3]
+        negative_rows = _dedupe_rows(
+            sorted(predictive_rows, key=lambda row: row[1])
+        )
+        negative_rows = [
+            row for row in negative_rows if row[0] not in {meta for meta, _, _, _ in positive_rows[:3]}
+        ][:3]
         works_lines: List[str] = []
         works_items: List[Dict[str, Any]] = []
-        for meta, rate, avg_duration, total in meta_rows[:3]:
+        for meta, rate, avg_duration, total in positive_rows[:3]:
             delta = rate - overall_rate
+            is_significant = abs(delta) >= SIGNIFICANCE_DELTA
             duration_text = ""
             if avg_duration:
                 duration_text = f" and typically close in {avg_duration:.1f} days"
             label = _format_meta_value(meta)
+            qualifier = "" if is_significant else " (low signal)"
             text = (
-                f"{label} convert at {_percent(rate, 1)} (Δ {delta:+.1%}){duration_text}."
+                f"{label} convert at {_percent(rate, 1)} (Δ {delta:+.1%}){duration_text}{qualifier}."
             )
             works_lines.append(text)
             stats = account_meta_stats.get(meta, {})
@@ -480,6 +1170,13 @@ def _build_product_insights(
                 + stats.get("losses", 0)
                 + stats.get("open", 0)
             )
+            confidence_samples = stats.get("meta_confidence_samples") or 0
+            avg_meta_conf = None
+            if confidence_samples:
+                avg_meta_conf = (
+                    (stats.get("meta_confidence_weight", 0.0) or 0.0)
+                    / confidence_samples
+                )
             works_items.append(
                 {
                     "text": text,
@@ -491,24 +1188,42 @@ def _build_product_insights(
                         "losses": stats.get("losses", 0),
                         "open": stats.get("open", 0),
                         "avg_duration_days": avg_duration,
+                        "meta_confidence": avg_meta_conf,
                         "accounts": meta_account_map.get(meta, [])[:6],
+                        "is_significant": is_significant,
                     },
                 }
             )
-        insights["ideal_customer_patterns"]["works_well"] = works_lines
-        insights["ideal_customer_patterns"]["works_well_items"] = works_items
+        if works_lines:
+            insights["ideal_customer_patterns"]["works_well"] = works_lines
+            insights["ideal_customer_patterns"]["works_well_items"] = works_items
+        else:
+            fallback_text = (
+                "Segments observed, but none exceed the ±5 pt lift threshold yet — collect more wins/losses for clearer signal."
+            )
+            insights["ideal_customer_patterns"]["works_well"] = [fallback_text]
+            insights["ideal_customer_patterns"]["works_well_items"] = [
+                {
+                    "text": fallback_text,
+                    "label": fallback_text,
+                    "meta_key": None,
+                    "signals": None,
+                    "support": {},
+                }
+            ]
 
-        meta_rows.sort(key=lambda row: row[1])
         gaps_lines: List[str] = []
         gaps_items: List[Dict[str, Any]] = []
-        for meta, rate, avg_duration, total in meta_rows[:3]:
+        for meta, rate, avg_duration, total in negative_rows[:3]:
             delta = overall_rate - rate
+            is_significant = abs(delta) >= SIGNIFICANCE_DELTA
             duration_text = ""
             if avg_duration:
                 duration_text = f"; average cycle stretches to {avg_duration:.1f} days"
             label = _format_meta_value(meta)
+            qualifier = "" if is_significant else " (low signal)"
             text = (
-                f"{label} underperform with only {_percent(rate, 1)} conversion (Δ -{delta:.1%}){duration_text}."
+                f"{label} underperform with only {_percent(rate, 1)} conversion (Δ -{delta:.1%}){duration_text}{qualifier}."
             )
             gaps_lines.append(text)
             stats = account_meta_stats.get(meta, {})
@@ -517,6 +1232,13 @@ def _build_product_insights(
                 + stats.get("losses", 0)
                 + stats.get("open", 0)
             )
+            confidence_samples = stats.get("meta_confidence_samples") or 0
+            avg_meta_conf = None
+            if confidence_samples:
+                avg_meta_conf = (
+                    (stats.get("meta_confidence_weight", 0.0) or 0.0)
+                    / confidence_samples
+                )
             gaps_items.append(
                 {
                     "text": text,
@@ -528,12 +1250,30 @@ def _build_product_insights(
                         "losses": stats.get("losses", 0),
                         "open": stats.get("open", 0),
                         "avg_duration_days": avg_duration,
+                        "meta_confidence": avg_meta_conf,
                         "accounts": meta_account_map.get(meta, [])[:6],
+                        "is_significant": is_significant,
                     },
                 }
             )
-        insights["ideal_customer_patterns"]["gaps"] = gaps_lines
-        insights["ideal_customer_patterns"]["gaps_items"] = gaps_items
+        if gaps_lines:
+            insights["ideal_customer_patterns"]["gaps"] = gaps_lines
+            insights["ideal_customer_patterns"]["gaps_items"] = gaps_items
+        else:
+            fallback_text = (
+                "No underperforming segments cleared the ±5 pt gap threshold — gather more losing deals."
+            )
+            insights["ideal_customer_patterns"]["gaps"] = [fallback_text]
+            insights["ideal_customer_patterns"]["gaps_items"] = [
+                {
+                    "text": fallback_text,
+                    "label": fallback_text,
+                    "meta_key": None,
+                    "signals": None,
+                    "support": {},
+                }
+            ]
+            insights["ideal_customer_patterns"]["gaps_items"] = []
     elif arsenal_impact:
         meta_effect: Dict[str, List[float]] = defaultdict(list)
         meta_counts: Dict[str, int] = defaultdict(int)
@@ -638,11 +1378,23 @@ def _build_product_insights(
     # Section B - Persona landscape
     persona_counts = [
         (pid, stats.get("observed", 0))
-        for pid, stats in persona_stats.items()
+        for pid, stats in canonical_persona_stats.items()
         if stats.get("observed", 0)
     ]
+
+    def _dedupe_persona_rows(rows: List[Tuple[str, float]]) -> List[Tuple[str, float]]:
+        seen: set[str] = set()
+        deduped: List[Tuple[str, float]] = []
+        for pid, value in rows:
+            label = _persona_label(pid).strip().lower()
+            if not label or label in seen:
+                continue
+            deduped.append((pid, value))
+            seen.add(label)
+        return deduped
+
     persona_counts.sort(key=lambda row: row[1], reverse=True)
-    top_personas = persona_counts[:5]
+    top_personas = _dedupe_persona_rows(persona_counts)[:5]
     if top_personas:
         insights["persona_landscape"]["frequency"] = [
             _persona_line(pid, involvement_share=count / total_persona_events)
@@ -651,7 +1403,7 @@ def _build_product_insights(
 
     def _persona_ratio(key: str) -> List[Tuple[str, float]]:
         rows = []
-        for pid, stats in persona_stats.items():
+        for pid, stats in canonical_persona_stats.items():
             observed = stats.get("observed", 0)
             if not observed:
                 continue
@@ -661,14 +1413,14 @@ def _build_product_insights(
         rows.sort(key=lambda row: row[1], reverse=True)
         return rows
 
-    lead_rows = _persona_ratio("hit_at_1")
+    lead_rows = _dedupe_persona_rows(_persona_ratio("hit_at_1"))
     if lead_rows:
         insights["persona_landscape"]["critical_leads"] = [
             f"{_persona_line(pid)} — Hit@1 {_percent(score, 0)}"
             for pid, score in lead_rows[:3]
         ]
 
-    decision_rows = _persona_ratio("hit_at_3")
+    decision_rows = _dedupe_persona_rows(_persona_ratio("hit_at_3"))
     if decision_rows:
         insights["persona_landscape"]["decision_personas"] = [
             f"{_persona_line(pid)} — Hit@3 {_percent(score, 0)}"
@@ -676,12 +1428,13 @@ def _build_product_insights(
         ]
 
     blocker_rows = []
-    for pid, stats in persona_stats.items():
+    for pid, stats in canonical_persona_stats.items():
         observed = stats.get("observed", 0)
         if not observed:
             continue
         off_ratio = _safe_ratio(stats.get("off_path", 0), observed)
         blocker_rows.append((pid, off_ratio))
+    blocker_rows = _dedupe_persona_rows(blocker_rows)
     blocker_rows.sort(key=lambda row: row[1], reverse=True)
     if blocker_rows:
         insights["persona_landscape"]["blockers"] = [
@@ -690,7 +1443,7 @@ def _build_product_insights(
         ]
 
     pair_counts: Counter = Counter()
-    for seq in persona_sequences_by_episode.values():
+    for seq in canonical_persona_sequences.values():
         if len(seq) < 2:
             continue
         for a, b in zip(seq, seq[1:]):
@@ -724,6 +1477,7 @@ def _build_product_insights(
             for row in sorted_assets[:3]
         ]
         for row in arsenal_impact:
+            row_segments = row.get("segment_keys") or []
             concerns_payload = row.get("concerns") or []
             if isinstance(concerns_payload, list):
                 for item in concerns_payload:
@@ -735,6 +1489,8 @@ def _build_product_insights(
                         count = 0
                     if label:
                         concern_counter[label] += int(count) if count else 1
+                        for seg in row_segments:
+                            segment_concern_aggregate[seg][label] += int(count) if count else 1
             stages_payload = row.get("stages") or []
             if isinstance(stages_payload, list):
                 for entry in stages_payload:
@@ -745,7 +1501,10 @@ def _build_product_insights(
                         stage_code = entry
                         count = 0
                     if stage_code:
-                        stage_counter[str(stage_code)] += int(count) if count else 1
+                        increment = int(count) if count else 1
+                        stage_counter[str(stage_code)] += increment
+                        for seg in row_segments:
+                            segment_stage_aggregate[seg][str(stage_code)] += increment
 
         for row in arsenal_impact:
             delta = row.get("avg_delta")
@@ -792,10 +1551,18 @@ def _build_product_insights(
 
     if concern_counter:
         total_concerns = sum(concern_counter.values()) or 1
-        insights["belief_transitions"]["top_pains"] = [
-            f"{label} ({_percent(_safe_ratio(count, total_concerns), 0)} of signals)"
-            for label, count in concern_counter.most_common(4)
-        ]
+        pains: List[Dict[str, Any]] = []
+        for label, count in concern_counter.most_common(4):
+            share = _safe_ratio(count, total_concerns)
+            pains.append(
+                _insight_text(
+                    f"{label} ({_percent(share, 0)} of signals)",
+                    source="data",
+                    confidence=share,
+                    extra={"label": label, "share": share},
+                )
+            )
+        insights["belief_transitions"]["top_pains"] = pains
 
     if stage_counter:
         stage_total = sum(stage_counter.values()) or 1
@@ -806,27 +1573,43 @@ def _build_product_insights(
         ]
         if off_ratio:
             hardest_parts.append(f"{_percent(off_ratio, 0)} of steps still drift off-path")
-        insights["belief_transitions"]["hardest"] = f"{' while '.join(hardest_parts)}."
+        hardness_conf = _safe_ratio(stage_count, stage_total)
+        insights["belief_transitions"]["hardest"] = _insight_text(
+            f"{' while '.join(hardest_parts)}.",
+            source="data",
+            confidence=hardness_conf,
+            extra={"stage": stage_code, "share": hardness_conf},
+        )
     elif off_ratio:
-        insights["belief_transitions"]["hardest"] = (
-            f"Off-path detours account for {_percent(off_ratio, 0)} of observed steps, indicating the toughest shift occurs mid-journey."
+        insights["belief_transitions"]["hardest"] = _insight_text(
+            f"Off-path detours account for {_percent(off_ratio, 0)} of observed steps, indicating the toughest shift occurs mid-journey.",
+            source="data",
+            confidence=off_ratio,
         )
 
     if expected_share:
-        insights["belief_transitions"]["easiest"] = (
-            f"On-path progress holds steady across {_percent(expected_share, 0)} of recorded steps."
+        insights["belief_transitions"]["easiest"] = _insight_text(
+            f"On-path progress holds steady across {_percent(expected_share, 0)} of recorded steps.",
+            source="data",
+            confidence=expected_share,
         )
 
     if jump_share:
         insights["journey_structure"]["deviations"] = (
             f"Jump-ahead sequences appear in {_percent(jump_share, 0)} of engagements — monitor fast-track personas."
         )
-    if not insights["belief_transitions"]["hardest"]:
-        insights["belief_transitions"]["hardest"] = DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["hardest"]
-    if not insights["belief_transitions"]["easiest"]:
-        insights["belief_transitions"]["easiest"] = DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["easiest"]
+    if not insights["belief_transitions"]["hardest"].get("text"):
+        insights["belief_transitions"]["hardest"] = deepcopy(
+            DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["hardest"]
+        )
+    if not insights["belief_transitions"]["easiest"].get("text"):
+        insights["belief_transitions"]["easiest"] = deepcopy(
+            DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["easiest"]
+        )
     if not insights["belief_transitions"]["top_pains"]:
-        insights["belief_transitions"]["top_pains"] = DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["top_pains"][:]
+        insights["belief_transitions"]["top_pains"] = deepcopy(
+            DEFAULT_PRODUCT_INSIGHTS["belief_transitions"]["top_pains"]
+        )
 
     # Section E - Journey structure
     if persona_sequences_by_episode:
@@ -851,7 +1634,7 @@ def _build_product_insights(
         if sequence_counter:
             top_sequence = list(sequence_counter.most_common(1)[0][0])
             typical_steps = [
-                _typical_step_payload(pid, idx)
+                _typical_step_payload(pid, idx, source="data")
                 for idx, pid in enumerate(top_sequence)
             ]
             if typical_steps:
@@ -903,6 +1686,7 @@ def _build_product_insights(
                     override_perceptibility=perc,
                     override_proximity=prox,
                     override_involvement=involvement,
+                    source="graph",
                 )
                 typical_steps.append(payload)
         if typical_steps:
@@ -919,7 +1703,7 @@ def _build_product_insights(
         for idx, pid in enumerate(longest_seq):
             if not pid:
                 continue
-            payload = _typical_step_payload(str(pid), idx)
+            payload = _typical_step_payload(str(pid), idx, source="data")
             fallback_steps.append(payload)
         if fallback_steps:
             insights["journey_structure"]["typical_path"] = fallback_steps
@@ -931,13 +1715,19 @@ def _build_product_insights(
         total_concerns = sum(concern_counter.values()) or 1
         top_label, top_count = concern_counter.most_common(1)[0]
         concern_share = _safe_ratio(top_count, total_concerns)
-        insights["global_patterns"]["biggest_barrier"] = (
-            f"{top_label} surfaces in {_percent(concern_share, 0)} of flagged engagements."
+        insights["global_patterns"]["biggest_barrier"] = _insight_text(
+            f"{top_label} surfaces in {_percent(concern_share, 0)} of flagged engagements.",
+            source="data",
+            confidence=concern_share,
+            extra={"label": top_label, "entity_type": "concern"},
         )
     if blocker_rows:
         blocker_id, blocker_ratio = blocker_rows[0]
-        insights["global_patterns"]["hidden_blocker"] = (
-            f"{_format_meta_value(blocker_id)} shows the highest stall rate at {_percent(blocker_ratio, 0)}."
+        insights["global_patterns"]["hidden_blocker"] = _insight_text(
+            f"{_format_meta_value(blocker_id)} shows the highest stall rate at {_percent(blocker_ratio, 0)}.",
+            source="data",
+            confidence=blocker_ratio,
+            extra={"label": blocker_id, "entity_type": "persona"},
         )
 
     missed_candidates: List[Tuple[str, float, float]] = []
@@ -953,9 +1743,17 @@ def _build_product_insights(
     if missed_candidates:
         missed_candidates.sort(key=lambda row: (row[1], -row[2]), reverse=True)
         pid, hit_rate, frequency = missed_candidates[0]
-        insights["global_patterns"]["missed_opportunity"] = (
-            f"{_format_meta_value(pid)} convert at {_percent(hit_rate, 0)} when engaged yet appear in only {_percent(frequency, 0)} of engagements."
+        insights["global_patterns"]["missed_opportunity"] = _insight_text(
+            f"{_format_meta_value(pid)} convert at {_percent(hit_rate, 0)} when engaged yet appear in only {_percent(frequency, 0)} of engagements.",
+            source="data",
+            confidence=hit_rate,
+            extra={"persona_id": pid, "entity_type": "persona"},
         )
+    for key in ("biggest_barrier", "hidden_blocker", "missed_opportunity"):
+        if not insights["global_patterns"][key].get("text"):
+            fallback = deepcopy(DEFAULT_PRODUCT_INSIGHTS["global_patterns"][key])
+            fallback.setdefault("extra", {}).setdefault("entity_type", "default")
+            insights["global_patterns"][key] = fallback
 
     # Section G - strengths/weaknesses from persona stats
     strength_rows = sorted(
@@ -995,6 +1793,231 @@ def _build_product_insights(
         insights["strategic_moves"]["channel_priorities"] = (
             f"Double down on {best_channel} where belief lift is strongest."
         )
+
+    if segment_persona_stats:
+        segment_patterns: Dict[str, Any] = {}
+        for segment_key, persona_map in segment_persona_stats.items():
+            signal_total = sum(
+                stats.get("observed", 0) for stats in persona_map.values()
+            )
+            if signal_total < 8:
+                continue
+            freq_rows = []
+            for pid, stats in persona_map.items():
+                observed = stats.get("observed", 0)
+                if not observed:
+                    continue
+                freq_rows.append(
+                    {
+                        "persona_id": pid,
+                        "label": _persona_label(pid),
+                        "observed": observed,
+                        "share": _safe_ratio(observed, signal_total),
+                    }
+                )
+            freq_rows.sort(key=lambda row: row["observed"], reverse=True)
+            freq_rows = freq_rows[:5]
+
+            seg_counts = segment_classification_counts.get(segment_key, Counter())
+            seg_total = sum(seg_counts.values()) or 0
+            hardest_text = ""
+            easiest_text = ""
+            if seg_total:
+                seg_off_ratio = _safe_ratio(seg_counts.get("off_path", 0), seg_total)
+                seg_expected = _safe_ratio(seg_counts.get("expected", 0), seg_total)
+                if seg_off_ratio:
+                    hardest_text = (
+                        f"{_percent(seg_off_ratio, 0)} of steps drift off-path."
+                    )
+                if seg_expected:
+                    easiest_text = (
+                        f"{_percent(seg_expected, 0)} of steps remain on track."
+                    )
+            stage_counts = segment_stage_aggregate.get(segment_key, Counter())
+            if stage_counts:
+                stage_total = sum(stage_counts.values()) or 1
+                stage_code, stage_count = stage_counts.most_common(1)[0]
+                stage_label = _stage_label(stage_code)
+                hardest_text = (
+                    f"{stage_label} absorbs {_percent(_safe_ratio(stage_count, stage_total), 0)} of concern signals."
+                )
+
+            seg_concerns = segment_concern_aggregate.get(segment_key, Counter())
+            pains_payload = []
+            if seg_concerns:
+                seg_total_concerns = sum(seg_concerns.values()) or 1
+                pains_payload = [
+                    {
+                        "label": label,
+                        "share": _safe_ratio(count, seg_total_concerns),
+                    }
+                    for label, count in seg_concerns.most_common(4)
+                ]
+
+            seq_map = segment_sequences_by_segment.get(segment_key, {})
+            seg_triple_counts: Counter = Counter()
+            for seq in seq_map.values():
+                if len(seq) < 3:
+                    continue
+                for idx in range(len(seq) - 2):
+                    triple = tuple(seq[idx : idx + 3])
+                    seg_triple_counts[triple] += 1
+            common_paths_payload = [
+                {
+                    "personas": [
+                        {"persona_id": pid, "label": _persona_label(pid)}
+                        for pid in triple
+                    ],
+                    "count": count,
+                }
+                for triple, count in seg_triple_counts.most_common(3)
+            ]
+
+            segment_patterns[segment_key] = {
+                "label": segment_label_from_key(segment_key),
+                "signals": signal_total,
+                "persona_frequency": freq_rows,
+                "hardest": hardest_text,
+                "easiest": easiest_text,
+                "top_pains": pains_payload,
+                "common_paths": common_paths_payload,
+                "source": "data",
+                "confidence": round(min(0.95, signal_total / 25.0), 3),
+            }
+        insights["segment_patterns"] = segment_patterns
+    else:
+        insights["segment_patterns"] = {}
+
+    def _segment_payload_from_key(key: Optional[str]) -> Optional[Dict[str, Any]]:
+        if not key:
+            return None
+        payload = {
+            "key": key,
+            "label": segment_label_from_key(key),
+        }
+        for token in key.split("|"):
+            if "=" not in token:
+                continue
+            field, value = token.split("=", 1)
+            payload[field] = value
+        return payload
+
+    chain_cache: Dict[str, Dict[str, Any]] = {}
+
+    def _persona_chain_targets(pid: str) -> Dict[str, Any]:
+        if pid in chain_cache:
+            return chain_cache[pid]
+        follow_counts: Counter[Tuple[str, ...]] = Counter()
+        for seq in persona_sequences_by_episode.values():
+            if not seq:
+                continue
+            for idx, current in enumerate(seq):
+                if current != pid:
+                    continue
+                tail = tuple(seq[idx + 1 : idx + 4])
+                if tail:
+                    follow_counts[tail] += 1
+        if not follow_counts:
+            chain_cache[pid] = {}
+            return {}
+        top_sequence, top_count = follow_counts.most_common(1)[0]
+        total = sum(follow_counts.values()) or 1
+        labels = [_persona_label(node_id) for node_id in top_sequence if _persona_label(node_id)]
+        chain_cache[pid] = {
+            "targets": labels,
+            "share": top_count / total if total else None,
+            "coalition_path": [_persona_label(pid)] + labels if labels else [],
+        }
+        return chain_cache[pid]
+
+    def _preferred_segment(pid: str) -> Tuple[Optional[str], int]:
+        best_key: Optional[str] = None
+        best_count = 0
+        for seg_key, persona_map in segment_persona_stats.items():
+            stats = persona_map.get(pid)
+            observed = stats.get("observed", 0) if stats else 0
+            if observed > best_count:
+                best_key = seg_key
+                best_count = observed
+        return best_key, best_count
+
+    def _recommended_moves(pid: str) -> List[Dict[str, Any]]:
+        moves: List[Dict[str, Any]] = []
+        for row in arsenal_impact:
+            persona_ids = row.get("persona_ids") or []
+            if pid not in persona_ids:
+                continue
+            channel = (row.get("channels") or [None])[0]
+            move = {
+                "belief_transition": (row.get("funnel_stage") or {}).get("label"),
+                "best_asset": row.get("asset_label") or row.get("asset_id"),
+                "best_channel": channel,
+                "bps_lift": round((row.get("avg_delta") or 0.0) * 10000.0, 1),
+            }
+            moves.append(move)
+            if len(moves) >= 2:
+                break
+        return moves
+
+    keystone_rows: List[Dict[str, Any]] = []
+    for persona_id, metric in persona_wolves_metrics.items():
+        score = _to_float(metric.get("wolves_score")) or 0.0
+        if score < KEYSTONE_MIN_SCORE:
+            continue
+        sample_size = metric.get("sample_size") or persona_stats.get(persona_id, {}).get("observed", 0)
+        if not sample_size or sample_size < KEYSTONE_MIN_SAMPLE:
+            continue
+        label = _persona_label(persona_id)
+        if not label:
+            continue
+        segment_key, segment_signals = _preferred_segment(persona_id)
+        segment_payload = _segment_payload_from_key(segment_key)
+        chain_info = _persona_chain_targets(persona_id)
+        moves = _recommended_moves(persona_id)
+        explanation_bits: List[str] = []
+        if segment_payload and segment_signals:
+            explanation_bits.append(
+                f"{segment_payload.get('label')} accounts saw {label} in {segment_signals} journeys."
+            )
+        delta_win_bp = _to_float(metric.get("delta_win_bp"))
+        if isinstance(delta_win_bp, float):
+            explanation_bits.append(
+                f"Presence shifts win odds by {delta_win_bp:.1f} bps."
+            )
+        if chain_info.get("targets"):
+            share_text = (
+                _percent(chain_info.get("share") or 0.0, 0)
+                if chain_info.get("share") is not None
+                else "—"
+            )
+            explanation_bits.append(
+                f"Unlocks {_format_list(chain_info['targets'])} in {share_text} of wins."
+            )
+        keystone_rows.append(
+            {
+                "type": "keystone_persona",
+                "persona_id": persona_id,
+                "persona": label,
+                "wolves_score": round(score, 4),
+                "delta_win_bp": round(delta_win_bp or 0.0, 2) if delta_win_bp is not None else None,
+                "involvement_rate": _to_float(metric.get("involvement_rate")),
+                "sample_size": int(sample_size),
+                "segment": segment_payload,
+                "chain_targets": chain_info.get("targets") or [],
+                "chain_share": chain_info.get("share"),
+                "coalition_path": chain_info.get("coalition_path") or [],
+                "recommended_moves": moves,
+                "explanation": " ".join(explanation_bits).strip(),
+            }
+        )
+    keystone_rows.sort(
+        key=lambda row: (
+            row.get("wolves_score") or 0.0,
+            row.get("sample_size") or 0,
+        ),
+        reverse=True,
+    )
+    insights["keystone_personas"] = keystone_rows[:6]
 
     return insights
 
@@ -1261,6 +2284,13 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
     print("summarizing global insights for product:", product_id)
 
     meta_account_map: Dict[str, List[str]] = defaultdict(list)
+    account_raw_meta: Dict[str, Dict[str, Any]] = {}
+    segment_keys_by_account: Dict[str, set] = defaultdict(set)
+    persona_wolves_metrics: Dict[str, Dict[str, Any]] = {}
+    wolves_metrics_updated_at: Optional[str] = None
+    candidate_persona_stats: Dict[str, Dict[str, Any]] = defaultdict(
+        lambda: {"occurrences": 0, "accounts": set()}
+    )
 
     try:
         # --- episodes & counts ---
@@ -1275,15 +2305,38 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
         num_accounts = len(account_ids)
 
         account_status_map: Dict[str, str] = {}
+        account_meta_lookup: Dict[str, Dict[str, Any]] = {}
         if account_ids:
             status_rows = (
-                db.query(TargetAccountORM.id, TargetAccountORM.deal_status)
+                db.query(
+                    TargetAccountORM.id,
+                    TargetAccountORM.account_name,
+                    TargetAccountORM.industry,
+                    TargetAccountORM.revenue_range,
+                    TargetAccountORM.employee_range,
+                    TargetAccountORM.geography,
+                    TargetAccountORM.funding_stage,
+                    TargetAccountORM.deal_status,
+                )
                 .filter(TargetAccountORM.id.in_(account_ids))
                 .all()
             )
-            for account_id, deal_status in status_rows:
-                if account_id:
-                    account_status_map[str(account_id)] = (deal_status or "").strip()
+            for row in status_rows:
+                account_id = getattr(row, "id", None)
+                if not account_id:
+                    continue
+                acc_key = str(account_id)
+                account_status_map[acc_key] = (getattr(row, "deal_status", "") or "").strip()
+                account_meta_lookup[acc_key] = {
+                    "account_name": getattr(row, "account_name", None),
+                    "industry": getattr(row, "industry", None),
+                    "revenue_range": getattr(row, "revenue_range", None),
+                    "employee_range": getattr(row, "employee_range", None),
+                    "geography": getattr(row, "geography", None),
+                    "funding_stage": getattr(row, "funding_stage", None),
+                }
+
+        persona_wolves_metrics, wolves_metrics_updated_at = _load_persona_metrics_snapshot(product_id)
 
         # if you store num_steps on the episode, use that
         steps = (
@@ -1300,6 +2353,33 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
 
         print("processing", len(updates), "learning updates for summarization")
 
+        try:
+            asset_rows = (
+                db.query(
+                    ArsenalAsset.id,
+                    ArsenalAsset.name,
+                    ArsenalAsset.category,
+                    ArsenalAsset.category_text,
+                )
+                .filter(ArsenalAsset.product_id == product_id)
+                .all()
+            )
+            asset_metadata: Dict[str, Dict[str, Any]] = {}
+            for row in asset_rows:
+                category_label = None
+                if getattr(row, "category_text", None):
+                    category_label = row.category_text
+                else:
+                    category_obj = getattr(row, "category", None)
+                    if category_obj is not None:
+                        category_label = getattr(category_obj, "value", str(category_obj))
+                asset_metadata[str(getattr(row, "id"))] = {
+                    "name": getattr(row, "name", None),
+                    "category_label": category_label,
+                }
+        except Exception:
+            asset_metadata = {}
+
         def _coerce_payload(raw: Any) -> Dict[str, Any]:
             if raw is None:
                 return {}
@@ -1312,6 +2392,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     return {}
             return {}
 
+        episode_account_map: Dict[str, str] = {}
         persona_stats: Dict[str, Dict[str, Any]] = {}
         hit1_total = 0
         hit3_total = 0
@@ -1352,33 +2433,16 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 info["proximity"] = _to_float(node_data.get("proximity"))
             persona_node_info[pid] = info
 
-        def _normalize_account_meta(meta: Any) -> List[str]:
-            if not meta:
-                return []
-            if isinstance(meta, dict):
-                out: List[str] = []
-                for k, v in meta.items():
-                    if v is None:
-                        continue
-                    out.append(f"{k}:{v}")
-                return out
-            if isinstance(meta, list):
-                out: List[str] = []
-                for item in meta:
-                    if not item:
-                        continue
-                    if isinstance(item, str):
-                        out.append(item)
-                    elif isinstance(item, dict):
-                        out.extend(_normalize_account_meta(item))
-                    else:
-                        out.append(str(item))
-                return out
-            return [str(meta)]
-
         account_meta_by_account: Dict[str, List[str]] = {}
         account_meta_stats: Dict[str, Dict[str, Any]] = defaultdict(
-            lambda: {"wins": 0, "losses": 0, "open": 0, "durations": []}
+            lambda: {
+                "wins": 0,
+                "losses": 0,
+                "open": 0,
+                "durations": [],
+                "meta_confidence_weight": 0.0,
+                "meta_confidence_samples": 0,
+            }
         )
         episode_durations: List[float] = []
         for episode in episodes:
@@ -1405,27 +2469,83 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     duration_days = None
             if duration_days is not None:
                 episode_durations.append(duration_days)
-            meta_strings = _normalize_account_meta(getattr(episode, "account_meta", None))
-            if not meta_strings:
-                continue
-            existing = account_meta_by_account.setdefault(episode.account_id, [])
-            for entry in meta_strings:
-                if entry not in existing:
-                    existing.append(entry)
-            for entry in existing:
-                stats = account_meta_stats[entry]
-                if duration_days is not None:
-                    stats["durations"].append(duration_days)
-                if outcome_value == EpisodeOutcome.won.value:
-                    stats["wins"] += 1
-                elif outcome_value == EpisodeOutcome.lost.value:
-                    stats["losses"] += 1
-                else:
-                    stats["open"] += 1
+            episode_account_map.setdefault(episode.id, episode.account_id)
+            raw_episode_meta = getattr(episode, "account_meta", None)
+            episode_meta = (
+                dict(raw_episode_meta)
+                if isinstance(raw_episode_meta, dict)
+                else {}
+            )
+            fallback_meta = account_meta_lookup.get(episode.account_id, {}) or {}
+            merged_meta: Dict[str, Any] = {}
+            meta_confidence = 0.0
+            if episode_meta:
+                for key, value in episode_meta.items():
+                    if value in (None, "", [], {}):
+                        continue
+                    merged_meta[key] = value
+                meta_confidence = 1.0
+            if fallback_meta:
+                for key, value in fallback_meta.items():
+                    if value in (None, "", [], {}):
+                        continue
+                    merged_meta.setdefault(key, value)
+                if meta_confidence == 0.0 and merged_meta:
+                    meta_confidence = 0.6
+            if merged_meta:
+                merged = account_raw_meta.setdefault(episode.account_id, {})
+                for key, value in merged_meta.items():
+                    merged.setdefault(key, value)
+                for segment_key in segment_keys_from_meta(_filter_meta_fields(merged_meta)):
+                    if segment_key:
+                        segment_keys_by_account[episode.account_id].add(segment_key)
+
+            meta_strings = _normalize_account_meta(merged_meta)
+            if meta_strings:
+                existing = account_meta_by_account.setdefault(episode.account_id, [])
+                for entry in meta_strings:
+                    if entry not in existing:
+                        existing.append(entry)
+                for entry in existing:
+                    stats = account_meta_stats[entry]
+                    if duration_days is not None:
+                        stats["durations"].append(duration_days)
+                    if outcome_value == EpisodeOutcome.won.value:
+                        stats["wins"] += 1
+                    elif outcome_value == EpisodeOutcome.lost.value:
+                        stats["losses"] += 1
+                    else:
+                        stats["open"] += 1
+                    if meta_confidence:
+                        stats.setdefault("meta_confidence_weight", 0.0)
+                        stats.setdefault("meta_confidence_samples", 0)
+                        stats["meta_confidence_weight"] += meta_confidence
+                        stats["meta_confidence_samples"] += 1
+
+            raw_candidates = getattr(episode, "candidate_personas", None) or {}
+            if isinstance(raw_candidates, dict):
+                for label, count in raw_candidates.items():
+                    if not label:
+                        continue
+                    stats = candidate_persona_stats[label]
+                    stats["occurrences"] += int(count) if isinstance(count, int) else 1
+                    stats["accounts"].add(episode.account_id)
+
         for account_id, metas in account_meta_by_account.items():
             for entry in metas:
                 meta_account_map[entry].append(account_id)
 
+        segment_keys_by_account = {
+            account_id: sorted(keys)
+            for account_id, keys in segment_keys_by_account.items()
+            if keys
+        }
+    
+        episode_segments_map: Dict[str, List[str]] = {
+            getattr(episode, "id"): segment_keys_by_account.get(episode.account_id, [])
+            for episode in episodes
+        }
+    
         def _class_from_bucket(bucket: Optional[str]) -> str:
             mapping = {
                 "on_path": "expected",
@@ -1439,15 +2559,32 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             }
             if not bucket:
                 return "no_path"
-            return mapping.get(bucket.lower(), bucket.lower())
-
+            return mapping.get(str(bucket).lower(), str(bucket).lower())
+    
         persona_sequences_by_episode: Dict[str, List[str]] = defaultdict(list)
-
+        segment_persona_sequences: Dict[str, Dict[str, List[str]]] = defaultdict(lambda: defaultdict(list))
+        segment_persona_stats: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(
+            lambda: defaultdict(
+                lambda: {
+                    "observed": 0,
+                    "hit_at_1": 0,
+                    "hit_at_3": 0,
+                    "partial_off": 0,
+                    "off_path": 0,
+                    "pred_counts": Counter(),
+                }
+            )
+        )
+        segment_classification_counts: Dict[str, Counter] = defaultdict(Counter)
+    
         for step in steps:
             raw_bucket = step.bucket.value if hasattr(step.bucket, "value") else step.bucket
             bucket = (raw_bucket or "").lower()
             cls = _class_from_bucket(raw_bucket)
             classification_counts[cls] += 1
+            segments_for_episode = episode_segments_map.get(step.episode_id) or []
+            for seg in segments_for_episode:
+                segment_classification_counts[seg][cls] += 1
             persona_id = step.observed_persona_id
             seq = persona_sequences_by_episode.setdefault(step.episode_id, [])
             if persona_id:
@@ -1455,6 +2592,11 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 _ensure_persona_node(persona_key)
                 if not seq or seq[-1] != persona_key:
                     seq.append(persona_key)
+                for seg in segments_for_episode:
+                    seg_seq_map = segment_persona_sequences[seg]
+                    seg_seq = seg_seq_map.setdefault(step.episode_id, [])
+                    if not seg_seq or seg_seq[-1] != persona_key:
+                        seg_seq.append(persona_key)
             if persona_id:
                 engaged_counter[persona_id] += 1
             if not persona_id:
@@ -1482,6 +2624,27 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 off_path_total += 1
             elif bucket in {"near_path", "jump_ahead", "skip_hit"}:
                 stats["partial_off"] += 1
+            for seg in segments_for_episode:
+                seg_stats = segment_persona_stats[seg].setdefault(
+                    persona_key,
+                    {
+                        "observed": 0,
+                        "hit_at_1": 0,
+                        "hit_at_3": 0,
+                        "partial_off": 0,
+                        "off_path": 0,
+                        "pred_counts": Counter(),
+                    },
+                )
+                seg_stats["observed"] += 1
+                if step.hit_at_1:
+                    seg_stats["hit_at_1"] += 1
+                if step.hit_at_3:
+                    seg_stats["hit_at_3"] += 1
+                if bucket in {"off_path", "off_path_known", "out_of_graph"}:
+                    seg_stats["off_path"] += 1
+                elif bucket in {"near_path", "jump_ahead", "skip_hit"}:
+                    seg_stats["partial_off"] += 1
             predicted = getattr(step, "predicted_top_persona_id", None)
             if not predicted:
                 top_list = step.predicted_topK or []
@@ -1498,7 +2661,20 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             if predicted:
                 _ensure_persona_node(str(predicted))
                 stats["pred_counts"][predicted] += 1
-
+                for seg in segments_for_episode:
+                    seg_stats = segment_persona_stats[seg].setdefault(
+                        persona_key,
+                        {
+                            "observed": 0,
+                            "hit_at_1": 0,
+                            "hit_at_3": 0,
+                            "partial_off": 0,
+                            "off_path": 0,
+                            "pred_counts": Counter(),
+                        },
+                    )
+                    seg_stats["pred_counts"][predicted] += 1
+    
             metrics_payload = step.metrics or {}
             if isinstance(metrics_payload, dict):
                 error_blob = metrics_payload.get("error") or {}
@@ -1588,10 +2764,10 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                         meta_strings = account_meta_by_account.get(step.episode.account_id, [])
                     for entry in meta_strings:
                         stat["account_meta"].add(entry)
-
+    
         persona_updates: Dict[str, Dict[str, Any]] = {}
         edge_updates: Dict[Tuple[str, str], Dict[str, Any]] = {}
-
+    
         for update in updates:
             payload = _coerce_payload(update.payload)
             for key in ("jobs", "pains_solved", "triggers"):
@@ -1650,7 +2826,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                         bucket[store_key].update(str(v) for v in values)
                 meta_strings = account_meta_by_account.get(update.account_id) or []
                 bucket["account_meta"].update(meta_strings)
-
+    
             if update.u_node_id and update.v_node_id:
                 key = (update.u_node_id, update.v_node_id)
                 bucket = edge_updates.setdefault(
@@ -1699,7 +2875,7 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     bucket["scope_samples"].append(1.0)
                 meta_strings = account_meta_by_account.get(update.account_id) or []
                 bucket["account_meta"].update(meta_strings)
-
+    
         concerns_by_persona: Dict[str, List[Dict[str, Any]]] = {}
         rcs_paths: List[Dict[str, Any]] = []
         if product_graph is not None:
@@ -1806,6 +2982,27 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             account_meta_top = [
                 meta for meta, _ in data["account_meta"].most_common(6)
             ]
+            pains_sorted = sorted(data["pains_solved"])
+            persona_display_label = data["persona_label"] or _label(persona_id)
+            job_specs = [
+                _build_job_spec(
+                    product_graph,
+                    job_id,
+                    pains_sorted,
+                    default_label=persona_display_label,
+                )
+                for job_id in sorted(data["jobs"])
+            ]
+            if not job_specs and pains_sorted:
+                job_specs.append(
+                    _build_job_spec(
+                        product_graph,
+                        None,
+                        pains_sorted,
+                        default_label=persona_display_label,
+                    )
+                )
+            pain_specs = _build_pain_specs(product_graph, pains_sorted)
             persona_recommendations.append(
                 {
                     "persona_id": persona_id,
@@ -1825,6 +3022,8 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     "jobs": sorted(data["jobs"]),
                     "pains": sorted(data["pains_solved"]),
                     "triggers": sorted(data["triggers"]),
+                    "job_specs": job_specs,
+                    "pain_specs": pain_specs,
                     "account_meta": account_meta_top,
                     "recommendation_type": "graph_update",
                 }
@@ -1856,18 +3055,34 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             if current_likelihood is not None:
                 proposed = current_likelihood + avg_delta
                 recommended_likelihood = max(0.0, min(1.0, proposed))
+            delta_likelihood = None
+            if (
+                recommended_likelihood is not None
+                and current_likelihood is not None
+            ):
+                delta_likelihood = recommended_likelihood - current_likelihood
+            delta_relevance = None
+            if (
+                recommended_relevance is not None
+                and current_relevance is not None
+            ):
+                delta_relevance = recommended_relevance - current_relevance
 
             account_meta_top = [
                 meta for meta, _ in data["account_meta"].most_common(6)
             ]
 
             meaningful_change = False
-            if recommended_likelihood is not None:
-                if current_likelihood is None or abs(recommended_likelihood - current_likelihood) > 1e-6:
+            if delta_likelihood is not None:
+                if abs(delta_likelihood) >= 0.01:
                     meaningful_change = True
-            if recommended_relevance is not None:
-                if current_relevance is None or abs(recommended_relevance - current_relevance) > 1e-6:
+            elif recommended_likelihood is not None and current_likelihood is None:
+                meaningful_change = True
+            if delta_relevance is not None:
+                if abs(delta_relevance) >= 0.01:
                     meaningful_change = True
+            elif recommended_relevance is not None and current_relevance is None:
+                meaningful_change = True
             if not meaningful_change and abs(avg_delta) > 1e-6:
                 meaningful_change = True
             if not meaningful_change:
@@ -1893,10 +3108,50 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                         "current_likelihood": current_likelihood,
                         "recommended_likelihood": recommended_likelihood,
                         "recommended_relevance": recommended_relevance,
+                        "delta_likelihood": delta_likelihood,
+                        "delta_relevance": delta_relevance,
                         "recommendation_events": data["seen"],
                         "account_meta": account_meta_top,
                     }
                 )
+
+        for label, stats in candidate_persona_stats.items():
+            occurrences = stats.get("occurrences", 0)
+            accounts = stats.get("accounts", set())
+            if occurrences < 2:
+                continue
+            placeholder_job_spec = _build_job_spec(
+                product_graph,
+                None,
+                [],
+                default_label=label,
+            )
+            persona_recommendations.append(
+                {
+                    "persona_id": None,
+                    "persona_label": label,
+                    "observed_events": occurrences,
+                    "seen": occurrences,
+                    "recommendation_events": occurrences,
+                    "current_best_fit": None,
+                    "current_fitness": None,
+                    "avg_confidence": None,
+                    "avg_delta": None,
+                    "predicted_boost_pct": None,
+                    "reasons": [
+                        "Repeated low-confidence matches suggest this persona is missing from the graph."
+                    ],
+                    "field_summaries": [],
+                    "jobs": [],
+                    "pains": [],
+                    "triggers": [],
+                    "job_specs": [placeholder_job_spec] if placeholder_job_spec else [],
+                    "pain_specs": [],
+                    "account_meta": [],
+                    "accounts": list(accounts),
+                    "recommendation_type": "new_persona_candidate",
+                }
+            )
 
         persona_recommendations.sort(
             key=lambda r: (
@@ -1982,6 +3237,15 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 reasons.append(f"Matches predicted next {_percent(hit_rate, 0)} of the time.")
             if off_ratio_local:
                 reasons.append(f"Stalls {_percent(off_ratio_local, 0)} of journeys when absent.")
+            pains_sorted = sorted(stats.get("pains", []))
+            job_specs = [
+                _build_job_spec(
+                    product_graph,
+                    None,
+                    pains_sorted,
+                    default_label=persona_label,
+                )
+            ] if pains_sorted else []
             observed_only_recs.append(
                 {
                     "persona_id": pid,
@@ -1999,11 +3263,25 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     "jobs": [],
                     "pains": [],
                     "triggers": [],
+                    "job_specs": job_specs,
+                    "pain_specs": _build_pain_specs(product_graph, pains_sorted),
                     "account_meta": [],
                     "recommendation_type": "add_persona_node",
                 }
             )
         persona_recommendations.extend(observed_only_recs)
+
+        account_feature_rows = _build_account_feature_rows(
+            episodes,
+            steps,
+            account_meta_lookup=account_meta_lookup,
+            account_raw_meta=account_raw_meta,
+            segment_keys_by_account=segment_keys_by_account,
+            account_status_map=account_status_map,
+            arsenal_stats=arsenal_stats,
+            asset_metadata=asset_metadata,
+        )
+        win_regression_summary = build_win_regression_summary(account_feature_rows)
 
         print("finished summarizing global insights for product:", product_id)
 
@@ -2099,6 +3377,9 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                     ],
                 }
             )
+            arsenal_impact[-1]["segment_keys"] = _segment_keys_from_meta_tokens(
+                arsenal_impact[-1].get("account_meta")
+            )
         arsenal_impact.sort(
             key=lambda row: (
                 abs(row.get("total_delta") or 0.0),
@@ -2118,6 +3399,12 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             episode_durations=episode_durations,
             persona_node_info=persona_node_info,
             rcs_paths=rcs_paths,
+            segment_persona_stats=segment_persona_stats,
+            segment_classification_counts=segment_classification_counts,
+            segment_sequences_by_segment=segment_persona_sequences,
+            persona_wolves_metrics=persona_wolves_metrics,
+            wolves_metrics_updated_at=wolves_metrics_updated_at,
+            product_graph=product_graph,
         )
 
         # Persist aggregated arsenal evidence back into the structured tables so that
@@ -2210,29 +3497,34 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
                 "log_loss": avg_log_loss,
                 "num_persona_recommendations": len(persona_recommendations),
                 "num_edge_recommendations": len(edge_recommendations),
+                "wolves_metrics_updated_at": wolves_metrics_updated_at,
             },
             "persona_recommendations": persona_recommendations,
             "edge_recommendations": edge_recommendations,
             "engagement_insights": engagement_insights,
             "arsenal_impact": arsenal_impact,
             "product_insights": product_insights,
+            "win_regression": win_regression_summary,
         }
 
     except Exception as e:
         # DO NOT kill the whole /get-persona-matches route for a summary bug
         print("Error in summarize_global_insights for product", product_id, ":", repr(e))
+        traceback.print_exc()
         return {
             "meta": {
                 "num_accounts": 0,
                 "num_engagements": 0,
                 "num_persona_recommendations": 0,
                 "num_edge_recommendations": 0,
+                "wolves_metrics_updated_at": wolves_metrics_updated_at,
             },
             "persona_recommendations": [],
             "edge_recommendations": [],
             "engagement_insights": [],
             "arsenal_impact": [],
             "product_insights": DEFAULT_PRODUCT_INSIGHTS,
+            "win_regression": None,
         }
 
 def _infer_node_type(node_id: Optional[str]) -> str:
@@ -2331,6 +3623,9 @@ def apply_persona_recommendation_to_graph(
     if persona_id and persona_id in G and persona_id != persona_node_id:
         persona_node_id = persona_id
 
+    job_specs_input = recommendation.get("job_specs") or []
+    pain_specs_input = recommendation.get("pain_specs") or []
+
     jobs = [j for j in recommendation.get("jobs", []) if j]
     pains = [p for p in recommendation.get("pains", []) if p]
     triggers = [t for t in recommendation.get("triggers", []) if t]
@@ -2342,6 +3637,93 @@ def apply_persona_recommendation_to_graph(
     relevance = recommendation.get("recommended_relevance")
     if relevance is None:
         relevance = recommendation.get("current_relevance")
+
+    def _materialize_job_from_spec(spec: Dict[str, Any]) -> Optional[str]:
+        job_id = spec.get("id")
+        label = spec.get("label") or job_id or f"{title} job"
+        description = spec.get("description") or label
+        if job_id:
+            ensured = _ensure_placeholder_node(G, job_id)
+            if ensured and description:
+                if not G.nodes[ensured].get("description"):
+                    G.nodes[ensured]["description"] = description
+            return ensured
+        new_job_id = _job(G, label, data_source="bayesian_inferred")
+        if description:
+            G.nodes[new_job_id]["description"] = description
+        return new_job_id
+
+    def _materialize_pain_from_spec(spec: Dict[str, Any]) -> Optional[str]:
+        pain_id = spec.get("id")
+        label = spec.get("label") or pain_id or "Unspecified pain"
+        if pain_id:
+            ensured = _ensure_placeholder_node(G, pain_id)
+            if ensured and label:
+                if not G.nodes[ensured].get("description"):
+                    G.nodes[ensured]["description"] = label
+            return ensured
+        new_pain_id = _pain(G, label, pain_source=None, data_source="bayesian_inferred")
+        return new_pain_id
+
+    default_pain_ids: List[str] = []
+    if pain_specs_input:
+        for spec in pain_specs_input:
+            pid = _materialize_pain_from_spec(spec) if isinstance(spec, dict) else None
+            if pid:
+                default_pain_ids.append(pid)
+    if not default_pain_ids and pains:
+        default_pain_ids = [_ensure_placeholder_node(G, pain_id) for pain_id in pains if pain_id]
+        default_pain_ids = [pid for pid in default_pain_ids if pid]
+
+    job_to_pains: Dict[str, List[str]] = {}
+    if job_specs_input:
+        jobs_from_specs: List[str] = []
+        for spec in job_specs_input:
+            if not isinstance(spec, dict):
+                continue
+            job_node_id = _materialize_job_from_spec(spec)
+            if not job_node_id:
+                continue
+            jobs_from_specs.append(job_node_id)
+            pains_for_job: List[str] = []
+            for pain_spec in spec.get("pains") or []:
+                if not isinstance(pain_spec, dict):
+                    continue
+                pid = _materialize_pain_from_spec(pain_spec)
+                if pid:
+                    pains_for_job.append(pid)
+            if not pains_for_job:
+                pains_for_job = list(default_pain_ids)
+            job_to_pains[job_node_id] = pains_for_job
+        if jobs_from_specs:
+            jobs = jobs_from_specs
+            pains = list({pid for plist in job_to_pains.values() for pid in plist if pid})
+
+    if not pains and default_pain_ids:
+        pains = list(default_pain_ids)
+
+    if not jobs:
+        fallback_job_spec = {
+            "label": f"{title or persona_label or 'Persona'} core job",
+            "description": recommendation.get("persona_label") or title or "Persona job",
+            "pains": pain_specs_input or [{"label": f"{title or persona_label or 'Persona'} blocker"}],
+        }
+        fallback_job_id = _materialize_job_from_spec(fallback_job_spec)
+        if fallback_job_id:
+            jobs = [fallback_job_id]
+            pains_for_job = []
+            for pain_spec in fallback_job_spec["pains"]:
+                if not isinstance(pain_spec, dict):
+                    continue
+                pid = _materialize_pain_from_spec(pain_spec)
+                if pid:
+                    pains_for_job.append(pid)
+            if pains_for_job:
+                job_to_pains[fallback_job_id] = pains_for_job
+                pains = list({pid for pid in pains_for_job if pid})
+            elif default_pain_ids:
+                job_to_pains[fallback_job_id] = list(default_pain_ids)
+                pains = list(default_pain_ids)
 
     for job_id in jobs:
         ensured_job = _ensure_placeholder_node(G, job_id)
@@ -2365,7 +3747,10 @@ def apply_persona_recommendation_to_graph(
         )
         _note_edge(ensured_job, "performed_by", persona_node_id, edge_existed)
 
-        for pain_id in pains:
+        pains_for_job = job_to_pains.get(ensured_job, pains)
+        if not pains_for_job:
+            pains_for_job = list(default_pain_ids)
+        for pain_id in pains_for_job or []:
             ensured_pain = _ensure_placeholder_node(G, pain_id)
             if not ensured_pain:
                 continue
@@ -2799,3 +4184,295 @@ def record_learning_updates_for_account(
                 payload=row,
             )
         )
+
+
+def _normalize_candidate_label(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    normalized = " ".join(str(value).strip().split()).lower()
+    return normalized or None
+
+
+def compute_persona_candidate_stats(
+    episodes: Iterable[Episode],
+    window_days: int = 180,
+) -> List[PersonaCandidateStat]:
+    """
+    Aggregate observed candidate persona labels from a stream of Episode records.
+    """
+
+    cutoff = None
+    if window_days and window_days > 0:
+        cutoff = datetime.utcnow() - timedelta(days=window_days)
+
+    stats_acc: Dict[str, Dict[str, Any]] = {}
+
+    for ep in episodes or []:
+        ts = ep.timestamp
+        if cutoff and ts and ts < cutoff:
+            continue
+
+        engagement = ep.engagement or {}
+        label = engagement.get("candidate_persona_label")
+        normalized_label = _normalize_candidate_label(label)
+        if not normalized_label:
+            continue
+
+        acc = stats_acc.setdefault(
+            normalized_label,
+            {
+                "titles": set(),
+                "departments": set(),
+                "accounts": set(),
+                "episodes": set(),
+                "segments": Counter(),
+                "occurrence_count": 0,
+                "first_seen_at": None,
+                "last_seen_at": None,
+            },
+        )
+
+        acc["occurrence_count"] += 1
+        if ep.account_id:
+            acc["accounts"].add(ep.account_id)
+            acc["episodes"].add(ep.account_id)
+
+        actor = engagement.get("actor") or {}
+        title = actor.get("title")
+        department = actor.get("department")
+        if title:
+            acc["titles"].add(title.strip())
+        if department:
+            acc["departments"].add(department.strip())
+
+        account_meta = ep.account_meta or engagement.get("account_meta") or {}
+        if account_meta:
+            normalized_meta = normalize_meta_dict(account_meta) or {}
+            segments = segment_keys_from_meta(normalized_meta) or []
+            for seg in segments:
+                acc["segments"][seg] += 1
+
+        if ts:
+            if not acc["first_seen_at"] or ts < acc["first_seen_at"]:
+                acc["first_seen_at"] = ts
+            if not acc["last_seen_at"] or ts > acc["last_seen_at"]:
+                acc["last_seen_at"] = ts
+
+    results: List[PersonaCandidateStat] = []
+    for label, data in stats_acc.items():
+        results.append(
+            PersonaCandidateStat(
+                label=label,
+                titles=sorted(t for t in data["titles"] if t),
+                departments=sorted(d for d in data["departments"] if d),
+                account_count=len(data["accounts"]),
+                episode_count=len(data["episodes"]),
+                occurrence_count=data["occurrence_count"],
+                first_seen_at=data["first_seen_at"],
+                last_seen_at=data["last_seen_at"],
+                segments=dict(data["segments"]),
+            )
+        )
+
+    results.sort(key=lambda stat: (stat.account_count, stat.occurrence_count), reverse=True)
+    return results
+
+
+def get_high_confidence_persona_candidates(
+    episodes: Iterable[Episode],
+    *,
+    window_days: int = 180,
+    min_accounts: int = 3,
+    min_occurrences: int = 5,
+) -> List[PersonaCandidateStat]:
+    stats = compute_persona_candidate_stats(episodes, window_days=window_days)
+    return [
+        stat
+        for stat in stats
+        if stat.account_count >= min_accounts and stat.occurrence_count >= min_occurrences
+    ]
+
+
+def _normalize_candidate_label_value(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    text = " ".join(str(value).strip().split())
+    return text or None
+
+
+def _segment_list_from_row(seg_value: Any) -> List[str]:
+    if not seg_value:
+        return []
+    if isinstance(seg_value, list):
+        return [str(item) for item in seg_value if item]
+    if isinstance(seg_value, str):
+        try:
+            loaded = json.loads(seg_value)
+            if isinstance(loaded, list):
+                return [str(item) for item in loaded if item]
+        except Exception:
+            return [seg_value]
+    return [str(seg_value)]
+
+
+def _aggregate_candidate_persona_data(
+    db: Session,
+    product_id: str,
+    *,
+    window_days: int = 180,
+) -> Tuple[List[PersonaCandidateStat], Dict[str, Counter], Dict[str, Set[str]]]:
+    cutoff = None
+    if window_days and window_days > 0:
+        cutoff = datetime.utcnow() - timedelta(days=window_days)
+
+    query = (
+        db.query(
+            TargetAccountEngagement.candidate_persona_label,
+            TargetAccountEngagement.actor_title,
+            TargetAccountEngagement.actor_department,
+            TargetAccountEngagement.actor_seniority,
+            TargetAccountEngagement.target_account_id,
+            TargetAccountEngagement.timestamp_dt,
+            TargetAccountEngagement.persona_id,
+            TargetAccountEngagement.segment_keys,
+        )
+        .filter(
+            TargetAccountEngagement.product_id == product_id,
+            TargetAccountEngagement.candidate_persona_label.isnot(None),
+        )
+    )
+    if cutoff:
+        query = query.filter(TargetAccountEngagement.timestamp_dt >= cutoff)
+
+    stats_map: Dict[str, Dict[str, Any]] = {}
+    co_occurrence: Dict[str, Counter] = defaultdict(Counter)
+    persona_account_map: Dict[str, Set[str]] = defaultdict(set)
+
+    for row in query.all():
+        label = row.candidate_persona_label
+        normalized_label = _normalize_candidate_label_value(label)
+        if not normalized_label:
+            continue
+
+        entry = stats_map.setdefault(
+            normalized_label,
+            {
+                "display_label": label.strip().title() if label else normalized_label.title(),
+                "titles": set(),
+                "departments": set(),
+                "accounts": set(),
+                "occurrence_count": 0,
+                "first_seen_at": None,
+                "last_seen_at": None,
+                "segments": Counter(),
+            },
+        )
+
+        entry["occurrence_count"] += 1
+        if row.actor_title:
+            entry["titles"].add(row.actor_title.strip())
+        if row.actor_department:
+            entry["departments"].add(row.actor_department.strip())
+        if row.target_account_id:
+            entry["accounts"].add(row.target_account_id)
+
+        timestamp = row.timestamp_dt
+        if timestamp:
+            if not entry["first_seen_at"] or timestamp < entry["first_seen_at"]:
+                entry["first_seen_at"] = timestamp
+            if not entry["last_seen_at"] or timestamp > entry["last_seen_at"]:
+                entry["last_seen_at"] = timestamp
+
+        for seg in _segment_list_from_row(row.segment_keys):
+            entry["segments"][seg] += 1
+
+        if row.persona_id and row.target_account_id:
+            co_occurrence[normalized_label][row.persona_id] += 1
+            persona_account_map[row.persona_id].add(row.target_account_id)
+
+    stats: List[PersonaCandidateStat] = []
+    for normalized_label, data in stats_map.items():
+        stats.append(
+            PersonaCandidateStat(
+                label=data["display_label"],
+                titles=sorted(t for t in data["titles"] if t),
+                departments=sorted(d for d in data["departments"] if d),
+                account_count=len(data["accounts"]),
+                episode_count=len(data["accounts"]),
+                occurrence_count=data["occurrence_count"],
+                first_seen_at=data["first_seen_at"],
+                last_seen_at=data["last_seen_at"],
+                segments=dict(data["segments"]),
+            )
+        )
+
+    stats.sort(key=lambda stat: (stat.account_count, stat.occurrence_count), reverse=True)
+    return stats, co_occurrence, persona_account_map
+
+
+def _load_account_outcomes(db: Session, product_id: str) -> Dict[str, str]:
+    rows = (
+        db.query(TargetAccountORM.id, TargetAccountORM.deal_status)
+        .filter(TargetAccountORM.product_id == product_id)
+        .all()
+    )
+    outcomes: Dict[str, str] = {}
+    for row_id, status in rows:
+        label = (status or "").lower()
+        if "won" in label:
+            norm = "won"
+        elif "lost" in label:
+            norm = "lost"
+        else:
+            norm = "open"
+        outcomes[str(row_id)] = norm
+    return outcomes
+
+
+def run_persona_wolves_learning(
+    product_id: str,
+    *,
+    window_days: int = 180,
+    min_accounts: int = 3,
+    min_occurrences: int = 5,
+) -> Dict[str, Any]:
+    """
+    End-to-end pipeline:
+      1. Aggregate candidate stats from engagements.
+      2. Auto-promote high-confidence personas into the graph.
+      3. Recompute persona impact metrics and persist them.
+    """
+    db: Session = next(get_db())
+    try:
+        stats, co_occurrence, persona_account_map = _aggregate_candidate_persona_data(
+            db,
+            product_id,
+            window_days=window_days,
+        )
+        graph = build_product_graph(product_id)
+        new_nodes = auto_add_persona_nodes_from_candidates(
+            graph,
+            stats,
+            co_occurrence=co_occurrence,
+            min_accounts=min_accounts,
+            min_occurrences=min_occurrences,
+        )
+        if new_nodes:
+            save_graph_as_json(graph, product_id)
+
+        account_outcomes = _load_account_outcomes(db, product_id)
+        metrics = compute_persona_impact_metrics(
+            graph,
+            persona_account_map=persona_account_map,
+            account_outcomes=account_outcomes,
+        )
+        if metrics:
+            save_persona_metrics(product_id, metrics)
+
+        return {
+            "candidates": [asdict(stat) for stat in stats],
+            "new_personas": new_nodes,
+            "metrics": [asdict(metric) for metric in metrics],
+        }
+    finally:
+        db.close()

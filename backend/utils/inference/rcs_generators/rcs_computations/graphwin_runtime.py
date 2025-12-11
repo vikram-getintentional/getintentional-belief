@@ -15,7 +15,10 @@ def _clip01(x: float) -> float:
 
 def _node_type(g: nx.DiGraph, nid: str) -> str:
     d = g.nodes.get(nid, {})
-    return (d.get("node_type") or d.get("type") or "").strip().lower()
+    t = (d.get("node_type") or d.get("type") or "").strip().lower()
+    if t in ("canonical_persona", "persona_variant"):
+        return "persona"
+    return t
 
 def _build_reversed_and_normalized(G: nx.DiGraph, weight: str = "likelihood") -> nx.DiGraph:
     Grev = nx.DiGraph()

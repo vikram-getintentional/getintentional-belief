@@ -133,8 +133,15 @@ class ArsenalAsset(Base):
     )
     derived_metadata = Column(JSON, nullable=True)
     auto_classification_confidence = Column(Float, nullable=True)
+    primary_channel_id = Column(String, ForeignKey("arsenal_channels.id"), nullable=True, index=True)
+    activity_labels = Column(JSON, nullable=True)
 
     channel_impacts = relationship("AssetChannelImpact", back_populates="asset")
+    primary_channel = relationship(
+        "ArsenalChannel",
+        foreign_keys=[primary_channel_id],
+        backref="primary_assets",
+    )
 
     def update_metadata_status(self) -> None:
         required_fields = [

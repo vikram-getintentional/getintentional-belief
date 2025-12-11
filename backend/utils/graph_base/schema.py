@@ -1,8 +1,18 @@
 # backend/utils/graph_base/schema.py
 NODE_TYPES = {
-    "product", "capability", "pain", "job", "persona",
-    "perceived_metric", "pain_trigger", "zmot_event",
-    "observable_moment", "keyword", "archetype"
+    "product",
+    "capability",
+    "pain",
+    "job",
+    "persona",
+    "canonical_persona",
+    "persona_variant",
+    "perceived_metric",
+    "pain_trigger",
+    "zmot_event",
+    "observable_moment",
+    "keyword",
+    "archetype",
 }
 
 EDGES = {
@@ -17,6 +27,8 @@ EDGES = {
     "ASSOCIATED_WITH": "associated_with", # zmot_event -> keyword
     "PREVALENT_IN": "prevalent_in",     # pain_trigger -> archetype
     "RELEVANT_TO": "relevant_to",       # archetype -> zmot_event
+    "HAS_VARIANT": "has_variant",       # canonical_persona -> persona_variant
+    "VARIANT_OF": "variant_of",         # persona_variant -> canonical_persona
 }
 
 # === Frontier expansion contracts (add-only) ===
@@ -28,8 +40,10 @@ NEXT_HOPS: dict[str, list[str]] = {
     "pain_trigger": ["attribute_value", "zmot_event"],
     "attribute_value": ["zmot_event"],  # optional fan-out
     "zmot_event": ["observable_moment", "keyword"],
-    "job": ["persona", "pain"],         # "pain" here = solves
+    "job": ["persona", "canonical_persona", "pain"],  # canonical personas replace legacy personas
     "persona": [],
+    "canonical_persona": ["persona_variant", "pain"],
+    "persona_variant": [],
     "perceived_metric": [],
     "observable_moment": [],
     "keyword": [],
@@ -41,6 +55,22 @@ RAW_FIELDS_BY_TYPE: dict[str, list[str]] = {
     "pain": ["description", "pain_source"],
     "job": ["description"],
     "persona": ["title", "department", "seniority", "linkedin_profiles"],
+    "canonical_persona": [
+        "label",
+        "description",
+        "core_jobs",
+        "supporting_jobs",
+        "core_pains",
+        "example_titles",
+        "typical_departments",
+    ],
+    "persona_variant": [
+        "title",
+        "department",
+        "seniority",
+        "team_context",
+        "crm_person_ids",
+    ],
     "perceived_metric": ["metric"],
     "metric": ["metric"],
     "pain_trigger": ["attribute"],

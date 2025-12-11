@@ -48,7 +48,10 @@ def _phase_from_perc_prox(perc: float, prox: float) -> str:
 # ============================================================
 def _node_type(G: nx.DiGraph, nid: str) -> str:
     d = G.nodes.get(nid, {})
-    return (d.get("node_type") or d.get("type") or "").strip().lower()
+    t = (d.get("node_type") or d.get("type") or "").strip().lower()
+    if t in ("canonical_persona", "persona_variant"):
+        return "persona"
+    return t
 
 
 def _build_reversed(G: nx.DiGraph) -> nx.DiGraph:

@@ -1,12 +1,14 @@
 # canonicalizer.py — Option A (project-path aware, batch canonicalization)
 
 from __future__ import annotations
+import hashlib
+import math
 import re
 import uuid
 from pathlib import Path
 import os, json
 from typing import Dict, List, Any
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 from backend.utils.knowledge_base.canonical_maps.canonical_loader import (
     save_canonical_map,
@@ -17,6 +19,12 @@ from backend.utils.knowledge_base.canonical_maps.canonical_utils import (
     cluster_items,
 )
 from backend.utils.embedding.embed_utils import generate_and_save_embeddings
+from backend.utils.graph_base.persona_schema import (
+    CanonicalPersonaAttributes,
+    PersonaVariantAttributes,
+    DEFAULT_CANONICAL_INFLUENCE_SCALARS,
+    clamp,
+)
 
 # ---- DEFAULT GRAPH DIRECTORY -----------------------------------
 
@@ -293,60 +301,309 @@ def canonicalize_departments(departments: List[str]) -> Dict[str, str]:
     canonical_map = _cluster_and_label(departments, "department")
     return canonical_map
 
-def canonicalize_persona(personas: List[dict]) -> Dict[str, dict]:
+PERSONA_JOB_SIM_THRESHOLD = 0.80
+
+def _stable_persona_id(prefix: str, parts: List[str]) -> str:
+    h = hashlib.sha256()
+    for part in parts:
+        h.update((part or "").encode("utf-8"))
+        h.update(b"|")
+    return f"{prefix}:{h.hexdigest()[:16]}"
+
+def _cosine_similarity(vec_a: Dict[str, float], vec_b: Dict[str, float]) -> float:
+    if not vec_a or not vec_b:
+        return 0.0
+    dot = 0.0
+    norm_a = 0.0
+    norm_b = 0.0
+    for key, value in vec_a.items():
+        norm_a += float(value) ** 2
+        dot += float(value) * float(vec_b.get(key, 0.0))
+    for value in vec_b.values():
+        norm_b += float(value) ** 2
+    if norm_a <= 0.0 or norm_b <= 0.0:
+        return 0.0
+    return dot / (math.sqrt(norm_a) * math.sqrt(norm_b))
+
+SENIORITY_NORMALIZATION = {
+    "intern": "operator",
+    "junior": "operator",
+    "associate": "operator",
+    "analyst": "operator",
+    "ic": "operator",
+    "individual contributor": "operator",
+    "operator": "operator",
+    "manager": "manager",
+    "lead": "manager",
+    "owner": "manager",
+    "head": "director",
+    "director": "director",
+    "sr director": "director",
+    "sr. director": "director",
+    "senior director": "director",
+    "vp": "exec",
+    "vice president": "exec",
+    "executive": "exec",
+    "c level": "exec",
+    "c-level": "exec",
+    "cxo": "exec",
+    "chief": "exec",
+    "ceo": "exec",
+    "cfo": "exec",
+    "coo": "exec",
+    "cto": "exec",
+    "cmo": "exec",
+    "president": "exec",
+    "exec": "exec",
+}
+
+def _normalize_persona_seniority(value: str) -> str:
+    if not value:
+        return "operator"
+    key = value.strip().lower()
+    return SENIORITY_NORMALIZATION.get(key, key or "operator")
+
+class PersonaCanonicalizationResult(dict):
     """
-    Personas: [{title, department, seniority}, ...]
-    We canonicalize title/department by clustering; seniority is normalized.
-    Returns: str(persona_raw_dict) -> {title, department, seniority}
+    Dict-compatible container that also exposes canonical persona + variant lists.
+    """
+    def __init__(
+        self,
+        legacy_map: Dict[str, Dict[str, Any]],
+        canonical_personas: List[Dict[str, Any]],
+        persona_variants: List[Dict[str, Any]],
+    ) -> None:
+        super().__init__(legacy_map)
+        self.by_key = legacy_map
+        self.canonical_personas = canonical_personas
+        self.persona_variants = persona_variants
+        self.canonical_index = {
+            row.get("canonical_persona_id"): row for row in canonical_personas if row.get("canonical_persona_id")
+        }
+        self.variant_index = {
+            row.get("persona_variant_id"): row for row in persona_variants if row.get("persona_variant_id")
+        }
+
+def canonicalize_persona(
+    personas: List[dict],
+    *,
+    job_map: Dict[str, Any] | None = None,
+    pain_map: Dict[str, Any] | None = None,
+) -> PersonaCanonicalizationResult:
+    """
+    Canonicalize personas using job signatures:
+      - Cluster raw personas into variant buckets (title+dept+seniority).
+      - Merge variants into canonical personas when their job vectors are similar.
+      - Emit canonical persona + persona variant payloads plus a legacy map (for backwards compatibility).
     """
     if not personas:
         print("⚠️ No personas provided for canonicalization.")
-        return {}
+        return PersonaCanonicalizationResult({}, [], [])
 
-    title_cache = { (p.get("title") or "").strip().lower() for p in personas if p.get("title") }
-    dept_cache = { (p.get("department") or "").strip().lower() for p in personas if p.get("department") }
+    job_map = job_map or {}
+    pain_map = pain_map or {}
+
+    title_cache = {(p.get("title") or "").strip().lower() for p in personas if p.get("title")}
+    dept_cache = {(p.get("department") or "").strip().lower() for p in personas if p.get("department")}
 
     canonical_titles = canonicalize_titles(list(title_cache))
     canonical_depts = canonicalize_departments(list(dept_cache))
 
-    SENIORITY_NORMALIZATION = {
-        "intern": "Junior",
-        "junior": "Junior",
-        "associate": "Operator",
-        "mid level": "Operator",
-        "mid-level": "Operator",
-        "mid-senior level": "Manager",
-        "senior": "Senior",
-        "senior level": "Senior",
-        "lead": "Senior",
-        "director": "Executive",
-        "vp": "Executive",
-        "c-level": "Executive",
-        "c level": "Executive",
-        "executive": "Executive",
-        "manager": "Manager",
-    }
+    variant_groups: Dict[str, Dict[str, Any]] = {}
 
-    def normalize_seniority(s: str) -> str:
-        if not s:
-            return "Operator"
-        return SENIORITY_NORMALIZATION.get(s.strip().lower(), "Operator")
+    for entry in personas:
+        title_raw = (entry.get("title") or "").strip()
+        dept_raw = (entry.get("department") or "").strip()
+        seniority_raw = (entry.get("seniority") or "").strip()
 
-    out: Dict[str, dict] = {}
-    for orig in personas:
-        title_raw = (orig.get("title") or "").strip()
-        dept_raw = (orig.get("department") or "").strip()
-        seniority_raw = (orig.get("seniority") or "").strip()
+        title_canon = canonical_titles.get(title_raw.lower(), title_raw)
+        dept_canon = canonical_depts.get(dept_raw.lower(), dept_raw)
+        seniority_bucket = _normalize_persona_seniority(seniority_raw)
 
-        canon = {
-            "title": canonical_titles.get(title_raw.lower(), title_raw),
-            "department": canonical_depts.get(dept_raw.lower(), dept_raw),
-            "seniority": normalize_seniority(seniority_raw),
+        job_raw = (entry.get("job_to_be_done") or entry.get("job") or "").strip()
+        job_lookup = job_map.get(job_raw, job_raw)
+        if isinstance(job_lookup, dict):
+            job_canon = job_lookup.get("canonical_label") or job_lookup.get("label") or job_raw
+        else:
+            job_canon = job_lookup
+        if not job_canon:
+            job_canon = job_raw or f"job::{title_canon}"
+
+        pains_raw = entry.get("pains") or []
+        pains_canon: List[str] = []
+        for pain in pains_raw:
+            key = (pain or "").strip()
+            if not key:
+                continue
+            mapped = pain_map.get(key, key)
+            if isinstance(mapped, dict):
+                pains_canon.append(mapped.get("canonical_label") or key)
+            else:
+                pains_canon.append(mapped)
+
+        legacy_key = str(
+            {
+                "title": title_raw,
+                "department": dept_raw,
+                "seniority": seniority_raw,
+            }
+        )
+
+        variant_key = f"{title_canon.lower()}|{dept_canon.lower()}|{seniority_bucket}"
+        variant = variant_groups.setdefault(
+            variant_key,
+            {
+                "title": title_canon,
+                "department": dept_canon,
+                "seniority": seniority_bucket,
+                "job_vector": defaultdict(float),
+                "pains": Counter(),
+                "sources": Counter(),
+                "team_contexts": Counter(),
+                "crm_person_ids": set(),
+                "legacy_keys": set(),
+                "records": 0,
+            },
+        )
+
+        job_weight = entry.get("job_weight")
+        try:
+            job_weight = float(job_weight)
+        except (TypeError, ValueError):
+            job_weight = 1.0
+        if job_weight <= 0:
+            job_weight = 1.0
+
+        variant["job_vector"][job_canon] += job_weight
+        for pain in pains_canon:
+            variant["pains"][pain] += 1
+
+        source = (entry.get("source") or "rule").strip().lower() or "rule"
+        variant["sources"][source] += 1
+
+        team_context = (entry.get("team_context") or "").strip()
+        if team_context:
+            variant["team_contexts"][team_context] += 1
+
+        for pid in entry.get("crm_person_ids") or []:
+            if pid:
+                variant["crm_person_ids"].add(pid)
+
+        variant["legacy_keys"].add(legacy_key)
+        variant["records"] += 1
+
+    variant_list = list(variant_groups.values())
+    canonical_clusters: List[Dict[str, Any]] = []
+
+    for variant in variant_list:
+        job_vector = dict(variant["job_vector"])
+        if not job_vector:
+            # create a minimal vector based on title to avoid dropping data
+            job_vector = {variant["title"]: 1.0}
+        variant["job_vector"] = job_vector
+
+        match_cluster = None
+        for cluster in canonical_clusters:
+            if _cosine_similarity(job_vector, cluster["job_vector"]) >= PERSONA_JOB_SIM_THRESHOLD:
+                match_cluster = cluster
+                break
+        if not match_cluster:
+            match_cluster = {
+                "job_vector": defaultdict(float),
+                "pains": Counter(),
+                "variants": [],
+                "titles": Counter(),
+                "departments": Counter(),
+                "seniority_counts": Counter(),
+                "sources": Counter(),
+            }
+            canonical_clusters.append(match_cluster)
+
+        for job, weight in job_vector.items():
+            match_cluster["job_vector"][job] += weight
+        match_cluster["pains"].update(variant["pains"])
+        match_cluster["variants"].append(variant)
+        match_cluster["titles"][variant["title"]] += variant["records"]
+        match_cluster["departments"][variant["department"]] += variant["records"]
+        match_cluster["seniority_counts"][variant["seniority"]] += variant["records"]
+        match_cluster["sources"].update(variant["sources"])
+
+    canonical_personas: List[Dict[str, Any]] = []
+    persona_variants: List[Dict[str, Any]] = []
+    legacy_map: Dict[str, Dict[str, Any]] = {}
+
+    for cluster in canonical_clusters:
+        job_ranked = sorted(cluster["job_vector"].items(), key=lambda kv: kv[1], reverse=True)
+        core_jobs = [job for job, _ in job_ranked[:3]]
+        supporting_jobs = [job for job, _ in job_ranked[3:6]]
+        pains_ranked = [pain for pain, _ in cluster["pains"].most_common(6)]
+        label = (cluster["titles"].most_common(1)[0][0] if cluster["titles"] else (core_jobs[0] if core_jobs else "persona")).strip() or "persona"
+
+        canonical_id = _stable_persona_id("canonical_persona", [label] + core_jobs)
+        total_records = sum(cluster["seniority_counts"].values()) or 1.0
+        seniority_distribution = {
+            bucket: cluster["seniority_counts"].get(bucket, 0) / total_records for bucket in ["operator", "manager", "director", "exec"]
         }
-        out[str(orig)] = canon
+        meta_source = "mixed" if len(cluster["sources"]) > 1 else (next(iter(cluster["sources"])) if cluster["sources"] else "rule")
+        confidence = clamp(total_records / 5.0)
 
-    save_canonical_map(out, PATHS["persona"])
-    return out
+        canonical_attrs = CanonicalPersonaAttributes(
+            canonical_persona_id=canonical_id,
+            label=label,
+            description=f"{label} responsible for {', '.join(core_jobs[:2])}" if core_jobs else label,
+            core_jobs=core_jobs,
+            supporting_jobs=supporting_jobs,
+            core_pains=pains_ranked,
+            example_titles=[t for t, _ in cluster["titles"].most_common(5)],
+            typical_departments=[d for d, _ in cluster["departments"].most_common(4)],
+            typical_seniority_distribution=seniority_distribution,
+            default_influence_scalars=DEFAULT_CANONICAL_INFLUENCE_SCALARS,
+            meta={
+                "source": meta_source,
+                "confidence": confidence,
+                "example_people": [],
+                "example_accounts": [],
+            },
+        )
+        canonical_node = canonical_attrs.to_node_attrs()
+        canonical_personas.append(canonical_node)
+
+        for variant in cluster["variants"]:
+            variant_id = _stable_persona_id(
+                "persona_variant",
+                [canonical_id, variant["title"], variant["department"], variant["seniority"]],
+            )
+            top_team_context = variant["team_contexts"].most_common(1)[0][0] if variant["team_contexts"] else ""
+            variant_attrs = PersonaVariantAttributes(
+                persona_variant_id=variant_id,
+                canonical_persona_id=canonical_id,
+                title=variant["title"],
+                department=variant["department"],
+                seniority=variant["seniority"],
+                team_context=top_team_context,
+                influence_scalars=None,
+                crm_person_ids=list(variant["crm_person_ids"]),
+                meta={
+                    "source": variant["sources"].most_common(1)[0][0] if variant["sources"] else meta_source,
+                    "confidence": clamp(variant["records"] / 5.0),
+                },
+            )
+            variant_node = variant_attrs.to_node_attrs(
+                canonical_influence=canonical_node.get("default_influence_scalars")
+            )
+            persona_variants.append(variant_node)
+
+            for legacy_key in variant["legacy_keys"]:
+                legacy_map[legacy_key] = {
+                    "title": variant_node.get("title"),
+                    "department": variant_node.get("department"),
+                    "seniority": variant_node.get("seniority"),
+                    "canonical_persona_id": canonical_id,
+                    "persona_variant_id": variant_node.get("persona_variant_id"),
+                }
+
+    save_canonical_map(legacy_map, PATHS["persona"])
+    return PersonaCanonicalizationResult(legacy_map, canonical_personas, persona_variants)
 
 # ---- Archetypes ------------------------------------------------------------
 def canonicalize_archetypes(archetypes: List[dict]) -> Dict[str, dict]:

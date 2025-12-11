@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -14,6 +14,7 @@ import {
   Grid,
   IconButton,
   InputLabel,
+  LinearProgress,
   Link as MUILink,
   MenuItem,
   Paper,
@@ -37,6 +38,7 @@ import PersonaEngagementCadence, {
 import AssetCadenceTable, {
   type AssetCadenceRow,
 } from "../components/AssetCadenceTable";
+import type { AccountPlanContract } from "../types/apiContracts";
 
 type JourneyStep = {
   bucket?: string | null;
@@ -97,6 +99,51 @@ type ExpectedNextPerson = {
   display_name?: string | null;
   committee_probability?: number | null;
   role_band?: string | null;
+};
+
+type EntryPointPlay = {
+  play_id?: string | null;
+  stage?: string | null;
+  concern?: string | null;
+  asset?: string | null;
+  channel?: string | null;
+  mode?: string | null;
+  expected_delta_bp?: number | null;
+  confidence?: number | null;
+};
+
+type EntryPoint = {
+  persona_id: string;
+  persona_label?: string | null;
+  rank?: number | null;
+  entry_score?: number | null;
+  combined_perceptibility?: number | null;
+  combined_proximity?: number | null;
+  graph_perceptibility?: number | null;
+  graph_proximity?: number | null;
+  intervention_reach?: number | null;
+  top_people?: PersonaEngagementPerson[];
+  top_plays?: EntryPointPlay[];
+};
+
+type KeystonePersona = {
+  persona_id: string;
+  persona_label: string;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+  wolves_involvement_rate?: number | null;
+  wolves_blocker_rate?: number | null;
+  wolves_sample_size?: number | null;
+  is_new_persona?: boolean;
+  persona_source?: string | null;
+  priority_score?: number | null;
+  journey_phase?: string | null;
+  matched_people_count?: number | null;
+  top_people?: PersonaEngagementPerson[];
+  chain_effect?: string | null;
+  chain_targets?: string[];
+  chain_share?: number | null;
+  sample_story?: string | null;
 };
 
 type Play = {
@@ -166,6 +213,9 @@ type AccountPlan = {
   account_id: string;
   account_name: string;
   meta?: Record<string, unknown>;
+  entry_points?: EntryPoint[];
+  keystone_personas?: KeystonePersona[];
+  wolves_metrics_updated_at?: string | null;
   prediction: {
     persona_paths: PersonaPathEntry[];
     expected_next?: Array<{
@@ -190,6 +240,7 @@ type AccountPlan = {
     person_likelihoods?: PersonLikelihoodEntry[];
     expected_next_personas?: ExpectedNextPersona[];
     expected_next_people?: ExpectedNextPerson[];
+    entry_points?: EntryPoint[];
   };
   enrichment?: {
     summary?: {
@@ -199,6 +250,7 @@ type AccountPlan = {
       required_personas?: number;
     };
   };
+  interventions?: AccountIntervention[];
 };
 
 type MarketingPlan = {
@@ -239,6 +291,31 @@ type PersonaRequirement = {
   }>;
 };
 
+type AccountIntervention = {
+  id: string;
+  persona_label?: string | null;
+  persona_descriptor?: string | null;
+  stage_label?: string | null;
+  concern_theme?: string | null;
+  belief_lift_bp?: number | null;
+  coverage_score?: number | null;
+  coverage_state?: "strong" | "steady" | "weak" | null;
+  needs_net_new?: boolean;
+  current_modality?: {
+    format_label?: string | null;
+    channel_label?: string | null;
+  } | null;
+};
+
+type EnrichmentPersonaCandidate = {
+  label: string;
+  normalized_label: string;
+  account_occurrences: number;
+  global_account_count?: number;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+};
+
 type AccountEnrichmentPayload = {
   account_id: string;
   product_id: string;
@@ -251,6 +328,18 @@ type AccountEnrichmentPayload = {
     coverage_ratio?: number;
   };
   persona_requirements?: PersonaRequirement[];
+  persona_candidates?: EnrichmentPersonaCandidate[];
+};
+
+type TargetAccountLookupEntry = {
+  id: string;
+  account_name: string;
+  industry?: string;
+  revenue_range?: string;
+  employee_range?: string;
+  funding_stage?: string;
+  geography?: string;
+  deal_status?: string;
 };
 
 type PulseLine = {
@@ -303,6 +392,101 @@ const titleize = (value?: string | null) => {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(" ");
+};
+
+const formatList = (items: string[], conjunction = "and") => {
+  const safeItems = items.filter(Boolean);
+  if (!safeItems.length) return "";
+  if (safeItems.length === 1) return safeItems[0];
+  if (safeItems.length === 2) return `${safeItems[0]} ${conjunction} ${safeItems[1]}`;
+  return `${safeItems.slice(0, -1).join(", ")}, ${conjunction} ${safeItems[safeItems.length - 1]}`;
+};
+
+const TARGET_ACCOUNT_META_FIELDS: Array<
+  keyof Omit<TargetAccountLookupEntry, "id" | "account_name">
+> = ["industry", "revenue_range", "employee_range", "funding_stage", "geography"];
+
+const getAccountDisplayName = (
+  account?: AccountPlan | null,
+  lookup?: TargetAccountLookupEntry
+) => {
+  return (
+    lookup?.account_name ||
+    account?.account_name ||
+    account?.account_id ||
+    "Account"
+  );
+};
+
+const getAccountMetaForChips = (
+  account?: AccountPlan,
+  lookup?: TargetAccountLookupEntry
+): Record<string, unknown> => {
+  const baseMeta: Record<string, unknown> = { ...(account?.meta || {}) };
+  if (lookup) {
+    TARGET_ACCOUNT_META_FIELDS.forEach((field) => {
+      const existing = baseMeta[field];
+      if (
+        lookup[field] &&
+        (!existing || (typeof existing === "string" && !existing.trim()))
+      ) {
+        baseMeta[field] = lookup[field];
+      }
+    });
+  }
+  return baseMeta;
+};
+
+const normalizePersonaLabel = (label?: string | null) =>
+  (label || "").trim().toLowerCase();
+
+const describeKeystoneImpact = (persona?: KeystonePersona | null) => {
+  if (!persona) return null;
+  if (persona.chain_effect) return persona.chain_effect;
+  const chainTargets =
+    persona.chain_targets && persona.chain_targets.length
+      ? formatList(persona.chain_targets)
+      : null;
+  if (chainTargets) {
+    return persona.chain_share !== null && persona.chain_share !== undefined
+      ? `Unlocks ${chainTargets} (${fmtPercent(persona.chain_share, true)} of wins)`
+      : `Unlocks ${chainTargets}`;
+  }
+  if (persona.sample_story) return persona.sample_story;
+  if (typeof persona.wolves_delta_bp === "number") {
+    return `Keystone impact +${fmtBasisPoints(persona.wolves_delta_bp)} when activated`;
+  }
+  if (typeof persona.wolves_involvement_rate === "number") {
+    return `Appears in ${fmtPercent(persona.wolves_involvement_rate, true)} of wins`;
+  }
+  return null;
+};
+
+const classifyKeystoneRole = (phase?: string | null): string | null => {
+  if (!phase) return null;
+  const normalized = phase.toLowerCase();
+  if (["unaware", "zmot", "discovery", "awareness", "problem"].includes(normalized)) {
+    return "Keystone starter";
+  }
+  if (["evaluation", "pilot", "committee", "mid_funnel", "coalition"].includes(normalized)) {
+    return "Bridge to exec";
+  }
+  if (["pre-close", "decision", "procurement", "customer", "adoption"].includes(normalized)) {
+    return "Downstream operator";
+  }
+  return null;
+};
+
+const describeEntryPlay = (play?: EntryPointPlay | null) => {
+  if (!play) return null;
+  const assetLabel = play.asset || "Asset";
+  const channelLabel = play.channel || "Channel";
+  const stagePrefix = play.stage ? `${play.stage}: ` : "";
+  const deltaLabel =
+    typeof play.expected_delta_bp === "number"
+      ? ` · Δ ${fmtBasisPoints(play.expected_delta_bp)}`
+      : "";
+  return `${stagePrefix}${assetLabel} via ${channelLabel}${deltaLabel}`;
 };
 
 const segmentChipsFromFilters = (filters?: Record<string, string>) => {
@@ -429,7 +613,8 @@ const buildBeliefPulse = (
   account: AccountPlan | null,
   enrichment: AccountEnrichmentPayload | undefined,
   topPlay: Play | null,
-  personaLabelLookup: Record<string, string>
+  personaLabelLookup: Record<string, string>,
+  keystonePersonas: KeystonePersona[] = []
 ): PulseEntry[] => {
   if (!account) {
     return [
@@ -469,6 +654,43 @@ const buildBeliefPulse = (
   };
   const getEngagementForPersona = (personaId?: string | null) =>
     personaEngagements.find((entry) => entry.persona_id === personaId);
+  const keystoneList =
+    (keystonePersonas && keystonePersonas.length ? keystonePersonas : account.keystone_personas) ?? [];
+  const keystoneById = new Map<string, KeystonePersona>();
+  const keystoneByLabel = new Map<string, KeystonePersona>();
+  keystoneList.forEach((persona) => {
+    if (persona.persona_id) {
+      keystoneById.set(persona.persona_id, persona);
+    }
+    if (persona.persona_label) {
+      const normalized = normalizePersonaLabel(persona.persona_label);
+      if (normalized) {
+        keystoneByLabel.set(normalized, persona);
+      }
+    }
+  });
+  const getKeystoneFor = (entry?: any): KeystonePersona | null => {
+    if (!entry) return null;
+    if (typeof entry === "string") {
+      return (
+        keystoneById.get(entry) ||
+        keystoneByLabel.get(normalizePersonaLabel(entry)) ||
+        null
+      );
+    }
+    const personaId = entry.persona_id || entry.personaId || entry.persona?.id;
+    const personaLabel =
+      entry.persona_label ||
+      entry.persona ||
+      entry.persona_focus ||
+      entry.label ||
+      entry.descriptor;
+    return (
+      (personaId && keystoneById.get(personaId)) ||
+      (personaLabel && keystoneByLabel.get(normalizePersonaLabel(personaLabel))) ||
+      null
+    );
+  };
 
   const riskPersona = requirements
     .slice()
@@ -499,6 +721,12 @@ const buildBeliefPulse = (
       ? (expectedNext as any).prob
       : null;
   const expectedNextLabel = describePersonaEntry(expectedNext);
+  const expectedNextKeystone = getKeystoneFor(expectedNext);
+  const expectedNextNarrative = describeKeystoneImpact(expectedNextKeystone);
+  const expectedNextReason = isExpectedNextPersona(expectedNext) ? expectedNext.reason : undefined;
+  const expectedNextStage = isExpectedNextPersona(expectedNext)
+    ? expectedNext.journey_stage
+    : undefined;
   const topRecommendedPlay = topPlay;
 
   const progressBuckets = new Set(["on_path", "near_path", "jump_ahead", "skip_hit"]);
@@ -526,36 +754,45 @@ const buildBeliefPulse = (
       lastTouchDays !== null && lastTouchDays !== undefined ? `Last touch ${fmtDays(lastTouchDays)} ago` : null,
       touchDensity ? `${touchDensity.toFixed(1)} touches/wk policy` : null,
     ].filter(Boolean);
+    const riskKeystone = getKeystoneFor(riskPersona);
+    const riskKeystoneNarrative = describeKeystoneImpact(riskKeystone);
+    const criticalLines: PulseLine[] = [
+      {
+        label: "Persona",
+        value: `${personaDisplay}${riskKeystone ? " (keystone)" : ""} · No mapped champion yet`,
+      },
+      {
+        label: "Risk",
+        value: `High — ${fmtPercent(
+          typeof riskPersona.expected_in_deal === "number"
+            ? riskPersona.expected_in_deal
+            : (riskPersona.expected_in_deal_pct || 0) / 100,
+          true
+        )} of wins depend on this persona.`,
+      },
+      {
+        label: "Why",
+        value: riskWhyBits.length ? riskWhyBits.join(" · ") : "No engagement telemetry yet for this persona.",
+      },
+      {
+        label: "Action",
+        value: topRecommendedPlay
+          ? `Map a ${personaDisplay} contact and trigger ${
+              topRecommendedPlay.name || topRecommendedPlay.asset_label || "the top play"
+            } via ${topRecommendedPlay.channel_label || "primary channel"}.`
+          : `Map a ${personaDisplay} contact and assign first-touch owner.`,
+      },
+    ];
+    if (riskKeystoneNarrative) {
+      criticalLines.push({
+        label: "Chain effect",
+        value: riskKeystoneNarrative,
+      });
+    }
     pulses.push({
       title: "🚨 Critical Belief Risk",
       tone: "critical",
-      lines: [
-        {
-          label: "Persona",
-          value: `${personaDisplay} · No mapped champion yet`,
-        },
-        {
-          label: "Risk",
-          value: `High — ${fmtPercent(
-            typeof riskPersona.expected_in_deal === "number"
-              ? riskPersona.expected_in_deal
-              : (riskPersona.expected_in_deal_pct || 0) / 100,
-            true
-          )} of wins depend on this persona.`,
-        },
-        {
-          label: "Why",
-          value: riskWhyBits.length ? riskWhyBits.join(" · ") : "No engagement telemetry yet for this persona.",
-        },
-        {
-          label: "Action",
-          value: topRecommendedPlay
-            ? `Map a ${personaDisplay} contact and trigger ${
-                topRecommendedPlay.name || topRecommendedPlay.asset_label || "the top play"
-              } via ${topRecommendedPlay.channel_label || "primary channel"}.`
-            : `Map a ${personaDisplay} contact and assign first-touch owner.`,
-        },
-      ],
+      lines: criticalLines,
     });
   }
 
@@ -592,76 +829,107 @@ const buildBeliefPulse = (
       expectedNextProbability !== null
         ? fmtPercent(expectedNextProbability, true)
         : null;
+    const latentLines: PulseLine[] = [
+      {
+        label: "Persona",
+        value: `${expectedNextLabel || "Priority persona"} is the next best believer to activate${
+          expectedNextKeystone ? " (keystone)" : ""
+        }.`,
+      },
+      {
+        label: "Why it matters",
+        value:
+          expectedNextReason ||
+          (expectedNextStage && nextConfidence
+            ? `Model expects them to reach ${expectedNextStage} (${nextConfidence})`
+            : nextConfidence
+            ? `Model confidence ${nextConfidence}`
+            : "Model flagged this persona based on recent signals."),
+      },
+    ];
+    if (expectedNextNarrative) {
+      latentLines.push({
+        label: "Chain effect",
+        value: expectedNextNarrative,
+      });
+    }
     pulses.push({
       title: "🟣 Hidden Opportunity (Latent)",
       tone: "neutral",
-      lines: [
-        {
-          label: "Persona",
-          value: `${expectedNextLabel || "Priority persona"} is the next best believer to activate.`,
-        },
-        {
-          label: "Why it matters",
-          value:
-            expectedNext.reason ||
-            (expectedNext.journey_stage && nextConfidence
-              ? `Model expects them to reach ${expectedNext.journey_stage} (${nextConfidence})`
-              : nextConfidence
-              ? `Model confidence ${nextConfidence}`
-              : "Model flagged this persona based on recent signals."),
-        },
-      ],
+      lines: latentLines,
     });
   }
 
   if (topRecommendedPlay) {
+    const moveLines: PulseLine[] = [
+      {
+        label: "Play",
+        value: topRecommendedPlay.name || topRecommendedPlay.asset_label || "Recommended play",
+      },
+      {
+        label: "Channel",
+        value: topRecommendedPlay.channel_label || "Preferred outreach channel",
+      },
+      {
+        label: "Expected Impact",
+        value: `${fmtBasisPoints(topRecommendedPlay.expected_delta_bp)} in ${fmtDays(
+          topRecommendedPlay.avg_duration_days
+        )}`,
+      },
+    ];
+    if (expectedNextLabel) {
+      moveLines.push({
+        label: "Target persona",
+        value: `${expectedNextLabel}${expectedNextKeystone ? " (keystone)" : ""}`,
+      });
+    }
+    if (expectedNextNarrative) {
+      moveLines.push({
+        label: "Chain effect",
+        value: expectedNextNarrative,
+      });
+    }
     pulses.push({
       title: "🟢 Highest ROI Move Right Now",
       tone: "positive",
-      lines: [
-        {
-          label: "Play",
-          value: topRecommendedPlay.name || topRecommendedPlay.asset_label || "Recommended play",
-        },
-        {
-          label: "Channel",
-          value: topRecommendedPlay.channel_label || "Preferred outreach channel",
-        },
-        {
-          label: "Expected Impact",
-          value: `${fmtBasisPoints(topRecommendedPlay.expected_delta_bp)} in ${fmtDays(
-            topRecommendedPlay.avg_duration_days
-          )}`,
-        },
-      ],
+      lines: moveLines,
     });
   }
 
+  const stallLines: PulseLine[] = [
+    {
+      label: "Status",
+      value: hasRecentMovement
+        ? "On-path momentum detected within the last step."
+        : stepsSinceProgress > 0
+        ? `No on-path signals for ${stepsSinceProgress} logged step${
+            stepsSinceProgress === 1 ? "" : "s"
+          }.`
+        : "Awaiting first on-path signal.",
+    },
+    {
+      label: "Recommended",
+      value: topRecommendedPlay
+        ? `Queue ${topRecommendedPlay.name || topRecommendedPlay.asset_label || "top play"} via ${
+            topRecommendedPlay.channel_label || "primary channel"
+          }.`
+        : describePersonaEntry(expectedNext)
+        ? `Increase touches for ${describePersonaEntry(expectedNext)}${
+            expectedNextKeystone ? " (keystone)" : ""
+          }`
+        : "Increase touches for unmatched personas.",
+    },
+  ];
+  if (!topRecommendedPlay && expectedNextNarrative) {
+    stallLines.push({
+      label: "Chain effect",
+      value: expectedNextNarrative,
+    });
+  }
   pulses.push({
     title: "🔴 Likely Stall in Current Tactic",
     tone: "warning",
-    lines: [
-      {
-        label: "Status",
-        value: hasRecentMovement
-          ? "On-path momentum detected within the last step."
-          : stepsSinceProgress > 0
-          ? `No on-path signals for ${stepsSinceProgress} logged step${
-              stepsSinceProgress === 1 ? "" : "s"
-            }.`
-          : "Awaiting first on-path signal.",
-      },
-      {
-        label: "Recommended",
-        value: topRecommendedPlay
-          ? `Queue ${topRecommendedPlay.name || topRecommendedPlay.asset_label || "top play"} via ${
-              topRecommendedPlay.channel_label || "primary channel"
-            }.`
-          : describePersonaEntry(expectedNext)
-          ? `Increase touches for ${describePersonaEntry(expectedNext)}`
-          : "Increase touches for unmatched personas.",
-      },
-    ],
+    lines: stallLines,
   });
 
   return pulses.slice(0, 5);
@@ -906,12 +1174,16 @@ type FourQuestionsAccountProps = {
   account: AccountPlan;
   personaMatches: Record<string, string[]>;
   canonicalTypicalPath: TypicalPathStep[];
+  keystonePersonas: KeystonePersona[];
+  wolvesUpdatedAt?: string | null;
 };
 
 const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
   account,
   personaMatches,
   canonicalTypicalPath,
+  keystonePersonas,
+  wolvesUpdatedAt,
 }) => {
   const primaryPath = account.prediction?.persona_paths?.[0] || null;
   const plays = account.execution?.plays || [];
@@ -921,6 +1193,12 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
   const expectedNextPersonas =
     thesis?.expected_next_personas ?? account.prediction?.expected_next_personas ?? [];
   const personaCadence = account.execution?.persona_engagements || [];
+  const entryPoints = useMemo(() => {
+    const rows = account.entry_points ?? thesis?.entry_points ?? [];
+    return rows.slice(0, 5);
+  }, [account.entry_points, thesis?.entry_points]);
+  const formatEntryPercent = (value?: number | null) =>
+    value !== null && value !== undefined ? fmtPercent(value, true) : "—";
 
   const heading = (label: string, helper: string) => (
     <Stack direction="row" spacing={0.75} alignItems="center">
@@ -930,6 +1208,46 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
       </Tooltip>
     </Stack>
   );
+  const wolvesRefreshed = wolvesUpdatedAt ? formatRelativeTime(wolvesUpdatedAt) : null;
+  const hasKeystone = keystonePersonas.length > 0;
+  const keystoneLookup = useMemo(() => {
+    const byId = new Map<string, KeystonePersona>();
+    const byLabel = new Map<string, KeystonePersona>();
+    keystonePersonas.forEach((persona) => {
+      if (persona.persona_id) {
+        byId.set(persona.persona_id, persona);
+      }
+      if (persona.persona_label) {
+        const normalized = normalizePersonaLabel(persona.persona_label);
+        if (normalized) {
+          byLabel.set(normalized, persona);
+        }
+      }
+    });
+    return { byId, byLabel };
+  }, [keystonePersonas]);
+  const getKeystoneFor = useCallback(
+    (personaId?: string | null, personaLabel?: string | null) => {
+      if (personaId && keystoneLookup.byId.has(personaId)) {
+        return keystoneLookup.byId.get(personaId)!;
+      }
+      if (personaLabel) {
+        const normalized = normalizePersonaLabel(personaLabel);
+        if (normalized && keystoneLookup.byLabel.has(normalized)) {
+          return keystoneLookup.byLabel.get(normalized)!;
+        }
+      }
+      return null;
+    },
+    [keystoneLookup]
+  );
+
+  const keystoneColor = (score?: number | null): "default" | "primary" | "success" => {
+    if (typeof score !== "number") return "default";
+    if (score >= 0.7) return "success";
+    if (score >= 0.55) return "primary";
+    return "default";
+  };
 
   const formatChipLabel = (band?: string | null, label?: string | null, prob?: number | null) => {
     const parts: string[] = [];
@@ -940,9 +1258,217 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
     }
     return parts.join(" · ");
   };
+  const personaLikelihoodRows = useMemo(() => {
+    if (!personaLikelihoods.length) return [];
+    return personaLikelihoods
+      .map((entry, idx) => {
+        const keystone = getKeystoneFor(entry.persona_id, entry.persona_label);
+        return {
+          key: entry.persona_id || entry.persona_label || `persona-${idx}`,
+          persona: entry,
+          keystone,
+          roleLabel: classifyKeystoneRole(keystone?.journey_phase),
+          wolvesNarrative: describeKeystoneImpact(keystone),
+        };
+      })
+      .sort((a, b) => {
+        const scoreA =
+          typeof a.keystone?.wolves_score === "number" ? (a.keystone.wolves_score as number) : -1;
+        const scoreB =
+          typeof b.keystone?.wolves_score === "number" ? (b.keystone.wolves_score as number) : -1;
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return (
+          (b.persona.committee_probability || b.persona.probability || 0) -
+          (a.persona.committee_probability || a.persona.probability || 0)
+        );
+      });
+  }, [getKeystoneFor, personaLikelihoods]);
+  const coalitionStory = useMemo(() => {
+    if (!primaryPath?.personas?.length) return null;
+    const entries = primaryPath.personas.slice(0, 4).map((persona, idx) => {
+      const label = persona.label || persona.id || `Persona ${idx + 1}`;
+      const keystone = getKeystoneFor(persona.id, persona.label);
+      const role = classifyKeystoneRole(keystone?.journey_phase);
+      if (keystone) {
+        return `${label}${role ? ` (${role})` : " (keystone)"}`;
+      }
+      return label;
+    });
+    if (!entries.length) return null;
+    const segmentLabel =
+      (account.meta?.industry && titleize(account.meta?.industry)) ||
+      (account.meta?.segment && titleize(account.meta?.segment)) ||
+      "peer accounts";
+    return `Likely winning pattern (${segmentLabel}): ${entries.join(" → ")}`;
+  }, [account.meta?.industry, account.meta?.segment, getKeystoneFor, primaryPath]);
 
   return (
     <Stack spacing={3}>
+      {entryPoints.length ? (
+        <Box>
+          {heading(
+            "Entry points to prioritize",
+            "Graph perceptibility × intervention reach to decide which personas to activate first."
+          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Combines belief graph signals with available people and plays. Higher entry score =
+            faster path to influence.
+          </Typography>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Persona</TableCell>
+                <TableCell align="right">Entry score</TableCell>
+                <TableCell>Signals</TableCell>
+                <TableCell>Intervention plan</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {entryPoints.map((entry, idx) => (
+                <TableRow key={`entry-point-${entry.persona_id}-${idx}`}>
+                  <TableCell>
+                    <Stack spacing={0.25}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {entry.persona_label || entry.persona_id}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Rank {entry.rank ?? idx + 1}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Stack spacing={0.25} alignItems="flex-end">
+                      <Typography variant="body2">
+                        {formatEntryPercent(entry.entry_score)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Combined perc {formatEntryPercent(entry.combined_perceptibility)} · prox{" "}
+                        {formatEntryPercent(entry.combined_proximity)}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Stack spacing={0.25}>
+                      <Typography variant="caption" color="text.secondary">
+                        Graph {formatEntryPercent(entry.graph_perceptibility)} perc /{" "}
+                        {formatEntryPercent(entry.graph_proximity)} prox
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Intervention reach {formatEntryPercent(entry.intervention_reach)}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                      {(entry.top_people || []).slice(0, 2).map((person) => (
+                        <Chip
+                          key={`entry-point-${entry.persona_id}-person-${person.person_id || person.display_name}`}
+                          size="small"
+                          variant="outlined"
+                          label={`${person.display_name || "Person"} · ${formatEntryPercent(
+                            person.committee_probability
+                          )}`}
+                        />
+                      ))}
+                      {(entry.top_plays || []).slice(0, 2).map((play, playIdx) => (
+                        <Chip
+                          key={`entry-point-${entry.persona_id}-play-${play.play_id || playIdx}`}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          label={describeEntryPlay(play) || "Recommended play"}
+                        />
+                      ))}
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      ) : null}
+      {hasKeystone && (
+        <Box>
+          {heading(
+            "Keystone personas",
+            "Personas with the highest wolves-impact score across observed episodes."
+          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            These personas materially change predicted win rates when engaged.
+            {wolvesRefreshed ? ` Refreshed ${wolvesRefreshed}.` : ""}
+          </Typography>
+          <Stack spacing={1.5}>
+            {keystonePersonas.slice(0, 4).map((persona) => (
+              <Paper
+                key={`keystone-${persona.persona_id}`}
+                variant="outlined"
+                sx={{ p: 1.5, borderColor: "primary.100" }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    {persona.persona_label}
+                  </Typography>
+                  <Stack direction="row" spacing={0.5}>
+                    {persona.is_new_persona && (
+                      <Chip size="small" color="warning" variant="outlined" label="New persona" />
+                    )}
+                    <Chip
+                      size="small"
+                      color={keystoneColor(persona.wolves_score)}
+                      variant="outlined"
+                      label={`Wolves ${fmtPercent(persona.wolves_score, true)}`}
+                    />
+                  </Stack>
+                </Stack>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  Δ win {fmtBasisPoints(persona.wolves_delta_bp)}
+                  {" · "}Involvement {fmtPercent(persona.wolves_involvement_rate, true)}
+                  {" · "}Blocker {fmtPercent(persona.wolves_blocker_rate, true)}
+                  {typeof persona.wolves_sample_size === "number"
+                    ? ` · Sample n=${persona.wolves_sample_size}`
+                    : ""}
+                </Typography>
+                <Stack direction="row" spacing={0.75} sx={{ mt: 0.75, flexWrap: "wrap" }}>
+                  {persona.journey_phase && (
+                    <Chip size="small" label={persona.journey_phase} variant="outlined" />
+                  )}
+                  {typeof persona.priority_score === "number" && (
+                    <Chip
+                      size="small"
+                      label={`Priority ${persona.priority_score.toFixed(2)}`}
+                      variant="outlined"
+                    />
+                  )}
+                  {typeof persona.matched_people_count === "number" && (
+                    <Chip
+                      size="small"
+                      label={`${persona.matched_people_count} matched ${
+                        persona.matched_people_count === 1 ? "person" : "people"
+                      }`}
+                      variant="outlined"
+                    />
+                  )}
+                </Stack>
+                {persona.top_people && persona.top_people.length > 0 && (
+                  <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", mt: 0.75 }}>
+                    {persona.top_people.slice(0, 3).map((person) => (
+                      <Chip
+                        key={`keystone-${persona.persona_id}-${person.person_id || person.display_name}`}
+                        size="small"
+                        variant="outlined"
+                        label={`${person.display_name || "Person"} · ${fmtPercent(
+                          person.committee_probability,
+                          true
+                        )}`}
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </Paper>
+            ))}
+          </Stack>
+        </Box>
+      )}
       <Box>
         {heading(
           "1. Who is likely to be involved?",
@@ -951,17 +1477,76 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           The personas most likely to participate in this account's win committee.
         </Typography>
-        {personaLikelihoods.length ? (
-          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", mb: 1 }}>
-            {personaLikelihoods.slice(0, 10).map((persona) => (
-              <Chip
-                key={`persona-likelihood-${persona.persona_id}`}
-                size="small"
-                label={formatChipLabel(persona.band, persona.persona_label, persona.probability)}
-              />
-            ))}
-          </Stack>
-        ) : null}
+        {personaLikelihoodRows.length ? (
+          <>
+            <Table size="small" sx={{ mb: 1 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Persona</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell align="right">Committee</TableCell>
+                  <TableCell align="right">Wolves</TableCell>
+                  <TableCell>Chain effect</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {personaLikelihoodRows.slice(0, 6).map((row) => {
+                  const committeeProb =
+                    row.persona.committee_probability ?? row.persona.probability ?? null;
+                  return (
+                    <TableRow key={`persona-likelihood-${row.key}`}>
+                      <TableCell>
+                        <Stack spacing={0.25}>
+                          <Stack direction="row" spacing={0.5} alignItems="center">
+                            <Typography variant="body2">
+                              {row.persona.persona_label || row.persona.persona_id || row.key}
+                            </Typography>
+                            {row.keystone ? (
+                              <Chip size="small" color="success" label="Keystone" />
+                            ) : null}
+                          </Stack>
+                          {row.persona.band ? (
+                            <Typography variant="caption" color="text.secondary">
+                              {titleize(row.persona.band)}
+                            </Typography>
+                          ) : null}
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{row.roleLabel || "—"}</TableCell>
+                      <TableCell align="right">
+                        {committeeProb !== null
+                          ? fmtPercent(committeeProb, true)
+                          : "—"}
+                      </TableCell>
+                      <TableCell align="right">
+                        {row.keystone?.wolves_score != null
+                          ? fmtPercent(row.keystone.wolves_score, true)
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          color={row.wolvesNarrative ? "success.main" : "text.secondary"}
+                        >
+                          {row.wolvesNarrative || "Model expects this persona to unlock the next gate."}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            {coalitionStory ? (
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+                {coalitionStory}
+              </Typography>
+            ) : null}
+          </>
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Persona committee model will populate once this account accumulates more telemetry.
+          </Typography>
+        )}
         <Typography variant="body2" color="text.secondary">
           People mapped to these personas (highest probability first):
         </Typography>
@@ -1164,6 +1749,12 @@ const AccountPlanPage: React.FC = () => {
   const [enrichmentMap, setEnrichmentMap] = useState<
     Record<string, AccountEnrichmentPayload>
   >({});
+  const [accountPlanContract, setAccountPlanContract] =
+    useState<AccountPlanContract | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [targetAccountLookup, setTargetAccountLookup] = useState<
+    Record<string, TargetAccountLookupEntry>
+  >({});
 
   const canonicalTypicalPath = useMemo(() => {
     if (!plan) return [];
@@ -1184,6 +1775,7 @@ const AccountPlanPage: React.FC = () => {
         });
         if (!meRes.ok) throw new Error(await meRes.text());
         const me = await meRes.json();
+        setCompanyId(me.company_id);
 
         const prodRes = await fetch(
           `http://localhost:8000/get-products/${me.company_id}`,
@@ -1205,6 +1797,40 @@ const AccountPlanPage: React.FC = () => {
       }
     })();
   }, [token]);
+
+  useEffect(() => {
+    if (!token || !companyId || !selectedProductId) {
+      setTargetAccountLookup({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8000/get-target-accounts/${companyId}?product_id=${selectedProductId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (cancelled) return;
+        const next: Record<string, TargetAccountLookupEntry> = {};
+        (data.accounts || []).forEach((entry: TargetAccountLookupEntry) => {
+          if (entry.id) {
+            next[entry.id] = entry;
+          }
+        });
+        setTargetAccountLookup(next);
+      } catch (err) {
+        if (!cancelled) {
+          console.warn("Failed to load target accounts for account plan", err);
+          setTargetAccountLookup({});
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [companyId, selectedProductId, token]);
 
   useEffect(() => {
     if (!selectedProductId || !token) return;
@@ -1229,6 +1855,28 @@ const AccountPlanPage: React.FC = () => {
       }
     })();
   }, [selectedProductId, token]);
+
+  useEffect(() => {
+    if (!token || !selectedProductId || !accountId) {
+      setAccountPlanContract(null);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8000/accounts/${accountId}/plan?product_id=${encodeURIComponent(
+            selectedProductId
+          )}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data: AccountPlanContract = await res.json();
+        setAccountPlanContract(data);
+      } catch (err: unknown) {
+        console.warn("Failed to load account plan contract", err);
+      }
+    })();
+  }, [selectedProductId, token, accountId]);
 
   useEffect(() => {
     if (!plan || !token || !selectedProductId) {
@@ -1282,6 +1930,13 @@ const AccountPlanPage: React.FC = () => {
   const activeEnrichment = accountId
     ? enrichmentMap[accountId]
     : undefined;
+  const activeLookupEntry = activeAccount
+    ? targetAccountLookup[activeAccount.account_id]
+    : undefined;
+  const activeAccountDisplayName = getAccountDisplayName(
+    activeAccount,
+    activeLookupEntry
+  );
 
   const topPlay =
     activeAccount?.execution?.plays && activeAccount.execution.plays.length
@@ -1335,10 +1990,52 @@ const AccountPlanPage: React.FC = () => {
     });
     return matches;
   }, [activeEnrichment, activeAccount]);
+  const cadenceKeystoneResolver = useMemo(() => {
+    const keystones = activeAccount?.keystone_personas ?? [];
+    if (!keystones.length) return undefined;
+    const byId = new Map<string, KeystonePersona>();
+    const byLabel = new Map<string, KeystonePersona>();
+    keystones.forEach((persona) => {
+      if (persona.persona_id) {
+        byId.set(persona.persona_id, persona);
+      }
+      if (persona.persona_label) {
+        const normalized = normalizePersonaLabel(persona.persona_label);
+        if (normalized) {
+          byLabel.set(normalized, persona);
+        }
+      }
+    });
+    return (row: AssetCadenceRow) => {
+      const candidate =
+        (row.persona_id && byId.get(row.persona_id)) ||
+        (row.persona_label && byLabel.get(normalizePersonaLabel(row.persona_label))) ||
+        null;
+      if (!candidate) return null;
+      return {
+        label: candidate.persona_label,
+        wolvesScore: candidate.wolves_score,
+        wolvesDeltaBp: candidate.wolves_delta_bp,
+        narrative: describeKeystoneImpact(candidate),
+      };
+    };
+  }, [activeAccount?.keystone_personas]);
 
   const beliefPulse = useMemo(
-    () => buildBeliefPulse(activeAccount, activeEnrichment, topPlay, personaLabelLookup),
-    [activeAccount, activeEnrichment, topPlay, personaLabelLookup]
+    () =>
+      buildBeliefPulse(
+        activeAccount,
+        activeEnrichment,
+        topPlay,
+        personaLabelLookup,
+        activeAccount?.keystone_personas ?? []
+      ),
+    [activeAccount, activeAccount?.keystone_personas, activeEnrichment, topPlay, personaLabelLookup]
+  );
+
+  const accountInterventions = useMemo(
+    () => (activeAccount?.interventions ?? []).slice(0, 3),
+    [activeAccount?.interventions]
   );
 
   const accountUpdatedAt =
@@ -1371,6 +2068,12 @@ const AccountPlanPage: React.FC = () => {
         sx={{ mb: 3 }}
       >
         <Typography variant="h5">Account Plan</Typography>
+        {accountPlanContract?.account && (
+          <Typography variant="caption" color="text.secondary">
+            Win probability {fmtPercent(accountPlanContract.account.predictedWinPct, true)} ·
+            Stall in {accountPlanContract.account.predictedStallInDays} days
+          </Typography>
+        )}
         <Box sx={{ flexGrow: 1 }} />
         {products.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 220 }}>
@@ -1399,7 +2102,7 @@ const AccountPlanPage: React.FC = () => {
           <MUILink component={RouterLink} color="inherit" to="/account-plan">
             Account Plan
           </MUILink>
-          <Typography color="text.primary">{activeAccount.account_name}</Typography>
+          <Typography color="text.primary">{activeAccountDisplayName}</Typography>
         </Breadcrumbs>
       )}
 
@@ -1424,14 +2127,16 @@ const AccountPlanPage: React.FC = () => {
             undefined;
           const hasEngagements =
             (acct.prediction?.journey?.steps?.length || 0) > 0;
-
+          const lookupEntry = targetAccountLookup[acct.account_id];
+          const accountName = getAccountDisplayName(acct, lookupEntry);
           const metaChips = uniqueStrings(
-            Object.entries(acct.meta || {}).map(
-              ([key, value]) =>
-                `${key.replace(/[_-]/g, " ")}: ${String(value)}`
+            Object.entries(getAccountMetaForChips(acct, lookupEntry)).map(
+              ([key, value]) => {
+                if (value === undefined || value === null) return null;
+                return `${key.replace(/[_-]/g, " ")}: ${String(value)}`;
+              }
             )
           );
-
           const isSelected = accountId === acct.account_id;
 
           return (
@@ -1449,7 +2154,7 @@ const AccountPlanPage: React.FC = () => {
                 >
                   <CardContent>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {acct.account_name}
+                      {accountName}
                     </Typography>
                     <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap", mt: 1 }}>
                       {metaChips.slice(0, 5).map((chip) => (
@@ -1514,6 +2219,91 @@ const AccountPlanPage: React.FC = () => {
 
       {accountId && activeAccount && (
         <Stack spacing={3}>
+          {accountInterventions.length ? (
+            <Card variant="outlined">
+              <CardContent>
+                <Stack
+                  direction={{ xs: "column", md: "row" }}
+                  spacing={1}
+                  justifyContent="space-between"
+                  alignItems={{ xs: "flex-start", md: "center" }}
+                  sx={{ mb: 1 }}
+                >
+                  <Typography variant="h6">Opportunities & gaps</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Top interventions that still need stronger assets
+                  </Typography>
+                </Stack>
+                <Stack spacing={1.25}>
+                  {accountInterventions.map((gap) => {
+                    const coverage = gap.coverage_score ?? 0;
+                    const coveragePercent = Math.round(coverage * 100);
+                    const coverageColor =
+                      gap.coverage_state === "strong"
+                        ? "success"
+                        : gap.coverage_state === "steady"
+                        ? "warning"
+                        : "error";
+                    return (
+                      <Paper
+                        key={gap.id}
+                        variant="outlined"
+                        sx={{ p: 1.25, borderColor: gap.needs_net_new ? "error.light" : "divider" }}
+                      >
+                        <Stack spacing={0.5}>
+                          <Stack
+                            direction={{ xs: "column", sm: "row" }}
+                            spacing={0.5}
+                            justifyContent="space-between"
+                            alignItems={{ xs: "flex-start", sm: "center" }}
+                          >
+                            <Typography variant="subtitle2">
+                              {gap.persona_label || gap.persona_descriptor || "Persona"} ·{" "}
+                              {gap.stage_label || "Stage"}
+                            </Typography>
+                            <Chip size="small" color={coverageColor} label={fmtPercent(coverage)} />
+                          </Stack>
+                          <Typography variant="body2" color="text.secondary">
+                            Need to prove:{" "}
+                            {gap.concern_theme || "Belief transition still being inferred"} (
+                            {fmtBasisPoints(gap.belief_lift_bp)} lift)
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
+                            value={coveragePercent}
+                            color={coverageColor}
+                            sx={{ height: 6, borderRadius: 3 }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {gap.current_modality?.format_label
+                              ? `${gap.current_modality.format_label} via ${
+                                  gap.current_modality.channel_label || "channel"
+                                }`
+                              : "No mapped asset yet"}
+                          </Typography>
+                          <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              component={RouterLink}
+                              to="/marketing-planner"
+                            >
+                              Map in planner
+                            </Button>
+                            {gap.needs_net_new ? (
+                              <Button size="small" variant="outlined" color="error">
+                                Design asset
+                              </Button>
+                            ) : null}
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    );
+                  })}
+                </Stack>
+              </CardContent>
+            </Card>
+          ) : null}
           <Card variant="outlined">
             <CardContent>
               <Stack
@@ -1543,6 +2333,8 @@ const AccountPlanPage: React.FC = () => {
                 account={activeAccount}
                 personaMatches={personaMatches}
                 canonicalTypicalPath={canonicalTypicalPath}
+                keystonePersonas={activeAccount.keystone_personas ?? []}
+                wolvesUpdatedAt={activeAccount.wolves_metrics_updated_at}
               />
               <Divider sx={{ my: 3 }} />
               <Box>
@@ -1564,6 +2356,7 @@ const AccountPlanPage: React.FC = () => {
                   <AssetCadenceTable
                     rows={activeAccount.execution?.asset_cadence}
                     personaLabelLookup={personaLabelLookup}
+                    keystoneResolver={cadenceKeystoneResolver}
                     enableFilters
                   />
                 </Box>
@@ -1577,3 +2370,8 @@ const AccountPlanPage: React.FC = () => {
 };
 
 export default AccountPlanPage;
+const isExpectedNextPersona = (
+  entry: ExpectedNextPersona | { persona?: string; persona_label?: string; prob?: number } | null
+): entry is ExpectedNextPersona => {
+  return !!entry && typeof entry === "object" && "persona_id" in entry;
+};

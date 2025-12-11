@@ -1,7 +1,7 @@
 # backend/utils/inference/belief_manager/journey/shm_models.py
 from __future__ import annotations
 from typing import Any, Dict, Optional
-from sqlalchemy import Column, String, DateTime, Integer, JSON, Index
+from sqlalchemy import Column, String, DateTime, Integer, JSON, Index, TEXT
 import uuid
 import datetime as dt
 
@@ -53,6 +53,8 @@ class SHMEpisode(Base):
 
     # raw / debug payload
     meta = Column(JSON, default=dict)  # free-form, store journey step json, scores, etc.
+    account_meta = Column(JSON, default=dict)
+    candidate_personas = Column(JSON, default=dict)
 
     __table_args__ = (
         Index(

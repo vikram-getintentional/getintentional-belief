@@ -255,9 +255,11 @@ def _build_label_lookup(thesis: Dict[str, Any]) -> Callable[[Optional[str]], Opt
             except Exception:
                 label = None
         if not label:
-            if pid_str.startswith("persona:") and ":" in pid_str:
-                label = pid_str.split(":", 1)[1].replace("_", " ").title()
-            else:
+            if ":" in pid_str:
+                prefix, tail = pid_str.split(":", 1)
+                if prefix in {"persona", "canonical_persona"}:
+                    label = tail.replace("_", " ").title()
+            if not label:
                 label = _persona_label(pid_str)
         cache[pid_str] = label
         return label
@@ -427,9 +429,11 @@ def build_activity_story(thesis: Dict[str, Any]) -> List[Dict[str, Any]]:
         for inferred_row in latents_by_step.get(idx, []):
             persona_label = inferred_row.get("persona_label")
             persona_id = inferred_row.get("persona_id")
-            if persona_label and persona_label.startswith("persona:"):
-                persona_label = label_lookup(persona_id or persona_label) or persona_label
-            elif not persona_label:
+            if persona_label and ":" in persona_label:
+                prefix = persona_label.split(":", 1)[0]
+                if prefix in {"persona", "canonical_persona"}:
+                    persona_label = label_lookup(persona_id or persona_label) or persona_label
+            if not persona_label:
                 persona_label = label_lookup(persona_id) or None
             if persona_label:
                 inferred_row["persona_label"] = persona_label

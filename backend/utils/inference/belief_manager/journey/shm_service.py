@@ -6,6 +6,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import asc
 
 from backend.utils.inference.belief_manager.journey.shm_models import SHMEpisode
+from backend.utils.crm_management.target_account_manager import (
+    TargetAccount as TargetAccountORM,
+)
+from backend.utils.segment_utils import normalize_account_meta as normalize_meta_dict
 
 from backend.super_models.shm.episode import (
     ShmEpisode,
@@ -58,6 +62,98 @@ def _json_clean(value: Any) -> Any:
         # best effort fallback: convert to string
         return json.loads(json.dumps(value, default=lambda obj: str(obj)))
 
+
+META_BLOCKLIST = {
+    "account_name",
+    "accountid",
+    "target_account_id",
+    "deal_status",
+    "status",
+    "id",
+    "_normalized_keys",
+}
+
+
+def _sanitize_meta(meta: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(meta, dict):
+        return {}
+    cleaned: Dict[str, Any] = {}
+    for key, value in meta.items():
+        if value in (None, "", [], {}, ()):
+            continue
+        norm_key = str(key).strip()
+        if not norm_key or norm_key.lower() in META_BLOCKLIST:
+            continue
+        cleaned[norm_key] = value
+    return {
+        key: value
+        for key, value in cleaned.items()
+    }
+
+
+def resolve_episode_account_meta(
+    db: Session,
+    *,
+    product_id: str,
+    account_id: str,
+    provided_meta: Optional[Dict[str, Any]] = None,
+) -> Tuple[Dict[str, Any], str]:
+    """
+    Merge any account metadata carried on the thesis with the authoritative
+    TargetAccount record so that every SHM episode has segmentable meta.
+    Returns (meta_dict, source_flag) where source_flag ∈ {"episode", "target_account", "none"}.
+    """
+    merged: Dict[str, Any] = {}
+    meta_source = "none"
+
+    thesis_meta = _sanitize_meta(provided_meta)
+    if thesis_meta:
+        merged.update(thesis_meta)
+        meta_source = "episode"
+
+    fallback_meta: Dict[str, Any] = {}
+    try:
+        account_row = (
+            db.query(TargetAccountORM)
+            .filter(
+                TargetAccountORM.id == account_id,
+                TargetAccountORM.product_id == product_id,
+            )
+            .first()
+        )
+    except Exception:
+        account_row = None
+
+    if account_row:
+        fallback_meta = _sanitize_meta(
+            {
+                "account_name": account_row.account_name,
+                "industry": account_row.industry,
+                "revenue_range": account_row.revenue_range,
+                "employee_range": account_row.employee_range,
+                "geography": account_row.geography,
+                "funding_stage": account_row.funding_stage,
+            }
+        )
+
+    if fallback_meta:
+        merged = {**fallback_meta, **merged} if merged else dict(fallback_meta)
+        if meta_source != "episode":
+            meta_source = "target_account"
+
+    normalized_tokens = normalize_meta_dict(
+        {
+            key: value
+            for key, value in merged.items()
+            if key
+            and str(key).strip().lower() not in {"account_name", "deal_status", "status", "_normalized_keys"}
+        }
+    )
+    if normalized_tokens:
+        merged["_normalized_keys"] = normalized_tokens
+
+    return merged, meta_source
+
 #--- Helpers----
 def _parse_ts(value: Any) -> datetime:
     if isinstance(value, datetime):
@@ -92,6 +188,7 @@ def write_meta_episode_from_thesis(
     """
     journey = thesis.get("journey") or {}
     steps: List[Dict[str, Any]] = journey.get("steps") or []
+    candidate_personas = journey.get("candidate_personas") or {}
     if not steps:
         return None
 
@@ -107,6 +204,14 @@ def write_meta_episode_from_thesis(
         or None
     )
 
+    provided_account_meta = thesis.get("account_meta") or thesis.get("account") or {}
+    resolved_meta, meta_source = resolve_episode_account_meta(
+        db,
+        product_id=product_id,
+        account_id=account_id,
+        provided_meta=provided_account_meta if isinstance(provided_account_meta, dict) else {},
+    )
+
     episode = ShmEpisode(
         product_id=product_id,
         account_id=account_id,
@@ -115,11 +220,23 @@ def write_meta_episode_from_thesis(
         is_censored=False,
         started_at=first_ts,
         ended_at=last_ts,
-        account_meta=thesis.get("account_meta") or thesis.get("account") or {},
-        metrics=journey.get("metrics") or {},
+        account_meta=_json_clean(resolved_meta),
+        metrics={**(journey.get("metrics") or {})},
         learning_summary=thesis.get("learning_summary"),
         num_steps=len(steps),
+        candidate_personas=candidate_personas or None,
     )
+    if candidate_personas:
+        episode.metrics = {
+            **(episode.metrics or {}),
+            "candidate_personas": candidate_personas,
+        }
+    if meta_source and meta_source != "none":
+        episode.metrics = {
+            **(episode.metrics or {}),
+            "account_meta_source": meta_source,
+        }
+
     db.add(episode)
     db.flush()  # get episode.id
 
@@ -257,6 +374,7 @@ def append_episode_steps(
     account_id: str,
     episode_id: str,
     steps: List[Dict[str, Any]],
+    account_meta: Optional[Dict[str, Any]] = None,
 ) -> None:
     """
     Append a batch of steps to an SHM episode.
@@ -297,6 +415,7 @@ def append_episode_steps(
             asset_id=s.get("asset_id"),
             effect_bucket=s.get("effect_bucket"),
             meta=s.get("meta") or {},
+            account_meta=account_meta or s.get("account_meta") or {},
         )
         objs.append(obj)
 
@@ -319,6 +438,7 @@ def log_single_step(
     effect_bucket: Optional[str] = None,
     belief_score: Optional[int] = None,
     meta: Optional[Dict[str, Any]] = None,
+    account_meta: Optional[Dict[str, Any]] = None,
 ) -> SHMEpisode:
     """
     Convenience helper when you’re writing one step at a time.
@@ -340,6 +460,7 @@ def log_single_step(
         asset_id=asset_id,
         effect_bucket=effect_bucket,
         meta=meta or {},
+        account_meta=account_meta or (meta.get("account_meta") if meta else {}) or {},
     )
     db.add(obj)
     return obj

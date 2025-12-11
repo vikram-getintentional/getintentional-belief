@@ -1,21 +1,45 @@
 from __future__ import annotations
 
+import json
 import math
-from collections import defaultdict
-from datetime import datetime, timezone
+import os
+from collections import Counter, defaultdict
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
+from backend.utils.crm_management.engagement_models import TargetAccountEngagement
 from backend.utils.crm_management.person_models import AccountPerson, AccountPersonJob, AccountPersonaMatch
 from backend.utils.strategy_builder.comprehensive_plan_generator import (
     build_account_marketing_blueprint,
 )
-from backend.utils.graph_base.network_graph import build_product_graph, get_node_by_id
+from backend.utils.graph_base.network_graph import build_product_graph, get_node_by_id, GRAPH_DATA_PATH
+from backend.utils.graph_base.persona_learning import (
+    match_candidate_to_canonical_persona,
+    add_persona_node_from_candidate,
+    alias_persona_with_label,
+)
+from backend.utils.persona_normalization import normalize_persona_label
 
 
 STAGE_LABELS = ["Problem Realization", "Execution Guidance", "Pain Realization", "Resolution Discovery"]
+_PERSONA_METRICS_DIR = os.path.join(GRAPH_DATA_PATH, "persona_metrics")
+
+
+def _load_wolves_metrics(product_id: str) -> Dict[str, Dict[str, Any]]:
+    path = os.path.join(_PERSONA_METRICS_DIR, f"{product_id}.json")
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            payload = json.load(fh)
+    except Exception:
+        return {}
+    personas = payload.get("personas") or []
+    return {entry.get("persona_id"): entry for entry in personas if entry.get("persona_id")}
 
 
 def _utcnow() -> datetime:
@@ -33,9 +57,24 @@ def _persona_parts(graph, persona_id: str) -> Tuple[str, str, str, str]:
         or persona_id.replace("|", " ").replace("_", " ").title()
     )
 
+    node_type = (node.get("node_type") or node.get("type") or "").strip().lower()
+
     title = (node.get("title") or "").strip().lower()
     department = (node.get("department") or "").strip().lower()
     seniority = (node.get("seniority") or "").strip().lower()
+
+    if node_type == "canonical_persona":
+        title = (node.get("label") or title or label).strip().lower()
+        departments = node.get("typical_departments") or []
+        if departments:
+            department = (departments[0] or "").strip().lower()
+        dist = node.get("typical_seniority_distribution") or {}
+        if dist:
+            seniority = max(dist.items(), key=lambda kv: kv[1])[0]
+    elif node_type == "persona_variant":
+        title = (node.get("title") or node.get("label") or label).strip().lower() or title
+        department = (node.get("department") or department).strip().lower()
+        seniority = (node.get("seniority") or seniority).strip().lower()
 
     if (not title or not department or not seniority) and "|" in persona_id:
         parts = [p.strip().lower() for p in persona_id.split("|")]
@@ -48,6 +87,25 @@ def _persona_parts(graph, persona_id: str) -> Tuple[str, str, str, str]:
         seniority = "operator"
 
     return label, title, department, seniority
+
+
+def _split_candidate_label(label: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    parts = [segment.strip() for segment in label.split("·")]
+    title = parts[0] if len(parts) > 0 else None
+    department = parts[1] if len(parts) > 1 else None
+    seniority = parts[2] if len(parts) > 2 else None
+    return title, department, seniority
+
+
+def _prettify_candidate_label(label: str) -> str:
+    return " · ".join(segment.strip().title() for segment in label.split("·"))
+
+
+def _most_common(values: Iterable[str]) -> Optional[str]:
+    counter = Counter([value for value in values if value])
+    if not counter:
+        return None
+    return counter.most_common(1)[0][0]
 
 
 def _average(values: Iterable[Optional[float]]) -> Optional[float]:
@@ -280,13 +338,26 @@ def _existing_matches(db: Session, product_id: str, account_id: str) -> Dict[str
 
 
 def _person_signature(person: AccountPerson) -> Tuple[str, str, str]:
-    if person.canonical_persona_id:
+    """
+    Returns a normalized (title, department, seniority) signature for scoring.
+    Prefers canonical fields, but gracefully falls back to historical formats.
+    """
+    if person.canonical_persona_id and "|" in person.canonical_persona_id:
         parts = [p.strip().lower() for p in person.canonical_persona_id.split("|")]
         if len(parts) >= 3:
             return parts[0], parts[1], parts[2]
+
     title = (person.title or "").strip().lower()
-    dept = (person.department or "").strip().lower()
-    seniority = (person.canonical_seniority or person.seniority or "").strip().lower()
+    dept = (
+        person.canonical_department
+        or person.department
+        or ""
+    ).strip().lower()
+    seniority = (
+        person.canonical_seniority
+        or person.seniority
+        or ""
+    ).strip().lower() or "operator"
     return title, dept, seniority
 
 
@@ -379,6 +450,150 @@ def _candidate_suggestions(
     return candidates[:5]
 
 
+def _collect_account_candidate_personas(
+    session: Session,
+    product_id: str,
+    account_id: str,
+    *,
+    window_days: int = 365,
+) -> List[Dict[str, Any]]:
+    cutoff = datetime.utcnow() - timedelta(days=window_days)
+    query = (
+        session.query(
+            TargetAccountEngagement.candidate_persona_label,
+            TargetAccountEngagement.actor_title,
+            TargetAccountEngagement.actor_department,
+            TargetAccountEngagement.actor_seniority,
+            TargetAccountEngagement.timestamp_dt,
+            TargetAccountEngagement.persona_id,
+        )
+        .filter(
+            TargetAccountEngagement.product_id == product_id,
+            TargetAccountEngagement.target_account_id == account_id,
+            TargetAccountEngagement.candidate_persona_label.isnot(None),
+        )
+    )
+    if window_days > 0:
+        query = query.filter(TargetAccountEngagement.timestamp_dt >= cutoff)
+    rows = query.all()
+
+    aggregates: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        normalized = (row.candidate_persona_label or "").strip()
+        if not normalized:
+            continue
+        bucket = aggregates.setdefault(
+            normalized,
+            {
+                "titles": [],
+                "departments": [],
+                "seniority": [],
+                "occurrences": 0,
+                "first_seen": None,
+                "last_seen": None,
+            },
+        )
+        bucket["titles"].append((row.actor_title or "").strip())
+        bucket["departments"].append((row.actor_department or "").strip())
+        bucket["seniority"].append((row.actor_seniority or "").strip())
+        bucket["occurrences"] += 1
+        ts = row.timestamp_dt
+        if ts:
+            if not bucket["first_seen"] or ts < bucket["first_seen"]:
+                bucket["first_seen"] = ts
+            if not bucket["last_seen"] or ts > bucket["last_seen"]:
+                bucket["last_seen"] = ts
+
+    if not aggregates:
+        return []
+
+    labels = list(aggregates.keys())
+    global_rows = (
+        session.query(
+            TargetAccountEngagement.candidate_persona_label.label("label"),
+            func.count(func.distinct(TargetAccountEngagement.target_account_id)).label("accounts"),
+            func.count(TargetAccountEngagement.id).label("occurrences"),
+        )
+        .filter(
+            TargetAccountEngagement.product_id == product_id,
+            TargetAccountEngagement.candidate_persona_label.in_(labels),
+        )
+        .group_by(TargetAccountEngagement.candidate_persona_label)
+        .all()
+    )
+    global_map = {row.label: {"accounts": row.accounts, "occurrences": row.occurrences} for row in global_rows}
+
+    graph = build_product_graph(product_id)
+    persona_nodes = [
+        (node_id, data)
+        for node_id, data in graph.nodes(data=True)
+        if data.get("node_type") == "persona"
+    ]
+    wolves_metrics = _load_wolves_metrics(product_id)
+
+    candidates: List[Dict[str, Any]] = []
+    for normalized, meta in aggregates.items():
+        pretty_label = _prettify_candidate_label(normalized)
+        title_guess, dept_guess, seniority_guess = _split_candidate_label(pretty_label)
+        match_id, similarity = match_candidate_to_canonical_persona(
+            pretty_label,
+            persona_nodes,
+            threshold=0.8,
+        )
+        wolves_info = wolves_metrics.get(match_id) if match_id else None
+        match_node = get_node_by_id(graph, match_id) if match_id else None
+        candidates.append(
+            {
+                "label": pretty_label,
+                "normalized_label": normalized,
+                "persona_title": _most_common(meta["titles"]) or title_guess,
+                "persona_department": _most_common(meta["departments"]) or dept_guess,
+                "persona_seniority": _most_common(meta["seniority"]) or seniority_guess,
+                "account_occurrences": meta["occurrences"],
+                "account_first_seen": meta["first_seen"].isoformat() if meta["first_seen"] else None,
+                "account_last_seen": meta["last_seen"].isoformat() if meta["last_seen"] else None,
+                "global_account_count": (global_map.get(normalized) or {}).get("accounts", 0),
+                "global_occurrences": (global_map.get(normalized) or {}).get("occurrences", meta["occurrences"]),
+                "suggested_persona_id": match_id,
+                "suggested_persona_label": (match_node or {}).get("label"),
+                "similarity": similarity if match_id else None,
+                "wolves_score": (wolves_info or {}).get("wolves_score"),
+                "wolves_delta_bp": (wolves_info or {}).get("delta_win_bp"),
+            }
+        )
+
+    candidates.sort(key=lambda row: row["account_occurrences"], reverse=True)
+    return candidates
+
+
+def add_candidate_persona(
+    product_id: str,
+    label: str,
+    *,
+    title: Optional[str] = None,
+    department: Optional[str] = None,
+    seniority: Optional[str] = None,
+    co_occurring_persona_ids: Optional[Sequence[str]] = None,
+) -> Dict[str, Any]:
+    title_guess, dept_guess, seniority_guess = _split_candidate_label(label)
+    return add_persona_node_from_candidate(
+        product_id,
+        label=label,
+        title=title or title_guess,
+        department=department or dept_guess,
+        seniority=seniority or seniority_guess,
+        co_occurring_persona_ids=co_occurring_persona_ids,
+    )
+
+
+def alias_candidate_persona(
+    product_id: str,
+    persona_id: str,
+    label: str,
+) -> Dict[str, Any]:
+    return alias_persona_with_label(product_id, persona_id, label)
+
+
 def build_account_enrichment(
     product_id: str,
     account_id: str,
@@ -423,11 +638,13 @@ def build_account_enrichment(
         required = len(rows)
         matched = sum(1 for row in rows if row["matched_people"])
         coverage = (matched / required) if required else 0.0
+        persona_candidates = _collect_account_candidate_personas(session, product_id, account_id)
 
         return {
             "account_id": account_id,
             "product_id": product_id,
             "persona_requirements": rows,
+            "persona_candidates": persona_candidates,
             "summary": {
                 "required_personas": required,
                 "personas_with_matches": matched,
@@ -464,6 +681,19 @@ def upsert_persona_match(
     """
     Create or update a persona → person match.
     """
+    graph = None
+    persona_label_from_graph = None
+    persona_title = None
+    persona_department = None
+    persona_seniority = None
+    try:
+        graph = build_product_graph(product_id)
+        persona_label_from_graph, persona_title, persona_department, persona_seniority = _persona_parts(
+            graph, persona_id
+        )
+    except Exception:
+        graph = None
+
     if match_id:
         match = (
             db.query(AccountPersonaMatch)
@@ -504,7 +734,9 @@ def upsert_persona_match(
                 title=(person_title or "").strip() or None,
                 department=(person_department or "").strip() or None,
                 seniority=(person_seniority or "").strip() or None,
-                canonical_persona_id=None,
+                canonical_persona_id=persona_id if persona_id else None,
+                canonical_department=persona_department or None,
+                canonical_seniority=persona_seniority or None,
             )
             db.add(person)
             db.flush()
@@ -513,12 +745,19 @@ def upsert_persona_match(
     else:
         match.person_id = person_id
 
+    if match.person_id:
+        person_obj = db.get(AccountPerson, match.person_id)
+        if person_obj and persona_id:
+            person_obj.canonical_persona_id = persona_id
+            if persona_department:
+                person_obj.canonical_department = persona_department
+            if persona_seniority:
+                person_obj.canonical_seniority = persona_seniority
+
     if persona_label:
         match.persona_label = persona_label
-    elif not match.persona_label:
-        graph = build_product_graph(product_id)
-        label, _, _, _ = _persona_parts(graph, persona_id)
-        match.persona_label = label
+    elif not match.persona_label and persona_label_from_graph:
+        match.persona_label = persona_label_from_graph
     if stage:
         match.stage = stage
     match.match_confidence = match_confidence

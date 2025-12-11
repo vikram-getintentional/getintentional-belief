@@ -10,6 +10,7 @@ import networkx as nx
 from backend.utils.graph_base.network_graph import (
     get_nodes_list_ids,
     get_product_id_from_subgraph,
+    get_persona_node_ids,
 )
 
 # PPR engine & overlay helpers (use your graph_base paths)
@@ -73,7 +74,11 @@ def _noisy_or_update(curr: float, evid: float) -> float:
 # Helpers for Attribute Dimension Scoring 
 #----------------------------
 def _node_type(G: nx.DiGraph, nid: str) -> str:
-    return (G.nodes[nid].get("type") or "").lower()
+    node = G.nodes.get(nid, {})
+    t = (node.get("type") or node.get("node_type") or "").strip().lower()
+    if t in ("canonical_persona", "persona_variant"):
+        return "persona"
+    return t
 
 def _get_product_id(G: nx.DiGraph) -> Optional[str]:
     # reuse your existing get_product_id_from_subgraph if available
@@ -479,7 +484,7 @@ def rcs_persona_activations(ctx: RCSPPRContext) -> List[Dict]:
     pr_post = ctx.baseline_dbg.get("weighted_pr0") or {}
     pr_prior = ctx.baseline_dbg.get("unconditioned_pr0") or {}
 
-    persona_ids = get_nodes_list_ids(ctx.G_pruned, "persona", {})
+    persona_ids = get_persona_node_ids(ctx.G_pruned)
 
     involvement = {
         pid: persona_involvement_from_jobs(ctx.G_pruned, pr_post, pid)

@@ -2,10 +2,12 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import dataclasses
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
+import json
+import os
 from collections import Counter, defaultdict
 from collections.abc import Mapping
 import typing as t
@@ -20,6 +22,7 @@ import pydantic
 from backend.utils.inference.rcs_generators.persona_map.persona_belief_engine import (
     PersonaGraph,
     predict_snapshot,
+    _renormalize_outgoing,
 )
 
 
@@ -30,6 +33,7 @@ from backend.utils.inference.belief_manager.graph_diff_mapper import (
 from backend.utils.inference.belief_manager.learn.materialize import (
     materialize_graphstore_from_networkx,
 )
+from backend.utils.inference.belief_manager import shm_graph_learner
 
 try:
     import numpy as _np
@@ -42,6 +46,7 @@ except Exception:
         pass
 
 from backend.database import SessionLocal
+from backend.utils.graph_base import network_graph
 from backend.utils.graph_base.network_graph import (
     _set_node_label,
     build_product_graph,
@@ -53,7 +58,9 @@ from backend.utils.graph_base.network_graph import (
 )
 from backend.utils.crm_management.target_account_manager import (
     get_account_by_id,
+    get_target_account_ids,
     map_account_meta_to_stable_ids,
+    TargetAccount as TargetAccountORM,
 )
 from backend.utils.crm_management.engagement_service import (
     get_account_engagements,
@@ -65,19 +72,27 @@ from backend.utils.crm_management.person_models import (
     AccountPersonaMatch,
     AccountPerson,
 )
+from backend.utils.inference.subsidies.subsidy_engine import (
+    apply_subsidies_to_edge,
+    subsidy_relevance_for_persona,
+    wolf_score_dynamic,
+)
+from backend.utils.segment_utils import segment_keys_from_meta
 
 from backend.utils.inference.belief_manager.learn.graph_learning import (
     GraphStore,
     learn_and_summarize,
 )
 from backend.utils.inference.belief_manager.journey.storage import (
-    load_weights
+    load_weights,
+    load_stats,
 )
 from backend.utils.inference.belief_manager.journey.replay import next_distribution
 from backend.utils.inference.belief_manager.journey.learn_service import (
     update_bayesian_journey_for_account,
     rebuild_stats_from_shm,
 )
+from backend.utils.inference.belief_manager.journey.shm_models import SHMEpisode
 from backend.utils.inference.belief_manager.types import (
     Episode,
     LocalAdjustment,
@@ -162,6 +177,7 @@ class BeliefThesisCore:
     persona_posteriors: Dict[str, float]
     person_committee_probs: List[Dict[str, Any]]
     persona_belief_posteriors: Dict[str, Dict[str, Any]]
+    persona_wolf_scores: Dict[str, Dict[str, Any]]
 
 
 # ---------------------------------------------------------------------
@@ -253,6 +269,28 @@ def _engagement_attr(obj: t.Any, key: str) -> t.Any:
     return getattr(obj, key, None)
 
 
+def _engagement_meta_from_event(event: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not event:
+        return None
+    engagement = event.get("engagement") if isinstance(event, dict) else None
+    if engagement is None:
+        return None
+    channel = _engagement_attr(engagement, "channel") or _engagement_attr(engagement, "source")
+    asset_id = _engagement_attr(engagement, "asset_id")
+    label = (
+        _engagement_attr(engagement, "name")
+        or _engagement_attr(engagement, "title")
+        or _engagement_attr(engagement, "raw_activity")
+    )
+    return {
+        "channel": channel,
+        "asset_id": asset_id,
+        "label": label,
+        "engagement_type": _engagement_attr(engagement, "engagement_type")
+        or _engagement_attr(engagement, "type"),
+    }
+
+
 # ---------------------------------------------------------------------
 # Small utilities
 # ---------------------------------------------------------------------
@@ -309,6 +347,207 @@ def _actor_resolver_key(actor: Dict[str, Any]) -> str:
     return f"{name}|{title}|{dept}|{sen}"
 
 
+_SHM_METRICS_CACHE: Dict[str, Tuple[Optional[str], Dict[str, Any]]] = {}
+
+
+def _normalize_belief_state(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    normalized = str(value).strip().lower()
+    return normalized or None
+
+
+def _init_transition_entry() -> Dict[str, Any]:
+    return {"count": 0, "episodes": 0, "win_episodes": 0, "loss_episodes": 0}
+
+
+def _compute_shm_transition_metrics(product_id: str) -> Dict[str, Any]:
+    with SessionLocal() as db:
+        steps = (
+            db.query(
+                SHMEpisode.account_id,
+                SHMEpisode.episode_id,
+                SHMEpisode.step_index,
+                SHMEpisode.persona_id,
+                SHMEpisode.belief_state,
+            )
+            .filter(SHMEpisode.product_id == product_id)
+            .order_by(
+                SHMEpisode.account_id,
+                SHMEpisode.episode_id,
+                SHMEpisode.step_index,
+            )
+            .all()
+        )
+        status_rows = (
+            db.query(TargetAccountORM.id, TargetAccountORM.deal_status)
+            .filter(TargetAccountORM.product_id == product_id)
+            .all()
+        )
+    status_lookup = {
+        row[0]: (row[1] or "").strip().lower()
+        for row in status_rows
+    }
+
+    persona_stats: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(
+        lambda: defaultdict(_init_transition_entry)
+    )
+    belief_stats: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(
+        lambda: defaultdict(_init_transition_entry)
+    )
+    persona_belief_stats: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(
+        lambda: defaultdict(_init_transition_entry)
+    )
+
+    current_key = None
+    sequence: List[Any] = []
+
+    def _flush_episode(ep_steps: List[Any], account_id: Optional[str]) -> None:
+        if not ep_steps:
+            return
+        ep_steps.sort(key=lambda s: s.step_index)
+        status = status_lookup.get(account_id or "", "")
+        win_flag = status in {"closed-won", "won"}
+        loss_flag = status in {"closed-lost", "lost"}
+
+        persona_episode_seen: Set[Tuple[str, str]] = set()
+        persona_win_seen: Set[Tuple[str, str]] = set()
+        persona_loss_seen: Set[Tuple[str, str]] = set()
+        belief_episode_seen: Set[Tuple[str, str]] = set()
+        belief_win_seen: Set[Tuple[str, str]] = set()
+        belief_loss_seen: Set[Tuple[str, str]] = set()
+        persona_belief_seen: Set[Tuple[str, str]] = set()
+
+        for idx, step in enumerate(ep_steps):
+            persona_id = step.persona_id
+            belief_code = _normalize_belief_state(step.belief_state)
+            if persona_id and belief_code:
+                entry = persona_belief_stats[persona_id][belief_code]
+                entry["count"] += 1
+                key = (persona_id, belief_code)
+                if key not in persona_belief_seen:
+                    entry["episodes"] += 1
+                    persona_belief_seen.add(key)
+                    if win_flag:
+                        entry["win_episodes"] += 1
+                    elif loss_flag:
+                        entry["loss_episodes"] += 1
+            if idx == 0:
+                continue
+            prev = ep_steps[idx - 1]
+            prev_persona = prev.persona_id
+            prev_belief = _normalize_belief_state(prev.belief_state)
+            if prev_persona and persona_id:
+                edge_key = (prev_persona, persona_id)
+                entry = persona_stats[prev_persona][persona_id]
+                entry["count"] += 1
+                if edge_key not in persona_episode_seen:
+                    entry["episodes"] += 1
+                    persona_episode_seen.add(edge_key)
+                    if win_flag:
+                        entry["win_episodes"] += 1
+                        persona_win_seen.add(edge_key)
+                    elif loss_flag:
+                        entry["loss_episodes"] += 1
+                        persona_loss_seen.add(edge_key)
+            if prev_belief and belief_code and prev_belief != belief_code:
+                belief_key = (prev_belief, belief_code)
+                entry = belief_stats[prev_belief][belief_code]
+                entry["count"] += 1
+                if belief_key not in belief_episode_seen:
+                    entry["episodes"] += 1
+                    belief_episode_seen.add(belief_key)
+                    if win_flag:
+                        entry["win_episodes"] += 1
+                        belief_win_seen.add(belief_key)
+                    elif loss_flag:
+                        entry["loss_episodes"] += 1
+                        belief_loss_seen.add(belief_key)
+
+    for step in steps:
+        key = (step.account_id, step.episode_id)
+        if key != current_key:
+            _flush_episode(sequence, current_key[0] if current_key else None)
+            current_key = key
+            sequence = []
+        sequence.append(step)
+    _flush_episode(sequence, current_key[0] if current_key else None)
+
+    def _finalize(table: Dict[str, Dict[str, Dict[str, Any]]]) -> Dict[str, Dict[str, Any]]:
+        result: Dict[str, Dict[str, Any]] = {}
+        for src, dests in table.items():
+            result[src] = {}
+            for dst, entry in dests.items():
+                win_episodes = entry["win_episodes"]
+                loss_episodes = entry["loss_episodes"]
+                denom = win_episodes + loss_episodes
+                success_rate = win_episodes / denom if denom else 0.5
+                result[src][dst] = {
+                    "count": entry["count"],
+                    "episodes": entry["episodes"],
+                    "win_episodes": win_episodes,
+                    "loss_episodes": loss_episodes,
+                    "success_rate": round(success_rate, 4),
+                }
+        return result
+
+    return {
+        "persona": _finalize(persona_stats),
+        "belief": _finalize(belief_stats),
+        "persona_belief": _finalize(persona_belief_stats),
+    }
+
+
+def get_shm_transition_metrics(product_id: str) -> Dict[str, Any]:
+    stats_meta = load_stats(product_id) or {}
+    stats_updated = stats_meta.get("updated_at")
+    cached = _SHM_METRICS_CACHE.get(product_id)
+    if cached and cached[0] == stats_updated:
+        return cached[1]
+    metrics = _compute_shm_transition_metrics(product_id)
+    _SHM_METRICS_CACHE[product_id] = (stats_updated, metrics)
+    return metrics
+
+
+def _apply_shm_metrics_to_persona_graph(
+    PG: PersonaGraph,
+    metrics: Optional[Dict[str, Any]],
+) -> None:
+    if not metrics:
+        return
+    persona_stats = metrics.get("persona") or {}
+    updated = False
+    for u, v, data in PG.G.edges(data=True):
+        src_type = PG.G.nodes[u].get("node_type")
+        dst_type = PG.G.nodes[v].get("node_type")
+        if src_type != "persona" or dst_type != "persona":
+            continue
+        stats = persona_stats.get(u, {}).get(v)
+        if not stats:
+            continue
+        freq = stats.get("count") or 0
+        success = stats.get("success_rate")
+        if success is None:
+            success = 0.5
+        base = 0.0
+        try:
+            base = float(data.get("weight") or data.get("likelihood") or 0.0)
+        except Exception:
+            base = 0.0
+        boost = 1.0 + min(freq, 50) / 50.0 * 0.5
+        alignment = 0.5 + 0.5 * success
+        new_weight = base * alignment * boost if base else base
+        if new_weight > 0:
+            data["weight"] = new_weight
+            data["likelihood"] = new_weight
+        data["shm_frequency"] = freq
+        data["shm_success_rate"] = success
+        data["shm_win_episodes"] = stats.get("win_episodes")
+        data["shm_loss_episodes"] = stats.get("loss_episodes")
+        updated = True
+    if updated:
+        _renormalize_outgoing(PG.G)
+    PG.G.graph["shm_metrics"] = metrics
 def _softmax(vals: List[float]) -> List[float]:
     if not vals:
         return []
@@ -484,6 +723,197 @@ def _label_neighborhoods(G: nx.DiGraph, nbs: Any) -> Any:
             }
         labeled[band] = lbucket
     return labeled
+
+
+def _load_persona_wolves_scores(product_id: str) -> Dict[str, Dict[str, Any]]:
+    metrics_dir = getattr(network_graph, "GRAPH_DATA_PATH", None)
+    if not metrics_dir:
+        metrics_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "graph_data")
+    metrics_path = os.path.join(metrics_dir, "persona_metrics", f"{product_id}.json")
+    if not os.path.exists(metrics_path):
+        return {}
+    try:
+        with open(metrics_path, "r", encoding="utf-8") as fh:
+            payload = json.load(fh)
+    except Exception:
+        return {}
+    scores: Dict[str, Dict[str, Any]] = {}
+    for entry in payload.get("personas", []) or []:
+        pid = entry.get("persona_id")
+        if not pid:
+            continue
+        scores[str(pid)] = entry
+    return scores
+
+
+def _wolves_multiplier(
+    persona_id: str,
+    wolves_scores: Dict[str, Dict[str, Any]],
+    *,
+    account_id: Optional[str] = None,
+    segment_keys: Optional[Sequence[str]] = None,
+    persona_node: Optional[Dict[str, Any]] = None,
+) -> float:
+    info = wolves_scores.get(str(persona_id))
+    if not info:
+        return 1.0
+    base_score = float(info.get("wolves_score") or 0.0)
+    try:
+        dynamic_score = (
+            wolf_score_dynamic(
+                persona_node or {"id": persona_id},
+                base_score,
+                account_id,
+                segment_keys,
+                datetime.utcnow(),
+            )
+            if account_id
+            else base_score
+        )
+    except Exception:
+        dynamic_score = base_score
+    delta_bp = float(info.get("delta_win_bp") or 0.0)
+    involvement = float(info.get("involvement_rate") or 0.0)
+    blocker_rate = float(info.get("blocker_rate") or 0.0)
+    delta_component = max(min(delta_bp / 500.0, 0.5), -0.5)
+    weight = 1.0 + 0.6 * dynamic_score + 0.2 * delta_component + 0.15 * involvement - 0.25 * blocker_rate
+    return max(0.3, weight)
+
+
+def _derive_base_wolf_score(
+    persona_node: Optional[Dict[str, Any]],
+    wolves_entry: Optional[Dict[str, Any]],
+) -> float:
+    if wolves_entry and wolves_entry.get("wolves_score") is not None:
+        return max(0.0, min(1.0, float(wolves_entry.get("wolves_score") or 0.0)))
+    if not persona_node:
+        return 0.0
+    perceptibility = _safe_float(persona_node.get("perceptibility"), 0.0) or 0.0
+    proximity = _safe_float(persona_node.get("proximity"), 0.0) or 0.0
+    involvement = _safe_float(persona_node.get("involvement"), 0.0) or 0.0
+    activation = _safe_float(persona_node.get("activation"), 0.0) or 0.0
+    fallback = (
+        0.35 * perceptibility
+        + 0.30 * proximity
+        + 0.20 * involvement
+        + 0.15 * activation
+    )
+    return max(0.0, min(1.0, fallback))
+
+
+def _boost_probability_map(
+    prob_map: Dict[str, float],
+    wolves_scores: Dict[str, Dict[str, Any]],
+    *,
+    account_id: Optional[str] = None,
+    segment_keys: Optional[Sequence[str]] = None,
+    product_graph: Optional[nx.DiGraph] = None,
+) -> Dict[str, float]:
+    if not prob_map or not wolves_scores:
+        return prob_map
+    adjusted: Dict[str, float] = {}
+    for persona_id, prob in prob_map.items():
+        persona_node = (
+            product_graph.nodes.get(persona_id, {}) if product_graph and persona_id in product_graph else {}
+        )
+        weight = _wolves_multiplier(
+            persona_id,
+            wolves_scores,
+            account_id=account_id,
+            segment_keys=segment_keys,
+            persona_node=persona_node,
+        )
+        adjusted[persona_id] = prob * weight
+    total = sum(adjusted.values())
+    if total <= 0:
+        return prob_map
+    return {persona_id: value / total for persona_id, value in adjusted.items()}
+
+
+def _boost_expected_next_rows(
+    rows: Optional[List[Dict[str, Any]]],
+    wolves_scores: Dict[str, Dict[str, Any]],
+    *,
+    account_id: Optional[str] = None,
+    segment_keys: Optional[Sequence[str]] = None,
+    product_graph: Optional[nx.DiGraph] = None,
+) -> List[Dict[str, Any]]:
+    if rows is None:
+        return []
+    if not rows or not wolves_scores:
+        return rows
+    base: Dict[str, float] = {}
+    for row in rows:
+        persona_id = str(row.get("persona") or row.get("persona_id") or "")
+        if not persona_id:
+            continue
+        value = row.get("prob")
+        if value is None:
+            value = row.get("probability")
+        base[persona_id] = base.get(persona_id, 0.0) + float(value or 0.0)
+    boosted = _boost_probability_map(
+        base,
+        wolves_scores,
+        account_id=account_id,
+        segment_keys=segment_keys,
+        product_graph=product_graph,
+    )
+    if not boosted:
+        return rows
+    for row in rows:
+        persona_id = str(row.get("persona") or row.get("persona_id") or "")
+        if not persona_id or persona_id not in boosted:
+            continue
+        if "prob" in row:
+            row["prob"] = boosted[persona_id]
+        elif "probability" in row:
+            row["probability"] = boosted[persona_id]
+    rows.sort(
+        key=lambda r: boosted.get(str(r.get("persona") or r.get("persona_id") or ""), 0.0),
+        reverse=True,
+    )
+    return rows
+
+
+def _apply_subsidy_boosts_to_expected_next(
+    rows: Optional[List[Dict[str, Any]]],
+    *,
+    account_id: Optional[str],
+    segment_keys: Optional[Sequence[str]],
+    timestamp: Optional[datetime] = None,
+) -> List[Dict[str, Any]]:
+    if rows is None:
+        return []
+    if not rows or not account_id:
+        return rows
+    ts = timestamp or datetime.utcnow()
+    adjusted: List[Dict[str, Any]] = []
+    total = 0.0
+    for row in rows:
+        persona_id = str(row.get("persona") or row.get("persona_id") or "")
+        if not persona_id:
+            continue
+        base_prob = float(row.get("prob") or row.get("probability") or 0.0)
+        edge = {
+            "persona_id": persona_id,
+            "persona_canonical_id": persona_id,
+            "base_transition_prob": base_prob,
+            "tags": row.get("tags") or [],
+        }
+        boosted = apply_subsidies_to_edge(edge, account_id, segment_keys, ts)
+        mutated = dict(row)
+        mutated["prob_base"] = base_prob
+        mutated["prob"] = boosted
+        mutated["subsidy_lift"] = max(0.0, boosted - base_prob)
+        adjusted.append(mutated)
+        total += boosted
+    if not adjusted:
+        return rows
+    if total > 0:
+        for entry in adjusted:
+            entry["prob"] = entry["prob"] / total
+    adjusted.sort(key=lambda r: r.get("prob", 0.0), reverse=True)
+    return adjusted
 
 
 def _job_ids_for_persona(G: nx.DiGraph, persona_id: str) -> List[str]:
@@ -972,13 +1402,13 @@ def _candidate_persona_id_from_match(
 ) -> Optional[str]:
     canonical = (match.get("canonical_meta") or {}) if isinstance(match, dict) else {}
     title = (
-        canonical.get("title")
-        or actor.get("title")
+        actor.get("title")
         or actor.get("role")
+        or canonical.get("title")
         or ""
     )
-    department = canonical.get("department") or actor.get("department") or ""
-    seniority = canonical.get("seniority") or actor.get("seniority") or ""
+    department = actor.get("department") or canonical.get("department") or ""
+    seniority = actor.get("seniority") or canonical.get("seniority") or ""
 
     title_norm = _normalize_persona_component(title)
     dept_norm = _normalize_persona_component(department)
@@ -1162,6 +1592,11 @@ def _compute_persona_committee_probs(
     timeline: List[Dict[str, Any]],
     current_paths: List[Dict[str, Any]],
     current_expected_next: List[Dict[str, Any]],
+    wolves_scores: Optional[Dict[str, Dict[str, Any]]] = None,
+    *,
+    account_id: Optional[str] = None,
+    segment_keys: Optional[Sequence[str]] = None,
+    product_graph: Optional[nx.DiGraph] = None,
 ) -> Dict[str, float]:
     scores: Dict[str, float] = defaultdict(float)
 
@@ -1200,13 +1635,26 @@ def _compute_persona_committee_probs(
             continue
         scores[pid] += 0.25 * _safe_float(row.get("prob"), 0.0)
 
-    filtered = {pid: max(score, 0.0) for pid, score in scores.items() if score > 0}
+    filtered = {
+        pid: max(score, 0.0) for pid, score in scores.items() if score > 0
+    }
     if not filtered:
         return {}
-    total_score = sum(filtered.values()) or 1.0
-    normalized = {
-        pid: round(score / total_score, 6) for pid, score in filtered.items()
-    }
+    if wolves_scores:
+        boosted = _boost_probability_map(
+            filtered,
+            wolves_scores,
+            account_id=account_id,
+            segment_keys=segment_keys,
+            product_graph=product_graph,
+        )
+        normalized = {pid: round(prob, 6) for pid, prob in boosted.items()}
+    else:
+        total_score = sum(filtered.values()) or 1.0
+        normalized = {
+            pid: round(score / total_score, 6)
+            for pid, score in filtered.items()
+        }
     return dict(
         sorted(normalized.items(), key=lambda kv: kv[1], reverse=True)
     )
@@ -1432,6 +1880,10 @@ def replay_learn_persona_paths(
     steps_top_k: int = 5,
     do_learning: bool = True,
     kappa: float = 0.2,
+    engagement_events: Optional[List[Dict[str, Any]]] = None,
+    product_id: Optional[str] = None,
+    account_id: Optional[str] = None,
+    collect_diagnostics: bool = False,
 ) -> Dict[str, Any]:
     """
     For each t:
@@ -1465,6 +1917,10 @@ def replay_learn_persona_paths(
                 else "out_of_graph"
             )
 
+        engagement_meta = None
+        if engagement_events and t < len(engagement_events):
+            engagement_meta = _engagement_meta_from_event(engagement_events[t])
+
         results.append(
             {
                 "t": t,
@@ -1478,6 +1934,7 @@ def replay_learn_persona_paths(
                 == (predicted[0] if predicted else None),
                 "hit_at_3": observed_next
                 in (predicted[:3] if predicted else []),
+                "engagement_meta": engagement_meta,
             }
         )
 
@@ -1500,6 +1957,15 @@ def replay_learn_persona_paths(
     for r in results:
         bucket_counts[r["bucket"]] = bucket_counts.get(r["bucket"], 0) + 1
 
+    learning_payload = None
+    if collect_diagnostics and product_id and account_id:
+        transitions = shm_graph_learner.build_transition_dataset(observed_persona_ids)
+        learning_payload = shm_graph_learner.summarize_learning_signals(
+            persona_graph=persona_graph,
+            transitions=transitions,
+            journey_steps=results,
+        )
+
     return {
         "steps": results,
         "metrics": {
@@ -1507,7 +1973,87 @@ def replay_learn_persona_paths(
             "hit_at_3": hit3,
             "buckets": bucket_counts,
         },
+        "learning_recommendations": learning_payload,
     }
+
+
+def run_replay_learning_job(
+    product_id: str,
+    *,
+    account_ids: Optional[List[str]] = None,
+    limit: Optional[int] = None,
+    output_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Batch replay across accounts to produce diagnostics for user review.
+    """
+    product_graph = build_product_graph(product_id)
+    accounts = account_ids or (get_target_account_ids(product_id) or [])
+    if limit is not None:
+        accounts = accounts[:limit]
+
+    results: List[Dict[str, Any]] = []
+    for account_id in accounts:
+        try:
+            engagements = get_account_engagements(product_id, account_id) or []
+            timeline = _engagement_timeline_with_personas(
+                product_id, account_id, engagements=engagements
+            )
+            observed = [
+                step["effective_persona_id"]
+                for step in timeline
+                if step.get("effective_persona_id")
+            ]
+            if not observed:
+                results.append(
+                    {
+                        "account_id": account_id,
+                        "note": "No observed personas for this account",
+                    }
+                )
+                continue
+
+            persona_graph = PersonaGraph.from_product_graph(
+                product_graph,
+                combine="noisy_or",
+                normalize_outgoing=True,
+                prior_offpath_rate=_estimate_offpath_rate(account_id, product_id),
+                dirichlet_kappa=1.0,
+            )
+            replay = replay_learn_persona_paths(
+                persona_graph=persona_graph,
+                observed_persona_ids=observed,
+                engagement_events=timeline,
+                product_id=product_id,
+                account_id=account_id,
+                collect_diagnostics=True,
+            )
+            results.append(
+                {
+                    "account_id": account_id,
+                    "metrics": replay.get("metrics"),
+                    "recommendations": replay.get("learning_recommendations"),
+                }
+            )
+        except Exception as exc:  # pragma: no cover - diagnostics only
+            results.append(
+                {
+                    "account_id": account_id,
+                    "error": str(exc),
+                }
+            )
+
+    summary = {
+        "product_id": product_id,
+        "accounts_processed": len(results),
+        "results": results,
+    }
+    if output_path:
+        import json
+
+        with open(output_path, "w", encoding="utf-8") as handle:
+            json.dump(summary, handle, indent=2)
+    return summary
 
 #----- SHM Episode Events ------------------------------
 
@@ -1658,6 +2204,7 @@ def compute_belief_thesis_core(
     original_graph: nx.DiGraph,
     account_id: str,
     account_meta: Optional[Dict[str, Any]] = None,
+    account_segment_keys: Optional[Sequence[str]] = None,
     past_engagements: Optional[List[Dict[str, Any]]] = None,
     alpha: float = 0.85,  # kept for parity; used via graphwin_runtime
     weight_key: str = "likelihood",
@@ -1684,6 +2231,16 @@ def compute_belief_thesis_core(
     product_id = get_product_id_from_subgraph(product_graph)
     if not product_id:
         raise ValueError("No product_id found in product_graph")
+
+    segment_keys: List[str] = list(account_segment_keys or [])
+    wolves_scores = _load_persona_wolves_scores(product_id)
+
+    shm_metrics: Dict[str, Any] = {}
+    try:
+        shm_metrics = get_shm_transition_metrics(product_id)
+    except Exception as exc:  # pragma: no cover - diagnostic only
+        print(f"⚠️ Unable to load SHM transition metrics for {product_id}: {exc}")
+        shm_metrics = {}
 
     # 1) resolver aware observed personas (reuse existing engagements if given)
     observed_persona_matches = _observed_personas_from_engagements(
@@ -1725,6 +2282,8 @@ def compute_belief_thesis_core(
         prior_offpath_rate=_estimate_offpath_rate(account_id, product_id),
         dirichlet_kappa=1.0,
     )
+    if shm_metrics:
+        _apply_shm_metrics_to_persona_graph(PG, shm_metrics)
 
     if debug:
         print(
@@ -1759,7 +2318,19 @@ def compute_belief_thesis_core(
     baseline_paths = _annotate_paths_with_metrics(baseline["walk_paths"])
     persona_phase_lookup = _persona_phase_lookup(baseline_paths)
     persona_phase_mass: Dict[str, Counter[str]] = defaultdict(Counter)
-    baseline_expected_next = baseline.get("expected_next", [])
+    baseline_expected_next_raw = baseline.get("expected_next", []) or []
+    baseline_expected_next = _apply_subsidy_boosts_to_expected_next(
+        baseline_expected_next_raw,
+        account_id=account_id,
+        segment_keys=segment_keys,
+    )
+    baseline_expected_next = _boost_expected_next_rows(
+        baseline_expected_next,
+        wolves_scores,
+        account_id=account_id,
+        segment_keys=segment_keys,
+        product_graph=product_graph,
+    )
 
     if debug:
         print("Computed baseline snapshot for belief thesis")
@@ -1775,6 +2346,7 @@ def compute_belief_thesis_core(
     log_likelihood_total = 0.0
     brier_total = 0.0
     transition_counts: Dict[Tuple[str, str], int] = {}
+    candidate_persona_counts: Dict[str, int] = defaultdict(int)
     prev_observed_persona: Optional[str] = None
 
     for idx, event in enumerate(timeline):
@@ -1787,11 +2359,27 @@ def compute_belief_thesis_core(
             engaged_personas=engaged_sequence,
             k_next=5,
         )
-        predicted_topk = snap.get("expected_next", [])
-        predicted_distribution: Dict[str, float] = {
-            str(row.get("persona")): float(row.get("prob", 0.0))
-            for row in predicted_topk
-        }
+        predicted_topk_raw = snap.get("expected_next", []) or []
+        predicted_topk = _apply_subsidy_boosts_to_expected_next(
+            predicted_topk_raw,
+            account_id=account_id,
+            segment_keys=segment_keys,
+            timestamp=ts,
+        )
+        predicted_topk = _boost_expected_next_rows(
+            predicted_topk,
+            wolves_scores,
+            account_id=account_id,
+            segment_keys=segment_keys,
+            product_graph=product_graph,
+        )
+        predicted_distribution_base = _probability_map_from_rows(predicted_topk_raw)
+        predicted_distribution_boosted = _probability_map_from_rows(predicted_topk)
+        predicted_distribution = (
+            predicted_distribution_boosted or predicted_distribution_base
+        )
+        hidden_state_prior_base = predicted_distribution_base or predicted_distribution
+        hidden_state_prior_boosted = predicted_distribution_boosted or predicted_distribution
         predicted_personas = list(predicted_distribution.keys())
         walk_paths = snap.get("walk_paths", [])
         metrics = snap.get("metrics", {})
@@ -1817,29 +2405,33 @@ def compute_belief_thesis_core(
             hit3_count += 1
         bucket_counts[bucket] = bucket_counts.get(bucket, 0) + 1
 
-        prob_actual = predicted_distribution.get(actual_persona or "", 0.0)
+        candidate_label = _engagement_attr(engagement_obj, "candidate_persona_label")
+        if candidate_label:
+            normalized_candidate = str(candidate_label).strip().lower()
+            if normalized_candidate:
+                candidate_persona_counts[normalized_candidate] += 1
+
+        prob_actual = (predicted_distribution_base or predicted_distribution).get(actual_persona or "", 0.0)
         log_loss = None
         brier_score = None
         if actual_persona:
             prob = max(prob_actual, 1e-9)
             log_loss = -math.log(prob)
-            remainder = max(0.0, 1.0 - sum(predicted_distribution.values()))
             brier = 0.0
-            for persona, p_val in predicted_distribution.items():
+            for persona, p_val in hidden_state_prior_base.items():
                 target = 1.0 if persona == actual_persona else 0.0
                 brier += (p_val - target) ** 2
-            if remainder > 0:
-                target = 0.0 if actual_persona in predicted_distribution else 1.0
-                brier += (remainder - target) ** 2
+            remainder_base = max(0.0, 1.0 - sum(hidden_state_prior_base.values()))
+            if remainder_base > 0:
+                target = 0.0 if actual_persona in hidden_state_prior_base else 1.0
+                brier += (remainder_base - target) ** 2
             brier_score = brier
 
-        hidden_state_prior = {
-            str(persona): float(prob) for persona, prob in predicted_distribution.items()
-        }
+        prior_for_posterior = predicted_distribution_base or predicted_distribution_boosted
         if actual_persona:
             smoothing = 0.75
             posterior_distribution = {}
-            for persona, prob in hidden_state_prior.items():
+            for persona, prob in prior_for_posterior.items():
                 if persona == actual_persona:
                     posterior_distribution[persona] = prob + (1.0 - prob) * smoothing
                 else:
@@ -1849,7 +2441,9 @@ def compute_belief_thesis_core(
                 persona: val / Z for persona, val in posterior_distribution.items()
             }
         else:
-            posterior_distribution = dict(hidden_state_prior)
+            posterior_distribution = dict(prior_for_posterior)
+        hidden_state_prior = posterior_distribution
+        hidden_state_prior_boosted = predicted_distribution_boosted or predicted_distribution
 
         for persona_id, prob in posterior_distribution.items():
             if not persona_id:
@@ -1930,11 +2524,13 @@ def compute_belief_thesis_core(
             }
             metrics["error"] = err_payload
             metrics["hidden_state_prior"] = hidden_state_prior
+            metrics["hidden_state_prior_boosted"] = hidden_state_prior_boosted
             metrics["hidden_state_posterior"] = posterior_distribution
             metrics["edge_evidence"] = edge_evidence
         else:
             metrics = {
                 "hidden_state_prior": hidden_state_prior,
+                "hidden_state_prior_boosted": hidden_state_prior_boosted,
                 "hidden_state_posterior": posterior_distribution,
                 "edge_evidence": edge_evidence,
                 "error": {
@@ -1976,12 +2572,14 @@ def compute_belief_thesis_core(
                 "sequence_index": idx,
                 "resolution_status": event.get("resolution_status"),
             },
+            account_meta=_json_safe(account_meta) if account_meta else None,
             engagement=engagement_payload,
             prediction=prediction_record,
             actual_persona=actual_persona,
             error=error_record,
             local_adjustment=local_adjustment,
             global_params_version=None,
+            candidate_personas=dict(candidate_persona_counts),
         )
         episodes.append(episode)
 
@@ -2005,6 +2603,7 @@ def compute_belief_thesis_core(
                 "timestamp": ts.isoformat(),
                 "state_personas": list(engaged_sequence),
                 "predicted_topK": predicted_topk,
+                "predicted_topK_base": predicted_topk_raw,
                 "observed_next": actual_persona,
                 "bucket": bucket,
                 "hit_at_1": hit_at_1,
@@ -2015,6 +2614,7 @@ def compute_belief_thesis_core(
                 "error": _json_safe(error_record),
                 "local_adjustment": _json_safe(local_adjustment),
                 "hidden_state_prior": hidden_state_prior,
+                "hidden_state_prior_boosted": hidden_state_prior_boosted,
                 "hidden_state_posterior": posterior_distribution,
                 "edge_evidence": edge_evidence,
                 "log_likelihood_contrib": log_likelihood_contrib,
@@ -2048,6 +2648,8 @@ def compute_belief_thesis_core(
                 transition_counts[key] = transition_counts.get(key, 0) + 1
             prev_observed_persona = actual_persona
 
+    candidate_personas_dict = dict(candidate_persona_counts)
+
     if journey_steps:
         total_steps = len(journey_steps)
         journey_metrics = {
@@ -2070,6 +2672,7 @@ def compute_belief_thesis_core(
         "steps": journey_steps,
         "metrics": journey_metrics,
         "episodes": episodes,
+        "candidate_personas": candidate_personas_dict,
         "sufficient_stats": {
             "transition_counts": [
                 {"from": src, "to": dst, "count": count}
@@ -2097,7 +2700,19 @@ def compute_belief_thesis_core(
     current_paths = _annotate_paths_with_metrics(current["walk_paths"])
     for pid, phase in _persona_phase_lookup(current_paths).items():
         persona_phase_lookup.setdefault(pid, phase)
-    current_expected_next = current["expected_next"]
+    current_expected_next_raw = current.get("expected_next", []) or []
+    current_expected_next = _apply_subsidy_boosts_to_expected_next(
+        current_expected_next_raw,
+        account_id=account_id,
+        segment_keys=segment_keys,
+    )
+    current_expected_next = _boost_expected_next_rows(
+        current_expected_next,
+        wolves_scores,
+        account_id=account_id,
+        segment_keys=segment_keys,
+        product_graph=product_graph,
+    )
     print("Compute Belief Thesis Core: completed 5")
     # 6) GraphStore-based learning (Bayesian) over the full product graph
     learning_summary: Optional[Dict[str, Any]] = None
@@ -2242,7 +2857,7 @@ def compute_belief_thesis_core(
                     "persona": str(r.get("persona")),
                     "prob": float(r.get("prob", 0.0)),
                 }
-                for r in (baseline_expected_next or [])
+                for r in (baseline_expected_next_raw or [])
                 if r.get("persona")
             ]
 
@@ -2428,6 +3043,10 @@ def compute_belief_thesis_core(
         timeline,
         current_paths,
         current_expected_next,
+        wolves_scores=wolves_scores,
+        account_id=account_id,
+        segment_keys=segment_keys,
+        product_graph=product_graph,
     )
     for pid in persona_committee_probs.keys():
         persona_phase_lookup.setdefault(pid, "Problem Realization")
@@ -2463,6 +3082,50 @@ def compute_belief_thesis_core(
         persona_belief_posteriors,
     )
 
+    persona_wolf_scores: Dict[str, Dict[str, Any]] = {}
+    wolf_persona_ids: Set[str] = set(observed_persona_ids)
+    wolf_persona_ids.update(persona_committee_probs.keys())
+    for path in baseline_paths:
+        for persona in path.get("personas") or path.get("path") or []:
+            wolf_persona_ids.add(str(persona))
+    for path in current_paths:
+        for persona in path.get("personas") or path.get("path") or []:
+            wolf_persona_ids.add(str(persona))
+    for rows in (baseline_expected_next, current_expected_next):
+        for row in rows or []:
+            pid = str(row.get("persona") or row.get("persona_id") or "")
+            if pid:
+                wolf_persona_ids.add(pid)
+    now_ts = datetime.utcnow().replace(tzinfo=timezone.utc)
+    for persona_id in wolf_persona_ids:
+        node_data = dict(PG.G.nodes.get(persona_id, {}))
+        node_data.setdefault("id", persona_id)
+        node_data.setdefault("canonical_persona_id", node_data.get("canonical_persona_id") or persona_id)
+        wolves_entry = (wolves_scores or {}).get(str(persona_id))
+        base_wolf = _derive_base_wolf_score(node_data, wolves_entry)
+        if account_id:
+            dynamic_wolf = wolf_score_dynamic(
+                node_data,
+                base_wolf,
+                account_id,
+                segment_keys,
+                now_ts,
+            )
+            subsidy_rel = subsidy_relevance_for_persona(
+                node_data,
+                account_id,
+                segment_keys,
+                now_ts,
+            )
+        else:
+            dynamic_wolf = base_wolf
+            subsidy_rel = 0.0
+        persona_wolf_scores[persona_id] = {
+            "base_wolf_score": round(base_wolf, 6),
+            "dynamic_wolf_score": round(dynamic_wolf, 6),
+            "subsidy_relevance": round(subsidy_rel, 6),
+        }
+
     core = BeliefThesisCore(
         account_id=account_id,
         product_id=product_id,
@@ -2471,21 +3134,9 @@ def compute_belief_thesis_core(
         persona_resolution_stats=persona_resolution_stats,
         account_prior_size=0 if account_meta is None else len(account_meta),
         baseline_paths=baseline_paths,
-        baseline_expected_next=[
-            {
-                "persona": str(r.get("persona")),
-                "prob": float(r.get("prob", 0.0)),
-            }
-            for r in (baseline_expected_next or [])
-        ],
+        baseline_expected_next=_serialize_expected_next(baseline_expected_next),
         current_paths=current_paths,
-        current_expected_next=[
-            {
-                "persona": str(r.get("persona")),
-                "prob": float(r.get("prob", 0.0)),
-            }
-            for r in (current_expected_next or [])
-        ],
+        current_expected_next=_serialize_expected_next(current_expected_next),
         journey=journey,
         walk_paths=simple_walk_paths,
         fit=fit,
@@ -2494,6 +3145,7 @@ def compute_belief_thesis_core(
         persona_posteriors=persona_committee_probs,
         person_committee_probs=person_committee_probs,
         persona_belief_posteriors=persona_belief_posteriors,
+        persona_wolf_scores=persona_wolf_scores,
     )
 
     if debug:
@@ -2537,6 +3189,7 @@ def belief_thesis_to_ui_dict(
         "persona_posteriors": core.persona_posteriors,
         "person_committee_probs": core.person_committee_probs,
         "persona_belief_posteriors": core.persona_belief_posteriors,
+        "persona_wolf_scores": core.persona_wolf_scores,
     }
 
     if core.learning.diffs:
@@ -2623,8 +3276,10 @@ def build_belief_thesis_for_account(
 
     account = get_account_by_id(product_id, account_id)
     account_meta = []
+    account_segment_keys: List[str] = []
     if account:
         account_meta = map_account_meta_to_stable_ids(product_id, account)
+        account_segment_keys = segment_keys_from_meta(account)
 
     engagements = get_account_engagements(product_id, account_id) or []
 
@@ -2633,6 +3288,7 @@ def build_belief_thesis_for_account(
         original_graph=product_graph,
         account_id=account_id,
         account_meta=account_meta,
+        account_segment_keys=account_segment_keys,
         past_engagements=engagements,
         alpha=0.85,
         weight_key="likelihood",
@@ -2649,6 +3305,7 @@ def build_belief_thesis(
     original_graph: nx.DiGraph,
     account_id: str,
     account_meta: Optional[Dict[str, Any]] = None,
+    account_segment_keys: Optional[Sequence[str]] = None,
     past_engagements: Optional[List[Dict[str, Any]]] = None,
     alpha: float = 0.85,  # kept for parity; used via graphwin_runtime
     weight_key: str = "likelihood",
@@ -2671,6 +3328,7 @@ def build_belief_thesis(
         original_graph=original_graph,
         account_id=account_id,
         account_meta=account_meta,
+        account_segment_keys=account_segment_keys,
         past_engagements=past_engagements,
         alpha=alpha,
         weight_key=weight_key,
@@ -2700,3 +3358,48 @@ def build_belief_thesis(
         )
 
     return _json_safe(out)
+def _probability_map_from_rows(rows: Optional[List[Dict[str, Any]]]) -> Dict[str, float]:
+    if not rows:
+        return {}
+    accum: Dict[str, float] = {}
+    for row in rows:
+        persona_id = str(row.get("persona") or row.get("persona_id") or "")
+        if not persona_id:
+            continue
+        value = row.get("prob")
+        if value is None:
+            value = row.get("probability")
+        accum[persona_id] = accum.get(persona_id, 0.0) + float(value or 0.0)
+    total = sum(accum.values())
+    if total <= 0:
+        return accum
+    return {pid: val / total for pid, val in accum.items()}
+
+
+def _serialize_expected_next(rows: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
+    serialized: List[Dict[str, Any]] = []
+    for row in rows or []:
+        persona_id = str(row.get("persona") or row.get("persona_id") or "")
+        if not persona_id:
+            continue
+        prob_val = row.get("prob")
+        if prob_val is None:
+            prob_val = row.get("probability")
+        payload: Dict[str, Any] = {
+            "persona": persona_id,
+            "prob": float(prob_val or 0.0),
+        }
+        if "persona_label" in row and row.get("persona_label") is not None:
+            payload["persona_label"] = row.get("persona_label")
+        if row.get("prob_base") is not None:
+            payload["prob_base"] = float(row.get("prob_base") or 0.0)
+        if row.get("subsidy_lift") is not None:
+            payload["subsidy_lift"] = float(row.get("subsidy_lift") or 0.0)
+        if row.get("reason"):
+            payload["reason"] = row.get("reason")
+        if row.get("journey_stage"):
+            payload["journey_stage"] = row.get("journey_stage")
+        if row.get("tags"):
+            payload["tags"] = row.get("tags")
+        serialized.append(payload)
+    return serialized

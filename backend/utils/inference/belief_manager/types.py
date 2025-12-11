@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Literal
 
 
 # ---------------------------------------------------------------------------
@@ -22,6 +22,37 @@ class GlobalParams:
     version: int
     node_weights: Dict[str, Any] = field(default_factory=dict)
     edge_weights: Dict[str, Any] = field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Persona learning & diagnostics
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class PersonaCandidateStat:
+    label: str
+    titles: List[str] = field(default_factory=list)
+    departments: List[str] = field(default_factory=list)
+    account_count: int = 0
+    episode_count: int = 0
+    occurrence_count: int = 0
+    first_seen_at: Optional[datetime] = None
+    last_seen_at: Optional[datetime] = None
+    segments: Dict[str, int] = field(default_factory=dict)
+
+
+@dataclass
+class PersonaImpactMetrics:
+    persona_id: str
+    wolves_score: float = 0.0
+    delta_win_bp: float = 0.0
+    centrality: float = 0.0
+    involvement_rate: float = 0.0
+    blocker_rate: Optional[float] = None
+    sample_size: int = 0
+    last_updated_at: Optional[datetime] = None
+    source: Literal["data_auto", "enrich_user", "initial_seed"] = "data_auto"
 
 
 # ---------------------------------------------------------------------------
@@ -106,11 +137,13 @@ class Episode:
     timestamp: datetime
     meta: Dict[str, Any]
     engagement: Dict[str, Any]
-    prediction: Optional[PersonaPrediction]
-    actual_persona: Optional[str]
-    error: Optional[PredictionError]
-    local_adjustment: Optional[LocalAdjustment]
+    prediction: Optional[PersonaPrediction] = None
+    actual_persona: Optional[str] = None
+    error: Optional[PredictionError] = None
+    local_adjustment: Optional[LocalAdjustment] = None
+    account_meta: Optional[Dict[str, Any]] = None
     global_params_version: Optional[int] = None
+    candidate_personas: Dict[str, int] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +223,8 @@ class GlobalInsights:
 
 
 __all__ = [
+    "PersonaCandidateStat",
+    "PersonaImpactMetrics",
     "GlobalParams",
     "PersonaPrediction",
     "PredictionError",

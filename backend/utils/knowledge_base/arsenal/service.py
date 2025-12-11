@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+import json
+import math
 
 from sqlalchemy import func, inspect, text
 from sqlalchemy.exc import IntegrityError
@@ -27,6 +29,12 @@ from backend.utils.knowledge_base.arsenal.db_models import (
     ChannelType,
     ContentType,
     TimeToConsume,
+)
+from backend.utils.knowledge_base.arsenal.channel_catalog import resolve_canonical_channel
+from backend.utils.segment_utils import (
+    segment_label_from_key,
+    segment_keys_from_meta,
+    normalize_account_meta,
 )
 
 
@@ -69,6 +77,8 @@ def _ensure_schema() -> None:
             "approval_status": "ALTER TABLE arsenal_assets ADD COLUMN approval_status VARCHAR DEFAULT 'PENDING'",
             "derived_metadata": "ALTER TABLE arsenal_assets ADD COLUMN derived_metadata JSON",
             "auto_classification_confidence": "ALTER TABLE arsenal_assets ADD COLUMN auto_classification_confidence FLOAT",
+            "primary_channel_id": "ALTER TABLE arsenal_assets ADD COLUMN primary_channel_id VARCHAR",
+            "activity_labels": "ALTER TABLE arsenal_assets ADD COLUMN activity_labels JSON",
         },
     )
     _ensure_columns(
@@ -114,6 +124,17 @@ def _ensure_engagement_columns() -> None:
     ddl = {
         "channel_id": "ALTER TABLE target_account_engagements ADD COLUMN channel_id VARCHAR",
         "engagement_verb": "ALTER TABLE target_account_engagements ADD COLUMN engagement_verb VARCHAR",
+        "activity_label": "ALTER TABLE target_account_engagements ADD COLUMN activity_label VARCHAR",
+        "asset_category": "ALTER TABLE target_account_engagements ADD COLUMN asset_category VARCHAR",
+        "parser_version": "ALTER TABLE target_account_engagements ADD COLUMN parser_version VARCHAR",
+        "parser_confidence": "ALTER TABLE target_account_engagements ADD COLUMN parser_confidence FLOAT",
+        "persona_id": "ALTER TABLE target_account_engagements ADD COLUMN persona_id VARCHAR",
+        "persona_label": "ALTER TABLE target_account_engagements ADD COLUMN persona_label VARCHAR",
+        "persona_confidence": "ALTER TABLE target_account_engagements ADD COLUMN persona_confidence FLOAT",
+        "belief_stage_code": "ALTER TABLE target_account_engagements ADD COLUMN belief_stage_code VARCHAR",
+        "belief_stage_label": "ALTER TABLE target_account_engagements ADD COLUMN belief_stage_label VARCHAR",
+        "account_meta": "ALTER TABLE target_account_engagements ADD COLUMN account_meta JSON",
+        "segment_keys": "ALTER TABLE target_account_engagements ADD COLUMN segment_keys JSON",
     }
     try:
         with engine.connect() as conn:
@@ -137,6 +158,57 @@ def _ensure_engagement_columns() -> None:
 _ensure_engagement_columns()
 
 
+_STAGE_ORDER = {
+    "problem": 0,
+    "problem_realization": 0,
+    "pain": 1,
+    "pain_realization": 1,
+    "resolution": 2,
+    "resolution_discovery": 2,
+    "execution": 3,
+    "execution_guidance": 3,
+}
+
+
+def _safe_segment_keys(value: Any) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(entry) for entry in value if entry]
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            if isinstance(parsed, list):
+                return [str(entry) for entry in parsed if entry]
+        except Exception:
+            pass
+        cleaned = value.strip()
+        return [cleaned] if cleaned else []
+    return []
+
+
+def _account_meta_from_row(value: Any) -> Dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            return {}
+    return {}
+
+
+def _confidence_from_samples(sample_size: int) -> float:
+    if sample_size <= 0:
+        return 0.2
+    denom = math.log(50)
+    if denom <= 0:
+        denom = 1.0
+    return max(0.2, min(0.95, math.log1p(sample_size) / denom))
+
+
 ASSET_MUTABLE_FIELDS = {
     "name",
     "category",
@@ -152,6 +224,8 @@ ASSET_MUTABLE_FIELDS = {
     "target_concerns",
     "org_conversion_maturity",
     "typical_channels",
+    "primary_channel_id",
+    "activity_labels",
 }
 
 CHANNEL_MUTABLE_FIELDS = {
@@ -289,6 +363,8 @@ _FUNNEL_STAGE_LABELS: Dict[str, str] = {
     "mid": "Mid Cycle",
     "late": "Late Cycle",
 }
+
+_DEFAULT_ACTIVITY_STAGE = "No action"
 
 
 def _funnel_stage_from_iterable(values: Optional[Iterable[Any]]) -> Optional[Dict[str, Any]]:
@@ -931,12 +1007,323 @@ def _compute_usage_stats(
     }
 
 
+def _aggregate_effectiveness_groups(entries: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not entries:
+        return None
+    grouped: Dict[Tuple[str, str, str, str], List[Dict[str, Any]]] = defaultdict(list)
+    for entry in entries:
+        key = (
+            entry.get("persona_id") or "unknown",
+            entry.get("stage_code") or "unknown",
+            entry.get("segment_key") or "global",
+            entry.get("channel_type") or "unknown",
+        )
+        grouped[key].append(entry)
+
+    slices: List[Dict[str, Any]] = []
+    for (persona_id, stage_code, segment_key, channel_type), bucket in grouped.items():
+        sample_size = len(bucket)
+        if sample_size <= 0:
+            continue
+        progress_rate = sum(entry.get("progress", 0) for entry in bucket) / sample_size
+        win_rate = sum(entry.get("win", 0) for entry in bucket) / sample_size
+        lift_bps = round(progress_rate * 10_000, 2)
+        confidence = round(_confidence_from_samples(sample_size), 4)
+        coverage_score = round((lift_bps / 10_000.0) * confidence, 4)
+        exemplar = bucket[0]
+        slices.append(
+            {
+                "persona_id": None if persona_id == "unknown" else persona_id,
+                "persona_label": exemplar.get("persona_label"),
+                "stage_code": None if stage_code == "unknown" else stage_code,
+                "stage_label": exemplar.get("stage_label"),
+                "segment_key": None if segment_key == "global" else segment_key,
+                "segment_label": exemplar.get("segment_label"),
+                "channel_type": None if channel_type == "unknown" else channel_type,
+                "channel_id": exemplar.get("channel_id"),
+                "channel_name": exemplar.get("channel_name"),
+                "sample_size": sample_size,
+                "progress_rate": round(progress_rate, 4),
+                "win_rate": round(win_rate, 4),
+                "lift_bps": lift_bps,
+                "confidence": confidence,
+                "coverage_score": coverage_score,
+            }
+        )
+
+    slices.sort(key=lambda item: item["coverage_score"], reverse=True)
+    summary = None
+    if slices:
+        best = slices[0]
+        summary = {
+            "coverage_score": best["coverage_score"],
+            "lift_bps": best["lift_bps"],
+            "confidence": best["confidence"],
+            "stage_label": best.get("stage_label"),
+            "persona_label": best.get("persona_label"),
+            "segment_label": best.get("segment_label"),
+            "sample_size": best.get("sample_size"),
+        }
+    return {"slices": slices, "summary": summary}
+
+
+def _compute_asset_effectiveness(
+    db: Session,
+    *,
+    product_id: str,
+) -> Dict[str, Dict[str, Any]]:
+    _ensure_engagement_columns()
+    assets = (
+        db.query(ArsenalAsset)
+        .filter(
+            ArsenalAsset.product_id == product_id,
+            ArsenalAsset.active.is_(True),
+        )
+        .all()
+    )
+    channels = (
+        db.query(ArsenalChannel)
+        .filter(
+            ArsenalChannel.product_id == product_id,
+            ArsenalChannel.active.is_(True),
+        )
+        .all()
+    )
+    account_status_rows = (
+        db.query(TargetAccountORM.id, TargetAccountORM.deal_status)
+        .filter(TargetAccountORM.product_id == product_id)
+        .all()
+    )
+    asset_map = {asset.id: asset for asset in assets}
+    channel_map = {channel.id: channel for channel in channels}
+    account_status = {
+        row.id: (row.deal_status or "").strip().lower() for row in account_status_rows
+    }
+    engagement_rows = (
+        db.query(TargetAccountEngagement)
+        .filter(TargetAccountEngagement.product_id == product_id)
+        .order_by(
+            TargetAccountEngagement.target_account_id,
+            TargetAccountEngagement.timestamp_dt,
+        )
+        .all()
+    )
+    events_by_account: Dict[str, List[TargetAccountEngagement]] = defaultdict(list)
+    for row in engagement_rows:
+        if row.target_account_id:
+            events_by_account[row.target_account_id].append(row)
+
+    asset_entries: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    channel_entries: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+
+    for account_id, events in events_by_account.items():
+        deal_status = account_status.get(account_id, "")
+        win_flag = int(deal_status in {"closed-won", "closed_won", "won"})
+        for idx, row in enumerate(events):
+            stage_code = row.belief_stage_code or _normalize_stage(row.belief_stage_label)
+            stage_label = row.belief_stage_label or BELIEF_STAGE_LABELS.get(stage_code)
+            current_stage_value = _STAGE_ORDER.get(stage_code) if stage_code else None
+            next_stage_value: Optional[int] = None
+            if current_stage_value is not None:
+                for future in events[idx + 1 :]:
+                    future_code = future.belief_stage_code or _normalize_stage(
+                        future.belief_stage_label
+                    )
+                    if future_code and future_code in _STAGE_ORDER:
+                        next_stage_value = _STAGE_ORDER[future_code]
+                        break
+            progressed = int(
+                next_stage_value is not None
+                and current_stage_value is not None
+                and next_stage_value > current_stage_value
+            )
+
+            persona_id = row.persona_id or _persona_id_from_actor(
+                row.actor_title,
+                row.actor_department,
+                row.actor_seniority,
+            )
+            persona_label = row.persona_label or _persona_label(persona_id)
+            raw_segments = _safe_segment_keys(row.segment_keys)
+            if not raw_segments:
+                meta = _account_meta_from_row(row.account_meta)
+                if meta:
+                    normalized = normalize_account_meta(meta)
+                    raw_segments = segment_keys_from_meta(normalized)
+            if not raw_segments:
+                raw_segments = ["global"]
+
+            channel_id = row.channel_id
+            channel_name = None
+            channel_type = None
+            if channel_id and channel_id in channel_map:
+                ch = channel_map[channel_id]
+                channel_name = ch.name
+                channel_type = ch.channel_type_text or ch.channel_type
+            else:
+                fallback_channel = (row.channel or "").strip()
+                if fallback_channel:
+                    channel_name = fallback_channel
+                    channel_type = fallback_channel.lower()
+
+            if row.asset_id and row.asset_id in asset_map:
+                asset_obj = asset_map[row.asset_id]
+                for segment_key in raw_segments:
+                    normalized_segment = segment_key or "global"
+                    asset_entries[row.asset_id].append(
+                        {
+                            "persona_id": persona_id,
+                            "persona_label": persona_label,
+                            "stage_code": stage_code,
+                            "stage_label": stage_label,
+                            "segment_key": normalized_segment,
+                            "segment_label": (
+                                segment_label_from_key(normalized_segment)
+                                if normalized_segment != "global"
+                                else "Global"
+                            ),
+                            "channel_type": channel_type,
+                            "channel_id": channel_id,
+                            "channel_name": channel_name,
+                            "progress": progressed,
+                            "win": win_flag,
+                            "asset_category": asset_obj.category_text or asset_obj.category,
+                        }
+                    )
+
+            channel_key = None
+            if channel_id:
+                channel_key = channel_id
+            elif row.channel:
+                slug = ArsenalChannel.slug_for(row.channel)
+                channel_key = f"channel:{slug}"
+            if channel_key:
+                asset_category = None
+                if row.asset_id and row.asset_id in asset_map:
+                    asset_category = asset_map[row.asset_id].category_text or asset_map[row.asset_id].category
+                for segment_key in raw_segments:
+                    normalized_segment = segment_key or "global"
+                    channel_entries[channel_key].append(
+                        {
+                            "persona_id": persona_id,
+                            "persona_label": persona_label,
+                            "stage_code": stage_code,
+                            "stage_label": stage_label,
+                            "segment_key": normalized_segment,
+                            "segment_label": (
+                                segment_label_from_key(normalized_segment)
+                                if normalized_segment != "global"
+                                else "Global"
+                            ),
+                            "channel_type": channel_type or (row.channel or "").strip(),
+                            "channel_id": channel_id,
+                            "channel_name": channel_name or row.channel,
+                            "asset_category": asset_category,
+                            "progress": progressed,
+                            "win": win_flag,
+                        }
+                    )
+
+    asset_payload: Dict[str, Dict[str, Any]] = {}
+    for asset_id, entries in asset_entries.items():
+        aggregated = _aggregate_effectiveness_groups(entries)
+        if aggregated:
+            asset_payload[asset_id] = aggregated
+
+    channel_payload: Dict[str, Dict[str, Any]] = {}
+    for channel_key, entries in channel_entries.items():
+        aggregated = _aggregate_effectiveness_groups(entries)
+        if aggregated:
+            channel_payload[channel_key] = aggregated
+
+    return {"assets": asset_payload, "channels": channel_payload}
+
+
+def _aggregate_asset_channel_stats(
+    db: Session,
+    *,
+    product_id: str,
+) -> Dict[str, List[Dict[str, Any]]]:
+    _ensure_engagement_columns()
+    stats: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(lambda: {
+        "engagements": 0,
+        "personas": Counter(),
+        "stages": Counter(),
+    }))
+    rows = (
+        db.query(
+            TargetAccountEngagement.asset_id,
+            TargetAccountEngagement.derived_channel_id,
+            TargetAccountEngagement.channel,
+            TargetAccountEngagement.channel_id,
+            TargetAccountEngagement.persona_id,
+            TargetAccountEngagement.belief_stage_code,
+            TargetAccountEngagement.belief_stage_label,
+        )
+        .filter(
+            TargetAccountEngagement.product_id == product_id,
+            TargetAccountEngagement.asset_id.isnot(None),
+        )
+        .order_by(TargetAccountEngagement.timestamp_dt.asc())
+    )
+    for row in rows:
+        asset_id = row.asset_id
+        if not asset_id:
+            continue
+        channel_key = (
+            row.derived_channel_id
+            or row.channel_id
+            or row.channel
+            or ""
+        )
+        if channel_key.startswith("channel:"):
+            channel_key = channel_key.split(":", 1)[1]
+        if not channel_key:
+            continue
+        canonical_slug, metadata = resolve_canonical_channel(channel_key)
+        bucket = stats[asset_id][canonical_slug]
+        bucket["engagements"] += 1
+        persona_id = row.persona_id
+        if persona_id:
+            bucket["personas"][persona_id] += 1
+        stage_code = (
+            row.belief_stage_code
+            or _normalize_stage(row.belief_stage_label)
+        )
+        if stage_code:
+            bucket["stages"][stage_code] += 1
+    result: Dict[str, List[Dict[str, Any]]] = {}
+    for asset_id, channel_buckets in stats.items():
+        entries: List[Dict[str, Any]] = []
+        for slug, bucket in channel_buckets.items():
+            metadata = resolve_canonical_channel(slug)[1]
+            entries.append(
+                {
+                    "channel_slug": slug,
+                    "channel_label": metadata.get("name") or metadata.get("channel_type_label") or slug,
+                    "engagements": bucket["engagements"],
+                    "personas": [
+                        {"id": pid, "count": count}
+                        for pid, count in bucket["personas"].most_common()
+                    ],
+                    "stages": [
+                        {"code": code, "count": count}
+                        for code, count in bucket["stages"].most_common()
+                    ],
+                }
+            )
+        entries.sort(key=lambda entry: entry["engagements"], reverse=True)
+        result[asset_id] = entries
+    return result
+
+
 def _serialize_asset(
     asset: ArsenalAsset,
     *,
     include_impacts: bool = False,
     usage: Optional[Dict[str, Any]] = None,
     product_graph=None,
+    effectiveness: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     usage_payload = usage or _finalize_usage_bucket({})
     belief_stages, detected_code = _split_belief_and_maturity(asset.target_belief_stages or [])
@@ -981,7 +1368,16 @@ def _serialize_asset(
         "approval_status": asset.approval_status.value if asset.approval_status else None,
         "derived_metadata": asset.derived_metadata,
         "auto_classification_confidence": asset.auto_classification_confidence,
+        "activity_labels": list(asset.activity_labels or []),
+        "primary_channel": (
+            {"id": asset.primary_channel.id, "name": asset.primary_channel.name}
+            if asset.primary_channel
+            else None
+        ),
     }
+    if effectiveness:
+        payload["learned_effectiveness"] = effectiveness.get("slices", [])
+        payload["learned_summary"] = effectiveness.get("summary")
     if include_impacts:
         payload["impacts"] = [
             _serialize_impact(impact, include_links=False, product_graph=product_graph)
@@ -996,6 +1392,7 @@ def _serialize_channel(
     include_impacts: bool = False,
     usage: Optional[Dict[str, Any]] = None,
     product_graph=None,
+    effectiveness: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     usage_payload = usage or _finalize_usage_bucket({})
     belief_stages, detected_code = _split_belief_and_maturity(channel.target_belief_stages or [])
@@ -1038,6 +1435,9 @@ def _serialize_channel(
         "derived_metadata": channel.derived_metadata,
         "auto_classification_confidence": channel.auto_classification_confidence,
     }
+    if effectiveness:
+        payload["learned_effectiveness"] = effectiveness.get("slices", [])
+        payload["learned_summary"] = effectiveness.get("summary")
     if include_impacts:
         payload["impacts"] = [
             _serialize_impact(impact, include_links=False, product_graph=product_graph)
@@ -1085,6 +1485,7 @@ def list_assets(
     include_impacts: bool = False,
     usage_map: Optional[Dict[str, Dict[str, Any]]] = None,
     product_graph=None,
+    effectiveness_map: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> List[Dict[str, Any]]:
     query = (
         db.query(ArsenalAsset)
@@ -1102,6 +1503,7 @@ def list_assets(
             row,
             include_impacts=include_impacts,
             usage=usage_map.get(row.id) or usage_map.get(row.slug),
+            effectiveness=(effectiveness_map or {}).get(row.id),
             product_graph=product_graph,
         )
         for row in rows
@@ -1115,6 +1517,7 @@ def list_channels(
     include_impacts: bool = False,
     usage_map: Optional[Dict[str, Dict[str, Any]]] = None,
     product_graph=None,
+    effectiveness_map: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> List[Dict[str, Any]]:
     query = (
         db.query(ArsenalChannel)
@@ -1134,6 +1537,10 @@ def list_channels(
             usage=usage_map.get(row.id)
             or usage_map.get(row.slug)
             or usage_map.get(f"channel:{row.slug}"),
+            effectiveness=(
+                (effectiveness_map or {}).get(row.id)
+                or (effectiveness_map or {}).get(f"channel:{row.slug}")
+            ),
             product_graph=product_graph,
         )
         for row in rows
@@ -1159,6 +1566,30 @@ def list_asset_channel_impacts(
         query = query.filter(AssetChannelImpact.persona_id == persona_id)
     rows = query.all()
     return [_serialize_impact(row, product_graph=product_graph) for row in rows]
+
+
+def _merge_string_lists(
+    existing: Optional[Iterable[str]],
+    additions: Iterable[str],
+) -> List[str]:
+    existing = existing or []
+    seen: set[str] = set()
+    merged: List[str] = []
+    for source in list(existing):
+        if not source:
+            continue
+        if source in seen:
+            continue
+        seen.add(source)
+        merged.append(source)
+    for item in additions:
+        if not item:
+            continue
+        if item in seen:
+            continue
+        seen.add(item)
+        merged.append(item)
+    return merged
 
 
 def _resolve_enum(enum_cls, value):
@@ -1233,6 +1664,13 @@ def get_or_create_asset(
         .first()
     )
     if asset:
+        if defaults.get("primary_channel_id") and not asset.primary_channel_id:
+            asset.primary_channel_id = defaults.get("primary_channel_id")
+        if defaults.get("activity_labels"):
+            existing_labels = asset.activity_labels or []
+            additions = _normalize_string_list(defaults.get("activity_labels")) or []
+            merged = _merge_string_lists(existing_labels, additions)
+            asset.activity_labels = merged or None
         _apply_auto_classification(asset, defaults)
         return asset, False
 
@@ -1271,6 +1709,11 @@ def get_or_create_asset(
     concerns = _normalize_string_list(defaults.get("target_concerns"))
     if concerns is not None:
         asset.target_concerns = concerns
+    if defaults.get("primary_channel_id"):
+        asset.primary_channel_id = defaults.get("primary_channel_id")
+    labels = _normalize_string_list(defaults.get("activity_labels"))
+    if labels is not None:
+        asset.activity_labels = labels
     _apply_auto_classification(asset, defaults)
     asset.update_metadata_status()
 
@@ -1431,6 +1874,181 @@ def record_asset_channel_impact(
     return impact
 
 
+def _normalize_category_key(value: Optional[str]) -> Optional[str]:
+    cleaned = _clean_metadata_text(value)
+    if not cleaned:
+        return None
+    return cleaned.lower()
+
+
+def _format_activity_label(raw_label: Optional[str]) -> Optional[str]:
+    cleaned = _clean_metadata_text(raw_label)
+    return _title_case(cleaned) if cleaned else None
+
+
+def _extract_asset_activity_label(asset: Dict[str, Any]) -> Optional[str]:
+    labels = asset.get("activity_labels")
+    if isinstance(labels, list):
+        for label in labels:
+            candidate = _clean_metadata_text(label)
+            if candidate:
+                return candidate
+    derived = asset.get("derived_metadata") or {}
+    if isinstance(derived, dict):
+        activity = derived.get("activity") or {}
+        candidate = _clean_metadata_text(activity.get("label"))
+        if candidate:
+            return candidate
+    return None
+
+
+def _extract_channel_activity_label(channel: Dict[str, Any]) -> Optional[str]:
+    derived = channel.get("derived_metadata") or {}
+    if isinstance(derived, dict):
+        activity = derived.get("activity") or {}
+        candidate = _clean_metadata_text(activity.get("label"))
+        if candidate:
+            return candidate
+    return None
+
+
+def _channel_category_name(channel: Dict[str, Any]) -> Optional[str]:
+    for field in ("channel_type", "channel_type_text"):
+        candidate = _clean_metadata_text(channel.get(field))
+        if candidate:
+            return candidate
+    derived = channel.get("derived_metadata") or {}
+    if isinstance(derived, dict):
+        channel_label = derived.get("channel") or {}
+        candidate = _clean_metadata_text(channel_label.get("label"))
+        if candidate:
+            return candidate
+    return _clean_metadata_text(channel.get("name"))
+
+
+def _channel_reach_value(channel: Dict[str, Any]) -> Optional[float]:
+    usage = channel.get("usage") or {}
+    runs = usage.get("total_engagements") or 0
+    engaged = 0
+    for stage in usage.get("stages") or []:
+        if isinstance(stage, dict):
+            engaged += stage.get("count", 0) or 0
+    if runs:
+        return min(1.0, engaged / runs)
+    fallback = channel.get("reach_score_estimate")
+    if isinstance(fallback, (int, float)):
+        return float(fallback)
+    return None
+
+
+def _add_stage_to_meta(
+    meta: Dict[str, Any],
+    stage_label: Optional[str],
+    stage_field: str,
+    seen_key: str,
+) -> None:
+    if not stage_label:
+        return
+    normalized = _clean_metadata_text(stage_label)
+    if not normalized:
+        return
+    canonical = _title_case(normalized)
+    seen: Set[str] = meta.setdefault(seen_key, set())
+    key = canonical.lower()
+    if key in seen:
+        return
+    seen.add(key)
+    stages = meta.setdefault(stage_field, [])
+    stages.append(canonical)
+
+
+def _ensure_default_stage(stages: List[str]) -> None:
+    default_key = _DEFAULT_ACTIVITY_STAGE.lower()
+    if any(stage.lower() == default_key for stage in stages):
+        return
+    stages.append(_DEFAULT_ACTIVITY_STAGE)
+
+
+def _build_asset_category_meta(assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    categories: Dict[str, Dict[str, Any]] = {}
+    for asset in assets:
+        category_name = asset.get("category")
+        key = _normalize_category_key(category_name)
+        if not key:
+            continue
+        meta = categories.setdefault(
+            key,
+            {
+                "key": key,
+                "name": category_name or key,
+                "activity_stages": [],
+                "asset_ids": [],
+            },
+        )
+        asset_id = asset.get("id")
+        if asset_id and asset_id not in meta["asset_ids"]:
+            meta["asset_ids"].append(asset_id)
+        _add_stage_to_meta(meta, _extract_asset_activity_label(asset), "activity_stages", "_asset_stage_seen")
+    results: List[Dict[str, Any]] = []
+    for meta in categories.values():
+        _ensure_default_stage(meta["activity_stages"])
+        meta.pop("_asset_stage_seen", None)
+        meta["label"] = _title_case(meta["name"])
+        results.append(meta)
+    results.sort(key=lambda item: item.get("label") or item.get("name") or "")
+    return results
+
+
+def _build_channel_category_meta(channels: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    categories: Dict[str, Dict[str, Any]] = {}
+    for channel in channels:
+        category_name = _channel_category_name(channel)
+        key = _normalize_category_key(category_name)
+        if not key:
+            continue
+        meta = categories.setdefault(
+            key,
+            {
+                "key": key,
+                "name": category_name or key,
+                "label": _title_case(category_name or key),
+                "channel_ids": [],
+                "delivery_modes": [],
+                "channel_activity_stages": [],
+                "reach_values": [],
+            },
+        )
+        channel_id = channel.get("id")
+        if channel_id and channel_id not in meta["channel_ids"]:
+            meta["channel_ids"].append(channel_id)
+        mode_candidate = _clean_metadata_text(channel.get("delivery_mode") or channel.get("delivery_mode_text"))
+        if mode_candidate and mode_candidate not in meta["delivery_modes"]:
+            meta["delivery_modes"].append(mode_candidate)
+        _add_stage_to_meta(
+            meta,
+            _extract_channel_activity_label(channel),
+            "channel_activity_stages",
+            "_channel_stage_seen",
+        )
+        reach_value = _channel_reach_value(channel)
+        if reach_value is not None:
+            meta["reach_values"].append(reach_value)
+    results: List[Dict[str, Any]] = []
+    for meta in categories.values():
+        _ensure_default_stage(meta["channel_activity_stages"])
+        reach_values = meta.pop("reach_values", [])
+        if reach_values:
+            avg_reach = sum(reach_values) / len(reach_values)
+            meta["reach_score_estimate"] = round(avg_reach, 4)
+        else:
+            meta["reach_score_estimate"] = None
+        meta["delivery_mode"] = meta["delivery_modes"][0] if meta["delivery_modes"] else None
+        meta.pop("_channel_stage_seen", None)
+        results.append(meta)
+    results.sort(key=lambda item: item.get("label") or item.get("name") or "")
+    return results
+
+
 def serialize_arsenal_library(
     db: Session,
     *,
@@ -1438,6 +2056,7 @@ def serialize_arsenal_library(
 ) -> Dict[str, Any]:
     _backfill_typical_links(db, product_id=product_id)
     usage = _compute_usage_stats(db, product_id=product_id)
+    effectiveness = _compute_asset_effectiveness(db, product_id=product_id)
     try:
         product_graph = build_product_graph(product_id)
     except Exception:
@@ -1448,6 +2067,7 @@ def serialize_arsenal_library(
         include_impacts=True,
         usage_map=usage.get("assets"),
         product_graph=product_graph,
+        effectiveness_map=effectiveness.get("assets") if effectiveness else None,
     )
     channels = list_channels(
         db,
@@ -1455,7 +2075,28 @@ def serialize_arsenal_library(
         include_impacts=True,
         usage_map=usage.get("channels"),
         product_graph=product_graph,
+        effectiveness_map=effectiveness.get("channels") if effectiveness else None,
     )
+    asset_channel_stats = _aggregate_asset_channel_stats(db, product_id=product_id)
+    asset_category_meta = _build_asset_category_meta(assets)
+    channel_category_meta = _build_channel_category_meta(channels)
+    asset_category_map = {meta["key"]: meta for meta in asset_category_meta}
+    channel_category_map = {meta["key"]: meta for meta in channel_category_meta}
+    for asset in assets:
+        activity_label = _format_activity_label(_extract_asset_activity_label(asset))
+        if activity_label:
+            asset["asset_activity_summary"] = activity_label
+        key = _normalize_category_key(asset.get("category"))
+        asset["asset_category_meta_key"] = key
+        asset["asset_category_meta"] = asset_category_map.get(key)
+        asset["asset_channel_stats"] = asset_channel_stats.get(asset["id"], [])
+    for channel in channels:
+        activity_label = _format_activity_label(_extract_channel_activity_label(channel))
+        if activity_label:
+            channel["channel_activity_summary"] = activity_label
+        category_key = _normalize_category_key(_channel_category_name(channel))
+        channel["channel_category_meta_key"] = category_key
+        channel["channel_category_meta"] = channel_category_map.get(category_key)
     impacts = list_asset_channel_impacts(
         db,
         product_id=product_id,
@@ -1465,6 +2106,9 @@ def serialize_arsenal_library(
         "assets": assets,
         "channels": channels,
         "impacts": impacts,
+        "effectiveness": effectiveness,
+        "asset_categories": asset_category_meta,
+        "channel_categories": channel_category_meta,
     }
 
 
@@ -1632,6 +2276,17 @@ def update_asset_metadata(
         status = _resolve_approval_status(patch.get("approval_status"))
         if status:
             asset.approval_status = status
+    if "primary_channel_id" in patch:
+        channel_id = patch.get("primary_channel_id")
+        if channel_id:
+            channel = db.get(ArsenalChannel, channel_id)
+            if not channel:
+                raise ValueError(f"Channel '{channel_id}' not found")
+            asset.primary_channel_id = channel_id
+        else:
+            asset.primary_channel_id = None
+    if "activity_labels" in patch:
+        asset.activity_labels = _normalize_string_list(patch.get("activity_labels"))
 
     asset.update_metadata_status()
     db.add(asset)

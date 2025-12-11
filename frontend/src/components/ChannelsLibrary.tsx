@@ -49,11 +49,15 @@ type Channel = {
     }>;
   };
   typical_assets?: Array<{ id: string; label?: string | null }> | null;
+  approval_status?: string | null;
+  derived_metadata?: Record<string, any> | null;
+  auto_classification_confidence?: number | null;
 };
 
 interface ChannelsLibraryProps {
   channels: Channel[];
   onEdit: (channel: Channel) => void;
+  onApprove: (channel: Channel) => void;
 }
 
 const toTitleCase = (value: string) =>
@@ -85,7 +89,7 @@ const summarizeAccounts = (
   return remaining > 0 ? `${preview.join(", ")} +${remaining}` : preview.join(", ");
 };
 
-const ChannelsLibrary = ({ channels, onEdit }: ChannelsLibraryProps) => {
+const ChannelsLibrary = ({ channels, onEdit, onApprove }: ChannelsLibraryProps) => {
   const [expandedChannelId, setExpandedChannelId] = useState<string | null>(null);
   if (!channels.length) {
     return (
@@ -130,9 +134,14 @@ const ChannelsLibrary = ({ channels, onEdit }: ChannelsLibraryProps) => {
                   variant={metadataComplete ? "outlined" : "filled"}
                   label={metadataComplete ? "Metadata complete" : "Needs metadata"}
                 />
+                {needsApproval ? (
+                  <Chip size="small" color="warning" label="Needs approval" />
+                ) : (
+                  <Chip size="small" color="success" variant="outlined" label="Approved" />
+                )}
               </Stack>
             }
-            subheader={channel.slug ? `id: ${channel.slug}` : undefined}
+            subheader={`Channel ID: ${channel.id}${channel.slug ? ` • Slug: ${channel.slug}` : ""}`}
           />
           <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 1.5 }}>
             <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
@@ -163,6 +172,24 @@ const ChannelsLibrary = ({ channels, onEdit }: ChannelsLibraryProps) => {
               <Typography variant="body2" color="text.secondary">
                 Notes: {channel.notes}
               </Typography>
+            )}
+
+            {needsApproval && channel.derived_metadata && (
+              <Box sx={{ borderRadius: 1, border: 1, borderColor: "warning.light", p: 1 }}>
+                <Typography variant="caption" color="warning.main">
+                  Auto classification
+                </Typography>
+                {channel.derived_metadata.channel?.label && (
+                  <Typography variant="body2" color="text.secondary">
+                    Suggested channel: {channel.derived_metadata.channel.label}
+                  </Typography>
+                )}
+                {typeof channel.auto_classification_confidence === "number" && (
+                  <Typography variant="caption" color="text.secondary">
+                    Confidence {(channel.auto_classification_confidence * 100).toFixed(0)}%
+                  </Typography>
+                )}
+              </Box>
             )}
 
             {topAssets.length > 0 && (

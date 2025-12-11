@@ -11,6 +11,8 @@ from backend.utils.graph_base.network_graph import (
     _set_node_label,
     build_product_graph,
     get_nodes_list_ids,
+    get_persona_node_ids,
+    persona_meta_from_node,
 )
 from backend.utils.inference.rcs_generators.graph_algorithms import (
     _phase_from_perc_prox,
@@ -30,7 +32,10 @@ def _safe_get(d: dict, k: str, default=0.0) -> float:
 
 def _node_type(G: nx.DiGraph, nid: str) -> str:
     d = G.nodes.get(nid, {})
-    return (d.get("node_type") or d.get("type") or "").strip().lower()
+    t = (d.get("node_type") or d.get("type") or "").strip().lower()
+    if t in ("canonical_persona", "persona_variant"):
+        return "persona"
+    return t
 
 # ============================
 # Concern sequences / coalitions (unchanged logic)

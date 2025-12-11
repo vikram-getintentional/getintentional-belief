@@ -45,11 +45,19 @@ export type AssetCadenceRow = {
   } | null;
 };
 
+type KeystoneResolverResult = {
+  label?: string | null;
+  wolvesScore?: number | null;
+  wolvesDeltaBp?: number | null;
+  narrative?: string | null;
+};
+
 type Props = {
   rows?: AssetCadenceRow[];
   personaLabelLookup?: Record<string, string>;
   enableFilters?: boolean;
   emptyCopy?: string;
+  keystoneResolver?: (row: AssetCadenceRow) => KeystoneResolverResult | null | undefined;
 };
 
 type FunnelBand = "Early" | "Mid" | "Late";
@@ -97,6 +105,7 @@ const AssetCadenceTable: React.FC<Props> = ({
   personaLabelLookup = {},
   enableFilters = false,
   emptyCopy = "Asset cadence will populate once campaign plays are generated.",
+  keystoneResolver,
 }) => {
   const data = rows || [];
   const [timeframeFilter, setTimeframeFilter] = useState("all");
@@ -258,6 +267,7 @@ const AssetCadenceTable: React.FC<Props> = ({
               <TableCell>Persona</TableCell>
               <TableCell>Belief Stage</TableCell>
               <TableCell>Concern</TableCell>
+              <TableCell>Chain Effect</TableCell>
               <TableCell>Cadence Phase</TableCell>
               <TableCell>Asset</TableCell>
               <TableCell>Channel</TableCell>
@@ -281,6 +291,8 @@ const AssetCadenceTable: React.FC<Props> = ({
                 const concernLabel = row.target_concern || "—";
                 const phaseBand = cadenceBand(row.cadence_phase);
                 const rowHighlight = highlightPlay(row);
+                const keystoneContext = keystoneResolver ? keystoneResolver(row) || null : null;
+                const keystoneNarrative = keystoneContext?.narrative || null;
                 return (
                   <TableRow
                     key={`${row.timeframe || "timeframe"}-${row.campaign_theme || "theme"}-${idx}`}
@@ -294,9 +306,41 @@ const AssetCadenceTable: React.FC<Props> = ({
                   >
                     <TableCell>{row.timeframe || "—"}</TableCell>
                     <TableCell>{row.campaign_theme || "—"}</TableCell>
-                    <TableCell>{personaLabel}</TableCell>
+                    <TableCell>
+                      <Stack spacing={0.25}>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography variant="body2">{personaLabel}</Typography>
+                          {keystoneContext ? (
+                            <Chip size="small" color="success" label="Keystone" />
+                          ) : null}
+                        </Stack>
+                        {keystoneContext?.wolvesScore !== null &&
+                        keystoneContext?.wolvesScore !== undefined ? (
+                          <Typography variant="caption" color="success.main">
+                            Wolves {fmtPercent(keystoneContext.wolvesScore)}
+                          </Typography>
+                        ) : null}
+                        {keystoneContext?.wolvesDeltaBp !== null &&
+                        keystoneContext?.wolvesDeltaBp !== undefined ? (
+                          <Typography variant="caption" color="success.main">
+                            Δ {fmtBasisPoints(keystoneContext.wolvesDeltaBp)}
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    </TableCell>
                     <TableCell>{beliefStage}</TableCell>
                     <TableCell>{concernLabel}</TableCell>
+                    <TableCell>
+                      {keystoneNarrative ? (
+                        <Typography variant="body2" color="success.main">
+                          {keystoneNarrative}
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          —
+                        </Typography>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Chip
                         size="small"
@@ -334,7 +378,7 @@ const AssetCadenceTable: React.FC<Props> = ({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={13}>
+                <TableCell colSpan={14}>
                   <Typography variant="body2" color="text.secondary">
                     No entries match the selected filters.
                   </Typography>

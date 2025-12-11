@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -26,6 +27,9 @@ import {
   Typography,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import ProvenanceChip, {
+  type TextInsight,
+} from "../components/ProvenanceChip";
 
 type PersonaFieldSummary = {
   field?: string | null;
@@ -101,6 +105,31 @@ type ArsenalImpactRow = {
   } | null;
 };
 
+type KeystonePersonaInsight = {
+  type?: string;
+  persona_id: string;
+  persona: string;
+  wolves_score?: number | null;
+  delta_win_bp?: number | null;
+  involvement_rate?: number | null;
+  sample_size?: number | null;
+  segment?: {
+    key?: string;
+    label?: string;
+    [key: string]: any;
+  } | null;
+  chain_targets?: string[];
+  chain_share?: number | null;
+  coalition_path?: string[];
+  recommended_moves?: Array<{
+    belief_transition?: string | null;
+    best_asset?: string | null;
+    best_channel?: string | null;
+    bps_lift?: number | null;
+  }>;
+  explanation?: string | null;
+};
+
 type ProductInsightsPayload = {
   ideal_customer_patterns?: {
     works_well?: string[];
@@ -116,9 +145,9 @@ type ProductInsightsPayload = {
     coalitions?: string[];
   };
   belief_transitions?: {
-    hardest?: string;
-    easiest?: string;
-    top_pains?: string[];
+    hardest?: TextInsight;
+    easiest?: TextInsight;
+    top_pains?: TextInsight[];
   };
   asset_channel_effectiveness?: {
     high_assets?: string[];
@@ -136,12 +165,13 @@ type ProductInsightsPayload = {
     impact?: string | null;
     confidence?: number | null;
     reason?: string | null;
+    source?: string;
   }>;
   };
   global_patterns?: {
-    biggest_barrier?: string;
-    hidden_blocker?: string;
-    missed_opportunity?: string;
+    biggest_barrier?: TextInsight;
+    hidden_blocker?: TextInsight;
+    missed_opportunity?: TextInsight;
   };
   product_strengths?: {
     strengths?: string[];
@@ -153,6 +183,8 @@ type ProductInsightsPayload = {
     asset_priorities?: string;
     channel_priorities?: string;
   };
+  keystone_personas?: KeystonePersonaInsight[];
+  wolves_metrics_updated_at?: string | null;
 };
 
 type InsightListItem = {
@@ -161,6 +193,36 @@ type InsightListItem = {
   meta_key?: string | null;
   signals?: number | null;
   support?: Record<string, any>;
+};
+
+const makeDefaultInsight = (text: string): TextInsight => ({
+  text,
+  source: "default",
+});
+
+const toTextInsight = (
+  value: TextInsight | string | undefined,
+  fallbackText: string
+): TextInsight => {
+  if (!value && !fallbackText) {
+    return makeDefaultInsight(NO_DATA_TEXT);
+  }
+  if (value && typeof value !== "string") {
+    return value;
+  }
+  return makeDefaultInsight(value ?? fallbackText);
+};
+
+const toTextInsightList = (
+  values: Array<TextInsight | string> | undefined,
+  fallback: string[]
+): TextInsight[] => {
+  if (values && values.length) {
+    return values.map((value) =>
+      typeof value === "string" ? makeDefaultInsight(value) : value
+    );
+  }
+  return fallback.map((text) => makeDefaultInsight(text));
 };
 
 type GlobalInsights = {
@@ -173,6 +235,7 @@ type GlobalInsights = {
     hit_at_1?: number | null;
     hit_at_3?: number | null;
     log_loss?: number | null;
+    wolves_metrics_updated_at?: string | null;
   };
   persona_recommendations: GlobalPersonaRecommendation[];
   edge_recommendations: GlobalEdgeRecommendation[];
@@ -249,6 +312,26 @@ function fmtCount(value?: number | null) {
   return Math.round(Number(value)).toLocaleString();
 }
 
+function fmtBasisPoints(value?: number | null) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  return `${Number(value).toFixed(1)} bps`;
+}
+
+const formatRelativeTime = (iso?: string | null) => {
+  if (!iso) return null;
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const diffMs = Date.now() - parsed.getTime();
+  if (diffMs < 0) return "just now";
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hr${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+};
+
 function formatBadgeLabel(value: number) {
   if (value >= 100) return "99+";
   return String(value);
@@ -319,6 +402,7 @@ const parseMetaInsight = (text: string) => {
 };
 
 const InsightsInbox = () => {
+  const navigate = useNavigate();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [globalInsights, setGlobalInsights] = useState<GlobalInsights | null>(null);
@@ -435,6 +519,12 @@ const InsightsInbox = () => {
 
   const productInsights = globalInsights?.product_insights;
   const arsenalImpact = globalInsights?.arsenal_impact ?? [];
+  const keystoneInsights = productInsights?.keystone_personas ?? [];
+  const wolvesMetricsUpdatedAt =
+    productInsights?.wolves_metrics_updated_at ||
+    globalInsights?.meta?.wolves_metrics_updated_at ||
+    null;
+  const wolvesUpdatedLabel = formatRelativeTime(wolvesMetricsUpdatedAt);
 
   const sectionAWorksItems =
     productInsights?.ideal_customer_patterns?.works_well_items ??
@@ -481,12 +571,18 @@ const InsightsInbox = () => {
     SECTION_D_CHANNEL_MATCHES_DEFAULT;
   const typicalPath = productInsights?.journey_structure?.typical_path ?? null;
 
-  const beliefHardest =
-    productInsights?.belief_transitions?.hardest || SECTION_C_HARDEST_DEFAULT;
-  const beliefEasiest =
-    productInsights?.belief_transitions?.easiest || SECTION_C_EASIEST_DEFAULT;
-  const beliefPains =
-    productInsights?.belief_transitions?.top_pains || SECTION_C_PAIN_NODES_DEFAULT;
+  const beliefHardest = toTextInsight(
+    productInsights?.belief_transitions?.hardest,
+    SECTION_C_HARDEST_DEFAULT
+  );
+  const beliefEasiest = toTextInsight(
+    productInsights?.belief_transitions?.easiest,
+    SECTION_C_EASIEST_DEFAULT
+  );
+  const beliefPains = toTextInsightList(
+    productInsights?.belief_transitions?.top_pains,
+    SECTION_C_PAIN_NODES_DEFAULT
+  );
 
   const commonPathways =
     productInsights?.journey_structure?.common_paths ||
@@ -502,13 +598,18 @@ const InsightsInbox = () => {
       ? journeyDurationRaw
       : SECTION_E_DURATION_DEFAULT;
 
-  const globalBarrier =
-    productInsights?.global_patterns?.biggest_barrier || SECTION_F_BARRIERS_DEFAULT;
-  const hiddenBlocker =
-    productInsights?.global_patterns?.hidden_blocker || SECTION_F_HIDDEN_DEFAULT;
-  const missedOpportunity =
-    productInsights?.global_patterns?.missed_opportunity ||
-    SECTION_F_MISSED_DEFAULT;
+  const globalBarrier = toTextInsight(
+    productInsights?.global_patterns?.biggest_barrier,
+    SECTION_F_BARRIERS_DEFAULT
+  );
+  const hiddenBlocker = toTextInsight(
+    productInsights?.global_patterns?.hidden_blocker,
+    SECTION_F_HIDDEN_DEFAULT
+  );
+  const missedOpportunity = toTextInsight(
+    productInsights?.global_patterns?.missed_opportunity,
+    SECTION_F_MISSED_DEFAULT
+  );
 
   const productStrengthsList =
     productInsights?.product_strengths?.strengths || SECTION_G_STRENGTHS_DEFAULT;
@@ -618,6 +719,159 @@ const InsightsInbox = () => {
 
       {tab === "product" && (
         <Stack spacing={3}>
+          {keystoneInsights.length ? (
+            <Card variant="outlined">
+              <CardHeader
+                title="Keystone personas · Wolves impact"
+                subheader="Personas whose presence disproportionately shifts win odds and unlocks downstream coalitions."
+                action={
+                  wolvesUpdatedLabel ? (
+                    <Typography variant="caption" color="text.secondary">
+                      Refreshed {wolvesUpdatedLabel}
+                    </Typography>
+                  ) : null
+                }
+              />
+              <CardContent>
+                <Stack spacing={1.5}>
+                  {keystoneInsights.map((insight) => {
+                    const wolvesScoreLabel =
+                      typeof insight.wolves_score === "number"
+                        ? fmtPercent(insight.wolves_score, {
+                            inputIsFraction: true,
+                            decimals: 0,
+                          })
+                        : null;
+                    const deltaLabel = fmtBasisPoints(insight.delta_win_bp);
+                    const involvementLabel =
+                      typeof insight.involvement_rate === "number"
+                        ? fmtPercent(insight.involvement_rate, {
+                            inputIsFraction: true,
+                            decimals: 0,
+                          })
+                        : null;
+                    const sampleLabel =
+                      typeof insight.sample_size === "number" && insight.sample_size > 0
+                        ? `${fmtCount(insight.sample_size)} episodes`
+                        : null;
+                    const segmentLabel =
+                      insight.segment?.label || insight.segment?.industry || "Portfolio";
+                    const chainTargets =
+                      insight.chain_targets && insight.chain_targets.length
+                        ? insight.chain_targets.join(" → ")
+                        : null;
+                    const chainShare =
+                      typeof insight.chain_share === "number"
+                        ? fmtPercent(insight.chain_share, {
+                            inputIsFraction: true,
+                            decimals: 0,
+                          })
+                        : null;
+                    return (
+                      <Paper
+                        key={`keystone-${insight.persona_id}`}
+                        variant="outlined"
+                        sx={{ p: 1.5 }}
+                      >
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={1}
+                          alignItems={{ xs: "flex-start", sm: "center" }}
+                        >
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="h6">{insight.persona}</Typography>
+                            {insight.explanation ? (
+                              <Typography variant="body2" color="text.secondary">
+                                {insight.explanation}
+                              </Typography>
+                            ) : null}
+                          </Box>
+                          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                            {wolvesScoreLabel && (
+                              <Chip size="small" color="success" label={`Wolves ${wolvesScoreLabel}`} />
+                            )}
+                            {deltaLabel !== "—" && (
+                              <Chip size="small" variant="outlined" label={`Δ ${deltaLabel}`} />
+                            )}
+                            {involvementLabel && (
+                              <Chip size="small" variant="outlined" label={`Involvement ${involvementLabel}`} />
+                            )}
+                            {sampleLabel && (
+                              <Chip size="small" variant="outlined" label={sampleLabel} />
+                            )}
+                          </Stack>
+                        </Stack>
+                        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mt: 1 }}>
+                          <Chip size="small" color="default" label={segmentLabel} />
+                          {chainTargets && (
+                            <Chip
+                              size="small"
+                              color="success"
+                              variant="outlined"
+                              label={
+                                chainShare
+                                  ? `Unlocks ${chainTargets} (${chainShare})`
+                                  : `Unlocks ${chainTargets}`
+                              }
+                            />
+                          )}
+                        </Stack>
+                        {insight.recommended_moves && insight.recommended_moves.length ? (
+                          <Box sx={{ mt: 1 }}>
+                            <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                              Recommended moves
+                            </Typography>
+                            <List dense>
+                              {insight.recommended_moves.slice(0, 2).map((move, idx) => (
+                                <ListItem
+                                  key={`keystone-move-${insight.persona_id}-${idx}`}
+                                  disablePadding
+                                  sx={{ pl: 0 }}
+                                >
+                                  <ListItemText
+                                    primary={`${move.best_asset || "Asset"}${
+                                      move.best_channel ? ` · ${move.best_channel}` : ""
+                                    }`}
+                                    secondary={`${move.belief_transition || "Belief transition"} · ${
+                                      move.bps_lift !== null && move.bps_lift !== undefined
+                                        ? fmtBasisPoints(move.bps_lift)
+                                        : "—"
+                                    }`}
+                                  />
+                                </ListItem>
+                              ))}
+                            </List>
+                          </Box>
+                        ) : null}
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={1}
+                          sx={{ mt: 1.5, flexWrap: "wrap" }}
+                        >
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => navigate("/marketing-planner")}
+                          >
+                            Focus in planner
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => navigate("/account-plan")}
+                          >
+                            View accounts
+                          </Button>
+                        </Stack>
+                      </Paper>
+                    );
+                  })}
+                </Stack>
+              </CardContent>
+            </Card>
+          ) : null}
+
           <Card variant="outlined">
             <CardHeader
               title="Section A · Ideal Customer Patterns (ICP Archetypes)"
@@ -631,6 +885,11 @@ const InsightsInbox = () => {
                 {sectionAWorksItems.map((item) => {
                   const cleanText = item.text.replace(/^“|”$/g, "");
                   const { chipValue, remainder, color } = parseMetaInsight(cleanText);
+                  const metaConfidence =
+                    typeof item.support?.meta_confidence === "number"
+                      ? Math.round((item.support.meta_confidence ?? 0) * 100)
+                      : null;
+                  const isLowSignal = item.support?.is_significant === false;
                   return (
                   <ListItem
                     key={`sectionA-works-${item.text}`}
@@ -649,6 +908,11 @@ const InsightsInbox = () => {
                             />
                           ) : null}
                           <Typography component="span">{remainder || cleanText}</Typography>
+                          {isLowSignal && (
+                            <Tooltip title="Signal strength is low — more wins/losses needed">
+                              <Chip size="small" color="warning" label="Low signal" variant="outlined" />
+                            </Tooltip>
+                          )}
                           {item.signals !== null && (
                             <Tooltip
                               title={
@@ -688,6 +952,11 @@ const InsightsInbox = () => {
                                         {item.support.accounts.join(", ")}
                                       </Typography>
                                     )}
+                                  {metaConfidence !== null && (
+                                    <Typography variant="body2">
+                                      Meta confidence: {metaConfidence}%
+                                    </Typography>
+                                  )}
                                 </Box>
                               }
                               arrow
@@ -710,6 +979,11 @@ const InsightsInbox = () => {
                 {sectionAGapsItems.map((item) => {
                   const cleanText = item.text.replace(/^“|”$/g, "");
                   const { chipValue, remainder, color } = parseMetaInsight(cleanText);
+                  const metaConfidence =
+                    typeof item.support?.meta_confidence === "number"
+                      ? Math.round((item.support.meta_confidence ?? 0) * 100)
+                      : null;
+                  const isLowSignal = item.support?.is_significant === false;
                   return (
                   <ListItem
                     key={`sectionA-gaps-${item.text}`}
@@ -728,6 +1002,11 @@ const InsightsInbox = () => {
                             />
                           ) : null}
                           <Typography component="span">{remainder || cleanText}</Typography>
+                          {isLowSignal && (
+                            <Tooltip title="Signal strength is low — more evidence needed">
+                              <Chip size="small" color="warning" label="Low signal" variant="outlined" />
+                            </Tooltip>
+                          )}
                           {item.signals !== null && (
                             <Tooltip
                               title={
@@ -767,6 +1046,11 @@ const InsightsInbox = () => {
                                         {item.support.accounts.join(", ")}
                                       </Typography>
                                     )}
+                                  {metaConfidence !== null && (
+                                    <Typography variant="body2">
+                                      Meta confidence: {metaConfidence}%
+                                    </Typography>
+                                  )}
                                 </Box>
                               }
                               arrow
@@ -855,6 +1139,42 @@ const InsightsInbox = () => {
           </Card>
 
           <Card variant="outlined">
+            <CardHeader
+              title="Section C · Belief Transitions"
+              subheader="Where belief stalls, accelerates, and which pains surface most."
+            />
+            <CardContent>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Hardest Jump
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+                <Typography variant="body2">{beliefHardest.text}</Typography>
+                <ProvenanceChip provenance={beliefHardest} />
+              </Stack>
+
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Easiest Jump
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+                <Typography variant="body2">{beliefEasiest.text}</Typography>
+                <ProvenanceChip provenance={beliefEasiest} />
+              </Stack>
+
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Top Pain Signals
+              </Typography>
+              <List dense>
+                {beliefPains.map((pain, idx) => (
+                  <ListItem key={`belief-pain-${idx}`} sx={{ pl: 0 }}>
+                    <ListItemText primary={pain.text} />
+                    <ProvenanceChip provenance={pain} />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+
+          <Card variant="outlined">
             <CardHeader title="Typical conversion path" />
             <CardContent>
               {typicalPath ? (
@@ -866,24 +1186,25 @@ const InsightsInbox = () => {
                         : null;
                     return (
                       <Box key={step.step}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography variant="subtitle2">
-                            Step {step.step}: {step.persona}
-                          </Typography>
-                          {confidencePct !== null && (
-                            <Chip
-                              size="small"
-                              color={
-                                confidencePct >= 70
-                                  ? "success"
-                                  : confidencePct >= 40
-                                  ? "warning"
-                                  : "default"
-                              }
-                              label={`confidence ${confidencePct}%`}
-                            />
-                          )}
-                        </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="subtitle2">
+                        Step {step.step}: {step.persona}
+                      </Typography>
+                      {confidencePct !== null && (
+                        <Chip
+                          size="small"
+                          color={
+                            confidencePct >= 70
+                              ? "success"
+                              : confidencePct >= 40
+                              ? "warning"
+                              : "default"
+                          }
+                          label={`confidence ${confidencePct}%`}
+                        />
+                      )}
+                      <ProvenanceChip provenance={step} />
+                    </Stack>
                         <Typography variant="body2">
                           {step.highlight && step.highlight.trim()
                             ? step.highlight
@@ -919,6 +1240,48 @@ const InsightsInbox = () => {
                   Path insights unlock once you run replay on a few deal journeys.
                 </Typography>
               )}
+            </CardContent>
+          </Card>
+
+          <Card variant="outlined">
+            <CardHeader
+              title="Section F · Global Belief Patterns"
+              subheader="Systemic blockers and opportunities surfaced across accounts."
+            />
+            <CardContent>
+              <Stack spacing={1.5}>
+                {[globalBarrier, hiddenBlocker, missedOpportunity].map(
+                  (insight, idx) => {
+                    const entityType = insight.entity_type;
+                    const entityLabel =
+                      entityType === "concern"
+                        ? "Concern"
+                        : entityType === "persona"
+                        ? "Persona"
+                        : null;
+                    const entityTooltip =
+                      insight.label || insight.persona_id || null;
+                    return (
+                      <Stack
+                        key={`global-pattern-${idx}`}
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                      >
+                        <Typography variant="body2" sx={{ flex: 1 }}>
+                          {insight.text}
+                        </Typography>
+                        {entityLabel ? (
+                          <Tooltip title={entityTooltip || entityLabel}>
+                            <Chip size="small" variant="outlined" label={entityLabel} />
+                          </Tooltip>
+                        ) : null}
+                        <ProvenanceChip provenance={insight} />
+                      </Stack>
+                    );
+                  }
+                )}
+              </Stack>
             </CardContent>
           </Card>
         </Stack>

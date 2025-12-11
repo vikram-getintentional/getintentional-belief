@@ -21,6 +21,7 @@ import {
   Tooltip,
   Typography,
   MenuItem,
+  Paper,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -66,6 +67,24 @@ type PersonaRequirement = {
   suggested_people: CandidatePayload[];
 };
 
+type PersonaCandidate = {
+  label: string;
+  normalized_label: string;
+  persona_title?: string | null;
+  persona_department?: string | null;
+  persona_seniority?: string | null;
+  account_occurrences: number;
+  account_first_seen?: string | null;
+  account_last_seen?: string | null;
+  global_account_count?: number;
+  global_occurrences?: number;
+  suggested_persona_id?: string | null;
+  suggested_persona_label?: string | null;
+  similarity?: number | null;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+};
+
 type EnrichmentSummary = {
   required_personas: number;
   personas_with_matches: number;
@@ -81,6 +100,7 @@ type EnrichmentResponse = {
   blueprint_generated_at?: string | null;
   persona_requirements: PersonaRequirement[];
   summary: EnrichmentSummary;
+  persona_candidates?: PersonaCandidate[];
 };
 
 type MatchEditorState = {
@@ -104,6 +124,13 @@ const formatPercent = (value?: number | null) => {
 const formatConfidence = (value?: number | null) => {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
   return `${Math.round(value * 100)}%`;
+};
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString();
 };
 
 const buildPersonDescriptor = (
@@ -145,6 +172,7 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
   const [manualTitle, setManualTitle] = useState<string>("");
   const [manualDepartment, setManualDepartment] = useState<string>("");
   const [manualSeniority, setManualSeniority] = useState<string>("");
+  const [candidateActionLoading, setCandidateActionLoading] = useState<string | null>(null);
 
   const authHeader = useMemo(() => ({
     Authorization: token ? `Bearer ${token}` : "",
@@ -377,6 +405,44 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
     }
   };
 
+  const handleCandidateAction = async (
+    candidate: PersonaCandidate,
+    action: "add" | "match"
+  ) => {
+    if (!account?.id || !productId || !token) return;
+    if (action === "match" && !candidate.suggested_persona_id) return;
+    const actionKey = `${action}-${candidate.normalized_label}`;
+    try {
+      setCandidateActionLoading(actionKey);
+      const payload = {
+        product_id: productId,
+        label: candidate.label,
+        title: candidate.persona_title,
+        department: candidate.persona_department,
+        seniority: candidate.persona_seniority,
+        action,
+        target_persona_id: action === "match" ? candidate.suggested_persona_id : undefined,
+      };
+      const res = await fetch(
+        `http://localhost:8000/accounts/${account.id}/enrichment/personas`,
+        {
+          method: "POST",
+          headers: authHeader,
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      await refresh();
+    } catch (err: any) {
+      console.error("Failed to apply candidate action", err);
+      setError(err?.message || "Failed to apply candidate action");
+    } finally {
+      setCandidateActionLoading(null);
+    }
+  };
+
   const coverageLabel = useMemo(() => {
     if (!data?.summary) return "";
     const { coverage_pct, personas_with_matches, required_personas } = data.summary;
@@ -415,6 +481,111 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
                 Matched people: {data.summary.matched_people} · Total people tracked: {data.summary.total_people}
               </Typography>
             </Box>
+
+            {data.persona_candidates && data.persona_candidates.length > 0 && (
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Persona candidates from recent engagements
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  These titles were observed in engagement data but are not yet mapped to your graph. Promote them or
+                  match them to an existing persona.
+                </Typography>
+                <Stack spacing={1.5}>
+                  {data.persona_candidates.map((candidate) => {
+                    const addKey = `add-${candidate.normalized_label}`;
+                    const matchKey = `match-${candidate.normalized_label}`;
+                    const addLoading = candidateActionLoading === addKey;
+                    const matchLoading = candidateActionLoading === matchKey;
+                    return (
+                      <Paper
+                        key={candidate.normalized_label}
+                        variant="outlined"
+                        sx={{ p: 1.5, borderColor: "primary.100" }}
+                      >
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={1}
+                          alignItems={{ xs: "flex-start", sm: "center" }}
+                          justifyContent="space-between"
+                        >
+                          <Box>
+                            <Typography variant="subtitle1">{candidate.label}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {[
+                                candidate.persona_title,
+                                candidate.persona_department,
+                                candidate.persona_seniority,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ") || "—"}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {candidate.account_occurrences} engagements in this account ·{" "}
+                              {candidate.global_account_count || 0} accounts overall
+                              {candidate.account_last_seen
+                                ? ` · Last seen ${formatDate(candidate.account_last_seen)}`
+                                : ""}
+                            </Typography>
+                            <Stack direction="row" spacing={1} sx={{ mt: 0.5, flexWrap: "wrap" }}>
+                              {candidate.suggested_persona_label && (
+                                <Chip
+                                  size="small"
+                                  label={`Suggested: ${candidate.suggested_persona_label}`}
+                                  variant="outlined"
+                                />
+                              )}
+                              {typeof candidate.similarity === "number" && (
+                                <Chip
+                                  size="small"
+                                  label={`Similarity ${formatConfidence(candidate.similarity)}`}
+                                  variant="outlined"
+                                />
+                              )}
+                              {typeof candidate.wolves_score === "number" && (
+                                <Chip
+                                  size="small"
+                                  label={`Wolves ${formatConfidence(candidate.wolves_score)}`}
+                                  color="success"
+                                  variant="outlined"
+                                />
+                              )}
+                              {typeof candidate.wolves_delta_bp === "number" && (
+                                <Chip
+                                  size="small"
+                                  label={`Δ ${Math.round(candidate.wolves_delta_bp)} bp`}
+                                  variant="outlined"
+                                />
+                              )}
+                            </Stack>
+                          </Box>
+                          <Stack direction="row" spacing={1}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={() => handleCandidateAction(candidate, "add")}
+                              disabled={addLoading}
+                            >
+                              {addLoading ? "Adding..." : "Add Persona"}
+                            </Button>
+                            {candidate.suggested_persona_id && (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => handleCandidateAction(candidate, "match")}
+                                disabled={matchLoading}
+                              >
+                                {matchLoading ? "Matching..." : `Match to ${candidate.suggested_persona_label}`}
+                              </Button>
+                            )}
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    );
+                  })}
+                </Stack>
+              </Box>
+            )}
 
             <Divider />
 

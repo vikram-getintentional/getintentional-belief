@@ -9,9 +9,10 @@ import networkx as nx
 
 # ---- import your helpers (names/relations as per your snippet) ----
 from backend.utils.graph_base.network_graph import (
-    get_nodes_list_ids,
+    get_persona_node_ids,
     get_source_nodes_by_target_and_type,
     get_target_nodes_by_source_and_type,
+    is_persona_node,
 )
 from backend.utils.inference.rcs_generators.graph_algorithms import _normalize_01, _ppr, get_involvement_activation_report
 from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime import get_graphwin
@@ -20,6 +21,8 @@ from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime im
 
 # -------------------- low-level helpers --------------------
 def _nt(G: nx.DiGraph, n: str) -> str:
+    if is_persona_node(G, n):
+        return "persona"
     return (G.nodes.get(n) or {}).get("node_type", "")
 
 
@@ -125,7 +128,7 @@ class PersonaGraph:
         G = product_graph
         print("Building PersonaGraph from product graph with Nodes:", G.number_of_nodes(), "Edges:", G.number_of_edges())
 
-        personas = get_nodes_list_ids(G, "persona", {})
+        personas = get_persona_node_ids(G)
         
         for p1 in personas:
             _ensure_node(PG, G, p1)
@@ -219,11 +222,11 @@ class PersonaGraph:
                 PG.nodes[n]["node_type"] = "persona"
                 continue
             src = (product_graph.nodes.get(n) or original_graph.nodes.get(n) or {})
-            if "node_type" in src:
-                PG.nodes[n]["node_type"] = src["node_type"]
-            else:
-                # best-effort fallback: persona if it has any outgoing to persona/product
+            src_type = (src.get("node_type") or src.get("type") or "").strip().lower()
+            if src_type in {"canonical_persona", "persona"}:
                 PG.nodes[n]["node_type"] = "persona"
+            else:
+                PG.nodes[n]["node_type"] = src_type or "persona"
 
         return cls(G=PG, product_graph=product_graph, original_graph=OG)
     

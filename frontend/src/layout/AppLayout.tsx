@@ -217,7 +217,7 @@ const navSections = [
   
         {/* Sidebar */}
         <aside
-          className={`fixed lg:static top-0 left-0 h-full z-40 w-64 bg-white px-4 py-6 space-y-8 overflow-y-auto transform transition-transform duration-200 ease-in-out
+          className={`fixed lg:static top-0 left-0 h-full z-40 w-64 flex-shrink-0 bg-white px-4 py-6 space-y-8 overflow-y-auto transform transition-transform duration-200 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="flex items-center gap-2">
@@ -265,8 +265,10 @@ const navSections = [
         </aside>
   
         {/* Main content */}
-        <main className="flex-1 p-10 ml-0 transition-all duration-200 ease-in-out">
-          {children}
+        <main className="flex-1 min-w-0 p-4 lg:p-10 ml-0 transition-all duration-200 ease-in-out overflow-x-auto">
+          <div className="max-w-[1800px] mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
     );

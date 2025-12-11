@@ -111,10 +111,24 @@ def _persona_node_parts(nid: str, data: Dict[str, Any]) -> Tuple[str, str, str]:
     Return (title, department, seniority) lowercased for a persona node.
     Prefer parsing id 'title|department|seniority'; else read node attrs.
     """
-    # Start from node attrs
+    node_type = (data.get("node_type") or data.get("type") or "").strip().lower()
+
     t = (data.get("title") or data.get("label") or "").strip().lower()
     d = (data.get("department") or "").strip().lower()
     s_raw = (data.get("seniority") or "").strip()
+
+    if node_type == "canonical_persona":
+        t = (data.get("label") or t).strip().lower()
+        departments = data.get("typical_departments") or []
+        if departments and not d:
+            d = (departments[0] or "").strip().lower()
+        dist = data.get("typical_seniority_distribution") or {}
+        if dist:
+            s_raw = max(dist.items(), key=lambda kv: kv[1])[0]
+    elif node_type == "persona_variant":
+        t = (data.get("title") or data.get("label") or t).strip().lower()
+        d = (data.get("department") or d).strip().lower()
+        s_raw = (data.get("seniority") or s_raw).strip()
 
     # Fallback to parsing from id if attrs are incomplete
     if (not t or not d or not s_raw) and "|" in nid:
@@ -581,7 +595,9 @@ def match_persona_for_actor_in_graph(
     else:
         # --- 2) Fuzzy matching over persona nodes ---
         runners: List[Tuple[str, str, float]] = []
-        all_personas = get_nodes_list_ids(G, "persona", {})
+        persona_nodes = get_nodes_list_ids(G, "persona", {})
+        canonical_nodes = get_nodes_list_ids(G, "canonical_persona", {})
+        all_personas = persona_nodes + canonical_nodes
         for p in all_personas:
             p_node = get_node_by_id(G, p)
             if not p_node:
@@ -705,16 +721,53 @@ def upsert_person_from_engagement(product_id: str, account_id: str, actor: Dict[
         if snr and (not person.seniority or len(snr) > len(person.seniority)):
             person.seniority = snr
 
-        # Canonicalize → set canonical_persona_id (string key)
-        persona_map = canonicalize_persona([{
+        actor_payload = {
+            "name": name,
             "title": person.title or "",
             "department": person.department or "",
-            "seniority": person.seniority or _infer_seniority_from_title(person.title or ""),
-        }]) or {}
-        canon = list(persona_map.values())[0] if persona_map else None
-        if canon:
-            c_key = _persona_key(canon.get("title", ""), canon.get("department", ""), canon.get("seniority", ""))
-            person.canonical_persona_id = c_key or None
+            "seniority": person.seniority or "",
+        }
+        resolved_persona_id: Optional[str] = None
+        canonical_meta: Dict[str, Any] = {}
+        try:
+            match = match_persona_for_actor_in_graph(product_id, actor_payload)
+        except Exception:
+            match = None
+        if match:
+            resolution = match.get("resolution") or {}
+            resolved_persona_id = resolution.get("resolved_persona_id") or match.get("best")
+            canonical_meta = match.get("canonical_meta") or {}
+
+        if resolved_persona_id:
+            person.canonical_persona_id = resolved_persona_id
+
+        meta_department = (canonical_meta.get("department") or "").strip().lower()
+        meta_seniority = (canonical_meta.get("seniority") or "").strip().lower()
+        if meta_department:
+            person.canonical_department = meta_department
+        if meta_seniority:
+            person.canonical_seniority = meta_seniority
+
+        if not resolved_persona_id:
+            # Fallback to text-only canonicalization for legacy coverage
+            persona_map = canonicalize_persona([{
+                "title": person.title or "",
+                "department": person.department or "",
+                "seniority": person.seniority or _infer_seniority_from_title(person.title or ""),
+            }]) or {}
+            canon = list(persona_map.values())[0] if persona_map else None
+            if canon and not person.canonical_persona_id:
+                c_key = _persona_key(
+                    canon.get("title", ""),
+                    canon.get("department", ""),
+                    canon.get("seniority", ""),
+                )
+                person.canonical_persona_id = c_key or None
+            if canon:
+                if not person.canonical_department and canon.get("department"):
+                    person.canonical_department = canon.get("department").strip().lower()
+                if not person.canonical_seniority and canon.get("seniority"):
+                    person.canonical_seniority = canon.get("seniority").strip().lower()
 
         # Stats
         person.engagement_count = (person.engagement_count or 0) + 1

@@ -2,7 +2,7 @@ from typing import Dict, List, Any, Optional
 import json
 from collections import defaultdict
 
-from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_node_by_id, get_nodes_list, get_product_id_from_subgraph, get_source_nodes_by_target_and_type
+from backend.utils.graph_base.network_graph import calculate_soft_or_relevance, get_node_by_id, get_nodes_list, get_product_id_from_subgraph, get_source_nodes_by_target_and_type, get_persona_nodes
 
 
 from backend.utils.graph_base.graph_data.rcs_utils.save_and_load_rcs import load_rcs_from_json, save_rcs_as_json
@@ -160,9 +160,20 @@ def get_personas_rcs_priority(sub_graph: nx.DiGraph, attribute_dict: Optional[di
         causal_graph = cached["causal_graph"]
         rcs_report = cached["rcs_report"]
     else:
-        causal_graph, rcs_report = generate_rcs(sub_graph, engaged_nodes=None)
-        save_rcs_as_json(product_id=product_id, attribute_dict={},
-                         causal_graph=causal_graph, rcs_report=rcs_report, zmot_id=cache_key)
+        rcs_payload = generate_rcs(
+            product_graph=sub_graph,
+            original_graph=sub_graph,
+            engaged_nodes=None,
+        )
+        causal_graph = rcs_payload.get("graph", sub_graph)
+        rcs_report = rcs_payload
+        save_rcs_as_json(
+            product_id=product_id,
+            attribute_dict={},
+            causal_graph=causal_graph,
+            rcs_report=rcs_report,
+            zmot_id=cache_key,
+        )
 
     # ---- 2) Collect per-persona metrics from the report ----
     top_block = (rcs_report or {}).get("top_personas", {}) or {}
@@ -186,7 +197,7 @@ def get_personas_rcs_priority(sub_graph: nx.DiGraph, attribute_dict: Optional[di
 
     # ---- 3) Build per-node persona cards (keep for aggregation) ----
     node_cards: List[Dict[str, Any]] = []
-    for persona_id, _ in get_nodes_list(sub_graph, "persona", {}):
+    for persona_id, _ in get_persona_nodes(sub_graph):
         m = metrics.get(persona_id, {"involvement": 0.0, "activation": 0.0, "care": 0.0, "marginal_lift": 0.0, "priority_score": 0.0})
         meta = _persona_label(sub_graph, persona_id)
 
@@ -223,4 +234,3 @@ def get_personas_rcs_priority(sub_graph: nx.DiGraph, attribute_dict: Optional[di
         top_k=top_k
     )
     return aggregated
-

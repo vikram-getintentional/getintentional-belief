@@ -9,15 +9,20 @@ import {
   Chip,
   CircularProgress,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  Popover,
-  Paper,
-  Select,
   IconButton,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Paper,
+  Popover,
+  Select,
   Stack,
   Tab,
   Table,
@@ -27,6 +32,9 @@ import {
   TableHead,
   TableRow,
   Tabs,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -34,10 +42,16 @@ import type { ChipProps } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import PersonaEngagementCadence, {
   type PersonaEngagementPlan,
+  type PersonaEngagementPerson,
 } from "../components/PersonaEngagementCadence";
 import AssetCadenceTable, {
   type AssetCadenceRow,
 } from "../components/AssetCadenceTable";
+import ProvenanceChip, {
+  type InsightSource,
+  type ValueProvenance,
+} from "../components/ProvenanceChip";
+import type { ComprehensiveExecutionPlan } from "../types/apiContracts";
 
 // ---------------------------------------------------------------------------
 // Types matching backend payload
@@ -108,6 +122,31 @@ type AccountZmotPortfolioEvent = AccountZmotEvent & {
   }>;
 };
 
+type EntryPointPlay = {
+  play_id?: string | null;
+  stage?: string | null;
+  concern?: string | null;
+  asset?: string | null;
+  channel?: string | null;
+  mode?: string | null;
+  expected_delta_bp?: number | null;
+  confidence?: number | null;
+};
+
+type EntryPoint = {
+  persona_id: string;
+  persona_label?: string | null;
+  rank?: number | null;
+  entry_score?: number | null;
+  combined_perceptibility?: number | null;
+  combined_proximity?: number | null;
+  graph_perceptibility?: number | null;
+  graph_proximity?: number | null;
+  intervention_reach?: number | null;
+  top_people?: PersonaEngagementPerson[];
+  top_plays?: EntryPointPlay[];
+};
+
 type PersonaMeta = {
   id?: string;
   label?: string;
@@ -120,6 +159,8 @@ type PersonaMeta = {
   activation?: number | null;
   belief_level?: number | null;
   expected_next_prob?: number | null;
+  expected_next_prob_base?: number | null;
+  subsidy_lift?: number | null;
   fatigue?: number | null;
   fatigue_reason?: string | null;
   priority_rank?: number | null;
@@ -128,6 +169,13 @@ type PersonaMeta = {
   expected_in_deal_pct?: number | null;
   phase_probs?: PhaseProbabilities | null;
   dominant_phase?: string | null;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+  wolves_involvement_rate?: number | null;
+  wolves_blocker_rate?: number | null;
+  base_wolf_score?: number | null;
+  dynamic_wolf_score?: number | null;
+  subsidy_relevance?: number | null;
 };
 
 type PersonaTopPerson = {
@@ -313,6 +361,61 @@ type ConversionFocus = {
   people?: string[];
 };
 
+type InterventionModality = {
+  format_label?: string | null;
+  channel_label?: string | null;
+  format_fitment?: number | null;
+  channel_engagement?: number | null;
+  coverage_score?: number | null;
+  asset_name?: string | null;
+  channel_name?: string | null;
+  asset_id?: string | null;
+  channel_id?: string | null;
+  source?: string | null;
+};
+
+type Intervention = {
+  id: string;
+  scope: string;
+  account_id?: string | null;
+  accounts?: Array<{ id?: string | null; name?: string | null }>;
+  expected_account_count?: number;
+  persona_label?: string | null;
+  persona_descriptor?: string | null;
+  stage_label?: string | null;
+  stage_key?: string | null;
+  belief_transition?: BeliefTransitionDetail | null;
+  belief_transition_meta?: Record<string, any> | null;
+  belief_lift_bp?: number | null;
+  confidence?: number | null;
+  people?: string[];
+  matched_people?: PersonMatch[];
+  segment_summary?: string | null;
+  segment_filters?: SegmentFilters;
+  timeline_label?: string | null;
+  timeline_index?: number | null;
+  theme?: string | null;
+  focus_label?: string | null;
+  concern_theme?: string | null;
+  messaging_hint?: string | null;
+  current_modality?: InterventionModality | null;
+  recommended_modality?: InterventionModality | null;
+  coverage_score?: number | null;
+  coverage_state?: "strong" | "steady" | "weak" | null;
+  gap_score?: number | null;
+  needs_net_new?: boolean;
+  has_strong_assets?: boolean;
+  asset_options?: Array<{
+    format_label?: string;
+    channel_label?: string;
+    coverage_score?: number | null;
+    asset_name?: string | null;
+    channel_name?: string | null;
+  }>;
+  plays_considered?: number;
+  no_play_data?: boolean;
+};
+
 type CampaignAssetChannel = ChannelRec & {
   engagement_score?: number | null;
   expected_delta_bp?: number;
@@ -450,6 +553,7 @@ type AccountPlan = {
   account_name: string;
   deal_status?: string;
   meta?: Record<string, any>;
+  entry_points?: EntryPoint[];
   prediction: {
     persona_paths: PersonaPath[];
     fit: Record<string, any>;
@@ -475,6 +579,7 @@ type AccountPlan = {
     conversion_sequence?: ConversionSequenceEntry[];
     persona_engagements?: PersonaEngagementPlan[];
     asset_cadence?: AssetCadenceRow[];
+    interventions?: BackendIntervention[];
   };
   campaigns?: Campaign[];
   randomization?: RandomizationPolicy;
@@ -505,8 +610,10 @@ type AccountPlan = {
       journey_stage?: string | null;
       reason?: string | null;
     }>;
+    entry_points?: EntryPoint[];
   };
   error?: string;
+  interventions?: Intervention[];
 };
 
 type PortfolioTheme = {
@@ -530,6 +637,7 @@ type PortfolioTheme = {
 type PortfolioPlan = {
   campaign_themes: PortfolioTheme[];
   conversion_focuses: PortfolioConversionFocus[];
+  interventions?: Intervention[];
   scatter: Array<{
     id?: string | null;
     label?: string;
@@ -557,7 +665,7 @@ type PortfolioPlan = {
   typical_path?: TypicalPathStep[];
   asset_cadence?: AssetCadenceRow[];
   arsenal_table?: BackendArsenalRow[];
-  execution_matrix?: BackendExecutionMatrix | null;
+  execution_interventions?: BackendIntervention[] | null;
 };
 
 type AccountPersonaRequirement = {
@@ -576,6 +684,14 @@ type AccountPersonaRequirement = {
   people_names?: string[];
 };
 
+type AccountPersonaCandidate = {
+  label: string;
+  normalized_label: string;
+  account_occurrences: number;
+  global_account_count?: number;
+  wolves_score?: number | null;
+};
+
 type AccountEnrichmentSummary = {
   required_personas: number;
   personas_with_matches: number;
@@ -589,6 +705,7 @@ type AccountEnrichment = {
   persona_requirements: AccountPersonaRequirement[];
   summary: AccountEnrichmentSummary;
   unmatched_personas?: AccountPersonaRequirement[];
+  persona_candidates?: AccountPersonaCandidate[];
 };
 
 type PlanSummary = {
@@ -628,17 +745,35 @@ type ClusterPersonaMatch = {
 
 type ClusterPersonaExpectation = {
   persona: string;
+  personaId?: string | null;
   stage?: string | null;
   share?: number | null;
   matchRate?: number | null;
   requiredPersonas?: number | null;
   samplePeople: ClusterPersonaMatch[];
+  wolvesScore?: number | null;
+  wolvesDeltaBp?: number | null;
+  wolvesInvolvementRate?: number | null;
+  wolvesBlockerRate?: number | null;
+  wolvesSampleSize?: number | null;
 };
 
 type ClusterCoalition = {
   sequence: string[];
   score?: number | null;
   share?: number | null;
+};
+
+type ClusterKeystonePersona = {
+  persona: string;
+  stage?: string | null;
+  share?: number | null;
+  wolvesScore?: number | null;
+  wolvesDeltaBp?: number | null;
+  wolvesInvolvementRate?: number | null;
+  wolvesBlockerRate?: number | null;
+  wolvesSampleSize?: number | null;
+  coalitionStory?: string | null;
 };
 
 type ClusterTransition = {
@@ -690,6 +825,8 @@ type AccountCluster = {
   primaryPlays: ClusterPlayPlan[];
   fallbackPlan: ClusterFallbackPlan[];
   liftAnalysis?: ClusterLiftAnalysis | null;
+  keystonePersonas: ClusterKeystonePersona[];
+  keystoneCaption?: string | null;
 };
 
 type PortfolioSummaryReport = {
@@ -712,6 +849,25 @@ type PortfolioSummaryReport = {
   fatigueAlerts: number;
   assetsPerPersona: Array<{ persona: string; count: number }>;
   accountClusters: AccountCluster[];
+  keystoneBand: PortfolioKeystonePersona[];
+  wolvesMetricsUpdatedAt?: string | null;
+};
+
+type PortfolioKeystonePersona = {
+  label: string;
+  personaId?: string | null;
+  wolvesScore?: number | null;
+  wolvesDeltaBp?: number | null;
+  wolvesInvolvementRate?: number | null;
+  wolvesBlockerRate?: number | null;
+  wolvesSampleSize?: number | null;
+  accountsCovered?: number;
+  clusterLabels: string[];
+  share?: number | null;
+  sampleStory?: string | null;
+  chainEffect?: string | null;
+  chainTargets: string[];
+  chainShare?: number | null;
 };
 
 type BackendAccountCluster = {
@@ -727,6 +883,8 @@ type BackendAccountCluster = {
   primary_plays?: BackendClusterPlayPlan[] | null;
   fallback_plan?: BackendClusterFallbackPlan[] | null;
   lift_analysis?: BackendClusterLiftAnalysis | null;
+  keystone_personas?: BackendClusterKeystonePersona[] | null;
+  keystone_caption?: string | null;
 };
 
 type BackendClusterPersonaMatch = {
@@ -744,17 +902,36 @@ type BackendClusterPersonaMatch = {
 
 type BackendClusterPersonaExpectation = {
   persona?: string | null;
+  persona_id?: string | null;
   stage?: string | null;
   share?: number | null;
   match_rate?: number | null;
   required_personas?: number | null;
   sample_people?: BackendClusterPersonaMatch[] | null;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+  wolves_involvement_rate?: number | null;
+  wolves_blocker_rate?: number | null;
+  wolves_sample_size?: number | null;
 };
 
 type BackendClusterCoalition = {
   sequence?: string[] | null;
   score?: number | null;
   share?: number | null;
+};
+
+type BackendClusterKeystonePersona = {
+  persona?: string | null;
+  persona_id?: string | null;
+  stage?: string | null;
+  share?: number | null;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+  wolves_involvement_rate?: number | null;
+  wolves_blocker_rate?: number | null;
+  wolves_sample_size?: number | null;
+  coalition_story?: string | null;
 };
 
 type BackendClusterTransition = {
@@ -813,6 +990,25 @@ type BackendPortfolioSummary = {
   fatigue_alerts?: number;
   assets_per_persona?: Array<{ persona: string; count: number }>;
   account_clusters?: BackendAccountCluster[] | null;
+  keystone_personas?: BackendPortfolioKeystone[] | null;
+  wolves_metrics_updated_at?: string | null;
+};
+
+type BackendPortfolioKeystone = {
+  persona_label?: string | null;
+  persona_id?: string | null;
+  wolves_score?: number | null;
+  wolves_delta_bp?: number | null;
+  wolves_involvement_rate?: number | null;
+  wolves_blocker_rate?: number | null;
+  wolves_sample_size?: number | null;
+  accounts_covered?: number | null;
+  cluster_labels?: string[] | null;
+  share?: number | null;
+  sample_story?: string | null;
+  chain_effect?: string | null;
+  chain_targets?: string[] | null;
+  chain_share?: number | null;
 };
 
 type ThesisQuarterOutcome = {
@@ -879,6 +1075,9 @@ type ArsenalRow = {
   personaId?: string | null;
   accountId?: string | null;
   accountName?: string | null;
+  formatFitment?: number | null;
+  channelEngagement?: number | null;
+  coverageScore?: number | null;
 };
 
 type AggregatedArsenalEntry = {
@@ -896,6 +1095,10 @@ type AggregatedArsenalEntry = {
   themes: string[];
   quarters: string[];
   sampleRow: ArsenalRow;
+  coverageScore?: number | null;
+  coverageState?: "strong" | "steady" | "weak";
+  formatFitment?: number | null;
+  channelEngagement?: number | null;
 };
 
 type BackendArsenalRow = {
@@ -922,47 +1125,114 @@ type BackendArsenalRow = {
   segment_summary?: string | null;
   account_id?: string | null;
   account_name?: string | null;
+  asset_fit_score?: number | null;
+  engagement_score?: number | null;
 };
 
-type ExecutionCell = {
-  theme: string;
+type BackendIntervention = {
+  id?: string;
+  quarter?: string | null;
+  cluster_key?: string | null;
+  cluster_keys?: string[];
+  cluster_labels?: string[];
+  persona?: string | null;
+  persona_id?: string | null;
+  concern?: string | null;
+  asset_type?: string | null;
+  channel?: string | null;
+  time_label?: string | null;
+  timeline_index?: number | null;
+  recommended_asset_id?: string | null;
+  recommended_asset_name?: string | null;
+  fitness?: number | null;
+  asset_fit_score?: number | null;
+  channel_engagement?: number | null;
+  expected_delta_bp?: number | null;
+  accounts_impacted?: number | null;
+  account_names?: string[];
+  account_id?: string | null;
+  account_name?: string | null;
+  wolves_persona_score?: number | null;
+  wolves_delta_bp?: number | null;
+  wolves_involvement_rate?: number | null;
+  wolves_blocker_rate?: number | null;
+  wolves_sample_size?: number | null;
+  is_new_persona?: boolean;
+  persona_source?: string | null;
+};
+
+type ExecutionItem = {
+  id: string;
+  scope: "portfolio" | "account";
+  quarter: string;
+  persona: string;
+  concern: string;
+  assetType: string;
+  channel: string;
+  clusterKey?: string | null;
+  clusters?: string[];
+  recommendedAssetId?: string | null;
+  recommendedAssetName?: string | null;
+  fitness?: number | null;
+  assetFit?: number | null;
+  channelEngagement?: number | null;
   deltaBp: number;
-  mode: "broad" | "focused";
-  accountCount: number;
-  fatigue?: number | null;
-  belief?: number | null;
-  assets?: number;
-  campaigns?: Array<{
-    id: string;
-    theme: string;
-    description?: string | null;
-    deltaBp?: number | null;
-    assets?: number | null;
-    fatigue?: number | null;
-    belief?: number | null;
-  }>;
+  accountsImpacted: number;
+  accountNames: string[];
+  timeLabel?: string | null;
+  wolvesPersonaScore?: number | null;
+  wolvesDeltaBp?: number | null;
+  wolvesInvolvementRate?: number | null;
+  wolvesBlockerRate?: number | null;
+  wolvesSampleSize?: number | null;
+  isNewPersona?: boolean;
+  personaSource?: string | null;
 };
 
-type ExecutionMatrix = {
+type ExecutionTimeline = {
   quarters: string[];
-  personas: string[];
-  cells: Record<string, ExecutionCell[]>;
+  rows: string[];
+  cells: Record<string, ExecutionItem[]>;
 };
 
-type BackendExecutionCell = {
-  theme?: string;
-  delta_bp?: number;
-  mode?: "broad" | "focused";
-  account_count?: number;
-  fatigue?: number | null;
-  belief?: number | null;
-  assets?: number | null;
+type GroupMode = "assetType" | "persona" | "keystone";
+
+type InterventionDecision = {
+  id: string;
+  product_id: string;
+  intervention_id: string;
+  scope: "portfolio" | "account";
+  account_id?: string | null;
+  status: "accepted" | "overridden" | string;
+  persona?: string | null;
+  concern?: string | null;
+  asset_type?: string | null;
+  channel?: string | null;
+  recommended_asset_id?: string | null;
+  recommended_asset_name?: string | null;
+  selected_asset_id?: string | null;
+  selected_asset_name?: string | null;
+  selected_asset_type?: string | null;
+  selected_channel?: string | null;
+  notes?: string | null;
+  metadata?: Record<string, any>;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
-type BackendExecutionMatrix = {
-  quarters?: string[];
-  personas?: string[];
-  cells?: Record<string, BackendExecutionCell[]>;
+type AssetOption = {
+  id?: string | null;
+  name: string;
+  assetType?: string | null;
+  channel?: string | null;
+};
+
+type OverrideSubmission = {
+  selectedAssetId?: string | null;
+  selectedAssetName: string;
+  assetType?: string | null;
+  channel?: string | null;
+  notes?: string;
 };
 
 type MarketingPlan = {
@@ -976,6 +1246,13 @@ type MarketingPlan = {
   product_insights?: ProductInsights;
 };
 
+const COVERAGE_STRONG_THRESHOLD = 0.7;
+const COVERAGE_STEADY_THRESHOLD = 0.4;
+const ASSET_SCORE_NORMALIZER = 1.5;
+const CHANNEL_SCORE_NORMALIZER = 3.5;
+const GAP_ALERT_THRESHOLD = 200;
+const GAP_CRITICAL_THRESHOLD = 400;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -983,6 +1260,247 @@ type MarketingPlan = {
 const fmtPercent = (value?: number | null) => {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
   return `${Math.round(value * 100)}%`;
+};
+
+const formatTimestamp = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+};
+
+const normalizeScore = (
+  value?: number | null,
+  max = 1,
+  min = 0
+): number | null => {
+  if (value === null || value === undefined || Number.isNaN(value)) return null;
+  if (max <= min) return null;
+  const normalized = (value - min) / (max - min);
+  return Math.min(1, Math.max(0, normalized));
+};
+
+const classifyCoverage = (value?: number | null) => {
+  if (value === null || value === undefined) return "weak";
+  if (value >= COVERAGE_STRONG_THRESHOLD) return "strong";
+  if (value >= COVERAGE_STEADY_THRESHOLD) return "steady";
+  return "weak";
+};
+
+const normalizePersonaKey = (label?: string | null) => {
+  if (!label) return null;
+  const normalized = label.trim().toLowerCase();
+  return normalized || null;
+};
+
+type GapOverlayEntry = {
+  persona: string;
+  stage?: string | null;
+  concern?: string | null;
+  coverage: number | null;
+  gapScore: number;
+  severity: "none" | "warning" | "critical";
+  recommended?: string | null;
+};
+
+const buildGapOverlayMap = (interventions?: Intervention[] | null) => {
+  const map = new Map<string, GapOverlayEntry>();
+  if (!interventions?.length) {
+    return map;
+  }
+  interventions.forEach((intervention) => {
+    const personaLabel =
+      intervention.persona_label || intervention.persona_descriptor || "Target persona";
+    const key = normalizePersonaKey(personaLabel);
+    if (!key) return;
+    const gapScore = intervention.gap_score ?? 0;
+    const coverage = intervention.coverage_score ?? null;
+    const severity =
+      gapScore >= GAP_CRITICAL_THRESHOLD
+        ? "critical"
+        : gapScore >= GAP_ALERT_THRESHOLD
+        ? "warning"
+        : "none";
+    const entry = map.get(key);
+    if (entry && entry.gapScore >= gapScore) {
+      return;
+    }
+    map.set(key, {
+      persona: personaLabel,
+      stage: intervention.stage_label,
+      concern: intervention.concern_theme || intervention.messaging_hint,
+      coverage,
+      gapScore,
+      severity,
+      recommended:
+        intervention.recommended_modality?.format_label &&
+        intervention.recommended_modality?.channel_label
+          ? `${intervention.recommended_modality.format_label} via ${intervention.recommended_modality.channel_label}`
+          : undefined,
+    });
+  });
+  return map;
+};
+
+const mapExecutionInterventions = (
+  entries: BackendIntervention[] | undefined | null,
+  scope: "portfolio" | "account"
+): ExecutionItem[] => {
+  if (!entries?.length) return [];
+  return entries.map((entry, index) => {
+    const quarterLabel = (entry.quarter || "Q1").toString().toUpperCase();
+    const personaLabel = entry.persona?.trim() || "Target persona";
+    const concernLabel = entry.concern?.trim() || "Priority concern";
+    const assetType = entry.asset_type?.trim() || "Asset";
+    const channelLabel = entry.channel?.trim() || "Channel";
+    const deltaBp =
+      typeof entry.expected_delta_bp === "number" && !Number.isNaN(entry.expected_delta_bp)
+        ? entry.expected_delta_bp
+        : 0;
+    const accountsImpacted =
+      typeof entry.accounts_impacted === "number" && !Number.isNaN(entry.accounts_impacted)
+        ? Math.max(0, entry.accounts_impacted)
+        : entry.account_id
+        ? 1
+        : 0;
+    const accountNames =
+      entry.account_names?.length && entry.account_names.some(Boolean)
+        ? entry.account_names.filter(Boolean)
+        : entry.account_name
+        ? [entry.account_name]
+        : [];
+    const assetFit =
+      typeof entry.asset_fit_score === "number" && !Number.isNaN(entry.asset_fit_score)
+        ? entry.asset_fit_score
+        : undefined;
+    const channelEngagement =
+      typeof entry.channel_engagement === "number" &&
+      !Number.isNaN(entry.channel_engagement)
+        ? entry.channel_engagement
+        : undefined;
+    const fitness =
+      typeof entry.fitness === "number" && !Number.isNaN(entry.fitness)
+        ? entry.fitness
+        : assetFit !== undefined || channelEngagement !== undefined
+        ? (assetFit || 0) * (channelEngagement || 0)
+        : undefined;
+    const clustersRaw =
+      (entry.cluster_labels && entry.cluster_labels.length && entry.cluster_labels) ||
+      (entry.cluster_keys && entry.cluster_keys.length && entry.cluster_keys) ||
+      (entry.cluster_key ? [entry.cluster_key] : []);
+    const clusters = (clustersRaw || [])
+      .map((label) => formatClusterLabel(label))
+      .filter((label): label is string => Boolean(label));
+    const wolvesScore =
+      typeof entry.wolves_persona_score === "number" ? entry.wolves_persona_score : undefined;
+    const wolvesDelta =
+      typeof entry.wolves_delta_bp === "number" ? entry.wolves_delta_bp : undefined;
+    const wolvesInvolvement =
+      typeof entry.wolves_involvement_rate === "number"
+        ? entry.wolves_involvement_rate
+        : undefined;
+    const wolvesBlocker =
+      typeof entry.wolves_blocker_rate === "number" ? entry.wolves_blocker_rate : undefined;
+    const wolvesSampleSize =
+      typeof entry.wolves_sample_size === "number" ? entry.wolves_sample_size : undefined;
+    const chainTargets =
+      entry.chain_targets && entry.chain_targets.length
+        ? entry.chain_targets.filter((label): label is string => Boolean(label))
+        : undefined;
+    const chainShare =
+      typeof entry.chain_share === "number" && !Number.isNaN(entry.chain_share)
+        ? entry.chain_share
+        : undefined;
+    const chainEffect = entry.chain_effect || undefined;
+    const isKeystone =
+      typeof wolvesScore === "number" && !Number.isNaN(wolvesScore) && wolvesScore >= 0.55;
+    return {
+      id:
+        entry.id ||
+        `${scope}-${index}-${quarterLabel}-${normalizePersonaKey(personaLabel) || ""}-${concernLabel
+          .toLowerCase()
+          .replace(/\s+/g, "-")}`,
+      scope,
+      quarter: quarterLabel,
+      persona: personaLabel,
+      concern: concernLabel,
+      assetType,
+      channel: channelLabel,
+      clusterKey: entry.cluster_key,
+      clusters,
+      recommendedAssetId: entry.recommended_asset_id || undefined,
+      recommendedAssetName: entry.recommended_asset_name || undefined,
+      fitness,
+      assetFit,
+      channelEngagement,
+      deltaBp,
+      accountsImpacted,
+      accountNames,
+      timeLabel: entry.time_label || undefined,
+      wolvesPersonaScore: wolvesScore,
+      wolvesDeltaBp: wolvesDelta,
+      wolvesInvolvementRate: wolvesInvolvement,
+      wolvesBlockerRate: wolvesBlocker,
+      wolvesSampleSize,
+      isNewPersona: Boolean(entry.is_new_persona),
+      personaSource: entry.persona_source || undefined,
+      chainEffect,
+      chainTargets,
+      chainShare,
+      isKeystone,
+    };
+  });
+};
+
+const buildExecutionTimeline = (
+  items: ExecutionItem[],
+  mode: GroupMode
+): ExecutionTimeline | null => {
+  if (!items.length) return null;
+  const SUPPORTING_ROW_LABEL = "Supporting personas";
+  const quarterSet = new Set<string>();
+  const rowSet = new Set<string>();
+  const cells: Record<string, ExecutionItem[]> = {};
+
+  items.forEach((item) => {
+    const quarter = item.quarter || "Q1";
+    quarterSet.add(quarter);
+    let rowLabel: string;
+    if (mode === "assetType") {
+      rowLabel = item.assetType;
+    } else if (mode === "persona") {
+      rowLabel = item.persona;
+    } else {
+      rowLabel = item.isKeystone ? item.persona : SUPPORTING_ROW_LABEL;
+    }
+    rowSet.add(rowLabel);
+    const key = `${rowLabel}|${quarter}`;
+    if (!cells[key]) {
+      cells[key] = [];
+    }
+    cells[key].push(item);
+  });
+
+  const quarters = Array.from(quarterSet).sort((a, b) => quarterOrder(a) - quarterOrder(b));
+  const rows = Array.from(rowSet).sort((a, b) => {
+    if (mode === "keystone") {
+      if (a === SUPPORTING_ROW_LABEL) return 1;
+      if (b === SUPPORTING_ROW_LABEL) return -1;
+    }
+    return a.localeCompare(b);
+  });
+  if (!quarters.length || !rows.length) return null;
+
+  rows.forEach((row) => {
+    quarters.forEach((quarter) => {
+      const key = `${row}|${quarter}`;
+      if (cells[key]) {
+        cells[key].sort((a, b) => (b.deltaBp ?? 0) - (a.deltaBp ?? 0));
+      }
+    });
+  });
+
+  return { quarters, rows, cells };
 };
 
 const fmtNumber = (value?: number | null, digits = 2) => {
@@ -993,6 +1511,18 @@ const fmtNumber = (value?: number | null, digits = 2) => {
 const fmtBasisPoints = (value?: number | null) => {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
   return `${Math.round(value)} bps`;
+};
+
+const describeEntryPlay = (play?: EntryPointPlay | null) => {
+  if (!play) return null;
+  const assetLabel = play.asset || "Asset";
+  const channelLabel = play.channel || "Channel";
+  const stagePrefix = play.stage ? `${play.stage}: ` : "";
+  const deltaLabel =
+    typeof play.expected_delta_bp === "number"
+      ? ` · Δ ${fmtBasisPoints(play.expected_delta_bp)}`
+      : "";
+  return `${stagePrefix}${assetLabel} via ${channelLabel}${deltaLabel}`;
 };
 
 const dominantPhaseFromProbs = (
@@ -1028,6 +1558,147 @@ const titleize = (value?: string | null) => {
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+};
+
+const fmtPercentDelta = (value?: number | null) => {
+  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  const pct = Math.round(value * 100);
+  return `${value >= 0 ? "+" : ""}${pct}%`;
+};
+
+const liftFraction = (prob?: number | null, bp?: number | null) => {
+  if (typeof prob === "number" && !Number.isNaN(prob)) return prob;
+  if (typeof bp === "number" && !Number.isNaN(bp)) return bp / 10000;
+  return null;
+};
+
+const INTERVENTION_MODE_META: Record<
+  string,
+  { label: string; color: ChipProps["color"]; description: string }
+> = {
+  push_asset: {
+    label: "Push assets now",
+    color: "success",
+    description: "Asset lift is the primary driver—deploy campaigns immediately.",
+  },
+  wait_exploit: {
+    label: "Wait & exploit",
+    color: "warning",
+    description: "Let the external trigger mature, then follow up with proof assets.",
+  },
+  do_nothing: {
+    label: "Do nothing",
+    color: "default",
+    description: "Neither assets nor subsidies materially move belief yet.",
+  },
+};
+
+const renderInterventionModeChip = (
+  mode?: string | null,
+  size: ChipProps["size"] = "small"
+): React.ReactNode => {
+  if (!mode) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        —
+      </Typography>
+    );
+  }
+  const meta =
+    INTERVENTION_MODE_META[mode] || {
+      label: titleize(mode) || "Custom",
+      color: "default" as ChipProps["color"],
+      description: "Custom intervention mode",
+    };
+  const chip = (
+    <Chip
+      size={size}
+      color={meta.color}
+      label={meta.label}
+      variant={meta.color === "default" ? "outlined" : "filled"}
+    />
+  );
+  return meta.description ? <Tooltip title={meta.description}>{chip}</Tooltip> : chip;
+};
+
+const SUBSIDY_BOOST_THRESHOLD = 0.1;
+
+type WolfChipDescriptor = {
+  label: string;
+  color: ChipProps["color"];
+  tooltip?: string;
+  diff?: number;
+};
+
+const buildWolfChipProps = (persona: PersonaSummary): WolfChipDescriptor | null => {
+  const base =
+    persona.base_wolf_score ??
+    persona.wolves_score ??
+    null;
+  const dynamic = persona.dynamic_wolf_score ?? base;
+  if (base === null || dynamic === null) {
+    return null;
+  }
+  let color: ChipProps["color"] = "default";
+  if (base >= 0.7) {
+    color = "error";
+  } else if (base >= 0.4) {
+    color = "warning";
+  }
+  const diff = dynamic - base;
+  const tooltipParts = [
+    `Base ${fmtPercent(base)}`,
+    diff !== 0 ? `Shift ${fmtPercentDelta(diff)}` : null,
+  ].filter(Boolean);
+  return {
+    label: `Wolf ${fmtPercent(dynamic)}`,
+    color,
+    tooltip: tooltipParts.join(" · ") || undefined,
+    diff,
+  };
+};
+
+const buildSubsidyChipProps = (
+  persona: PersonaSummary,
+  diff?: number | null
+): { label: string; tooltip?: string } | null => {
+  if (diff === null || diff === undefined || diff < SUBSIDY_BOOST_THRESHOLD) {
+    return null;
+  }
+  const source = persona.zmot_events?.[0]?.zmot_label;
+  const tooltipParts = [
+    `Boost ${fmtPercentDelta(diff)}`,
+    persona.subsidy_relevance ? `Weight ${fmtPercent(persona.subsidy_relevance)}` : null,
+  ].filter(Boolean);
+  return {
+    label: source ? `Boosted by ${source}` : "Subsidy boost active",
+    tooltip: tooltipParts.join(" · ") || undefined,
+  };
+};
+
+const formatClusterLabel = (value?: string | null) => {
+  if (!value) return null;
+  const normalizeChunk = (chunk: string) =>
+    chunk
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  if (value.includes("|")) {
+    return value
+      .split("|")
+      .map((segment) => formatClusterLabel(segment) || normalizeChunk(segment))
+      .join(" · ");
+  }
+  if (value.includes("=")) {
+    const [dim, val] = value.split("=", 2);
+    return `${normalizeChunk(dim.trim())}: ${normalizeChunk(val.trim())}`;
+  }
+  if (value.includes(":")) {
+    const [dim, val] = value.split(":", 2);
+    return `${normalizeChunk(dim.trim())}: ${normalizeChunk(val.trim())}`;
+  }
+  return normalizeChunk(value);
 };
 
 const formatList = (items: string[], conjunction = "and") => {
@@ -1142,12 +1813,37 @@ const mapClusterPersonaExpectations = (
   if (!expectations?.length) return [];
   return expectations.map((entry, idx) => ({
     persona: entry.persona ?? `Persona ${idx + 1}`,
+    personaId: entry.persona_id ?? null,
     stage: entry.stage ?? null,
     share: entry.share ?? null,
     matchRate: entry.match_rate ?? null,
     requiredPersonas: entry.required_personas ?? null,
     samplePeople: mapClusterMatches(entry.sample_people),
+    wolvesScore: entry.wolves_score ?? null,
+    wolvesDeltaBp: entry.wolves_delta_bp ?? null,
+    wolvesInvolvementRate: entry.wolves_involvement_rate ?? null,
+    wolvesBlockerRate: entry.wolves_blocker_rate ?? null,
+    wolvesSampleSize: entry.wolves_sample_size ?? null,
   }));
+};
+
+const mapClusterKeystonePersonas = (
+  personas?: BackendClusterKeystonePersona[] | null
+): ClusterKeystonePersona[] => {
+  if (!personas?.length) return [];
+  return personas
+    .filter((entry): entry is BackendClusterKeystonePersona => Boolean(entry?.persona))
+    .map((entry) => ({
+      persona: entry.persona ?? "Persona",
+      stage: entry.stage ?? null,
+      share: entry.share ?? null,
+      wolvesScore: entry.wolves_score ?? null,
+      wolvesDeltaBp: entry.wolves_delta_bp ?? null,
+      wolvesInvolvementRate: entry.wolves_involvement_rate ?? null,
+      wolvesBlockerRate: entry.wolves_blocker_rate ?? null,
+      wolvesSampleSize: entry.wolves_sample_size ?? null,
+      coalitionStory: entry.coalition_story ?? null,
+    }));
 };
 
 const mapClusterCoalitions = (
@@ -1235,8 +1931,34 @@ const mapBackendAccountClusters = (
       primaryPlays: mapClusterPlays(cluster.primary_plays),
       fallbackPlan: mapClusterFallbackPlan(cluster.fallback_plan),
       liftAnalysis: mapClusterLiftAnalysis(cluster.lift_analysis),
+      keystonePersonas: mapClusterKeystonePersonas(cluster.keystone_personas),
+      keystoneCaption: cluster.keystone_caption ?? null,
     };
   });
+};
+
+const mapBackendKeystoneBand = (
+  entries?: BackendPortfolioKeystone[] | null
+): PortfolioKeystonePersona[] => {
+  if (!entries?.length) return [];
+  return entries
+    .filter((entry): entry is BackendPortfolioKeystone => Boolean(entry?.persona_label))
+    .map((entry) => ({
+      label: entry.persona_label ?? "Persona",
+      personaId: entry.persona_id ?? null,
+      wolvesScore: entry.wolves_score ?? null,
+      wolvesDeltaBp: entry.wolves_delta_bp ?? null,
+      wolvesInvolvementRate: entry.wolves_involvement_rate ?? null,
+      wolvesBlockerRate: entry.wolves_blocker_rate ?? null,
+      wolvesSampleSize: entry.wolves_sample_size ?? null,
+      accountsCovered: entry.accounts_covered ?? undefined,
+      clusterLabels: entry.cluster_labels ?? [],
+      share: entry.share ?? null,
+      sampleStory: entry.sample_story ?? null,
+      chainEffect: entry.chain_effect ?? null,
+      chainTargets: entry.chain_targets ?? [],
+      chainShare: entry.chain_share ?? null,
+    }));
 };
 
 const mapBackendPortfolioSummary = (
@@ -1263,6 +1985,8 @@ const mapBackendPortfolioSummary = (
     fatigueAlerts: data.fatigue_alerts ?? 0,
     assetsPerPersona: data.assets_per_persona ?? [],
     accountClusters: mapBackendAccountClusters(data.account_clusters),
+    keystoneBand: mapBackendKeystoneBand(data.keystone_personas),
+    wolvesMetricsUpdatedAt: data.wolves_metrics_updated_at ?? null,
   };
 };
 
@@ -1301,6 +2025,12 @@ const mapBackendArsenalRows = (rows?: BackendArsenalRow[] | null): ArsenalRow[] 
       row.stage_label || stageLabelFromTransition(beliefTransition) || null;
     const segmentFilters = row.segment_filters;
     const segmentSummary = row.segment_summary ?? summarizeSegmentFilters(segmentFilters);
+    const formatFitment = normalizeScore(row.asset_fit_score ?? null, 1);
+    const channelEngagement = normalizeScore(row.engagement_score ?? null, 1);
+    const coverageScore =
+      formatFitment !== null && channelEngagement !== null
+        ? formatFitment * channelEngagement
+        : null;
     return {
       theme: row.theme || "Campaign",
       quarter: row.quarter || "Q1",
@@ -1332,40 +2062,11 @@ const mapBackendArsenalRows = (rows?: BackendArsenalRow[] | null): ArsenalRow[] 
       personaId: row.persona_id ?? null,
       accountId: row.account_id ?? null,
       accountName: row.account_name ?? null,
+      formatFitment,
+      channelEngagement,
+      coverageScore,
     };
   });
-};
-
-const mapBackendExecutionMatrix = (
-  data?: BackendExecutionMatrix | null
-): ExecutionMatrix | null => {
-  if (!data || !data.quarters || !data.personas) return null;
-  const mappedCells: Record<string, ExecutionCell[]> = {};
-  Object.entries(data.cells ?? {}).forEach(([key, entries]) => {
-    mappedCells[key] = entries.map((entry) => ({
-      theme: entry.theme || "Campaign",
-      deltaBp: entry.delta_bp ?? 0,
-      mode: entry.mode === "broad" ? "broad" : "focused",
-      accountCount: entry.account_count ?? 0,
-      fatigue:
-        typeof entry.fatigue === "number" && !Number.isNaN(entry.fatigue)
-          ? entry.fatigue
-          : undefined,
-      belief:
-        typeof entry.belief === "number" && !Number.isNaN(entry.belief)
-          ? entry.belief
-          : undefined,
-      assets:
-        typeof entry.assets === "number" && !Number.isNaN(entry.assets)
-          ? entry.assets
-          : undefined,
-    }));
-  });
-  return {
-    quarters: data.quarters,
-    personas: data.personas,
-    cells: mappedCells,
-  };
 };
 
 const segmentChipsFromFilters = (filters?: SegmentFilters) => {
@@ -1522,6 +2223,9 @@ const aggregateArsenalEntries = (rows: ArsenalRow[]): AggregatedArsenalEntry[] =
       confidenceValues: number[];
       beliefValues: number[];
       durationValues: number[];
+      coverageValues: number[];
+      formatFitValues: number[];
+      channelEngagementValues: number[];
     }
   >();
 
@@ -1580,6 +2284,12 @@ const aggregateArsenalEntries = (rows: ArsenalRow[]): AggregatedArsenalEntry[] =
           typeof row.beliefConversion === "number" ? [row.beliefConversion] : [],
         durationValues:
           typeof row.timeToImpactDays === "number" ? [row.timeToImpactDays] : [],
+        coverageValues:
+          typeof row.coverageScore === "number" ? [row.coverageScore] : [],
+        formatFitValues:
+          typeof row.formatFitment === "number" ? [row.formatFitment] : [],
+        channelEngagementValues:
+          typeof row.channelEngagement === "number" ? [row.channelEngagement] : [],
       });
     } else {
       const bucket = map.get(key)!;
@@ -1593,6 +2303,12 @@ const aggregateArsenalEntries = (rows: ArsenalRow[]): AggregatedArsenalEntry[] =
         bucket.beliefValues.push(row.beliefConversion);
       if (typeof row.timeToImpactDays === "number")
         bucket.durationValues.push(row.timeToImpactDays);
+      if (typeof row.coverageScore === "number")
+        bucket.coverageValues.push(row.coverageScore);
+      if (typeof row.formatFitment === "number")
+        bucket.formatFitValues.push(row.formatFitment);
+      if (typeof row.channelEngagement === "number")
+        bucket.channelEngagementValues.push(row.channelEngagement);
     }
   });
 
@@ -1610,6 +2326,10 @@ const aggregateArsenalEntries = (rows: ArsenalRow[]): AggregatedArsenalEntry[] =
         confidence: average(bucket.confidenceValues),
         beliefConversion: average(bucket.beliefValues),
         avgDurationDays: average(bucket.durationValues),
+        coverageScore: average(bucket.coverageValues),
+        coverageState: classifyCoverage(average(bucket.coverageValues)),
+        formatFitment: average(bucket.formatFitValues),
+        channelEngagement: average(bucket.channelEngagementValues),
         personas: Array.from(bucket.personasSet),
         segments: Array.from(bucket.segmentsSet),
         themes: Array.from(bucket.themesSet),
@@ -2212,6 +2932,12 @@ type AggregatedFocusAssetRow = {
   engagement_score?: number | null;
   exploration_weight?: number | null;
   avg_duration_days?: number | null;
+  lift_asset_prob?: number | null;
+  lift_asset_bp?: number | null;
+  lift_subsidy_prob?: number | null;
+  lift_subsidy_bp?: number | null;
+  intervention_mode?: string | null;
+  subsidy_time_to_peak_days?: number | null;
 };
 
 type PersonaDescriptorCount = {
@@ -2307,16 +3033,26 @@ const MarketingPlanner: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
   const [viewAccountId, setViewAccountId] = useState<string>("portfolio");
+  const [executionGroupMode, setExecutionGroupMode] = useState<GroupMode>("assetType");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string>("");
   const [plannerPanel, setPlannerPanel] = useState<"overview" | "timeline" | "arsenal">("overview");
+  const [executionPlanContract, setExecutionPlanContract] =
+    useState<ComprehensiveExecutionPlan | null>(null);
   const [arsenalPreset, setArsenalPreset] = useState<string | null>(null);
   const [openArsenalReasoning, setOpenArsenalReasoning] = useState<string | null>(null);
   const [accountPopover, setAccountPopover] = useState<{
     anchorEl: HTMLElement | null;
     focusId: string | null;
   }>({ anchorEl: null, focusId: null });
+  const [decisionMap, setDecisionMap] = useState<Record<string, InterventionDecision>>({});
+  const [decisionLoadingId, setDecisionLoadingId] = useState<string | null>(null);
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [overrideDialog, setOverrideDialog] = useState<{ open: boolean; item: ExecutionItem | null }>({
+    open: false,
+    item: null,
+  });
 
   useEffect(() => {
     if (token) {
@@ -2378,6 +3114,23 @@ const MarketingPlanner: React.FC = () => {
   }, [selectedProductId, token]);
 
   useEffect(() => {
+    if (!selectedProductId || !token) return;
+    (async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8000/portfolio/${selectedProductId}/execution-plan`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data: ComprehensiveExecutionPlan = await res.json();
+        setExecutionPlanContract(data);
+      } catch (err: unknown) {
+        console.warn("Failed to load execution plan contract", err);
+      }
+    })();
+  }, [selectedProductId, token]);
+
+  useEffect(() => {
     if (!plan) {
       if (viewAccountId !== "portfolio") {
         setViewAccountId("portfolio");
@@ -2404,6 +3157,44 @@ const MarketingPlanner: React.FC = () => {
       null
     );
   }, [plan, viewAccountId]);
+
+  useEffect(() => {
+    if (!plan || !token) {
+      setDecisionMap({});
+      return;
+    }
+    let cancelled = false;
+    const scopeAccountId =
+      viewAccountId === "portfolio" ? null : selectedAccountPlan?.account_id;
+    const query = scopeAccountId ? `?account_id=${encodeURIComponent(scopeAccountId)}` : "";
+    setDecisionError(null);
+    (async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8000/execution-interventions/decisions/${plan.product_id}${query}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (cancelled) return;
+        const lookup: Record<string, InterventionDecision> = {};
+        (data.decisions || []).forEach((decision: InterventionDecision) => {
+          if (decision?.intervention_id) {
+            lookup[decision.intervention_id] = decision;
+          }
+        });
+        setDecisionMap(lookup);
+      } catch (err) {
+        console.error("Failed to load execution decisions", err);
+        if (!cancelled) {
+          setDecisionMap({});
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [plan?.product_id, selectedAccountPlan?.account_id, token, viewAccountId]);
 
   const summaryTitle = selectedAccountPlan
     ? `${selectedAccountPlan.account_name || "Account"} Summary`
@@ -2582,6 +3373,8 @@ const MarketingPlanner: React.FC = () => {
       capabilityMix,
       fatigueAlerts,
       assetsPerPersona,
+      keystoneBand: [],
+      wolvesMetricsUpdatedAt: plan.summary?.wolves_metrics_updated_at ?? plan.wolves_metrics_updated_at ?? null,
     };
   }, [plan]);
 
@@ -2662,6 +3455,14 @@ const MarketingPlanner: React.FC = () => {
   const accountAssetCadence =
     selectedAccountPlan?.execution?.asset_cadence || [];
   const accountCampaigns = selectedAccountPlan?.campaigns || [];
+  const selectedEntryPoints = useMemo(() => {
+    if (!selectedAccountPlan) return [];
+    const rows =
+      selectedAccountPlan.entry_points ??
+      selectedAccountPlan.thesis?.entry_points ??
+      [];
+    return rows.slice(0, 4);
+  }, [selectedAccountPlan]);
 
   const portfolioFocuses = useMemo<PortfolioConversionFocus[]>(() => {
     const focuses = plan?.portfolio_plan?.conversion_focuses ?? [];
@@ -2960,6 +3761,18 @@ const MarketingPlanner: React.FC = () => {
         const channelMeta = (play.channel ?? null) as ChannelRec | null;
         const rationale = (play.rationale ?? null) as ArsenalRationale | null;
         const reasons = (play.reasons ?? null) as Record<string, any> | null;
+        const formatFitment = normalizeScore(
+          (play as any).asset_score ?? null,
+          ASSET_SCORE_NORMALIZER
+        );
+        const channelEngagement = normalizeScore(
+          (play as any).channel_score ?? null,
+          CHANNEL_SCORE_NORMALIZER
+        );
+        const coverageScore =
+          formatFitment !== null && channelEngagement !== null
+            ? formatFitment * channelEngagement
+            : null;
         const row: ArsenalRow = {
           theme,
           quarter,
@@ -2996,6 +3809,9 @@ const MarketingPlanner: React.FC = () => {
           accountId: (account.account_id as string | null) ?? null,
           accountName:
             account.account_name || account.account_id || accountName || null,
+          formatFitment,
+          channelEngagement,
+          coverageScore,
         };
         rows.push(row);
       });
@@ -3020,6 +3836,36 @@ const MarketingPlanner: React.FC = () => {
       (account) => account.execution?.persona_engagements || []
     );
   }, [plan]);
+
+  const interventionAssetOptions = useMemo<AssetOption[]>(() => {
+    const rows = plan?.portfolio_plan?.arsenal_table || [];
+    const seen = new Map<string, AssetOption>();
+    rows.forEach((row, idx) => {
+      const assetName =
+        row.asset?.name ||
+        row.asset?.title ||
+        row.asset_type_label ||
+        row.asset_type ||
+        `Asset ${idx + 1}`;
+      const assetId = row.asset?.id || row.asset?.external_id || null;
+      const channelLabel =
+        row.channel?.channel_type_label ||
+        row.channel_type_label ||
+        row.channel?.name ||
+        row.channel_type ||
+        null;
+      const key = `${assetName}|${channelLabel || ""}`;
+      if (!seen.has(key)) {
+        seen.set(key, {
+          id: assetId || assetName,
+          name: assetName,
+          assetType: row.asset_type_label || row.asset_type || row.asset?.category_label || null,
+          channel: channelLabel,
+        });
+      }
+    });
+    return Array.from(seen.values());
+  }, [plan?.portfolio_plan?.arsenal_table]);
 
   const aggregatedPortfolioArsenal = useMemo(
     () => aggregateArsenalEntries(portfolioArsenalRows),
@@ -3054,206 +3900,154 @@ const MarketingPlanner: React.FC = () => {
     [portfolioPersonaEngagements]
   );
 
-  const derivedExecutionMatrix = useMemo<ExecutionMatrix | null>(() => {
-    if (!plan) return null;
+  const executionItems = useMemo<ExecutionItem[]>(() => {
+    if (selectedAccountPlan) {
+      return mapExecutionInterventions(selectedAccountPlan.execution?.interventions, "account");
+    }
+    return mapExecutionInterventions(
+      plan?.portfolio_plan?.execution_interventions,
+      "portfolio"
+    );
+  }, [plan?.portfolio_plan?.execution_interventions, selectedAccountPlan]);
 
-    const personaMetrics = new Map<
-      string,
-      { fatigueValues: number[]; beliefValues: number[] }
-    >();
-    plan.accounts?.forEach((account) => {
-      (account.execution?.persona_engagements || []).forEach((entry) => {
-        const label = entry.persona_label || entry.persona_id;
-        if (!label) return;
-        if (!personaMetrics.has(label)) {
-          personaMetrics.set(label, { fatigueValues: [], beliefValues: [] });
-        }
-        const bucket = personaMetrics.get(label)!;
-        if (typeof entry.fatigue === "number" && !Number.isNaN(entry.fatigue)) {
-          bucket.fatigueValues.push(entry.fatigue);
-        }
-        if (
-          typeof entry.belief_level === "number" &&
-          !Number.isNaN(entry.belief_level)
-        ) {
-          bucket.beliefValues.push(entry.belief_level);
-        }
-      });
-    });
-
-    const quarterSet = new Set<string>();
-    const personaSet = new Set<string>();
-    const personaQuarterBuckets = new Map<
-      string,
-      Map<
-        string,
-        {
-          accounts: number;
-          campaignIds: Set<string>;
-          campaigns: ExecutionCell["campaigns"];
-          totalDelta: number;
-          totalAssets: number;
-          broadTouches: number;
-          focusedTouches: number;
-          fatigueValues: number[];
-          beliefValues: number[];
-        }
-      >
-    >();
-
-    plan.accounts?.forEach((account) => {
-      account.campaigns?.forEach((campaign, idx) => {
-        const quarter =
-          campaign.quarter ||
-          mapDayToQuarter(campaign.start_day) ||
-          `Q${(idx % 4) + 1}`;
-        quarterSet.add(quarter);
-        const personas = campaign.focus_personas?.length
-          ? campaign.focus_personas
-          : [campaign.persona_focus || "Multi-persona"];
-        const accountCount = Math.max(1, campaign.accounts?.length ?? 0);
-        const campaignId = [
-          campaign.theme || "campaign",
-          campaign.belief_transitions?.[0]?.stage_label || "",
-          quarter,
-        ].join("|");
-        const mode =
-          (campaign.mode_mix?.focused ?? 0) >= (campaign.mode_mix?.broad ?? 0)
-            ? "focused"
-            : "broad";
-
-        personas.forEach((personaLabel) => {
-          personaSet.add(personaLabel);
-          if (!personaQuarterBuckets.has(personaLabel)) {
-            personaQuarterBuckets.set(personaLabel, new Map());
-          }
-          const quarterMap = personaQuarterBuckets.get(personaLabel)!;
-          if (!quarterMap.has(quarter)) {
-            quarterMap.set(quarter, {
-              accounts: 0,
-              campaignIds: new Set(),
-              campaigns: [],
-              totalDelta: 0,
-              totalAssets: 0,
-              broadTouches: 0,
-              focusedTouches: 0,
-              fatigueValues: [],
-              beliefValues: [],
-            });
-          }
-          const bucket = quarterMap.get(quarter)!;
-          bucket.accounts += accountCount;
-
-          if (!bucket.campaignIds.has(campaignId)) {
-            bucket.campaignIds.add(campaignId);
-            bucket.campaigns.push({
-              id: campaignId,
-              theme: campaign.theme || "Campaign",
-              description: campaign.expected_outcome_summary,
-              deltaBp: campaign.total_delta_bp ?? 0,
-              assets: campaign.plays?.length ?? 0,
-              belief: campaign.avg_confidence ?? null,
-            });
-            bucket.totalDelta += campaign.total_delta_bp || 0;
-            bucket.totalAssets += campaign.plays?.length || 0;
-            bucket.broadTouches += campaign.mode_mix?.broad ?? 0;
-            bucket.focusedTouches += campaign.mode_mix?.focused ?? 0;
-          }
-
-          const metrics = personaMetrics.get(personaLabel);
-          if (metrics) {
-            bucket.fatigueValues.push(...metrics.fatigueValues);
-            bucket.beliefValues.push(...metrics.beliefValues);
-          }
-        });
-      });
-    });
-
-    const cells: Record<string, ExecutionCell[]> = {};
-    personaQuarterBuckets.forEach((quarterMap, personaLabel) => {
-      quarterMap.forEach((bucket, quarter) => {
-        const fatigue =
-          bucket.fatigueValues.length > 0
-            ? bucket.fatigueValues.reduce((sum, value) => sum + value, 0) /
-              bucket.fatigueValues.length
-            : null;
-        const belief =
-          bucket.beliefValues.length > 0
-            ? bucket.beliefValues.reduce((sum, value) => sum + value, 0) /
-              bucket.beliefValues.length
-            : null;
-        const key = `${quarter}|${personaLabel}`;
-        const dominantMode =
-          bucket.focusedTouches >= bucket.broadTouches ? "focused" : "broad";
-        const campaignsSorted = bucket.campaigns
-          .slice()
-          .sort((a, b) => (b.deltaBp ?? 0) - (a.deltaBp ?? 0));
-        cells[key] = [
-          {
-            theme: campaignsSorted[0]?.theme || "Campaign mix",
-            deltaBp: bucket.totalDelta,
-            mode: dominantMode,
-            accountCount: bucket.accounts,
-            fatigue,
-            belief,
-            assets: bucket.totalAssets,
-            campaigns: campaignsSorted,
-          },
-        ];
-      });
-    });
-
-    const quarters = Array.from(quarterSet).sort((a, b) => quarterOrder(a) - quarterOrder(b));
-    const personas = Array.from(personaSet).sort((a, b) => a.localeCompare(b));
-    if (!quarters.length || !personas.length) return null;
-    return { quarters, personas, cells };
-  }, [plan]);
-
-  const planExecutionMatrix = plan?.portfolio_plan?.execution_matrix ?? null;
-  const backendExecutionMatrix = useMemo(
-    () => mapBackendExecutionMatrix(planExecutionMatrix),
-    [planExecutionMatrix]
+  const executionTimeline = useMemo<ExecutionTimeline | null>(
+    () => buildExecutionTimeline(executionItems, executionGroupMode),
+    [executionItems, executionGroupMode]
   );
-  const executionMatrix = backendExecutionMatrix ?? derivedExecutionMatrix;
-  const accountExecutionMatrix = useMemo<ExecutionMatrix | null>(() => {
-    if (!selectedAccountPlan) return null;
-    const quarterSet = new Set<string>();
-    const personaSet = new Set<string>();
-    const cells: Record<string, ExecutionCell[]> = {};
-    const fatigueByPersona = new Map<string, number>();
-    (selectedAccountPlan.execution?.persona_engagements || []).forEach((entry) => {
-      if (entry.persona_label) {
-        fatigueByPersona.set(entry.persona_label, entry.fatigue ?? 0);
-      }
-    });
-    (selectedAccountPlan.campaigns || []).forEach((campaign) => {
-      const quarter = campaign.quarter || "Q1";
-      quarterSet.add(quarter);
-      const personas = campaign.focus_personas?.length
-        ? campaign.focus_personas
-        : [campaign.persona_focus || "Multi-persona"];
-      personas.forEach((persona) => {
-        personaSet.add(persona);
-        const key = `${quarter}|${persona}`;
-        if (!cells[key]) cells[key] = [];
-        const modeMix = campaign.mode_mix || { broad: 0, focused: 0 };
-        cells[key].push({
-          theme: campaign.theme || "Campaign",
-          deltaBp: campaign.total_delta_bp || 0,
-          mode: (modeMix.focused || 0) >= (modeMix.broad || 0) ? "focused" : "broad",
-          accountCount: 1,
-          fatigue: fatigueByPersona.get(persona),
-          belief: campaign.confidence ?? null,
-          assets: campaign.plays?.length || 0,
-        });
+
+  const executionSummary = useMemo(() => {
+    if (!executionItems.length) return null;
+    const focusQuarter =
+      executionTimeline?.quarters?.[0] ||
+      executionItems[0]?.quarter ||
+      "Q1";
+    const focusItems = executionItems
+      .filter((item) => item.quarter === focusQuarter)
+      .sort((a, b) => (b.deltaBp ?? 0) - (a.deltaBp ?? 0));
+    const totalLift = focusItems.reduce((sum, item) => sum + (item.deltaBp || 0), 0);
+    const totalAccounts = focusItems.reduce(
+      (sum, item) => sum + (item.accountsImpacted || 0),
+      0
+    );
+    return {
+      focusQuarter,
+      headline: focusItems[0],
+      totalLift,
+      totalAccounts,
+      focusItems,
+    };
+  }, [executionItems, executionTimeline]);
+  const currentScope: "portfolio" | "account" = selectedAccountPlan ? "account" : "portfolio";
+  const currentAccountId = selectedAccountPlan?.account_id ?? null;
+
+  const handleUseRecommendation = async (item: ExecutionItem) => {
+    if (!plan || !token) {
+      setDecisionError("Plan not ready.");
+      return;
+    }
+    setDecisionError(null);
+    setDecisionLoadingId(item.id);
+    try {
+      const res = await fetch("http://localhost:8000/execution-interventions/decide", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: plan.product_id,
+          intervention_id: item.id,
+          scope: currentScope,
+          account_id: currentAccountId,
+          action: "use",
+          persona: item.persona,
+          concern: item.concern,
+          asset_type: item.assetType,
+          channel: item.channel,
+          recommended_asset_id: item.recommendedAssetId,
+          recommended_asset_name: item.recommendedAssetName,
+          metadata: {
+            accountsImpacted: item.accountsImpacted,
+            accountNames: item.accountNames,
+            clusters: item.clusters,
+          },
+        }),
       });
-    });
-    const quarters = Array.from(quarterSet).sort((a, b) => quarterOrder(a) - quarterOrder(b));
-    const personas = Array.from(personaSet).sort((a, b) => a.localeCompare(b));
-    if (!quarters.length || !personas.length) return null;
-    return { quarters, personas, cells };
-  }, [selectedAccountPlan]);
-  const executionMatrixForView = selectedAccountPlan ? accountExecutionMatrix : executionMatrix;
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (data?.decision?.intervention_id) {
+        setDecisionMap((prev) => ({
+          ...prev,
+          [data.decision.intervention_id]: data.decision as InterventionDecision,
+        }));
+      }
+    } catch (err: any) {
+      console.error("Failed to save decision", err);
+      setDecisionError(err?.message || "Failed to save decision");
+    } finally {
+      setDecisionLoadingId(null);
+    }
+  };
+
+  const handleOverrideRequest = (item: ExecutionItem) => {
+    setDecisionError(null);
+    setOverrideDialog({ open: true, item });
+  };
+
+  const handleOverrideSubmit = async (payload: OverrideSubmission) => {
+    if (!plan || !token || !overrideDialog.item) {
+      setDecisionError("Plan not ready.");
+      return;
+    }
+    setDecisionError(null);
+    setDecisionLoadingId(overrideDialog.item.id);
+    try {
+      const res = await fetch("http://localhost:8000/execution-interventions/decide", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: plan.product_id,
+          intervention_id: overrideDialog.item.id,
+          scope: currentScope,
+          account_id: currentAccountId,
+          action: "override",
+          persona: overrideDialog.item.persona,
+          concern: overrideDialog.item.concern,
+          asset_type: overrideDialog.item.assetType,
+          channel: overrideDialog.item.channel,
+          recommended_asset_id: overrideDialog.item.recommendedAssetId,
+          recommended_asset_name: overrideDialog.item.recommendedAssetName,
+          selected_asset_id: payload.selectedAssetId,
+          selected_asset_name: payload.selectedAssetName,
+          selected_asset_type: payload.assetType || overrideDialog.item.assetType,
+          selected_channel: payload.channel || overrideDialog.item.channel,
+          notes: payload.notes,
+          metadata: {
+            accountsImpacted: overrideDialog.item.accountsImpacted,
+            accountNames: overrideDialog.item.accountNames,
+            clusters: overrideDialog.item.clusters,
+          },
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (data?.decision?.intervention_id) {
+        setDecisionMap((prev) => ({
+          ...prev,
+          [data.decision.intervention_id]: data.decision as InterventionDecision,
+        }));
+      }
+      setOverrideDialog({ open: false, item: null });
+    } catch (err: any) {
+      console.error("Failed to save override", err);
+      setDecisionError(err?.message || "Failed to save override");
+    } finally {
+      setDecisionLoadingId(null);
+    }
+  };
 
   const personaLabelLookup = useMemo(() => {
     const lookup: Record<string, string> = {};
@@ -3274,6 +4068,16 @@ const MarketingPlanner: React.FC = () => {
     });
     return lookup;
   }, [plan]);
+
+  const portfolioGapOverlay = useMemo(
+    () => buildGapOverlayMap(plan?.portfolio_plan?.interventions ?? []),
+    [plan?.portfolio_plan?.interventions]
+  );
+  const accountGapOverlay = useMemo(
+    () => buildGapOverlayMap(selectedAccountPlan?.interventions ?? []),
+    [selectedAccountPlan?.interventions]
+  );
+  const executionGapOverlay = selectedAccountPlan ? accountGapOverlay : portfolioGapOverlay;
 
 const counterToItems = (
   counter: Map<string, number>,
@@ -3382,146 +4186,148 @@ const renderRationaleCell = (row: ArsenalRow) => {
   );
 };
 
-const ExecutionPlanMatrixView = ({ matrix }: { matrix: ExecutionMatrix | null }) => {
-  if (!matrix || !matrix.quarters.length || !matrix.personas.length) {
+const ExecutionTimelineView = ({
+  items,
+  timeline,
+  gapOverlay,
+  groupMode,
+  onGroupModeChange,
+  contextLabel,
+  decisions,
+  onUse,
+  onOverride,
+  actionLoadingId,
+}: {
+  items: ExecutionItem[];
+  timeline: ExecutionTimeline | null;
+  gapOverlay?: Map<string, GapOverlayEntry>;
+  groupMode: GroupMode;
+  onGroupModeChange: (mode: GroupMode) => void;
+  contextLabel: string;
+  decisions: Record<string, InterventionDecision>;
+  onUse: (item: ExecutionItem) => void;
+  onOverride: (item: ExecutionItem) => void;
+  actionLoadingId?: string | null;
+}) => {
+  if (!timeline || !timeline.quarters.length || !timeline.rows.length) {
     return (
       <Card variant="outlined">
         <CardContent>
           <Typography variant="h6" sx={{ mb: 1 }}>
-            Execution Plan
+            Execution Timeline
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Execution plan will appear once campaigns assign personas and timelines.
+            {`No interventions are ready for this ${contextLabel.toLowerCase()} yet. Once the planner identifies belief gaps, they will appear here.`}
           </Typography>
         </CardContent>
       </Card>
     );
   }
-  const columnTemplate = `160px repeat(${matrix.quarters.length}, minmax(200px, 1fr))`;
+
+  const handleGroupChange = (_: React.SyntheticEvent, nextMode: GroupMode | null) => {
+    if (nextMode) {
+      onGroupModeChange(nextMode);
+    }
+  };
+
+  const columnTemplate = `200px repeat(${timeline.quarters.length}, minmax(220px, 1fr))`;
+
   return (
     <Card variant="outlined">
       <CardContent>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Execution Plan (Personas vs Time)
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Personas run down the rows, quarters move left to right. Color intensity reflects cadence pressure; hashes indicate fatigue.
-        </Typography>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", md: "center" }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
+              Execution Timeline
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Each tile = one intervention (concern × persona × asset × channel). Showing {items.length} planned action{items.length === 1 ? "" : "s"}. Use the toggle to group by asset, persona, or keystone focus.
+            </Typography>
+          </Box>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={groupMode}
+            onChange={handleGroupChange}
+          >
+            <ToggleButton value="assetType">Group by asset</ToggleButton>
+            <ToggleButton value="persona">Group by persona</ToggleButton>
+            <ToggleButton value="keystone">Keystone focus</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
         <Box sx={{ overflowX: "auto", mt: 2 }}>
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: columnTemplate,
-              gap: 1,
-              minWidth: matrix.quarters.length * 200 + 200,
+              gap: 1.5,
+              alignItems: "start",
+              minWidth: "100%",
             }}
           >
             <Box />
-            {matrix.quarters.map((quarter) => (
-              <Paper
-                key={`quarter-${quarter}`}
-                variant="outlined"
-                sx={{ p: 1.25, backgroundColor: "grey.50" }}
-              >
-                <Typography variant="subtitle2">{quarter}</Typography>
-              </Paper>
+            {timeline.quarters.map((quarter) => (
+              <Box key={quarter}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {quarter}
+                </Typography>
+              </Box>
             ))}
-            {matrix.personas.map((persona) => (
-              <React.Fragment key={`persona-row-${persona}`}>
-                <Paper variant="outlined" sx={{ p: 1.25, backgroundColor: "grey.50" }}>
-                  <Typography variant="subtitle2">{persona}</Typography>
-                </Paper>
-                {matrix.quarters.map((quarter) => {
-                  const key = `${quarter}|${persona}`;
-                  const blocks = matrix.cells[key] || [];
-                  if (!blocks.length) {
+            {timeline.rows.map((row) => (
+              <React.Fragment key={row}>
+                <Box
+                  sx={{
+                    position: "sticky",
+                    left: 0,
+                    backgroundColor: "background.paper",
+                    zIndex: 1,
+                    borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+                  }}
+                >
+                  <Typography variant="subtitle2">{row}</Typography>
+                </Box>
+                {timeline.quarters.map((quarter) => {
+                  const key = `${row}|${quarter}`;
+                  const cellItems = timeline.cells[key] || [];
+                  if (!cellItems.length) {
                     return (
                       <Paper
                         key={key}
                         variant="outlined"
-                        sx={{ p: 1.25, minHeight: 96, backgroundColor: "grey.50" }}
+                        sx={{
+                          minHeight: 120,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          p: 1.5,
+                        }}
                       >
-                        <Typography variant="caption" color="text.secondary">
-                          — idle —
+                        <Typography variant="body2" color="text.secondary">
+                          No intervention
                         </Typography>
                       </Paper>
                     );
                   }
                   return (
-                    <Stack key={key} spacing={0.75} sx={{ minHeight: 96 }}>
-                      {blocks.map((block, idx) => {
-                        const color = themeColorFor(block.theme);
-                        const fatigueValue =
-                          typeof block.fatigue === "number" && !Number.isNaN(block.fatigue)
-                            ? block.fatigue
-                            : null;
-                        const beliefValue =
-                          typeof block.belief === "number" && !Number.isNaN(block.belief)
-                            ? block.belief
-                            : null;
-                        const hashed = fatigueValue !== null && fatigueValue > 0.6;
-                        const glow = beliefValue !== null && beliefValue >= 0.6;
-                        return (
-                          <Paper
-                            key={`${key}-${idx}`}
-                            variant="outlined"
-                            sx={{
-                              p: 1,
-                              backgroundColor: `${color}22`,
-                              borderColor: glow ? color : "divider",
-                              borderWidth: glow ? 2 : 1,
-                              backgroundImage: hashed
-                                ? "repeating-linear-gradient(-45deg, rgba(0,0,0,0.08), rgba(0,0,0,0.08) 8px, transparent 8px, transparent 16px)"
-                                : undefined,
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              {block.theme}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {block.mode === "focused" ? "Focused" : "Broad"} · Δ {fmtBasisPoints(block.deltaBp)}
-                            </Typography>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: "block" }}
-                          >
-                            Accounts: {block.accountCount} · Assets: {block.assets ?? 0}
-                          </Typography>
-                          {fatigueValue !== null && (
-                            <Typography variant="caption" color="text.secondary">
-                              Fatigue {Math.round(fatigueValue * 100)}%
-                            </Typography>
-                          )}
-                          {beliefValue !== null && (
-                            <Typography variant="caption" color="text.secondary">
-                              Belief {fmtPercent(beliefValue)}
-                            </Typography>
-                          )}
-                          {block.campaigns?.length ? (
-                            <Box sx={{ mt: 0.5 }}>
-                              {block.campaigns.slice(0, 2).map((campaign) => (
-                                <Typography
-                                  key={`${key}-${campaign.id}`}
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ display: "block" }}
-                                >
-                                  • {campaign.theme}: Δ {fmtBasisPoints(campaign.deltaBp)}
-                                </Typography>
-                              ))}
-                              {block.campaigns.length > 2 && (
-                                <Typography variant="caption" color="text.secondary">
-                                  +{block.campaigns.length - 2} more plays
-                                </Typography>
-                              )}
-                            </Box>
-                          ) : null}
-                        </Paper>
-                      );
-                    })}
-                  </Stack>
-                );
+                    <Stack key={key} spacing={1}>
+                      {cellItems.slice(0, 3).map((item) => (
+                        <ExecutionInterventionCard
+                          key={item.id}
+                          item={item}
+                          gapOverlay={gapOverlay}
+                          decision={decisions[item.id]}
+                          loading={actionLoadingId === item.id}
+                          onUse={() => onUse(item)}
+                          onOverride={() => onOverride(item)}
+                        />
+                      ))}
+                    </Stack>
+                  );
                 })}
               </React.Fragment>
             ))}
@@ -3529,6 +4335,330 @@ const ExecutionPlanMatrixView = ({ matrix }: { matrix: ExecutionMatrix | null })
         </Box>
       </CardContent>
     </Card>
+  );
+};
+
+const ExecutionInterventionCard = ({
+  item,
+  gapOverlay,
+  decision,
+  onUse,
+  onOverride,
+  loading,
+}: {
+  item: ExecutionItem;
+  gapOverlay?: Map<string, GapOverlayEntry>;
+  decision?: InterventionDecision;
+  onUse: () => void;
+  onOverride: () => void;
+  loading?: boolean;
+}) => {
+  const personaKey = normalizePersonaKey(item.persona);
+  const gap = personaKey ? gapOverlay?.get(personaKey) : undefined;
+  const accountsChip = (
+    <Chip
+      size="small"
+      label={`${item.accountsImpacted || 0} account${item.accountsImpacted === 1 ? "" : "s"}`}
+    />
+  );
+  const accountsNode =
+    item.accountNames.length > 0 ? (
+      <Tooltip title={item.accountNames.join(", ")}>{accountsChip}</Tooltip>
+    ) : (
+      accountsChip
+    );
+  const decisionStatus = decision?.status;
+  const useLabel = decisionStatus === "accepted" ? "Update selection" : "Use recommendation";
+  const overrideLabel = decisionStatus === "overridden" ? "Update override" : "Override asset";
+  const showDecisionChip = decisionStatus === "accepted" || decisionStatus === "overridden";
+  const clusters = item.clusters?.slice(0, 3) || [];
+  const isKeystone = Boolean(item.isKeystone);
+  const wolvesTooltipParts: string[] = [];
+  if (typeof item.wolvesPersonaScore === "number") {
+    wolvesTooltipParts.push(`Score ${fmtPercent(item.wolvesPersonaScore)}`);
+  }
+  if (typeof item.wolvesDeltaBp === "number") {
+    wolvesTooltipParts.push(`Δ ${fmtBasisPoints(item.wolvesDeltaBp)}`);
+  }
+  if (typeof item.wolvesInvolvementRate === "number") {
+    wolvesTooltipParts.push(`Involvement ${fmtPercent(item.wolvesInvolvementRate)}`);
+  }
+  if (typeof item.wolvesBlockerRate === "number") {
+    wolvesTooltipParts.push(`Blocker ${fmtPercent(item.wolvesBlockerRate)}`);
+  }
+  if (typeof item.wolvesSampleSize === "number") {
+    wolvesTooltipParts.push(`Sample n=${item.wolvesSampleSize}`);
+  }
+  const wolvesTooltip = wolvesTooltipParts.join(" · ");
+  const chainTargets =
+    item.chainTargets && item.chainTargets.length ? formatList(item.chainTargets) : null;
+  const chainShareLabel =
+    item.chainShare !== null && item.chainShare !== undefined ? fmtPercent(item.chainShare) : null;
+  let whyMatters: string | null = null;
+  if (item.chainEffect) {
+    whyMatters = item.chainEffect;
+  } else if (chainTargets) {
+    whyMatters = chainShareLabel
+      ? `Engaging here unlocks ${chainTargets} (${chainShareLabel} of wins)`
+      : `Engaging here unlocks ${chainTargets}`;
+  }
+
+  return (
+    <Paper
+      variant="outlined"
+      sx={{
+        p: 1.5,
+        borderColor: isKeystone ? "success.light" : undefined,
+        borderWidth: isKeystone ? 2 : 1,
+      }}
+    >
+      <Stack spacing={1}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant="subtitle2" sx={{ pr: 1 }}>
+            {item.concern}
+          </Typography>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {showDecisionChip && (
+              <Chip
+                size="small"
+                color={decisionStatus === "accepted" ? "success" : "secondary"}
+                label={decisionStatus === "accepted" ? "Locked in" : "Override saved"}
+              />
+            )}
+            <Chip size="small" color="primary" label={fmtBasisPoints(item.deltaBp)} />
+          </Stack>
+        </Stack>
+        <Typography variant="body2" color="text.secondary">
+          {item.persona} · {item.assetType} via {item.channel}
+        </Typography>
+        <Stack spacing={0.5}>
+          {item.recommendedAssetName && (
+            <Typography variant="body2">
+              Recommended asset:{" "}
+              <Box component="span" sx={{ fontWeight: 600 }}>
+                {item.recommendedAssetName}
+              </Box>
+            </Typography>
+          )}
+          {decision?.selected_asset_name && (
+            <Typography variant="body2" color="text.secondary">
+              Using:{" "}
+              <Box component="span" sx={{ fontWeight: 600 }}>
+                {decision.selected_asset_name}
+              </Box>
+            </Typography>
+          )}
+        </Stack>
+        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+          {accountsNode}
+            {clusters.map((cluster, idx) => (
+              <Chip key={`${item.id}-cluster-${idx}`} size="small" label={cluster} />
+            ))}
+            {isKeystone && (
+              <Tooltip title={wolvesTooltip || "High-impact persona"}>
+                <Chip size="small" color="success" variant="outlined" label="Keystone move" />
+              </Tooltip>
+            )}
+            {item.isNewPersona && (
+              <Chip size="small" color="warning" variant="outlined" label="New persona" />
+            )}
+          {item.fitness !== undefined && (
+            <Chip size="small" color="success" label={`Fitness ${fmtPercent(item.fitness)}`} />
+          )}
+          {gap && gap.severity !== "none" && (
+            <Chip
+              size="small"
+              color={gap.severity === "critical" ? "error" : "warning"}
+              label={
+                gap.coverage !== null
+                  ? `${gap.severity === "critical" ? "Critical gap" : "Watch"} · ${fmtPercent(
+                      gap.coverage
+                    )}`
+                  : gap.severity === "critical"
+                  ? "Critical gap"
+                  : "Watch"
+              }
+            />
+          )}
+        </Stack>
+        {item.recommendedAssetName && (
+          <Typography variant="caption" color="text.secondary">
+            Fitness combines asset match × engagement propensity.
+          </Typography>
+        )}
+        {typeof item.wolvesPersonaScore === "number" && (
+          <Typography variant="caption" color="text.secondary">
+            Wolves score {fmtPercent(item.wolvesPersonaScore)}
+            {typeof item.wolvesDeltaBp === "number" && ` · Δ ${fmtBasisPoints(item.wolvesDeltaBp)}`}
+            {typeof item.wolvesSampleSize === "number" && ` · sample n=${item.wolvesSampleSize}`}
+          </Typography>
+        )}
+        {whyMatters && (
+          <Typography
+            variant="caption"
+            color={isKeystone ? "success.main" : "text.secondary"}
+          >
+            Why this matters: {whyMatters}
+          </Typography>
+        )}
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+          <Button size="small" variant="contained" onClick={onUse} disabled={loading}>
+            {useLabel}
+          </Button>
+          <Button size="small" variant="outlined" onClick={onOverride} disabled={loading}>
+            {overrideLabel}
+          </Button>
+        </Stack>
+      </Stack>
+    </Paper>
+  );
+};
+
+const AssetOverrideDialog = ({
+  open,
+  item,
+  assets,
+  loading,
+  onClose,
+  onSubmit,
+}: {
+  open: boolean;
+  item: ExecutionItem | null;
+  assets: AssetOption[];
+  loading: boolean;
+  onClose: () => void;
+  onSubmit: (payload: OverrideSubmission) => void;
+}) => {
+  const [selectedAssetId, setSelectedAssetId] = useState<string>("");
+  const [assetName, setAssetName] = useState<string>("");
+  const [assetType, setAssetType] = useState<string>("");
+  const [channel, setChannel] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
+
+  useEffect(() => {
+    if (item) {
+      setSelectedAssetId("");
+      setAssetName(item.recommendedAssetName || "");
+      setAssetType(item.assetType || "");
+      setChannel(item.channel || "");
+      setNotes("");
+    } else {
+      setSelectedAssetId("");
+      setAssetName("");
+      setAssetType("");
+      setChannel("");
+      setNotes("");
+    }
+  }, [item, open]);
+
+  const handleAssetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSelectedAssetId(value);
+    if (value) {
+      const match =
+        assets.find((option) => option.id === value || option.name === value) || null;
+      if (match) {
+        setAssetName(match.name);
+        if (match.assetType) setAssetType(match.assetType);
+        if (match.channel) setChannel(match.channel);
+      }
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!item || !assetName.trim()) {
+      return;
+    }
+    onSubmit({
+      selectedAssetId: selectedAssetId || undefined,
+      selectedAssetName: assetName.trim(),
+      assetType: assetType || item.assetType,
+      channel: channel || item.channel,
+      notes: notes.trim() || undefined,
+    });
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={loading ? undefined : onClose}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle>Override recommended asset</DialogTitle>
+      <DialogContent dividers>
+        {item && (
+          <Stack spacing={1} sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Persona: {item.persona}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Concern: {item.concern}
+            </Typography>
+          </Stack>
+        )}
+        <TextField
+          select
+          fullWidth
+          margin="normal"
+          label="Pick existing asset"
+          value={selectedAssetId}
+          onChange={handleAssetChange}
+          disabled={!assets.length}
+        >
+          <MenuItem value="">None (enter manually)</MenuItem>
+          {assets.map((option) => (
+            <MenuItem key={`${option.id || option.name}`} value={option.id || option.name}>
+              {option.name}
+              {option.channel ? ` · ${option.channel}` : ""}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Asset name"
+          value={assetName}
+          onChange={(event) => setAssetName(event.target.value)}
+          required
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Asset type"
+          value={assetType}
+          onChange={(event) => setAssetType(event.target.value)}
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Primary channel"
+          value={channel}
+          onChange={(event) => setChannel(event.target.value)}
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Notes"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          multiline
+          minRows={2}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={loading || !assetName.trim()}
+        >
+          Save override
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
@@ -3561,6 +4691,8 @@ const renderAssetTable = (rows: AggregatedFocusAssetRow[], keyPrefix: string) =>
             <TableCell align="right">Δ (bps)</TableCell>
             <TableCell align="right">Confidence</TableCell>
             <TableCell align="right">Belief Conversion</TableCell>
+            <TableCell align="right">Subsidy Lift</TableCell>
+            <TableCell align="right">Mode</TableCell>
             <TableCell align="right">Avg Time</TableCell>
           </TableRow>
         </TableHead>
@@ -3578,6 +4710,17 @@ const renderAssetTable = (rows: AggregatedFocusAssetRow[], keyPrefix: string) =>
               row.channel_type ||
               "Channel";
             const avgDuration = row.avg_duration_days ?? row.channel?.avg_duration_days ?? 14;
+            const assetLiftProb = liftFraction(row.lift_asset_prob, row.lift_asset_bp);
+            const subsidyLiftProb = liftFraction(
+              row.lift_subsidy_prob,
+              row.lift_subsidy_bp
+            );
+            const subsidyTiming =
+              typeof row.subsidy_time_to_peak_days === "number" &&
+              !Number.isNaN(row.subsidy_time_to_peak_days)
+                ? row.subsidy_time_to_peak_days
+                : null;
+            const modeChip = renderInterventionModeChip(row.intervention_mode);
 
             return (
               <TableRow key={`${keyPrefix}-asset-${idx}`}>
@@ -3598,7 +4741,16 @@ const renderAssetTable = (rows: AggregatedFocusAssetRow[], keyPrefix: string) =>
                   )}
                 </TableCell>
                 <TableCell align="right">
-                  {fmtBasisPoints(row.expected_delta_bp)}
+                  <Typography variant="body2">
+                    {fmtBasisPoints(row.expected_delta_bp)}
+                  </Typography>
+                  {(assetLiftProb !== null || subsidyLiftProb !== null) && (
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                      {assetLiftProb !== null && `Asset ${fmtPercent(assetLiftProb)}`}
+                      {assetLiftProb !== null && subsidyLiftProb !== null && " · "}
+                      {subsidyLiftProb !== null && `Subsidy ${fmtPercentDelta(subsidyLiftProb)}`}
+                    </Typography>
+                  )}
                 </TableCell>
                 <TableCell align="right">
                   {fmtPercent(row.confidence ?? null)}
@@ -3606,6 +4758,27 @@ const renderAssetTable = (rows: AggregatedFocusAssetRow[], keyPrefix: string) =>
                 <TableCell align="right">
                   {fmtPercent(row.belief_conversion_likelihood ?? null)}
                 </TableCell>
+                <TableCell align="right">
+                  {subsidyLiftProb !== null ? (
+                    <>
+                      {fmtPercent(subsidyLiftProb)}
+                      {subsidyTiming !== null && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: "block" }}
+                        >
+                          Peak {toWeeks(subsidyTiming)}
+                        </Typography>
+                      )}
+                    </>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      —
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="right">{modeChip}</TableCell>
                 <TableCell align="right">{toWeeks(avgDuration)}</TableCell>
               </TableRow>
             );
@@ -3618,6 +4791,48 @@ const renderAssetTable = (rows: AggregatedFocusAssetRow[], keyPrefix: string) =>
 
 const renderFocusAssetTable = (focus: PortfolioConversionFocus) =>
   renderAssetTable(focus.asset_table || [], focus.key);
+
+const renderModeSummaryChips = (rows?: AggregatedFocusAssetRow[]) => {
+  if (!rows?.length) return null;
+  const counts = rows.reduce<Record<string, number>>((acc, row) => {
+    const mode = row.intervention_mode || "push_asset";
+    acc[mode] = (acc[mode] || 0) + 1;
+    return acc;
+  }, {});
+  const order = ["push_asset", "wait_exploit", "do_nothing"];
+  const chips = order
+    .filter((mode) => counts[mode])
+    .map((mode) => {
+      const meta =
+        INTERVENTION_MODE_META[mode] || {
+          label: titleize(mode) || "Custom",
+          color: "default" as ChipProps["color"],
+          description: "Custom intervention mode",
+        };
+      const chip = (
+        <Chip
+          key={`mode-summary-${mode}`}
+          size="small"
+          color={meta.color}
+          label={`${meta.label} ×${counts[mode] ?? 0}`}
+          variant={meta.color === "default" ? "outlined" : "filled"}
+        />
+      );
+      return meta.description ? (
+        <Tooltip title={meta.description} key={`mode-summary-${mode}`}>
+          {chip}
+        </Tooltip>
+      ) : (
+        chip
+      );
+    });
+  if (!chips.length) return null;
+  return (
+    <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap", mt: 0.75 }}>
+      {chips}
+    </Stack>
+  );
+};
 
 const describeBeliefTransitionMeta = (
   meta: ConversionSequenceEntry["belief_transition_meta"] | undefined
@@ -3898,6 +5113,7 @@ const renderConversionFocusDetails = (focus: ConversionFocus, key: string) => {
           {portfolioThemeQuarter ? ` (${portfolioThemeQuarter})` : ""}
         </Typography>
       )}
+      {renderModeSummaryChips(focus.asset_table)}
       {portfolioAggregatedFocus ? (
         <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap", mt: 0.5 }}>
           <Chip
@@ -4052,40 +5268,36 @@ const renderCampaignCard = (campaign: Campaign) => {
   };
 
 const renderExecutionContent = () => {
-  const currentQuarter = executionMatrixForView?.quarters?.[0] ?? "Q1";
-  const topPersonasThisQuarter =
-    executionMatrixForView?.personas.slice(0, 3) ?? [];
+  const focusQuarter = executionSummary?.focusQuarter ?? "Q1";
+  const leadIntervention = executionSummary?.headline;
+  const interventionCount = executionItems.length;
+  const totalAccounts = executionSummary?.totalAccounts ?? 0;
+  const expectedLift = executionSummary ? fmtBasisPoints(executionSummary.totalLift) : "—";
 
   return (
     <Stack spacing={2}>
       <Card variant="outlined">
         <CardContent>
           <Typography variant="h6" sx={{ mb: 1 }}>
-            This Quarter Focus ({currentQuarter})
+            Intervention Brief ({focusQuarter})
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Rallying plays and personas prioritized for the current quarter.
+            Concerns, personas, and assets the system recommends activating next.
           </Typography>
           <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
             <SummaryMetric
               label="Headline"
               value={
-                topPersonasThisQuarter.length
-                  ? topPersonasThisQuarter.join(", ")
+                leadIntervention
+                  ? `${leadIntervention.persona} · ${leadIntervention.concern}`
                   : "Pending updates"
               }
             />
+            <SummaryMetric label="Accounts covered" value={totalAccounts || "—"} />
+            <SummaryMetric label="Expected lift" value={expectedLift} />
             <SummaryMetric
-              label="Plays scheduled"
-              value={
-                executionMatrixForView?.personas?.length
-                  ? `${executionMatrixForView.personas.length * (executionMatrixForView.quarters?.length || 1)}+`
-                  : "—"
-              }
-            />
-            <SummaryMetric
-              label="Next action"
-              value="Generate Q briefing"
+              label="Interventions queued"
+              value={interventionCount || "—"}
             />
           </Stack>
           <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap" }}>
@@ -4098,7 +5310,33 @@ const renderExecutionContent = () => {
           </Stack>
         </CardContent>
       </Card>
-      <ExecutionPlanMatrixView matrix={executionMatrixForView} />
+      {decisionError && (
+        <Alert severity="error" onClose={() => setDecisionError(null)}>
+          {decisionError}
+        </Alert>
+      )}
+      <ExecutionTimelineView
+        items={executionItems}
+        timeline={executionTimeline}
+        gapOverlay={executionGapOverlay}
+        groupMode={executionGroupMode}
+        onGroupModeChange={setExecutionGroupMode}
+        contextLabel={selectedAccountPlan ? "Account" : "Portfolio"}
+        decisions={decisionMap}
+        onUse={handleUseRecommendation}
+        onOverride={handleOverrideRequest}
+        actionLoadingId={decisionLoadingId}
+      />
+      <AssetOverrideDialog
+        open={overrideDialog.open}
+        item={overrideDialog.item}
+        assets={interventionAssetOptions}
+        loading={Boolean(
+          decisionLoadingId && overrideDialog.item && decisionLoadingId === overrideDialog.item.id
+        )}
+        onClose={() => setOverrideDialog({ open: false, item: null })}
+        onSubmit={handleOverrideSubmit}
+      />
     </Stack>
   );
 };
@@ -4128,6 +5366,33 @@ const renderOverviewContent = () => {
       (sum, cluster) => sum + (cluster.shareOfExpectedLift || 0),
       0
     );
+    const keystoneBand = portfolioSummaryReport?.keystoneBand ?? [];
+    const keystoneLabelLookup = new Map<string, PortfolioKeystonePersona>();
+    keystoneBand.forEach((entry) => {
+      const normalized = entry.label?.toLowerCase().trim();
+      if (normalized) {
+        keystoneLabelLookup.set(normalized, entry);
+      }
+    });
+    const findKeystoneEntry = (label?: string | null) => {
+      if (!label) return null;
+      const normalized = label.toLowerCase().trim();
+      if (!normalized) return null;
+      return (
+        keystoneLabelLookup.get(normalized) ||
+        keystoneBand.find((entry) => {
+          const candidate = entry.label?.toLowerCase().trim();
+          return candidate && (candidate.includes(normalized) || normalized.includes(candidate));
+        }) ||
+        null
+      );
+    };
+    const wolvesUpdatedAt =
+      portfolioSummaryReport?.wolvesMetricsUpdatedAt ??
+      plan.summary?.wolves_metrics_updated_at ??
+      plan.wolves_metrics_updated_at ??
+      null;
+    const wolvesRefreshed = formatTimestamp(wolvesUpdatedAt);
     const thesisClusters =
       thesisData?.clusterBriefs?.length ? thesisData.clusterBriefs : accountClusters;
     const heroSentence = `Increase win likelihood for ${totalAccounts} target account${
@@ -4178,36 +5443,77 @@ const renderOverviewContent = () => {
       }
       return narrative;
     })();
+    const heroKeystoneNarrative = (() => {
+      if (!keystoneBand.length) return null;
+      const topEntries = keystoneBand.slice(0, Math.min(2, keystoneBand.length));
+      const personaList = topEntries.map((entry) => entry.label);
+      const primary = topEntries[0];
+      if (!primary) return null;
+      const chainTargets =
+        primary.chainTargets && primary.chainTargets.length
+          ? formatList(primary.chainTargets)
+          : null;
+      const chainShareLabel =
+        typeof primary.chainShare === "number" && !Number.isNaN(primary.chainShare)
+          ? fmtPercent(primary.chainShare)
+          : null;
+      let snippet = `Keystone focus: ${formatList(personaList)}`;
+      if (typeof primary.wolvesDeltaBp === "number") {
+        snippet += ` (${fmtBasisPoints(primary.wolvesDeltaBp)} lift)`;
+      } else if (typeof primary.wolvesScore === "number") {
+        snippet += ` · Wolves ${fmtPercent(primary.wolvesScore)}`;
+      }
+      if (primary.chainEffect) {
+        snippet += `. ${primary.chainEffect}`;
+      } else if (chainTargets) {
+        snippet += chainShareLabel
+          ? `. Unlocks ${chainTargets} (${chainShareLabel} of wins)`
+          : `. Unlocks ${chainTargets}`;
+      } else if (primary.sampleStory) {
+        snippet += `. ${primary.sampleStory}`;
+      }
+      return snippet;
+    })();
     const personaSpotlights =
       conversionFocuses.length > 0
-        ? conversionFocuses.slice(0, 3).map((focus) => ({
-            persona:
+        ? conversionFocuses.slice(0, 3).map((focus) => {
+            const personaLabel =
               focus.persona_descriptor ||
               focus.persona_focus ||
               focus.label ||
-              "Target persona",
-            stage: focus.stage_label || focus.timeline_label || "Next stage",
-            summary:
-              focus.expected_outcome_summary ||
-              focus.segment_summary ||
-              focus.campaign_theme ||
-              null,
-            delta: typeof focus.expected_delta_bp === "number" ? focus.expected_delta_bp : null,
-          }))
-        : (portfolioSummaryReport?.personaMix || []).slice(0, 3).map((item, idx) => ({
-            persona: item.label || `Persona ${idx + 1}`,
-            stage: dominantStageLabel || "Next stage",
-            summary:
-              typeof item.count === "number"
-                ? `${item.count} persona${item.count === 1 ? "" : "s"} in plan`
-                : null,
-            delta: null,
-          }));
+              "Target persona";
+            const keystone = findKeystoneEntry(personaLabel);
+            return {
+              persona: personaLabel,
+              stage: focus.stage_label || focus.timeline_label || "Next stage",
+              summary:
+                focus.expected_outcome_summary ||
+                focus.segment_summary ||
+                focus.campaign_theme ||
+                null,
+              delta: typeof focus.expected_delta_bp === "number" ? focus.expected_delta_bp : null,
+              keystone,
+            };
+          })
+        : (portfolioSummaryReport?.personaMix || []).slice(0, 3).map((item, idx) => {
+            const personaLabel = item.label || `Persona ${idx + 1}`;
+            return {
+              persona: personaLabel,
+              stage: dominantStageLabel || "Next stage",
+              summary:
+                typeof item.count === "number"
+                  ? `${item.count} persona${item.count === 1 ? "" : "s"} in plan`
+                  : null,
+              delta: null,
+              keystone: findKeystoneEntry(personaLabel),
+            };
+          });
 
     const beliefTransitions =
       (thesisData?.strategyHighlights || []).slice(0, 4);
 
     const topPlays = aggregatedPortfolioArsenal.slice(0, 3);
+    const portfolioGaps = (plan.portfolio_plan?.interventions ?? []).slice(0, 4);
 
     return (
       <Stack spacing={2}>
@@ -4227,6 +5533,11 @@ const renderOverviewContent = () => {
               <Typography variant="body2" sx={{ color: "grey.300" }}>
                 {heroNarrative}
               </Typography>
+              {heroKeystoneNarrative ? (
+                <Typography variant="body2" sx={{ color: "success.light" }}>
+                  {heroKeystoneNarrative}
+                </Typography>
+              ) : null}
               <Stack
                 direction={{ xs: "column", md: "row" }}
                 spacing={2}
@@ -4261,6 +5572,257 @@ const renderOverviewContent = () => {
           </CardContent>
         </Card>
 
+        {keystoneBand.length ? (
+          <Card variant="outlined">
+            <CardContent>
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", md: "center" }}
+                spacing={1}
+              >
+                <Box>
+                  <Typography variant="subtitle2">Keystone personas</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Wolves-impact personas that unlock downstream committees.
+                  </Typography>
+                </Box>
+                {wolvesRefreshed && (
+                  <Typography variant="caption" color="text.secondary">
+                    Refreshed {wolvesRefreshed}
+                  </Typography>
+                )}
+              </Stack>
+              <Stack spacing={1.25} sx={{ mt: 1 }}>
+                {keystoneBand.map((entry, idx) => {
+                  const chainTargets =
+                    entry.chainTargets && entry.chainTargets.length
+                      ? formatList(entry.chainTargets)
+                      : null;
+                  const wolvesNarrative =
+                    entry.chainEffect ||
+                    (chainTargets
+                      ? entry.chainShare !== null && entry.chainShare !== undefined
+                        ? `Unlocks ${chainTargets} (${fmtPercent(entry.chainShare)} of wins)`
+                        : `Unlocks ${chainTargets}`
+                      : entry.sampleStory || null);
+                  return (
+                    <Paper key={`portfolio-keystone-${idx}`} variant="outlined" sx={{ p: 1.25 }}>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        justifyContent="space-between"
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                      >
+                        <Typography variant="subtitle1">{entry.label}</Typography>
+                        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                          {entry.wolvesScore !== undefined && entry.wolvesScore !== null && (
+                            <Chip
+                              size="small"
+                              color="success"
+                              label={`Wolves ${fmtPercent(entry.wolvesScore)}`}
+                            />
+                          )}
+                          {entry.wolvesDeltaBp !== undefined && entry.wolvesDeltaBp !== null && (
+                            <Chip size="small" label={`Δ ${fmtBasisPoints(entry.wolvesDeltaBp)}`} />
+                          )}
+                          {entry.accountsCovered !== undefined && (
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label={`${entry.accountsCovered} account${
+                                entry.accountsCovered === 1 ? "" : "s"
+                              }`}
+                            />
+                          )}
+                        </Stack>
+                      </Stack>
+                      {wolvesNarrative ? (
+                        <Typography variant="body2" color="success.main" sx={{ mt: 0.5 }}>
+                          {wolvesNarrative}
+                        </Typography>
+                      ) : null}
+                      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mt: 0.5 }}>
+                        {entry.share !== undefined && entry.share !== null && (
+                          <Chip size="small" variant="outlined" label={`${fmtPercent(entry.share)} of plans`} />
+                        )}
+                        {(entry.clusterLabels || []).slice(0, 3).map((clusterLabel, clusterIdx) => (
+                          <Chip
+                            key={`${entry.label}-cluster-${clusterIdx}`}
+                            size="small"
+                            label={clusterLabel}
+                          />
+                        ))}
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {portfolioGaps.length ? (
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="subtitle2" gutterBottom>
+                Critical gaps — where belief lift is high but coverage is weak
+              </Typography>
+              <Stack spacing={1.5}>
+                {portfolioGaps.map((gap) => {
+                  const formatLabel =
+                    gap.current_modality?.format_label ||
+                    gap.recommended_modality?.format_label ||
+                    "Format TBD";
+                  const channelLabel =
+                    gap.current_modality?.channel_label ||
+                    gap.recommended_modality?.channel_label ||
+                    "Channel TBD";
+                  const coverageValue = gap.coverage_score ?? 0;
+                  const coveragePercent = Math.round(coverageValue * 100);
+                  const coverageColor =
+                    gap.coverage_state === "strong"
+                      ? "success"
+                      : gap.coverage_state === "steady"
+                      ? "warning"
+                      : "error";
+                  const expectedLift = fmtBasisPoints(gap.belief_lift_bp);
+                  const gapPersonaLabel =
+                    gap.persona_label ||
+                    gap.persona_descriptor ||
+                    gap.belief_transition?.persona?.label ||
+                    undefined;
+                  const keystonePersona = findKeystoneEntry(gapPersonaLabel);
+                  const keystoneTargets =
+                    keystonePersona?.chainTargets?.length
+                      ? formatList(keystonePersona.chainTargets)
+                      : null;
+                  const keystoneNarrative =
+                    keystonePersona?.chainEffect ||
+                    (keystoneTargets
+                      ? keystonePersona?.chainShare !== null && keystonePersona?.chainShare !== undefined
+                        ? `Unlocks ${keystoneTargets} (${fmtPercent(keystonePersona.chainShare)} of wins)`
+                        : `Unlocks ${keystoneTargets}`
+                      : keystonePersona?.sampleStory || null);
+                  return (
+                    <Paper
+                      key={gap.id}
+                      variant="outlined"
+                      sx={{ p: 1.5, borderColor: gap.needs_net_new ? "error.light" : "divider" }}
+                    >
+                      <Stack spacing={1}>
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={1}
+                          justifyContent="space-between"
+                          alignItems={{ xs: "flex-start", sm: "center" }}
+                        >
+                          <Box>
+                            <Typography variant="subtitle1">
+                              {gap.persona_label || gap.persona_descriptor || "Target persona"} ·{" "}
+                              {gap.stage_label || "Next stage"}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {gap.concern_theme ||
+                                gap.messaging_hint ||
+                                "Top concern inferred from engagements."}
+                            </Typography>
+                          </Box>
+                          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                            <Chip
+                              size="small"
+                              color={coverageColor}
+                              label={`Coverage ${fmtPercent(coverageValue)}`}
+                            />
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label={`Lift ${expectedLift}`}
+                            />
+                            {keystonePersona ? (
+                              <Chip size="small" color="success" label="Keystone gap" />
+                            ) : null}
+                            {gap.expected_account_count ? (
+                              <Chip
+                                size="small"
+                                variant="outlined"
+                                label={`${gap.expected_account_count} account${
+                                  gap.expected_account_count === 1 ? "" : "s"
+                                }`}
+                              />
+                            ) : null}
+                          </Stack>
+                        </Stack>
+
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center">
+                          <Stack direction="row" spacing={1} flex={1} sx={{ flexWrap: "wrap" }}>
+                            <Chip
+                              label={`Format: ${formatLabel}`}
+                              size="small"
+                              color="default"
+                            />
+                            <Chip
+                              label={`Channel: ${channelLabel}`}
+                              size="small"
+                              color="default"
+                            />
+                          </Stack>
+                          <Box sx={{ width: { xs: "100%", sm: 220 } }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={coveragePercent}
+                              color={coverageColor}
+                              sx={{ height: 6, borderRadius: 3 }}
+                            />
+                            <Stack direction="row" justifyContent="space-between">
+                              <Typography variant="caption" color="text.secondary">
+                                {fmtPercent(coverageValue)} ready
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {gap.plays_considered || 0} play
+                                {gap.plays_considered === 1 ? "" : "s"}
+                              </Typography>
+                            </Stack>
+                          </Box>
+                        </Stack>
+
+                        {keystoneNarrative ? (
+                          <Typography variant="caption" color="success.main">
+                            {keystoneNarrative}
+                          </Typography>
+                        ) : null}
+
+                        {gap.recommended_modality && gap.needs_net_new ? (
+                          <Typography variant="caption" color="error.main">
+                            Suggested next build: {gap.recommended_modality.format_label} via{" "}
+                            {gap.recommended_modality.channel_label}
+                          </Typography>
+                        ) : null}
+
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => setPlannerPanel("arsenal")}
+                          >
+                            Map existing asset
+                          </Button>
+                          {gap.needs_net_new ? (
+                            <Button size="small" variant="outlined" color="error">
+                              Design new asset
+                            </Button>
+                          ) : null}
+                        </Stack>
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+            </CardContent>
+          </Card>
+        ) : null}
+
         {accountClusters.length ? (
           <Card variant="outlined">
             <CardContent>
@@ -4276,6 +5838,8 @@ const renderOverviewContent = () => {
                 {accountClusters.map((cluster) => {
                   const sample = cluster.accounts.slice(0, 3).map((acct) => acct.name);
                   const remainder = Math.max(cluster.accountCount - sample.length, 0);
+                  const keystones = cluster.keystonePersonas || [];
+                  const keystoneCaption = cluster.keystoneCaption;
                   return (
                     <Paper key={cluster.token} variant="outlined" sx={{ p: 1.25 }}>
                       <Stack
@@ -4305,6 +5869,28 @@ const renderOverviewContent = () => {
                           ? `${sample.join(", ")}${remainder > 0 ? ` +${remainder} more` : ""}`
                           : "Accounts will populate after enrichment syncs."}
                       </Typography>
+                      {keystoneCaption && (
+                        <Typography variant="body2" color="success.main" sx={{ mt: 0.5 }}>
+                          {keystoneCaption}
+                        </Typography>
+                      )}
+                      {keystones.length ? (
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", mt: 0.5 }}>
+                          {keystones.slice(0, 3).map((kp, idx) => (
+                            <Chip
+                              key={`${cluster.token}-keystone-${idx}`}
+                              size="small"
+                              color="success"
+                              variant="outlined"
+                              label={`${kp.persona}${
+                                kp.wolvesScore !== null && kp.wolvesScore !== undefined
+                                  ? ` · ${fmtPercent(kp.wolvesScore)}`
+                                  : ""
+                              }`}
+                            />
+                          ))}
+                        </Stack>
+                      ) : null}
                     </Paper>
                   );
                 })}
@@ -4327,6 +5913,10 @@ const renderOverviewContent = () => {
                   const transitions = cluster.beliefTransitions ?? [];
                   const primaryPlays = cluster.primaryPlays ?? [];
                   const fallbackPlan = cluster.fallbackPlan ?? [];
+                  const clusterKeystones = cluster.keystonePersonas ?? [];
+                  const keystoneNameSet = new Set(
+                    clusterKeystones.map((kp) => kp.persona)
+                  );
                   return (
                     <Paper key={`cluster-story-${cluster.token}`} variant="outlined" sx={{ p: 1.5 }}>
                       <Stack spacing={1.25}>
@@ -4365,6 +5955,29 @@ const renderOverviewContent = () => {
                           ) : null}
                         </Stack>
 
+                        {clusterKeystones.length ? (
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                            {clusterKeystones.map((keystone, idx) => (
+                              <Chip
+                                key={`${cluster.token}-keystone-chip-${idx}`}
+                                size="small"
+                                color="success"
+                                variant="outlined"
+                                label={`${keystone.persona}${
+                                  keystone.wolvesScore !== null && keystone.wolvesScore !== undefined
+                                    ? ` · ${fmtPercent(keystone.wolvesScore)}`
+                                    : ""
+                                }`}
+                              />
+                            ))}
+                          </Stack>
+                        ) : null}
+                        {cluster.keystoneCaption && (
+                          <Typography variant="body2" color="success.main">
+                            {cluster.keystoneCaption}
+                          </Typography>
+                        )}
+
                         <Box>
                           <Typography variant="subtitle2">Expected personas & mapped people</Typography>
                           {personaRows.length ? (
@@ -4381,7 +5994,14 @@ const renderOverviewContent = () => {
                                 <TableBody>
                                   {personaRows.map((row) => (
                                     <TableRow key={`${cluster.token}-${row.persona}`}>
-                                      <TableCell>{row.persona}</TableCell>
+                                      <TableCell>
+                                        <Stack direction="row" spacing={0.5} alignItems="center">
+                                          <Typography variant="body2">{row.persona}</Typography>
+                                          {keystoneNameSet.has(row.persona) && (
+                                            <Chip size="small" color="success" label="Keystone" />
+                                          )}
+                                        </Stack>
+                                      </TableCell>
                                       <TableCell>{row.stage || "—"}</TableCell>
                                       <TableCell align="right">
                                         {row.matchRate !== null && row.matchRate !== undefined
@@ -4389,6 +6009,12 @@ const renderOverviewContent = () => {
                                           : "—"}
                                       </TableCell>
                                       <TableCell>
+                                        {row.wolvesScore !== null &&
+                                        row.wolvesScore !== undefined ? (
+                                          <Typography variant="caption" color="success.main">
+                                            Wolves {fmtPercent(row.wolvesScore)}
+                                          </Typography>
+                                        ) : null}
                                         {row.samplePeople.length ? (
                                           <Stack spacing={0.25}>
                                             {row.samplePeople.map((person, idx) => (
@@ -4419,17 +6045,35 @@ const renderOverviewContent = () => {
 
                         {coalitions.length ? (
                           <Box>
-                            <Typography variant="subtitle2">Belief coalitions</Typography>
-                            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mt: 0.5 }}>
-                              {coalitions.map((coalition, idx) => (
-                                <Chip
-                                  key={`${cluster.token}-coalition-${idx}`}
-                                  label={`${(coalition.sequence || []).join(" → ")} · ${fmtPercent(
-                                    coalition.share
-                                  )}`}
-                                  variant="outlined"
-                                />
-                              ))}
+                            <Typography variant="subtitle2">
+                              Coalitions anchored on keystone personas
+                            </Typography>
+                            <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                              {coalitions.map((coalition, idx) => {
+                                const sequence = coalition.sequence || [];
+                                return (
+                                  <Typography
+                                    key={`${cluster.token}-coalition-${idx}`}
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    {sequence.map((persona, personaIdx) => (
+                                      <Box
+                                        key={`${cluster.token}-coalition-${idx}-persona-${personaIdx}`}
+                                        component="span"
+                                        sx={{
+                                          fontWeight: keystoneNameSet.has(persona) ? 600 : 400,
+                                        }}
+                                      >
+                                        {persona}
+                                        {personaIdx < sequence.length - 1 ? " → " : ""}
+                                      </Box>
+                                    ))}
+                                    {sequence.length ? " · " : null}
+                                    {fmtPercent(coalition.share)}
+                                  </Typography>
+                                );
+                              })}
                             </Stack>
                           </Box>
                         ) : null}
@@ -4530,7 +6174,7 @@ const renderOverviewContent = () => {
         ) : null}
 
         <Grid container spacing={2}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="subtitle2" gutterBottom>
@@ -4541,28 +6185,53 @@ const renderOverviewContent = () => {
                 </Typography>
                 <Stack spacing={1}>
                   {personaSpotlights.length ? (
-                    personaSpotlights.map((spotlight, idx) => (
-                      <Paper
-                        key={`persona-chip-${spotlight.persona}-${idx}`}
-                        variant="outlined"
-                        sx={{ p: 1 }}
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip size="small" label={`Stage: ${spotlight.stage}`} />
-                          <Typography variant="body2">{spotlight.persona}</Typography>
-                        </Stack>
-                        {spotlight.summary && (
-                          <Typography variant="caption" color="text.secondary">
-                            {spotlight.summary}
-                          </Typography>
-                        )}
-                        {spotlight.delta !== null && (
-                          <Typography variant="caption" color="text.secondary">
-                            Δ {fmtBasisPoints(spotlight.delta)}
-                          </Typography>
-                        )}
-                      </Paper>
-                    ))
+                    personaSpotlights.map((spotlight, idx) => {
+                      const keystone = spotlight.keystone;
+                      const keystoneTargets =
+                        keystone?.chainTargets?.length ? formatList(keystone.chainTargets) : null;
+                      const keystoneNarrative =
+                        keystone?.chainEffect ||
+                        (keystoneTargets
+                          ? keystone?.chainShare !== null && keystone?.chainShare !== undefined
+                            ? `Unlocks ${keystoneTargets} (${fmtPercent(keystone.chainShare)} of wins)`
+                            : `Unlocks ${keystoneTargets}`
+                          : keystone?.sampleStory || null);
+                      return (
+                        <Paper
+                          key={`persona-chip-${spotlight.persona}-${idx}`}
+                          variant="outlined"
+                          sx={{ p: 1 }}
+                        >
+                          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap" }}>
+                            <Chip size="small" label={`Stage: ${spotlight.stage}`} />
+                            <Typography variant="body2">{spotlight.persona}</Typography>
+                            {keystone ? (
+                              <Chip size="small" color="success" label="Keystone" />
+                            ) : null}
+                          </Stack>
+                          {spotlight.summary && (
+                            <Typography variant="caption" color="text.secondary">
+                              {spotlight.summary}
+                            </Typography>
+                          )}
+                          {spotlight.delta !== null && (
+                            <Typography variant="caption" color="text.secondary">
+                              Δ {fmtBasisPoints(spotlight.delta)}
+                            </Typography>
+                          )}
+                          {keystoneNarrative && (
+                            <Typography variant="caption" color="success.main">
+                              {keystoneNarrative}
+                            </Typography>
+                          )}
+                          {keystone?.wolvesScore !== null && keystone?.wolvesScore !== undefined && (
+                            <Typography variant="caption" color="success.main">
+                              Wolves {fmtPercent(keystone.wolvesScore)}
+                            </Typography>
+                          )}
+                        </Paper>
+                      );
+                    })
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       Personas will populate after planner refresh.
@@ -4572,7 +6241,7 @@ const renderOverviewContent = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="subtitle2" gutterBottom>
@@ -4600,7 +6269,7 @@ const renderOverviewContent = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="subtitle2" gutterBottom>
@@ -4648,7 +6317,7 @@ const renderOverviewContent = () => {
             {thesisData?.quarterOutcomes.length ? (
               <Grid container spacing={2}>
                 {thesisData.quarterOutcomes.map((quarter, idx) => (
-                  <Grid item xs={12} md={6} key={quarter.quarter}>
+                  <Grid size={{ xs: 12, md: 6 }} key={quarter.quarter}>
                     <Paper variant="outlined" sx={{ p: 2, height: "100%" }}>
                       <Stack spacing={1}>
                         <Stack direction="row" spacing={1} alignItems="center">
@@ -4759,13 +6428,16 @@ const renderOverviewContent = () => {
             {portfolioJourneySteps.length ? (
               <Stack spacing={1}>
                 <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                  {portfolioJourneySteps.slice(0, 3).map((step) => (
+                  {portfolioJourneySteps.slice(0, 3).map((step, idx) => {
+                    const stepNumber = step.step ?? idx + 1;
+                    return (
                     <Chip
-                      key={`journey-${step.step}`}
-                      label={`${step.step}. ${step.persona}`}
+                      key={`journey-${step.step ?? idx}`}
+                      label={`${stepNumber}. ${step.persona}`}
                       variant="outlined"
                     />
-                  ))}
+                    );
+                  })}
                 </Stack>
                 <Button size="small">Show all paths</Button>
               </Stack>
@@ -4783,6 +6455,7 @@ const renderOverviewContent = () => {
 const renderArsenalContent = () => {
   if (!plan) return null;
   if (selectedAccountPlan) {
+    const accountGaps = (selectedAccountPlan?.interventions ?? []).slice(0, 3);
     return (
       <Stack spacing={2}>
         <Card variant="outlined">
@@ -4874,27 +6547,54 @@ const renderArsenalContent = () => {
             Library view
           </Typography>
           {rows.length ? (
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
+            <TableContainer
+              component={Paper}
+              variant="outlined"
+              sx={{ width: "100%", overflowX: "auto" }}
+            >
+              <Table size="small" sx={{ minWidth: 1100 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>Asset</TableCell>
                     <TableCell>Channel</TableCell>
                     <TableCell>Segments</TableCell>
                     <TableCell>Personas</TableCell>
+                    <TableCell>Intervention</TableCell>
+                    <TableCell align="right">Coverage</TableCell>
                     <TableCell align="right">Δ belief</TableCell>
                     <TableCell align="right">Confidence</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((entry, idx) => (
-                    <React.Fragment key={entry.key}>
+                  {rows.map((entry, idx) => {
+                    if (!entry) return null;
+                    const safeSegments = Array.isArray(entry.segments)
+                      ? entry.segments
+                      : [];
+                    const safePersonas = Array.isArray(entry.personas)
+                      ? entry.personas
+                      : [];
+                    const sampleRow = entry.sampleRow ?? ({} as ArsenalRow);
+                    const coverageScore =
+                      typeof entry.coverageScore === "number"
+                        ? entry.coverageScore
+                        : null;
+                    const formatFitment =
+                      typeof entry.formatFitment === "number"
+                        ? entry.formatFitment
+                        : null;
+                    const channelEngagement =
+                      typeof entry.channelEngagement === "number"
+                        ? entry.channelEngagement
+                        : null;
+                    return (
+                      <React.Fragment key={entry.key ?? `${idx}`}>
                       <TableRow hover>
                         <TableCell>
                           <Typography variant="body2">{entry.assetLabel}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {entry.assetFormat || entry.sampleRow.assetMeta?.type || "Asset"}
+                            {entry.assetFormat || sampleRow.assetMeta?.type || "Asset"}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -4902,27 +6602,71 @@ const renderArsenalContent = () => {
                         </TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-                            {entry.segments.slice(0, 2).map((segment) => (
+                            {safeSegments.slice(0, 2).map((segment) => (
                               <Chip key={`${entry.key}-${segment}`} label={segment} size="small" />
                             ))}
-                            {entry.segments.length > 2 && (
+                            {safeSegments.length > 2 && (
                               <Typography variant="caption" color="text.secondary">
-                                +{entry.segments.length - 2} more
+                                +{safeSegments.length - 2} more
                               </Typography>
                             )}
                           </Stack>
                         </TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-                            {entry.personas.slice(0, 2).map((persona) => (
+                            {safePersonas.slice(0, 2).map((persona) => (
                               <Chip key={`${entry.key}-${persona}`} label={persona} size="small" variant="outlined" />
                             ))}
-                            {entry.personas.length > 2 && (
+                            {safePersonas.length > 2 && (
                               <Typography variant="caption" color="text.secondary">
-                                +{entry.personas.length - 2}
+                                +{safePersonas.length - 2}
                               </Typography>
                             )}
                           </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {sampleRow.persona || safePersonas[0] || "Persona"} ·{" "}
+                            {sampleRow.stageLabel || "Stage"}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {sampleRow.beliefTransition?.pain?.label ||
+                              sampleRow.beliefTransition?.narrative ||
+                              sampleRow.segmentSummary ||
+                              "Focus to be inferred"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ minWidth: 140 }}>
+                          {coverageScore !== null ? (
+                            <Box sx={{ width: "100%" }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={Math.round((coverageScore || 0) * 100)}
+                                color={
+                                  entry.coverageState === "strong"
+                                    ? "success"
+                                    : entry.coverageState === "steady"
+                                    ? "warning"
+                                    : "error"
+                                }
+                                sx={{ height: 6, borderRadius: 3, mb: 0.5 }}
+                              />
+                              <Stack direction="row" justifyContent="space-between">
+                                <Typography variant="caption" color="text.secondary">
+                                  {fmtPercent(coverageScore)}
+                                </Typography>
+                                {formatFitment !== null && channelEngagement !== null ? (
+                                  <Typography variant="caption" color="text.secondary">
+                                    {fmtPercent(formatFitment)} fit · {fmtPercent(channelEngagement)} reach
+                                  </Typography>
+                                ) : null}
+                              </Stack>
+                            </Box>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary">
+                              Awaiting coverage data
+                            </Typography>
+                          )}
                         </TableCell>
                         <TableCell align="right">{fmtBasisPoints(entry.deltaBp)}</TableCell>
                         <TableCell align="right">
@@ -4934,7 +6678,7 @@ const renderArsenalContent = () => {
                               size="small"
                               onClick={() =>
                                 setOpenArsenalReasoning((prev) =>
-                                  prev === entry.key ? null : entry.key
+                                  prev === entry.key ? null : entry.key ?? null
                                 )
                               }
                             >
@@ -4947,19 +6691,20 @@ const renderArsenalContent = () => {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell colSpan={7} sx={{ p: 0 }}>
+                        <TableCell colSpan={9} sx={{ p: 0 }}>
                           <Collapse in={openArsenalReasoning === entry.key} timeout="auto" unmountOnExit>
                             <Box sx={{ p: 2, backgroundColor: "grey.50" }}>
                               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                                 Why this play works
                               </Typography>
-                              {renderRationaleCell(entry.sampleRow)}
+                              {renderRationaleCell(sampleRow)}
                             </Box>
                           </Collapse>
                         </TableCell>
                       </TableRow>
                     </React.Fragment>
-                  ))}
+                  );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -5248,6 +6993,22 @@ const renderArsenalContent = () => {
                         persona.phase_probs,
                         persona.dominant_phase
                       );
+                      const wolfChip = buildWolfChipProps(persona);
+                      const subsidyChip = buildSubsidyChipProps(persona, wolfChip?.diff);
+                      const nextProb =
+                        persona.expected_next_prob ??
+                        persona.expected_next_prob_base ??
+                        null;
+                      const baseNext =
+                        persona.expected_next_prob_base ?? null;
+                      const subsidyLift =
+                        persona.subsidy_lift ??
+                        (nextProb !== null && baseNext !== null ? nextProb - baseNext : null);
+                      const subsidyWeight =
+                        typeof persona.subsidy_relevance === "number" &&
+                        !Number.isNaN(persona.subsidy_relevance)
+                          ? persona.subsidy_relevance
+                          : null;
                       return (
                         <Box key={persona.id} sx={{ minWidth: 180 }}>
                           <Tooltip title={personaTooltip(persona)}>
@@ -5258,12 +7019,72 @@ const renderArsenalContent = () => {
                               color={path.is_primary ? "primary" : "default"}
                             />
                           </Tooltip>
+                          {(wolfChip || subsidyChip) && (
+                            <Stack direction="row" spacing={0.5} sx={{ mt: 0.5, flexWrap: "wrap" }}>
+                              {wolfChip
+                                ? wolfChip.tooltip
+                                  ? (
+                                      <Tooltip title={wolfChip.tooltip} key={`${persona.id}-wolf`}>
+                                        <Chip
+                                          size="small"
+                                          color={wolfChip.color}
+                                          label={wolfChip.label}
+                                          variant={wolfChip.color === "default" ? "outlined" : "filled"}
+                                        />
+                                      </Tooltip>
+                                    )
+                                  : (
+                                      <Chip
+                                        key={`${persona.id}-wolf`}
+                                        size="small"
+                                        color={wolfChip.color}
+                                        label={wolfChip.label}
+                                        variant={wolfChip.color === "default" ? "outlined" : "filled"}
+                                      />
+                                    )
+                                : null}
+                              {subsidyChip
+                                ? subsidyChip.tooltip
+                                  ? (
+                                      <Tooltip
+                                        title={subsidyChip.tooltip}
+                                        key={`${persona.id}-subsidy`}
+                                      >
+                                        <Chip
+                                          size="small"
+                                          color="info"
+                                          label={subsidyChip.label}
+                                          variant="outlined"
+                                        />
+                                      </Tooltip>
+                                    )
+                                  : (
+                                      <Chip
+                                        key={`${persona.id}-subsidy`}
+                                        size="small"
+                                        color="info"
+                                        label={subsidyChip.label}
+                                        variant="outlined"
+                                      />
+                                    )
+                                : null}
+                            </Stack>
+                          )}
                           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                            Belief {fmtPercent(persona.belief_level ?? null)} · Next {fmtPercent(persona.expected_next_prob ?? null)}
+                            Belief {fmtPercent(persona.belief_level ?? null)} · Next{" "}
+                            {fmtPercent(nextProb)}
+                            {baseNext !== null && subsidyLift !== null
+                              ? ` (base ${fmtPercent(baseNext)}, subsidy ${fmtPercentDelta(subsidyLift)})`
+                              : ""}
                           </Typography>
                           {personaPhase ? (
                             <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                               Belief phase {personaPhase}
+                            </Typography>
+                          ) : null}
+                          {subsidyWeight !== null && subsidyWeight >= 0.02 ? (
+                            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                              Subsidy weight {fmtPercent(subsidyWeight)}
                             </Typography>
                           ) : null}
                           {committeeLikelihood !== null ? (
@@ -5609,6 +7430,12 @@ const renderArsenalContent = () => {
         </Alert>
       )}
 
+      {executionPlanContract?.themes?.length ? (
+        <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+          {executionPlanContract.themes.length} belief-led campaign themes available.
+        </Typography>
+      ) : null}
+
       <Stack spacing={2} sx={{ mb: 3 }}>
         <Card variant="outlined">
           <CardContent>
@@ -5723,6 +7550,92 @@ const renderArsenalContent = () => {
             ) : null}
           </CardContent>
         </Card>
+        {selectedAccountPlan && selectedEntryPoints.length ? (
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Entry points to activate
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Combines belief graph perceptibility with available people/plays to show where to
+                intervene first.
+              </Typography>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Persona</TableCell>
+                    <TableCell align="right">Entry score</TableCell>
+                    <TableCell>Signals</TableCell>
+                    <TableCell>Plan</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {selectedEntryPoints.map((entry, idx) => (
+                    <TableRow key={`selected-entry-${entry.persona_id}-${idx}`}>
+                      <TableCell>
+                        <Stack spacing={0.25}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {entry.persona_label || entry.persona_id}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Rank {entry.rank ?? idx + 1}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack spacing={0.25} alignItems="flex-end">
+                          <Typography variant="body2">
+                            {fmtPercent(entry.entry_score ?? null)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Combined perc {fmtPercent(entry.combined_perceptibility ?? null)} · prox{" "}
+                            {fmtPercent(entry.combined_proximity ?? null)}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.25}>
+                          <Typography variant="caption" color="text.secondary">
+                            Graph {fmtPercent(entry.graph_perceptibility ?? null)} /{" "}
+                            {fmtPercent(entry.graph_proximity ?? null)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Intervention reach {fmtPercent(entry.intervention_reach ?? null)}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                          {(entry.top_people || []).slice(0, 2).map((person) => (
+                            <Chip
+                              key={`selected-entry-${entry.persona_id}-person-${
+                                person.person_id || person.display_name
+                              }`}
+                              size="small"
+                              variant="outlined"
+                              label={`${person.display_name || "Person"} · ${fmtPercent(
+                                person.committee_probability ?? null
+                              )}`}
+                            />
+                          ))}
+                          {(entry.top_plays || []).slice(0, 2).map((play, playIdx) => (
+                            <Chip
+                              key={`selected-entry-${entry.persona_id}-play-${play.play_id || playIdx}`}
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                              label={describeEntryPlay(play) || "Recommended play"}
+                            />
+                          ))}
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ) : null}
         <Card variant="outlined">
           <CardContent>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>

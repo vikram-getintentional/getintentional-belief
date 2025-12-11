@@ -35,6 +35,14 @@ class TargetAccountEngagement(Base):
     actor_department = Column(String, index=True)
     actor_seniority = Column(String, index=True)
     actor_confidence = Column(Integer, default=100)  # store 0..100
+    candidate_persona_label = Column(String, nullable=True, index=True)
+
+    # canonical persona + belief context
+    persona_id = Column(String, nullable=True, index=True)
+    persona_label = Column(String, nullable=True)
+    persona_confidence = Column(Float, nullable=True)
+    belief_stage_code = Column(String, nullable=True, index=True)
+    belief_stage_label = Column(String, nullable=True)
 
     # activity
     raw_activity = Column(String)
@@ -44,6 +52,10 @@ class TargetAccountEngagement(Base):
     parser_version = Column(String, nullable=True)
     parser_confidence = Column(Float, nullable=True)
 
+    account_meta = Column(JSON, nullable=True)
+    segment_keys = Column(JSON, nullable=True)
+    derived_channel_id = Column(String, nullable=True, index=True)
+
     # original payload for forward-compat flexibility
     payload = Column(JSON)
 
@@ -52,3 +64,4 @@ Index("idx_tae_prod_acct_ts", TargetAccountEngagement.product_id,
       TargetAccountEngagement.target_account_id, TargetAccountEngagement.timestamp)
 Index("idx_tae_title_dept", TargetAccountEngagement.actor_title, TargetAccountEngagement.actor_department)
 Index("idx_tae_seniority", TargetAccountEngagement.actor_seniority)
+Index("idx_tae_candidate_label", TargetAccountEngagement.candidate_persona_label)

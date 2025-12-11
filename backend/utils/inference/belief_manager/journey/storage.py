@@ -1,14 +1,27 @@
 # backend/utils/inference/belief_manager/journey/storage.py
 
 from __future__ import annotations
-from typing import Dict, Any
+
 import json
-from pathlib import Path
+import os
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Root: backend/utils/inference/belief_manager/journey/
 HERE = Path(__file__).resolve().parent
-DATA_DIR = HERE / "data"
+
+# allow the data directory to be mounted from outside the container
+STORAGE_ROOT = os.environ.get("BELIEF_STORAGE_DIR")
+if STORAGE_ROOT:
+    DATA_DIR = Path(STORAGE_ROOT).expanduser().resolve()
+else:
+    DATA_DIR = HERE / "data"
+
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 def _stats_path(product_id: str) -> Path:

@@ -20,6 +20,10 @@ from backend.utils.knowledge_base.arsenal.service import (
 )
 from backend.utils.knowledge_base.arsenal.parser import parse_engagement_activity
 import traceback
+from backend.utils.crm_management.person_service import match_persona_for_actor_in_graph
+from backend.utils.graph_base.network_graph import build_product_graph, get_node_by_id
+from backend.utils.segment_utils import segment_keys_from_meta, normalize_account_meta
+from backend.utils.persona_normalization import normalize_persona_label
 
 def _to_conf(x) -> int:
     try:
@@ -66,6 +70,146 @@ def _persona_label(persona_id: Optional[str]) -> Optional[str]:
     if not segments:
         return persona_id
     return " | ".join(_title_case(seg) for seg in segments)
+
+BELIEF_STAGE_LABELS = {
+    "problem": "Problem Realization",
+    "pain": "Pain Realization",
+    "resolution": "Resolution Discovery",
+    "execution": "Execution Guidance",
+}
+
+_STAGE_NORMALIZATION = {
+    "problem realization": "problem",
+    "problem": "problem",
+    "awareness": "problem",
+    "pain realization": "pain",
+    "pain": "pain",
+    "mid funnel": "pain",
+    "resolution discovery": "resolution",
+    "resolution": "resolution",
+    "evaluation": "resolution",
+    "late funnel": "resolution",
+    "execution guidance": "execution",
+    "execution": "execution",
+}
+
+_PERSONA_STAGE_CACHE: Dict[Tuple[str, str], Tuple[Optional[str], Optional[str]]] = {}
+
+
+def _canonical_stage_code(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    normalized = str(value).strip().lower()
+    if not normalized:
+        return None
+    return _STAGE_NORMALIZATION.get(normalized, normalized)
+
+
+def _persona_stage_for_id(product_id: str, persona_id: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+    if not persona_id:
+        return None, None
+    cache_key = (product_id, persona_id)
+    if cache_key in _PERSONA_STAGE_CACHE:
+        return _PERSONA_STAGE_CACHE[cache_key]
+    stage_code: Optional[str] = None
+    stage_label: Optional[str] = None
+    try:
+        graph = build_product_graph(product_id)
+        node = get_node_by_id(graph, persona_id) if graph else None
+    except Exception:
+        node = None
+    if node:
+        stage_raw = (
+            node.get("journey_phase")
+            or node.get("stage_label")
+            or node.get("phase")
+            or node.get("funnel_stage")
+        )
+        stage_code = _canonical_stage_code(stage_raw)
+    if stage_code:
+        stage_label = BELIEF_STAGE_LABELS.get(stage_code, stage_code.title())
+    _PERSONA_STAGE_CACHE[cache_key] = (stage_code, stage_label)
+    return stage_code, stage_label
+
+
+def _normalized_actor(actor: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "name": (actor.get("name") or "").strip(),
+        "title": (actor.get("title") or "").strip().lower(),
+        "department": (actor.get("department") or "").strip().lower(),
+        "seniority": (actor.get("seniority") or "").strip().lower(),
+        "email": (actor.get("email") or "").strip().lower(),
+    }
+
+
+def _actor_resolver_key(actor: Dict[str, Any]) -> str:
+    email = (actor.get("email") or "").strip().lower()
+    if email:
+        return f"email:{email}"
+    name = (actor.get("name") or "").strip().lower()
+    title = (actor.get("title") or "").strip().lower()
+    dept = (actor.get("department") or "").strip().lower()
+    sen = (actor.get("seniority") or "").strip().lower()
+    return f"{name}|{title}|{dept}|{sen}"
+
+
+def _account_meta_snapshot(account_meta: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not account_meta:
+        return None
+    keys = [
+        "industry",
+        "revenue_range",
+        "employee_range",
+        "funding_stage",
+        "geography",
+        "deal_status",
+    ]
+    snapshot = {key: account_meta.get(key) for key in keys if account_meta.get(key) not in (None, "", [])}
+    if not snapshot:
+        return None
+    return snapshot
+
+
+def _resolve_persona_context(
+    product_id: str,
+    actor: Dict[str, Any],
+    resolver_states: Dict[str, Dict[str, Any]],
+) -> Dict[str, Any]:
+    normalized_actor = _normalized_actor(actor)
+    actor_key = _actor_resolver_key(normalized_actor)
+    resolver_state = resolver_states.get(actor_key)
+    result = {}
+    try:
+        match = match_persona_for_actor_in_graph(
+            product_id,
+            normalized_actor,
+            resolver_state=resolver_state,
+        )
+        resolution = match.get("resolution") or {}
+        persona_id = (
+            resolution.get("resolved_persona_id")
+            or match.get("best")
+        )
+        persona_label = match.get("best_label") or _persona_label(persona_id)
+        confidence = resolution.get("confidence")
+        if resolution.get("state"):
+            resolver_states[actor_key] = resolution["state"]
+    except Exception:
+        persona_id = None
+        persona_label = None
+        confidence = None
+        match = {}
+    stage_code, stage_label = _persona_stage_for_id(product_id, persona_id)
+    result.update(
+        {
+            "persona_id": persona_id,
+            "persona_label": persona_label,
+            "persona_confidence": confidence,
+            "belief_stage_code": stage_code,
+            "belief_stage_label": stage_label,
+        }
+    )
+    return result
 
 def _segments_from_account_meta(account_meta: Optional[Dict[str, Any]]) -> List[str]:
     if not account_meta:
@@ -196,6 +340,14 @@ def _ensure_engagement_columns() -> None:
         "asset_category": "ALTER TABLE target_account_engagements ADD COLUMN asset_category VARCHAR",
         "parser_version": "ALTER TABLE target_account_engagements ADD COLUMN parser_version VARCHAR",
         "parser_confidence": "ALTER TABLE target_account_engagements ADD COLUMN parser_confidence FLOAT",
+        "persona_id": "ALTER TABLE target_account_engagements ADD COLUMN persona_id VARCHAR",
+        "persona_label": "ALTER TABLE target_account_engagements ADD COLUMN persona_label VARCHAR",
+        "persona_confidence": "ALTER TABLE target_account_engagements ADD COLUMN persona_confidence FLOAT",
+        "belief_stage_code": "ALTER TABLE target_account_engagements ADD COLUMN belief_stage_code VARCHAR",
+        "belief_stage_label": "ALTER TABLE target_account_engagements ADD COLUMN belief_stage_label VARCHAR",
+        "account_meta": "ALTER TABLE target_account_engagements ADD COLUMN account_meta JSON",
+        "segment_keys": "ALTER TABLE target_account_engagements ADD COLUMN segment_keys JSON",
+        "derived_channel_id": "ALTER TABLE target_account_engagements ADD COLUMN derived_channel_id VARCHAR",
     }
     try:
         with engine.connect() as conn:
@@ -230,8 +382,8 @@ def _attach_arsenal_references(
     channel_tracker: Dict[str, Set[str]],
     account_meta: Optional[Dict[str, Any]] = None,
 ) -> None:
-    persona_id = _persona_id_from_row(engagement_row)
-    persona_label = _persona_label(persona_id)
+    persona_id = engagement_row.persona_id or _persona_id_from_row(engagement_row)
+    persona_label = engagement_row.persona_label or _persona_label(persona_id)
     account_segments = _segments_from_account_meta(account_meta)
     engagement_row.engagement_verb = _resolve_engagement_verb(engagement_payload)
 
@@ -263,6 +415,10 @@ def _attach_arsenal_references(
         defaults["derived_metadata"] = parsed_activity.derived_metadata()
         defaults["auto_classification_confidence"] = parsed_activity.asset_name.confidence
         defaults["approval_status"] = ApprovalStatus.PENDING
+        activity_labels: List[str] = []
+        if parsed_activity.activity_label.label:
+            activity_labels.append(parsed_activity.activity_label.label)
+        defaults["activity_labels"] = activity_labels
         asset, created = get_or_create_asset(
             db,
             product_id=product_id,
@@ -342,6 +498,15 @@ def _attach_arsenal_references(
         channel.typical_assets = _ensure_reference_entry(channel.typical_assets, asset.id, asset.name)
         db.add(asset)
         db.add(channel)
+        if not asset.primary_channel_id:
+            asset.primary_channel_id = channel.id
+    if asset and parsed_activity.activity_label.label:
+        current = asset.activity_labels or []
+        asset.activity_labels = _merge_string_lists(
+            current,
+            [parsed_activity.activity_label.label],
+        )
+        db.add(asset)
 def save_and_update_account_engagements(product_id: str, engagements: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Persist a batch of engagements (append-only).
@@ -353,6 +518,8 @@ def save_and_update_account_engagements(product_id: str, engagements: List[Dict[
     touched: set[str] = set()
     asset_tracker = {"created": set(), "pending": set()}
     channel_tracker = {"created": set(), "pending": set()}
+
+    resolver_states: Dict[str, Dict[str, Any]] = {}
 
     try:
         # preload accounts for this product
@@ -367,6 +534,7 @@ def save_and_update_account_engagements(product_id: str, engagements: List[Dict[
                 print("Skipping engagement for unknown account_id:", acc_id)
                 continue
             actor = e.get("actor") or {}
+            account_snapshot = _account_meta_snapshot(account)
             ts_raw = (e.get("timestamp") or _now_z()).strip()
             row = TargetAccountEngagement(
                 product_id=product_id,
@@ -385,6 +553,27 @@ def save_and_update_account_engagements(product_id: str, engagements: List[Dict[
                 asset_id=e.get("asset_id"),
                 payload=e,
             )
+            row.candidate_persona_label = normalize_persona_label(
+                actor.get("title"),
+                actor.get("department"),
+                actor.get("seniority"),
+            )
+            persona_context = _resolve_persona_context(
+                product_id,
+                actor,
+                resolver_states,
+            )
+            row.persona_id = persona_context.get("persona_id")
+            row.persona_label = persona_context.get("persona_label")
+            row.persona_confidence = persona_context.get("persona_confidence")
+            row.belief_stage_code = persona_context.get("belief_stage_code")
+            row.belief_stage_label = persona_context.get("belief_stage_label")
+            if account_snapshot:
+                row.account_meta = account_snapshot
+                normalized = normalize_account_meta(account_snapshot)
+                segments = segment_keys_from_meta(normalized)
+                if segments:
+                    row.segment_keys = segments
             print("Adding engagement row to db:", row)
             db.add(row)
             db.flush()
@@ -395,7 +584,7 @@ def save_and_update_account_engagements(product_id: str, engagements: List[Dict[
                 engagement_row=row,
                 asset_tracker=asset_tracker,
                 channel_tracker=channel_tracker,
-                account_meta=account,
+                account_meta=account_snapshot,
             )
             created += 1
             touched.add(acc_id)
@@ -465,8 +654,17 @@ def get_account_engagements(product_id: str, account_id: str, limit: int = 200) 
                     "seniority": r.actor_seniority,
                     "confidence": round((r.actor_confidence or 100) / 100, 2),
                 },
+                "candidate_persona_label": r.candidate_persona_label,
                 "raw_activity": r.raw_activity,
                 "asset_id": r.asset_id,
+                "persona_id": r.persona_id,
+                "persona_label": r.persona_label,
+                "belief_stage": {
+                    "code": r.belief_stage_code,
+                    "label": r.belief_stage_label,
+                } if r.belief_stage_code or r.belief_stage_label else None,
+                "segment_keys": r.segment_keys or [],
+                "account_meta": r.account_meta,
                 "payload": r.payload,
             })
         return out
@@ -528,10 +726,15 @@ def save_engagements_bulk(product_id: str, account_id: str, engagements: List[Di
 
     try:
         # Guard: target account must exist for this product
-        account_meta = get_account_by_id(product_id, account_id)
-        if not account_meta:
+        account_row = get_account_by_id(product_id, account_id)
+        if not account_row:
             print(f"[warn] account_id {account_id} not found for product {product_id}; skipping")
             return 0
+        account_snapshot = _account_meta_snapshot(account_row)
+        segments = None
+        if account_snapshot:
+            normalized = normalize_account_meta(account_snapshot)
+            segments = segment_keys_from_meta(normalized)
 
         # 1) Wipe existing rows
         print("Wiping existing engagements for account:", account_id)
@@ -612,6 +815,11 @@ def save_engagements_bulk(product_id: str, account_id: str, engagements: List[Di
                 asset_id=(e.get("asset_id") or None),
                 payload=e,
             )
+            row.candidate_persona_label = normalize_persona_label(title, dept, snr)
+            if account_snapshot:
+                row.account_meta = account_snapshot
+                if segments:
+                    row.segment_keys = segments
             db.add(row)
             db.flush()
             _attach_arsenal_references(
@@ -621,7 +829,7 @@ def save_engagements_bulk(product_id: str, account_id: str, engagements: List[Di
                 engagement_row=row,
                 asset_tracker=asset_tracker,
                 channel_tracker=channel_tracker,
-                account_meta=account_meta,
+                account_meta=account_snapshot,
             )
             inserted += 1
             print("Inserted engagement row:", row.id if hasattr(row, "id") else "<pending>")

@@ -1,8 +1,9 @@
+import json
 import logging
 import os
 from typing import Any, Dict, List, Literal, Optional
 
-from fastapi import APIRouter, Body, Depends, Request, HTTPException
+from fastapi import APIRouter, Body, Depends, Request, HTTPException, Query
 from pydantic import BaseModel
 
 from backend.utils.crm_management.target_account_manager import get_account_by_id, get_target_account_ids, load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
@@ -40,9 +41,15 @@ from backend.utils.crm_management.enrichment_service import (
     build_account_enrichment,
     upsert_persona_match,
     delete_persona_match,
+    add_candidate_persona,
+    alias_candidate_persona,
 )
 from backend.utils.crm_management.hubspot_engagements_ingestion import ingest_hubspot_company
 from backend.utils.inference.belief_manager.belief_manager import build_belief_thesis_for_account, incremental_learnings_from_thesis
+from backend.utils.inference.belief_manager.cache import (
+    evaluate_belief_thesis_cache,
+    persist_belief_thesis_cache,
+)
 from backend.utils.inference.belief_manager.journey.learn_service import (
     record_learning_updates_for_account,
     summarize_global_insights,
@@ -62,7 +69,20 @@ from backend.utils.inference.belief_manager.journey.storyline import (
     compose_storyline,
 )
 from backend.utils.strategy_builder.comprehensive_plan_generator import (
+    build_account_marketing_blueprint,
     build_product_marketing_plan,
+)
+from backend.utils.api_contracts import (
+    build_comprehensive_execution_plan_contract,
+    build_account_plan_contract,
+    build_insights_inbox_contract,
+    build_personas_atlas_contract,
+    build_icp_overview_contract,
+)
+from backend.utils.strategy_builder.persona_insights import build_persona_insights
+from backend.utils.strategy_builder.execution_decision_service import (
+    list_decisions as list_intervention_decisions,
+    upsert_decision as upsert_intervention_decision,
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -70,6 +90,30 @@ GRAPH_DATA_PATH = os.path.join(BASE_DIR,"backend", "utils", "graph_base", "graph
 
 router = APIRouter()
 LOGGER = logging.getLogger(__name__)
+
+
+def _log_route_output(route_name: str, payload: Any) -> Any:
+    """
+    Print the final payload returned by a route to the terminal for quick inspection.
+    """
+    formatted = payload
+    try:
+        formatted = json.dumps(payload, default=str, separators=(",", ":"))
+    except Exception:
+        formatted = repr(payload)
+    print(f"[{route_name}] response: {formatted}")
+    return payload
+
+
+def _decode_request_token(request: Request) -> Dict[str, Any]:
+    auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not auth_header or " " not in auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ", 1)[1]
+    decoded = decode_token(token)
+    if not decoded or not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return decoded
 
 
 class ApplyRecommendationBody(BaseModel):
@@ -97,6 +141,37 @@ class PersonaMatchUpsert(BaseModel):
     person_title: Optional[str] = None
     person_department: Optional[str] = None
     person_seniority: Optional[str] = None
+
+
+class PersonaCandidateActionBody(BaseModel):
+    product_id: str
+    label: str
+    title: Optional[str] = None
+    department: Optional[str] = None
+    seniority: Optional[str] = None
+    action: Literal["add", "match"]
+    target_persona_id: Optional[str] = None
+
+
+class InterventionDecisionBody(BaseModel):
+    product_id: str
+    intervention_id: str
+    scope: Literal["portfolio", "account"]
+    account_id: Optional[str] = None
+    action: Literal["use", "override"]
+    persona: Optional[str] = None
+    concern: Optional[str] = None
+    asset_type: Optional[str] = None
+    channel: Optional[str] = None
+    recommended_asset_id: Optional[str] = None
+    recommended_asset_name: Optional[str] = None
+    selected_asset_id: Optional[str] = None
+    selected_asset_name: Optional[str] = None
+    selected_asset_type: Optional[str] = None
+    selected_channel: Optional[str] = None
+    notes: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    user_id: Optional[str] = None
 
 # ========================
 # PRODUCT GRAPH ROUTES
@@ -423,6 +498,24 @@ async def get_personas(product_id: str, request: Request):
     product_subgraph = build_product_graph(product_id)
     aggregated_personas = get_personas_rcs_priority(product_subgraph)
     return aggregated_personas
+
+
+@router.get("/products/{product_id}/persona_insights")
+async def get_persona_insights_endpoint(product_id: str, request: Request):
+    auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    token = auth_header.split(" ")[1]
+    decoded = decode_token(token)
+    if not decoded.get("company_id"):
+        raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
+    try:
+        return build_persona_insights(product_id)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        LOGGER.exception("Error building persona insights")
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # GET /get-zmot-icp/{product_id}
@@ -891,15 +984,15 @@ async def get_accounts_for_rcs(product_id: str, request: Request):
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
 
     account_ids = get_target_account_ids(product_id, {"status": {"nin": ["Closed-won", "Closed-lost"]}})
-    print("account ids:", account_ids)
+    # print("account ids:", account_ids)
     accounts = []
     for account_id in account_ids:
         account = get_account_by_id(product_id=product_id, account_id=account_id)
         if account:
             accounts.append(account)
 
-    
-    return {"accounts": accounts}
+
+    return _log_route_output("get_accounts_for_rcs", {"accounts": accounts})
 
 
 @router.get("/accounts/{account_id}/enrichment")
@@ -923,9 +1016,9 @@ async def get_account_enrichment(
             account_id=account_id,
             db=db,
         )
-        return payload
+        return _log_route_output("get_account_enrichment", payload)
     except Exception as exc:
-        print("❌ Account enrichment error:", exc)
+        LOGGER.exception("Account enrichment error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to build account enrichment summary")
 
 
@@ -966,12 +1059,12 @@ async def upsert_account_persona_match(
             person_seniority=payload.person_seniority,
         )
         db.commit()
-        return {"match": match_payload}
+        return _log_route_output("upsert_account_persona_match", {"match": match_payload})
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
         db.rollback()
-        print("❌ Upsert persona match error:", exc)
+        LOGGER.exception("Upsert persona match error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to save persona match")
 
 
@@ -998,14 +1091,45 @@ async def delete_account_persona_match(
             match_id=match_id,
         )
         db.commit()
-        return {"status": "deleted"}
+        return _log_route_output("delete_account_persona_match", {"status": "deleted"})
     except ValueError as exc:
         db.rollback()
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
         db.rollback()
-        print("❌ Delete persona match error:", exc)
+        LOGGER.exception("Delete persona match error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to delete persona match")
+
+
+@router.post("/accounts/{account_id}/enrichment/personas")
+async def handle_candidate_persona_action(
+    account_id: str,
+    payload: PersonaCandidateActionBody,
+    request: Request,
+):
+    _decode_request_token(request)
+    if payload.action == "add":
+        result = add_candidate_persona(
+            payload.product_id,
+            payload.label,
+            title=payload.title,
+            department=payload.department,
+            seniority=payload.seniority,
+        )
+        return {"persona": result}
+    if payload.action == "match":
+        if not payload.target_persona_id:
+            raise HTTPException(status_code=400, detail="target_persona_id is required for match action.")
+        try:
+            result = alias_candidate_persona(
+                payload.product_id,
+                payload.target_persona_id,
+                payload.label,
+            )
+            return {"persona": result}
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+    raise HTTPException(status_code=400, detail="Unsupported action.")
 
 
 @router.post("/save-target-accounts/{company_id}")
@@ -1029,7 +1153,6 @@ async def save_target_accounts(company_id: str, product_id: str, payload: dict, 
 
 @router.delete("/delete-target-account/{company_id}/{account_id}")
 async def delete_target_account(company_id: str, account_id: str, product_id: str, request: Request):
-    print("Attempting deletion of target account:", account_id)
     try:
         auth_header = request.headers.get("authorization")
         if not auth_header:
@@ -1044,12 +1167,12 @@ async def delete_target_account(company_id: str, account_id: str, product_id: st
         if not success:
             # Don't raise inside try, or re-raise directly
             raise HTTPException(status_code=404, detail="Target account not found")
-        return {"message": "Target account deleted"}
+        return _log_route_output("delete_target_account", {"message": "Target account deleted"})
     except HTTPException as e:
         # Re-raise HTTPException so FastAPI handles it correctly
         raise e
     except Exception as e:
-        print("❌ Delete Target Account error:", e)
+        LOGGER.exception("Delete Target Account error: %s", e)
         raise HTTPException(status_code=500, detail="Could not delete target account")
     
 #------- Engagements Routes---------
@@ -1067,8 +1190,8 @@ async def save_account_engagements(product_id: str, request: Request):
     company_id = decoded.get("company_id")
     if not company_id:
         raise HTTPException(status_code=401, detail="Invalid token or company ID not found")
-    print("Saving engagements for product_id:", product_id)
-    print("Request body:", await request.body())
+    # print("Saving engagements for product_id:", product_id)
+    # print("Request body:", await request.body())
     try:
         body: Dict[str, Any] = await request.json()
     except Exception:
@@ -1087,10 +1210,10 @@ async def save_account_engagements(product_id: str, request: Request):
 
     # --- Persist ---
     try:
-        print("Calling save and update engagements with body content:", engagements)
+        # print("Calling save and update engagements with body content:", engagements)
         result = save_and_update_account_engagements(product_id_actual, engagements)
         # e.g., {"created": N, "touched_accounts": [...]}
-        return {"ok": True, **result}
+        return _log_route_output("save_account_engagements", {"ok": True, **result})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save engagements: {e}")
     
@@ -1126,46 +1249,48 @@ async def get_persona_matches(product_id: str, account_id: str, request: Request
         raise HTTPException(status_code=401, detail="Invalid token")
 
     try:
-        print("Building belief thesis for product_id:", product_id, "and account_id:", account_id)
-        thesis = build_belief_thesis_for_account(product_id, account_id)
-        print("Recd thesis - persisting SHM now")
-        # 1) Persist SHM meta episode + steps from this thesis
-        write_meta_episode_from_thesis(
-            db,
-            product_id=product_id,
-            account_id=account_id,
-            thesis=thesis,
-        )
-        # 2) Account-level incremental learnings
-        incremental = incremental_learnings_from_thesis(thesis)
-        print("Incremental learnings computed:", incremental)
+        account_record = get_account_by_id(product_id, account_id) or {}
+        (
+            should_rebuild,
+            cache_row,
+            graph_hash,
+            latest_engagement_ts,
+        ) = evaluate_belief_thesis_cache(db, product_id, account_id)
 
-        # 2) persist those learnings into SHM-level update table
-        record_learning_updates_for_account(
-            db,
-            product_id=product_id,
-            account_id=account_id,
-            incremental_learnings=incremental,
-        )
-        db.commit()  # important!
+        if should_rebuild:
+            thesis = build_belief_thesis_for_account(product_id, account_id)
+            write_meta_episode_from_thesis(
+                db,
+                product_id=product_id,
+                account_id=account_id,
+                thesis=thesis,
+            )
+            incremental = incremental_learnings_from_thesis(thesis)
+            record_learning_updates_for_account(
+                db,
+                product_id=product_id,
+                account_id=account_id,
+                incremental_learnings=incremental,
+            )
+            persist_belief_thesis_cache(
+                db=db,
+                product_id=product_id,
+                account_id=account_id,
+                thesis=thesis,
+                graph_hash=graph_hash,
+                latest_engagement_ts=latest_engagement_ts,
+                existing_cache=cache_row,
+            )
+            db.commit()
+        else:
+            thesis = cache_row.thesis if cache_row and cache_row.thesis else {}
+            incremental = incremental_learnings_from_thesis(thesis)
 
-        # 3) Product-level global insights from SHM + learning updates
         global_insights = summarize_global_insights(db, product_id=product_id)
-        print("Global insights summarized:", global_insights)
 
-        # 4) Whatever else the FE needs (activity feed, etc.)
         activity = (thesis.get("journey") or {}).get("steps") or []
-        print("Activity feed extracted, total steps:", len(activity))
-
         latent_activity = infer_latent_activity(thesis)
         activity_story = build_activity_story(thesis)
-        print(
-            "Latent activity inferred:",
-            len(latent_activity),
-            "entries; combined story length:",
-            len(activity_story),
-        )
-        account_record = get_account_by_id(product_id, account_id) or {}
         storyline = compose_storyline(
             account_name=account_record.get("account_name") or account_id,
             account_meta=account_record,
@@ -1176,7 +1301,7 @@ async def get_persona_matches(product_id: str, account_id: str, request: Request
         )
         thesis["storyline"] = storyline
 
-        return {
+        response = {
             "product_id": product_id,
             "account_id": account_id,
             "global": global_insights,
@@ -1185,12 +1310,11 @@ async def get_persona_matches(product_id: str, account_id: str, request: Request
             "latent_activity": latent_activity,
             "activity_story": activity_story,
             "storyline": storyline,
-            "thesis": thesis,  # optional if FE wants the full object
+            "thesis": thesis,
         }
+        return _log_route_output("get_persona_matches", response)
     except Exception as e:
-        import traceback
-        print("Error in get_persona_matches:", repr(e))
-        traceback.print_exc()
+        LOGGER.exception("Error in get_persona_matches: %s", e)
         raise HTTPException(status_code=500, detail=f"Persona match failed: {e}")
 
 
@@ -1301,12 +1425,148 @@ async def get_comprehensive_execution_plan(
         raise HTTPException(status_code=401, detail="Invalid token")
 
     try:
-        return build_product_marketing_plan(product_id, account_id=account_id)
+        plan = build_product_marketing_plan(product_id, account_id=account_id)
+        return _log_route_output("get_comprehensive_execution_plan", plan)
     except HTTPException:
         raise
     except Exception as exc:
-        print("❌ get_comprehensive_execution_plan error:", exc)
+        LOGGER.exception("get_comprehensive_execution_plan error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to build marketing plan")
+
+
+@router.get("/portfolio/{product_id}/execution-plan")
+def portfolio_execution_plan(
+    product_id: str,
+    request: Request,
+    account_id: Optional[str] = None,
+):
+    decoded = _decode_request_token(request)
+    try:
+        plan = build_product_marketing_plan(product_id, account_id=account_id)
+        contract = build_comprehensive_execution_plan_contract(plan, product_id)
+        return _log_route_output("portfolio_execution_plan", contract)
+    except Exception as exc:
+        LOGGER.exception("portfolio_execution_plan error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to build execution plan")
+
+
+@router.get("/accounts/{account_id}/plan")
+def account_plan(
+    account_id: str,
+    request: Request,
+    product_id: str = Query(...),
+):
+    _decode_request_token(request)
+    try:
+        plan = build_account_marketing_blueprint(product_id, account_id)
+        contract = build_account_plan_contract(plan, product_id)
+        return _log_route_output("account_plan", contract)
+    except Exception as exc:
+        LOGGER.exception("account_plan error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to build account plan")
+
+
+@router.get("/insights/inbox")
+def insights_inbox(
+    request: Request,
+    product_id: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    _decode_request_token(request)
+    insights = summarize_global_insights(db, product_id=product_id)
+    contract = build_insights_inbox_contract(insights)
+    return _log_route_output("insights_inbox", contract)
+
+
+@router.get("/personas/atlas")
+def personas_atlas(
+    request: Request,
+    product_id: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    _decode_request_token(request)
+    insights = summarize_global_insights(db, product_id=product_id)
+    contract = build_personas_atlas_contract(insights.get("product_insights") or {})
+    return _log_route_output("personas_atlas", contract)
+
+
+@router.get("/icps/overview")
+def icp_overview(
+    request: Request,
+    product_id: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    _decode_request_token(request)
+    insights = summarize_global_insights(db, product_id=product_id)
+    contract = build_icp_overview_contract(insights.get("product_insights") or {})
+    return _log_route_output("icp_overview", contract)
+
+
+@router.get("/execution-interventions/decisions/{product_id}")
+def get_execution_intervention_decisions(
+    product_id: str,
+    request: Request,
+    account_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    _decode_request_token(request)
+    decisions = list_intervention_decisions(
+        db,
+        product_id=product_id,
+        account_id=account_id,
+    )
+    return {"decisions": [record.to_dict() for record in decisions]}
+
+
+@router.post("/execution-interventions/decide")
+def decide_execution_intervention(
+    body: InterventionDecisionBody,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    decoded = _decode_request_token(request)
+    if body.scope == "account" and not body.account_id:
+        raise HTTPException(status_code=400, detail="account_id is required for account scope")
+
+    status = "accepted" if body.action == "use" else "overridden"
+    if body.action == "override" and not body.selected_asset_name:
+        raise HTTPException(
+            status_code=400,
+            detail="selected_asset_name is required when overriding a recommendation",
+        )
+
+    selected_asset_id = body.selected_asset_id
+    selected_asset_name = body.selected_asset_name
+    selected_asset_type = body.selected_asset_type or body.asset_type
+    selected_channel = body.selected_channel or body.channel
+    if body.action == "use":
+        selected_asset_id = body.recommended_asset_id
+        selected_asset_name = body.recommended_asset_name or body.asset_type
+        selected_asset_type = body.asset_type
+        selected_channel = body.channel
+
+    record = upsert_intervention_decision(
+        db,
+        product_id=body.product_id,
+        scope=body.scope,
+        account_id=body.account_id,
+        intervention_id=body.intervention_id,
+        status=status,
+        persona=body.persona,
+        concern=body.concern,
+        asset_type=body.asset_type,
+        channel=body.channel,
+        recommended_asset_id=body.recommended_asset_id,
+        recommended_asset_name=body.recommended_asset_name,
+        selected_asset_id=selected_asset_id,
+        selected_asset_name=selected_asset_name,
+        selected_asset_type=selected_asset_type,
+        selected_channel=selected_channel,
+        notes=body.notes,
+        metadata=body.metadata,
+        user_id=body.user_id or decoded.get("user_id"),
+    )
+    return {"decision": record.to_dict()}
 
 
 def _matches_story_filters(meta: Optional[Dict[str, Any]], filters: Dict[str, str]) -> bool:
@@ -1347,7 +1607,7 @@ async def generate_storyline_view(
     try:
         plan = build_product_marketing_plan(product_id)
     except Exception as exc:
-        print("❌ storyline generation failed:", exc)
+        LOGGER.exception("Storyline generation failed: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to build storyline")
 
     accounts = plan.get("accounts", [])
@@ -1363,18 +1623,24 @@ async def generate_storyline_view(
         ]
 
     if not matched_accounts:
-        return {
-            "storyline": None,
-            "available_filters": available_filters,
-            "match_count": 0,
-        }
+        return _log_route_output(
+            "generate_storyline_view",
+            {
+                "storyline": None,
+                "available_filters": available_filters,
+                "match_count": 0,
+            },
+        )
 
     storyline = compose_portfolio_story(matched_accounts, filters)
-    return {
-        "storyline": storyline,
-        "available_filters": available_filters,
-        "match_count": len(matched_accounts),
-    }
+    return _log_route_output(
+        "generate_storyline_view",
+        {
+            "storyline": storyline,
+            "available_filters": available_filters,
+            "match_count": len(matched_accounts),
+        },
+    )
 
 #---- Math Models Routes -----
 
@@ -1395,9 +1661,9 @@ async def get_crm_win_model(product_id: str, request: Request):
     try:
         model = generate_win_regression(product_subgraph, accounts)
     except Exception as e:
-        print("❌ Win rate model error:", e)
+        LOGGER.exception("Win rate model error: %s", e)
         model = None
-    return model
+    return _log_route_output("get_crm_win_model", model)
     
 
 # ========================
@@ -1415,10 +1681,10 @@ def ingest_bulk(product_id: str, account_id: str, payload: dict, request: Reques
         raise HTTPException(status_code=401, detail="Invalid token")
 
     items = payload.get("engagements", [])
-    print("Payload for processing:", items)
+    # print("Payload for processing:", items)
     try: 
         count = save_engagements_bulk(product_id, account_id, items)
-        return {"ok": True, "overwritten_account": account_id, "inserted": count}
+        return _log_route_output("ingest_bulk", {"ok": True, "overwritten_account": account_id, "inserted": count})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Bulk ingest failed: {e}")
 

@@ -8,7 +8,7 @@ import difflib
 from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from copy import deepcopy
 
 import networkx as nx
@@ -30,14 +30,21 @@ from backend.utils.graph_base.network_graph import (
 )
 from backend.utils.inference.belief_manager.belief_manager import (
     build_belief_thesis_for_account,
+    get_shm_transition_metrics,
 )
 from backend.utils.inference.belief_manager.journey.learn_service import (
     summarize_global_insights,
 )
+from backend.utils.inference.belief_manager.journey.win_regression import (
+    WinProbabilityCalibrator,
+)
+from backend.utils.inference.belief_manager.journey.storage import load_weights
 from backend.utils.inference.belief_manager.journey.activity_story import build_activity_story
 from backend.utils.inference.belief_manager.journey.storyline import compose_storyline
 from backend.utils.knowledge_base.arsenal import service as arsenal_service
 from backend.utils.embedding.embed_utils import get_embedding
+from backend.utils.segment_utils import segment_keys_from_meta, segment_label_from_key
+from backend.utils.inference.strategy.intervention_mode import choose_intervention_mode
 
 
 # ---------------------------------------------------------------------------
@@ -48,10 +55,91 @@ MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 UTILS_DIR = os.path.dirname(MODULE_DIR)
 GRAPH_BASE_DIR = os.path.join(UTILS_DIR, "graph_base")
 ARSENAL_DIR = os.path.join(GRAPH_BASE_DIR, "graph_data", "arsenal_json")
+PERSONA_METRICS_DIR = os.path.join(GRAPH_BASE_DIR, "graph_data", "persona_metrics")
+_NEW_PERSONA_WINDOW_DAYS = 45
 
 
 def _now_iso() -> str:
     return datetime.utcnow().isoformat(timespec="seconds") + "Z"
+
+
+def _parse_iso_datetime(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _load_persona_wolves_metrics(product_id: str) -> Tuple[Dict[str, Dict[str, Any]], Optional[str]]:
+    path = os.path.join(PERSONA_METRICS_DIR, f"{product_id}.json")
+    if not os.path.exists(path):
+        return {}, None
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            payload = json.load(fh)
+    except Exception:
+        return {}, None
+    updated_at = payload.get("updated_at")
+    metrics_map: Dict[str, Dict[str, Any]] = {}
+    for entry in payload.get("personas", []):
+        pid = str(entry.get("persona_id") or "")
+        if not pid:
+            continue
+        metrics_map[pid] = entry
+    return metrics_map, updated_at
+
+
+def _build_wolves_label_index(
+    metrics_map: Optional[Dict[str, Dict[str, Any]]]
+) -> Dict[str, Dict[str, Any]]:
+    if not metrics_map:
+        return {}
+    index: Dict[str, Dict[str, Any]] = {}
+    for entry in metrics_map.values():
+        label = entry.get("persona_label") or entry.get("label")
+        if isinstance(label, str) and label.strip():
+            index[label.strip().lower()] = entry
+    return index
+
+
+def _lookup_wolves_metric(
+    persona_id: Optional[str],
+    persona_label: Optional[str],
+    metrics_map: Optional[Dict[str, Dict[str, Any]]],
+    label_index: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> Optional[Dict[str, Any]]:
+    if not metrics_map:
+        return None
+    if persona_id:
+        payload = metrics_map.get(str(persona_id))
+        if payload:
+            return payload
+    if persona_label and label_index:
+        return label_index.get(persona_label.strip().lower())
+    if persona_label:
+        lowered = persona_label.strip().lower()
+        for entry in metrics_map.values():
+            label = entry.get("persona_label") or entry.get("label")
+            if isinstance(label, str) and label.strip().lower() == lowered:
+                return entry
+    return None
+
+
+def _is_recent_persona_node(node: Dict[str, Any], days: int = _NEW_PERSONA_WINDOW_DAYS) -> bool:
+    source = (node.get("source") or node.get("data_source") or "").lower()
+    if source not in {"data_auto", "enrich_user"}:
+        return False
+    created_at = node.get("created_at") or node.get("last_updated")
+    if not created_at:
+        return True
+    created_dt = _parse_iso_datetime(created_at)
+    if not created_dt:
+        return False
+    return datetime.utcnow() - created_dt <= timedelta(days=days)
 
 
 def _safe_float(value: Any, default: Optional[float] = None) -> Optional[float]:
@@ -73,6 +161,45 @@ def _load_catalog(filename: str, product_id: str) -> List[Dict[str, Any]]:
     except Exception:
         return []
     return data.get(product_id, [])
+
+
+def _segment_priority_boost_map(
+    pattern: Optional[Dict[str, Any]],
+) -> Dict[str, float]:
+    if not pattern:
+        return {}
+    mapping: Dict[str, float] = {}
+    freq_rows = pattern.get("persona_frequency") or []
+    for idx, row in enumerate(freq_rows):
+        pid = row.get("persona_id")
+        if not pid:
+            continue
+        share = _safe_float(row.get("share"), None)
+        boost = 1.0 + min(0.4, (share or 0.2) * 1.5)
+        boost -= idx * 0.05
+        mapping[pid] = max(mapping.get(pid, 1.0), boost)
+    return mapping
+
+
+def _build_segment_context(
+    meta_detail: Dict[str, Any],
+    segment_patterns: Dict[str, Any],
+) -> Dict[str, Any]:
+    segment_keys = segment_keys_from_meta(meta_detail)
+    segment_labels = [segment_label_from_key(key) for key in segment_keys]
+    primary_pattern = None
+    for key in segment_keys:
+        pattern = segment_patterns.get(key)
+        if pattern:
+            primary_pattern = deepcopy(pattern)
+            primary_pattern["key"] = key
+            primary_pattern.setdefault("label", segment_label_from_key(key))
+            break
+    return {
+        "keys": segment_keys,
+        "labels": segment_labels,
+        "pattern": primary_pattern,
+    }
 
 
 _ARSENAL_IMPACT_INDEX: Dict[str, Dict[str, Dict[Tuple[str, ...], Dict[str, Any]]]] = {}
@@ -142,6 +269,9 @@ _POSITIVE_SIGNAL_HINTS: Tuple[str, ...] = (
 
 _FATIGUE_RECENCY_WINDOW_DAYS = 45
 _FATIGUE_DENSITY_WINDOW_DAYS = 30
+
+_ASSET_SCORE_NORMALIZER = 1.5
+_CHANNEL_SCORE_NORMALIZER = 3.5
 
 _STAGE_TOKEN_MAP: Dict[str, List[str]] = {
     "problem": ["problem_realization", "problem_awareness"],
@@ -361,12 +491,16 @@ def _derive_account_clusters(
     total_accounts: int = 0,
     total_delta_bp: float = 0.0,
     max_clusters: int = 4,
+    persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
+    persona_wolves_label_index: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> List[Dict[str, Any]]:
     if not entries:
         return []
     total_score = sum(entry.get("score", 0.0) or 0.0 for entry in entries)
     if total_score <= 0:
         total_score = float(len(entries)) or 1.0
+    persona_wolves_metrics = persona_wolves_metrics or {}
+    persona_wolves_label_index = persona_wolves_label_index or {}
     token_scores: Counter[str] = Counter()
     token_accounts: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for entry in entries:
@@ -392,6 +526,83 @@ def _derive_account_clusters(
                 seen_ids.add(key)
             refs.append((entry, accounts_by_id.get(key)))
         return refs
+
+    def _persona_coalition_story(
+        persona_label: Optional[str],
+        coalitions: Sequence[Dict[str, Any]],
+    ) -> Optional[str]:
+        if not persona_label or not coalitions:
+            return None
+        for coalition in coalitions:
+            sequence = coalition.get("sequence") or []
+            if persona_label not in sequence:
+                continue
+            share = coalition.get("share")
+            try:
+                idx = sequence.index(persona_label)
+            except ValueError:
+                continue
+            followers = sequence[idx + 1 : idx + 3]
+            if followers:
+                follower_text = " and ".join(followers)
+                return (
+                    f"Engaging here unlocks {follower_text} in {_percent_label(share)} of wins."
+                    if share is not None
+                    else f"Engaging here unlocks {follower_text} in most modeled wins."
+                )
+            if share is not None:
+                return f"Anchors {_percent_label(share)} of modeled wins."
+        return None
+
+    def _build_cluster_keystone_details(
+        persona_expectations: Sequence[Dict[str, Any]],
+        belief_coalitions: Sequence[Dict[str, Any]],
+    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+        if not persona_expectations:
+            return [], None
+
+        def _sort_key(entry: Dict[str, Any]) -> Tuple[int, float, float]:
+            has_wolves = 1 if entry.get("wolves_score") is not None else 0
+            return (
+                has_wolves,
+                entry.get("wolves_score") or 0.0,
+                entry.get("share") or 0.0,
+            )
+
+        sorted_entries = sorted(
+            persona_expectations,
+            key=_sort_key,
+            reverse=True,
+        )
+        keystones: List[Dict[str, Any]] = []
+        for entry in sorted_entries[:3]:
+            story = _persona_coalition_story(entry.get("persona"), belief_coalitions)
+            keystones.append(
+                {
+                    "persona": entry.get("persona"),
+                    "persona_id": entry.get("persona_id"),
+                    "stage": entry.get("stage"),
+                    "share": entry.get("share"),
+                    "match_rate": entry.get("match_rate"),
+                    "wolves_score": entry.get("wolves_score"),
+                    "wolves_delta_bp": entry.get("wolves_delta_bp"),
+                    "wolves_involvement_rate": entry.get("wolves_involvement_rate"),
+                    "wolves_blocker_rate": entry.get("wolves_blocker_rate"),
+                    "wolves_sample_size": entry.get("wolves_sample_size"),
+                    "coalition_story": story,
+                }
+            )
+
+        caption = None
+        if keystones:
+            lead = keystones[0]
+            if lead.get("coalition_story"):
+                caption = f"{lead['persona']}: {lead['coalition_story']}"
+            elif lead.get("share") is not None:
+                caption = (
+                    f"{lead['persona']} anchors {_percent_label(lead['share'])} of journeys."
+                )
+        return keystones, caption
 
     def _cluster_persona_expectations(
         account_refs: Sequence[Tuple[Dict[str, Any], Optional[Dict[str, Any]]]],
@@ -422,6 +633,33 @@ def _derive_account_clusters(
                             "matches": [],
                         },
                     )
+                    persona_id = (
+                        req.get("persona_id")
+                        or (req.get("persona") or {}).get("id")
+                        or req.get("id")
+                    )
+                    if persona_id and not profile.get("persona_id"):
+                        profile["persona_id"] = persona_id
+                    wolves_info = _lookup_wolves_metric(
+                        persona_id,
+                        label,
+                        persona_wolves_metrics,
+                        persona_wolves_label_index,
+                    )
+                    if wolves_info:
+                        profile["wolves_score"] = _safe_float(
+                            wolves_info.get("wolves_score"), None
+                        )
+                        profile["wolves_delta_bp"] = _safe_float(
+                            wolves_info.get("delta_win_bp"), None
+                        )
+                        profile["wolves_involvement_rate"] = _safe_float(
+                            wolves_info.get("involvement_rate"), None
+                        )
+                        profile["wolves_blocker_rate"] = _safe_float(
+                            wolves_info.get("blocker_rate"), None
+                        )
+                        profile["wolves_sample_size"] = wolves_info.get("sample_size")
                     profile["weight"] += weight
                     profile["required"] += 1
                     if req.get("has_match"):
@@ -456,6 +694,26 @@ def _derive_account_clusters(
                             "matches": [],
                         },
                     )
+                    wolves_info = _lookup_wolves_metric(
+                        None,
+                        label,
+                        persona_wolves_metrics,
+                        persona_wolves_label_index,
+                    )
+                    if wolves_info:
+                        profile["wolves_score"] = _safe_float(
+                            wolves_info.get("wolves_score"), None
+                        )
+                        profile["wolves_delta_bp"] = _safe_float(
+                            wolves_info.get("delta_win_bp"), None
+                        )
+                        profile["wolves_involvement_rate"] = _safe_float(
+                            wolves_info.get("involvement_rate"), None
+                        )
+                        profile["wolves_blocker_rate"] = _safe_float(
+                            wolves_info.get("blocker_rate"), None
+                        )
+                        profile["wolves_sample_size"] = wolves_info.get("sample_size")
                     profile["weight"] += weight
                     profile["required"] += 1
         if not persona_profiles:
@@ -481,11 +739,17 @@ def _derive_account_clusters(
             persona_expectations.append(
                 {
                     "persona": label,
+                    "persona_id": profile.get("persona_id"),
                     "stage": stage,
                     "share": share,
                     "match_rate": match_rate,
                     "required_personas": required,
                     "sample_people": sample_people,
+                    "wolves_score": profile.get("wolves_score"),
+                    "wolves_delta_bp": profile.get("wolves_delta_bp"),
+                    "wolves_involvement_rate": profile.get("wolves_involvement_rate"),
+                    "wolves_blocker_rate": profile.get("wolves_blocker_rate"),
+                    "wolves_sample_size": profile.get("wolves_sample_size"),
                 }
             )
         persona_expectations.sort(key=lambda item: item.get("share", 0.0), reverse=True)
@@ -732,6 +996,10 @@ def _derive_account_clusters(
             if remaining_accounts and (total_delta_bp - cluster_delta_bp)
             else None
         )
+        keystone_personas, keystone_caption = _build_cluster_keystone_details(
+            persona_expectations,
+            belief_coalitions,
+        )
 
         clusters.append(
             {
@@ -746,6 +1014,8 @@ def _derive_account_clusters(
                 "belief_transitions": belief_transitions,
                 "primary_plays": primary_plays,
                 "fallback_plan": fallback_plan,
+                 "keystone_personas": keystone_personas,
+                 "keystone_caption": keystone_caption,
                 "lift_analysis": {
                     "cluster_delta_bp": round(cluster_delta_bp, 2),
                     "generic_allocation_bp": round(generic_allocation, 2),
@@ -822,6 +1092,43 @@ def _segment_fit_score(
     else:
         score = -0.5
     return round(score, 3), matches
+
+
+_STAGE_TOKEN_HINTS: Tuple[Tuple[str, str], ...] = (
+    ("problem", "problem"),
+    ("aware", "problem"),
+    ("pain", "pain"),
+    ("need", "pain"),
+    ("solution", "resolution"),
+    ("resolution", "resolution"),
+    ("evaluation", "resolution"),
+    ("execute", "execution"),
+    ("guidance", "execution"),
+)
+
+
+def _stage_code_from_tokens(tokens: Optional[Sequence[str]]) -> Optional[str]:
+    if not tokens:
+        return None
+    for token in tokens:
+        normalized = str(token or "").strip().lower()
+        if not normalized:
+            continue
+        for hint, stage in _STAGE_TOKEN_HINTS:
+            if hint in normalized:
+                return stage
+    return None
+
+
+def _segment_candidates_from_map(account_segments: Optional[Dict[str, str]]) -> List[str]:
+    if not account_segments:
+        return []
+    candidates: List[str] = []
+    for key, value in account_segments.items():
+        if not value:
+            continue
+        candidates.append(f"{key}={value}")
+    return candidates
 
 
 def _persona_descriptor_from_meta(
@@ -2017,56 +2324,6 @@ def _portfolio_arsenal_rows(accounts: Sequence[Dict[str, Any]]) -> List[Dict[str
     return rows[:500]
 
 
-def _portfolio_execution_matrix(
-    accounts: Sequence[Dict[str, Any]],
-) -> Dict[str, Any]:
-    quarter_set: set[str] = set()
-    persona_set: set[str] = set()
-    cells: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-
-    for account in accounts:
-        fatigue_by_persona: Dict[str, float] = {}
-        for entry in account.get("execution", {}).get("persona_engagements") or []:
-            label = entry.get("persona_label")
-            fatigue = entry.get("fatigue")
-            if label and isinstance(fatigue, (int, float)):
-                fatigue_by_persona[label] = float(fatigue)
-
-        for campaign in account.get("campaigns") or []:
-            quarter = campaign.get("quarter") or "Q1"
-            quarter_set.add(quarter)
-            personas = list(campaign.get("focus_personas") or [])
-            if not personas:
-                persona_focus = campaign.get("persona_focus")
-                personas = [persona_focus] if persona_focus else ["Multi-persona"]
-            mode_mix = campaign.get("mode_mix") or {}
-            broad_count = mode_mix.get("broad") or 0
-            focus_count = mode_mix.get("focused") or 0
-            mode = "focused" if focus_count >= broad_count else "broad"
-            for persona in personas:
-                persona_set.add(persona)
-                key = f"{quarter}|{persona}"
-                cells[key].append(
-                    {
-                        "theme": campaign.get("theme") or "Campaign",
-                        "delta_bp": float(campaign.get("total_delta_bp") or 0.0),
-                        "mode": mode,
-                        "account_count": len(campaign.get("accounts") or []),
-                        "fatigue": fatigue_by_persona.get(persona),
-                        "belief": _safe_float(campaign.get("confidence")),
-                        "assets": len(campaign.get("plays") or []),
-                    }
-                )
-
-    quarters = sorted(quarter_set, key=_quarter_sort_key)
-    personas = sorted(persona_set)
-    return {
-        "quarters": quarters,
-        "personas": personas,
-        "cells": {key: value for key, value in cells.items()},
-    }
-
-
 def _standardize_asset_record(raw: Dict[str, Any]) -> Dict[str, Any]:
     usage = raw.get("usage") or {}
     target_personas = _ensure_list(raw.get("target_personas"))
@@ -2145,6 +2402,15 @@ def _standardize_asset_record(raw: Dict[str, Any]) -> Dict[str, Any]:
     record["metadata_complete"] = bool(raw.get("metadata_complete"))
     record["usage"] = usage
     record["funnel_stage"] = funnel_stage
+    record["learned_effectiveness"] = raw.get("learned_effectiveness") or []
+    record["learned_summary"] = raw.get("learned_summary")
+    learned_summary = record["learned_summary"] or {}
+    if learned_summary.get("lift_bps") is not None:
+        record["expected_lift_bp"] = learned_summary.get("lift_bps")
+    else:
+        record["expected_lift_bp"] = record["base_lift_bp"]
+    if learned_summary.get("confidence") is not None:
+        record["expected_confidence"] = learned_summary.get("confidence")
     return record
 
 
@@ -2197,6 +2463,8 @@ def _standardize_channel_record(raw: Dict[str, Any]) -> Dict[str, Any]:
     record["stage_fit"] = stage_tokens
     record["usage"] = usage
     record["metadata_complete"] = bool(raw.get("metadata_complete"))
+    record["learned_effectiveness"] = raw.get("learned_effectiveness") or []
+    record["learned_summary"] = raw.get("learned_summary")
     return record
 
 
@@ -2428,6 +2696,8 @@ def _top_paths_from_thesis(
                 "probability": prob,
                 "score": score,
                 "raw": entry,
+                "source": "data",
+                "confidence": max(prob, score),
             }
         )
 
@@ -2444,6 +2714,8 @@ def _top_paths_from_thesis(
                     "probability": prob,
                     "score": score,
                     "raw": entry,
+                    "source": "data",
+                    "confidence": max(prob, score),
                 }
             )
 
@@ -2493,6 +2765,8 @@ def _persona_summary(
     belief_metrics: Optional[Dict[str, Any]] = None,
     expected_next_prob: Optional[float] = None,
     belief_overrides: Optional[Dict[str, Any]] = None,
+    wolves_metrics: Optional[Dict[str, Any]] = None,
+    account_wolf_metrics: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     data = get_node_by_id(G, persona_id) or {}
     summary: Dict[str, Any] = {
@@ -2551,6 +2825,30 @@ def _persona_summary(
     else:
         summary["phase_probs"] = None
         summary["dominant_phase"] = None
+    summary["persona_source"] = data.get("source") or data.get("data_source")
+    summary["is_new_persona"] = _is_recent_persona_node(data)
+    summary["wolves_score"] = _safe_float((wolves_metrics or {}).get("wolves_score"), None)
+    summary["wolves_delta_bp"] = _safe_float((wolves_metrics or {}).get("delta_win_bp"), None)
+    summary["wolves_centrality"] = _safe_float((wolves_metrics or {}).get("centrality"), None)
+    summary["wolves_involvement_rate"] = _safe_float(
+        (wolves_metrics or {}).get("involvement_rate"), None
+    )
+    summary["wolves_blocker_rate"] = _safe_float(
+        (wolves_metrics or {}).get("blocker_rate"), None
+    )
+    summary["wolves_sample_size"] = (wolves_metrics or {}).get("sample_size")
+    summary["wolves_source"] = (wolves_metrics or {}).get("source")
+    if account_wolf_metrics:
+        if account_wolf_metrics.get("base_wolf_score") is not None:
+            summary["base_wolf_score"] = _safe_float(account_wolf_metrics.get("base_wolf_score"), None)
+        if account_wolf_metrics.get("dynamic_wolf_score") is not None:
+            summary["dynamic_wolf_score"] = _safe_float(account_wolf_metrics.get("dynamic_wolf_score"), None)
+        if account_wolf_metrics.get("subsidy_relevance") is not None:
+            summary["subsidy_relevance"] = _safe_float(account_wolf_metrics.get("subsidy_relevance"), None)
+    else:
+        summary["base_wolf_score"] = summary.get("wolves_score")
+        summary["dynamic_wolf_score"] = summary.get("wolves_score")
+        summary["subsidy_relevance"] = None
     return summary
 
 
@@ -2594,7 +2892,184 @@ def _persona_priority_score(persona: Dict[str, Any]) -> float:
         + 0.15 * expected_next
     )
     score *= max(0.2, 1.0 - 0.6 * fatigue)
+    multiplier = _safe_float(persona.get("segment_priority_multiplier"), 1.0) or 1.0
+    score *= max(0.2, multiplier)
     return round(score, 4)
+
+
+def _match_strength(persona: Dict[str, Any]) -> float:
+    matches = persona.get("top_people") or persona.get("matched_people") or []
+    best_match = 0.0
+    for person in matches:
+        prob = _safe_float(
+            person.get("committee_probability")
+            or person.get("person_involvement_score")
+            or person.get("match_confidence"),
+            0.0,
+        ) or 0.0
+        if prob > best_match:
+            best_match = prob
+    depth_boost = min(0.3, 0.05 * len(matches)) if matches else 0.0
+    snapshot = persona.get("engagement_snapshot") or {}
+    positive_rate = _safe_float(snapshot.get("positive_rate"), None)
+    if best_match <= 0.0 and positive_rate is not None:
+        best_match = 0.2 + 0.6 * positive_rate
+    if best_match <= 0.0:
+        best_match = _safe_float(persona.get("expected_in_deal_prob"), 0.0) or 0.08
+    return max(0.05, min(1.0, best_match + depth_boost))
+
+
+def _play_strength(plays: Sequence[Dict[str, Any]]) -> float:
+    if not plays:
+        return 0.05
+    max_delta = 0.0
+    confidence_sum = 0.0
+    sample_size = min(5, len(plays))
+    for idx, play in enumerate(plays):
+        delta = _safe_float(play.get("expected_delta_bp"), 0.0) or 0.0
+        if delta > max_delta:
+            max_delta = delta
+        if idx < sample_size:
+            confidence_sum += _safe_float(play.get("confidence"), 0.0) or 0.0
+    delta_score = min(1.0, max_delta / 0.15) if max_delta > 0 else 0.0
+    confidence_score = (
+        min(1.0, (confidence_sum / sample_size) if sample_size else 0.0)
+        if sample_size
+        else 0.0
+    )
+    coverage_score = min(1.0, len(plays) / 4.0)
+    return max(
+        0.05,
+        min(
+            1.0,
+            0.6 * delta_score + 0.25 * coverage_score + 0.15 * confidence_score,
+        ),
+    )
+
+
+def _summarize_entry_point_people(
+    persona: Dict[str, Any],
+    limit: int = 3,
+) -> List[Dict[str, Any]]:
+    people = persona.get("top_people") or persona.get("matched_people") or []
+    rows: List[Dict[str, Any]] = []
+    for entry in people[:limit]:
+        probability = _safe_float(
+            entry.get("committee_probability")
+            or entry.get("person_involvement_score")
+            or entry.get("person_belief_level"),
+            0.0,
+        ) or 0.0
+        rows.append(
+            {
+                "person_id": entry.get("person_id"),
+                "display_name": entry.get("display_name")
+                or entry.get("person_name")
+                or entry.get("notes"),
+                "role_band": entry.get("role_band")
+                or _probability_band(probability),
+                "committee_probability": round(min(max(probability, 0.0), 1.0), 4),
+            }
+        )
+    return rows
+
+
+def _summarize_entry_point_plays(
+    plays: Sequence[Dict[str, Any]],
+    limit: int = 3,
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for play in plays[:limit]:
+        if not play:
+            continue
+        belief_transition = play.get("belief_transition")
+        pain_label = None
+        if isinstance(belief_transition, dict):
+            pain_label = belief_transition.get("pain", {}).get("label")
+        rows.append(
+            {
+                "play_id": play.get("play_id") or play.get("asset_id") or play.get("channel_id"),
+                "stage": play.get("stage_label"),
+                "concern": pain_label or play.get("concern_label"),
+                "asset": (play.get("asset") or {}).get("name")
+                or play.get("asset_label")
+                or play.get("asset_type"),
+                "channel": (play.get("channel") or {}).get("name")
+                or play.get("channel_label")
+                or play.get("channel"),
+                "mode": play.get("mode"),
+                "expected_delta_bp": _safe_float(play.get("expected_delta_bp"), 0.0) or 0.0,
+                "confidence": _safe_float(play.get("confidence"), 0.0) or 0.0,
+            }
+        )
+    return rows
+
+
+def _persona_entry_point(
+    persona: Dict[str, Any],
+    persona_plays: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    graph_perceptibility = max(0.0, _safe_float(persona.get("perceptibility"), 0.0) or 0.0)
+    graph_proximity = max(0.0, _safe_float(persona.get("proximity"), 0.0) or 0.0)
+    intervention_reach = max(
+        0.05,
+        min(
+            1.0,
+            0.55 * _match_strength(persona) + 0.45 * _play_strength(persona_plays),
+        ),
+    )
+    combined_perceptibility = math.sqrt(graph_perceptibility * intervention_reach)
+    combined_proximity = math.sqrt(graph_proximity * intervention_reach)
+    entry_score = 0.65 * combined_perceptibility + 0.35 * combined_proximity
+
+    persona["graph_perceptibility"] = round(graph_perceptibility, 4)
+    persona["graph_proximity"] = round(graph_proximity, 4)
+    persona["intervention_reach"] = round(intervention_reach, 4)
+    persona["perceptibility"] = round(combined_perceptibility, 4)
+    persona["proximity"] = round(combined_proximity, 4)
+    persona["entry_score"] = round(entry_score, 4)
+    persona["belief_level"] = _belief_level(persona)
+    persona["belief_band"] = _belief_band(persona["belief_level"])
+    persona["priority_score"] = _persona_priority_score(persona)
+
+    return {
+        "persona_id": persona.get("id"),
+        "persona_label": persona.get("label"),
+        "graph_perceptibility": persona["graph_perceptibility"],
+        "graph_proximity": persona["graph_proximity"],
+        "intervention_reach": persona["intervention_reach"],
+        "combined_perceptibility": persona["perceptibility"],
+        "combined_proximity": persona["proximity"],
+        "entry_score": persona["entry_score"],
+        "belief_level": persona["belief_level"],
+        "top_people": _summarize_entry_point_people(persona),
+        "top_plays": _summarize_entry_point_plays(persona_plays),
+    }
+
+
+def _apply_entry_point_scores(
+    persona_lookup: Dict[str, Dict[str, Any]],
+    plays_by_persona: Mapping[str, Sequence[Dict[str, Any]]],
+    ordered_persona_ids: Sequence[str],
+) -> List[Dict[str, Any]]:
+    entry_points: List[Dict[str, Any]] = []
+    for persona_id in ordered_persona_ids:
+        persona = persona_lookup.get(persona_id)
+        if not persona:
+            continue
+        persona_plays = plays_by_persona.get(persona_id) or []
+        entry = _persona_entry_point(persona, persona_plays)
+        entry_points.append(entry)
+    # include any personas that were not part of ordered list but exist in lookup
+    for persona_id, persona in persona_lookup.items():
+        if persona_id in ordered_persona_ids:
+            continue
+        persona_plays = plays_by_persona.get(persona_id) or []
+        entry_points.append(_persona_entry_point(persona, persona_plays))
+    entry_points.sort(key=lambda row: row.get("entry_score", 0.0), reverse=True)
+    for idx, entry in enumerate(entry_points, start=1):
+        entry["rank"] = idx
+    return entry_points
 
 
 def _probability_band(probability: float) -> str:
@@ -2673,7 +3148,10 @@ def _collect_persona_metrics(
     path: Dict[str, Any],
     metrics_lookup: Optional[Dict[str, Dict[str, float]]] = None,
     expected_next_probs: Optional[Dict[str, float]] = None,
+    expected_next_meta: Optional[Dict[str, Dict[str, Any]]] = None,
     belief_posteriors: Optional[Dict[str, Dict[str, Any]]] = None,
+    wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
+    account_wolf_scores: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> List[Dict[str, Any]]:
     personas = []
     belief_states: List[Dict[str, Any]] = []
@@ -2691,6 +3169,8 @@ def _collect_persona_metrics(
     if not belief_states and isinstance(path.get("belief_states"), list):
         belief_states = path["belief_states"]
 
+    meta_lookup = expected_next_meta or {}
+
     for order, persona_id in enumerate(path.get("persona_ids") or []):
         metrics: Dict[str, Any] = {}
         if order < len(belief_states) and isinstance(belief_states[order], dict):
@@ -2700,8 +3180,9 @@ def _collect_persona_metrics(
                 value = metrics_lookup.get(field, {}).get(persona_id)
                 if value is not None:
                     metrics[field] = value
+        pid_str = str(persona_id)
         expected_prob = (
-            expected_next_probs.get(str(persona_id))
+            expected_next_probs.get(pid_str)
             if expected_next_probs is not None
             else None
         )
@@ -2714,9 +3195,207 @@ def _collect_persona_metrics(
                 belief_metrics=metrics or None,
                 expected_next_prob=expected_prob,
                 belief_overrides=(belief_posteriors or {}).get(persona_id),
+                wolves_metrics=(wolves_metrics or {}).get(str(persona_id)),
+                account_wolf_metrics=(account_wolf_scores or {}).get(str(persona_id)),
             )
         )
+        meta_entry = meta_lookup.get(pid_str) or {}
+        personas[-1]["expected_next_prob_base"] = (
+            _safe_float(meta_entry.get("prob_base"), None)
+        )
+        personas[-1]["subsidy_lift"] = _safe_float(meta_entry.get("subsidy_lift"), None)
     return personas
+
+
+def _extract_keystone_personas(
+    persona_lookup: Dict[str, Dict[str, Any]],
+    limit: int = 5,
+) -> List[Dict[str, Any]]:
+    entries: List[Dict[str, Any]] = []
+    for persona in persona_lookup.values():
+        persona_id = persona.get("id")
+        score = _safe_float(persona.get("wolves_score"), None)
+        if not persona_id or score is None:
+            continue
+        entries.append(
+            {
+                "persona_id": persona_id,
+                "persona_label": persona.get("label") or persona_id,
+                "wolves_score": score,
+                "wolves_delta_bp": _safe_float(persona.get("wolves_delta_bp"), None),
+                "wolves_involvement_rate": _safe_float(
+                    persona.get("wolves_involvement_rate"), None
+                ),
+                "wolves_blocker_rate": _safe_float(
+                    persona.get("wolves_blocker_rate"), None
+                ),
+                "wolves_sample_size": persona.get("wolves_sample_size"),
+                "is_new_persona": bool(persona.get("is_new_persona")),
+                "persona_source": persona.get("persona_source"),
+                "priority_score": persona.get("priority_score"),
+                "journey_phase": persona.get("journey_phase"),
+                "matched_people_count": persona.get("matched_people_count")
+                or len(persona.get("matched_people") or []),
+                "top_people": persona.get("top_people") or [],
+            }
+        )
+    entries.sort(
+        key=lambda row: (
+            row.get("wolves_score") or 0.0,
+            row.get("wolves_delta_bp") or 0.0,
+        ),
+        reverse=True,
+    )
+    return entries[:limit]
+
+
+def _observed_persona_sequence(thesis: Dict[str, Any]) -> List[str]:
+    steps = (thesis.get("journey") or {}).get("steps") or []
+    sequence: List[str] = []
+    for step in steps:
+        persona_id = (
+            step.get("observed_next")
+            or step.get("observed_persona_id")
+            or step.get("persona_id")
+            or step.get("persona")
+        )
+        if persona_id:
+            sequence.append(str(persona_id))
+    return sequence
+
+
+def _flatten_transition_weights(weights: Optional[Dict[str, Any]]) -> Dict[str, Dict[str, float]]:
+    if not weights:
+        return {}
+    transition = weights.get("transition") or {}
+    flattened: Dict[str, Dict[str, float]] = {}
+    for from_pid, bucket_map in transition.items():
+        combined: Dict[str, float] = defaultdict(float)
+        for to_map in (bucket_map or {}).values():
+            for to_pid, prob in (to_map or {}).items():
+                try:
+                    combined[str(to_pid)] += float(prob or 0.0)
+                except Exception:
+                    continue
+        total = sum(combined.values())
+        if total <= 0:
+            continue
+        flattened[str(from_pid)] = {pid: val / total for pid, val in combined.items() if val > 0}
+    return flattened
+
+
+def _expand_bgn_paths(
+    path: List[str],
+    probability: float,
+    win_likelihood: float,
+    transitions: Dict[str, Dict[str, float]],
+    persona_stats: Dict[str, Dict[str, Any]],
+    max_depth: int,
+    results: List[Tuple[List[str], float, float]],
+) -> None:
+    last = path[-1]
+    next_options = transitions.get(last)
+    if not next_options or len(path) >= max_depth:
+        results.append((path[:], probability, win_likelihood))
+        return
+    for next_persona, next_prob in next_options.items():
+        if next_persona in path:
+            continue
+        combined_prob = probability * next_prob
+        if combined_prob < 1e-4:
+            results.append((path[:], probability, win_likelihood))
+            continue
+        stats = persona_stats.get(last, {}).get(next_persona) or {}
+        success_rate = stats.get("success_rate")
+        if success_rate is None:
+            success_rate = 0.5
+        success_rate = max(0.1, min(0.95, success_rate))
+        _expand_bgn_paths(
+            path + [next_persona],
+            combined_prob,
+            win_likelihood * success_rate,
+            transitions,
+            persona_stats,
+            max_depth,
+            results,
+        )
+
+
+def _generate_persona_paths_from_weights(
+    weights: Optional[Dict[str, Any]],
+    thesis: Dict[str, Any],
+    *,
+    persona_transition_stats: Optional[Dict[str, Dict[str, Any]]] = None,
+    max_depth: int = 4,
+    top_k: int = 4,
+) -> List[Dict[str, Any]]:
+    transitions = _flatten_transition_weights(weights)
+    if not transitions:
+        return []
+    observed = _observed_persona_sequence(thesis)
+    start_candidates: List[Tuple[str, float]] = []
+    if observed:
+        start_candidates.append((observed[-1], 1.0))
+        if len(observed) > 1:
+            start_candidates.append((observed[-2], 0.6))
+    else:
+        committee = thesis.get("persona_committee_probs") or {}
+        if isinstance(committee, dict):
+            ranked = sorted(
+                ((str(pid), _safe_float(prob, 0.0) or 0.0) for pid, prob in committee.items()),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+            start_candidates.extend(ranked[:3])
+    if not start_candidates:
+        return []
+    persona_stats = persona_transition_stats or {}
+    raw_results: List[Tuple[List[str], float, float]] = []
+    for persona_id, prior in start_candidates:
+        if not persona_id or persona_id not in transitions:
+            continue
+        prob = prior if prior and prior > 0 else 1.0
+        _expand_bgn_paths(
+            path=[persona_id],
+            probability=prob,
+            win_likelihood=1.0,
+            transitions=transitions,
+            persona_stats=persona_stats,
+            max_depth=max_depth,
+            results=raw_results,
+        )
+    if not raw_results:
+        return []
+    unique: Dict[str, Tuple[List[str], float, float]] = {}
+    for seq, prob, win_prob in raw_results:
+        if not seq:
+            continue
+        key = "->".join(seq)
+        existing = unique.get(key)
+        if existing is None or prob > existing[1]:
+            unique[key] = (seq, prob, win_prob)
+    ordered = sorted(unique.values(), key=lambda row: row[1], reverse=True)[:top_k]
+    payload: List[Dict[str, Any]] = []
+    for idx, (seq, prob, win_prob) in enumerate(ordered):
+        if not seq:
+            continue
+        payload.append(
+            {
+                "id": f"shm_bgn_path_{idx}",
+                "persona_ids": seq,
+                "probability": round(prob, 6),
+                "score": round(prob, 6),
+                "win_likelihood": round(win_prob, 6),
+                "raw": {
+                    "source": "shm_bgn",
+                    "probability": prob,
+                    "win_likelihood": win_prob,
+                },
+                "source": "data",
+                "confidence": round(min(1.0, max(prob, win_prob)), 6),
+            }
+        )
+    return payload
 
 
 def _canonical_persona_path_from_steps(
@@ -3276,6 +3955,68 @@ def _score_channel(
     return score, reasons, segment_applicable
 
 
+def _select_learned_effectiveness(
+    asset: Dict[str, Any],
+    channel: Dict[str, Any],
+    persona_id: Optional[str],
+    transition_stage_tokens: Optional[Sequence[str]],
+    account_segments: Optional[Dict[str, str]],
+) -> Optional[Dict[str, Any]]:
+    slices = asset.get("learned_effectiveness") or []
+    if not slices:
+        return None
+    stage_code = _stage_code_from_tokens(transition_stage_tokens)
+    segment_candidates = _segment_candidates_from_map(account_segments)
+    channel_type = (channel.get("type") or channel.get("channel_type") or "").lower()
+    best: Optional[Dict[str, Any]] = None
+    best_score = -1.0
+    for entry in slices:
+        score = entry.get("coverage_score", 0.0) or 0.0
+        entry_persona = entry.get("persona_id")
+        if entry_persona and persona_id:
+            if entry_persona != persona_id:
+                continue
+            score += 2.5
+        elif entry_persona and not persona_id:
+            score += 0.5
+        elif not entry_persona:
+            score += 0.25
+        entry_stage = entry.get("stage_code")
+        if stage_code and entry_stage:
+            if entry_stage == stage_code:
+                score += 1.2
+            else:
+                score -= 0.2
+        entry_segment = entry.get("segment_key")
+        if entry_segment and segment_candidates:
+            if entry_segment in segment_candidates:
+                score += 0.8
+            else:
+                score -= 0.2
+        if channel_type and entry.get("channel_type"):
+            if entry["channel_type"] == channel_type:
+                score += 0.6
+            else:
+                score -= 0.15
+        if score > best_score:
+            best = entry
+            best_score = score
+    return best
+
+
+def _asset_signal_for_calibration(
+    asset: Dict[str, Any],
+    learned_effect: Optional[Dict[str, Any]],
+) -> float:
+    if learned_effect and learned_effect.get("lift_bps") is not None:
+        base = _safe_float(learned_effect.get("lift_bps"), 0.0)
+    else:
+        base = _safe_float(asset.get("base_lift_bp"), 35.0)
+    if base is None:
+        base = 35.0
+    return float(base) / 1000.0
+
+
 def _expected_delta_bp(
     asset: Dict[str, Any],
     channel: Dict[str, Any],
@@ -3291,11 +4032,19 @@ def _expected_delta_bp(
     segment_score: float,
     belief_probability: float,
     concern_strength: float,
+    learned_effect: Optional[Dict[str, Any]] = None,
 ) -> float:
-    base_lift_bp = asset.get("base_lift_bp")
+    learned_lift = None
+    learned_confidence = None
+    if learned_effect:
+        learned_lift = learned_effect.get("lift_bps")
+        learned_confidence = learned_effect.get("confidence")
+    base_lift_bp = asset.get("expected_lift_bp")
+    if base_lift_bp is None:
+        base_lift_bp = asset.get("base_lift_bp")
     if base_lift_bp is None:
         base_lift_bp = 35
-    base_lift_bp = float(base_lift_bp)
+    base_lift_bp = float(base_lift_bp if learned_lift is None else learned_lift)
     stage_factor = math.exp(-0.35 * transition.get("stage_index", 0))
     path_factor = max(path_probability, 0.05)
     channel_factor = (
@@ -3327,6 +4076,10 @@ def _expected_delta_bp(
     else:
         fit_factor *= 0.6
 
+    learned_factor = 1.0
+    if learned_confidence is not None:
+        learned_factor = 0.7 + 0.3 * max(0.0, min(1.0, float(learned_confidence)))
+
     raw = (
         base_lift_bp
         * belief_factor
@@ -3337,6 +4090,7 @@ def _expected_delta_bp(
         * path_factor
         * (0.75 + 0.5 * involvement)
         * fit_factor
+        * learned_factor
     )
     cap = base_lift_bp * (0.85 + 0.55 * channel_factor)
     return max(5.0, min(raw, cap))
@@ -3423,12 +4177,16 @@ def _confidence_score(
     persona: Dict[str, Any],
     *,
     path_probability: float,
+    learned_effect: Optional[Dict[str, Any]] = None,
 ) -> float:
     base = 0.45 + 0.15 * path_probability
     base += 0.1 * (persona.get("perceptibility") or 0.3)
     base += 0.12 * (persona.get("proximity") or 0.3)
     base += 0.08 * asset_score
     base += 0.08 * channel_score
+    if learned_effect and learned_effect.get("confidence") is not None:
+        learned_conf = max(0.0, min(1.0, float(learned_effect.get("confidence"))))
+        base = max(base, 0.4 + 0.35 * learned_conf)
     return max(0.2, min(0.95, base))
 
 
@@ -3507,11 +4265,25 @@ def _recommend_assets_for_transition(
     max_combos: int = 3,
     account_segments: Optional[Dict[str, str]] = None,
     account_segment_labels: Optional[Sequence[str]] = None,
+    account_id: Optional[str] = None,
+    win_calibrator: Optional[WinProbabilityCalibrator] = None,
 ) -> List[Dict[str, Any]]:
     scored: List[Tuple[float, Dict[str, Any]]] = []
     broad_bias = exploration_weight >= 0.15
     impact_by_pair = (impacts or {}).get("by_pair", {})
     impact_by_persona = (impacts or {}).get("by_persona", {})
+    persona_expected_prob = _safe_float(persona.get("expected_next_prob"), None)
+    persona_expected_prob_base = _safe_float(persona.get("expected_next_prob_base"), None)
+    persona_subsidy_lift = _safe_float(persona.get("subsidy_lift"), None)
+    subsidy_lift_prob = 0.0
+    if (
+        persona_expected_prob is not None
+        and persona_expected_prob_base is not None
+    ):
+        subsidy_lift_prob = max(0.0, persona_expected_prob - persona_expected_prob_base)
+    elif persona_subsidy_lift is not None:
+        subsidy_lift_prob = max(0.0, float(persona_subsidy_lift))
+    time_to_subsidy_peak_days = 0.0
 
     stage_index = transition.get("stage_index", 0)
     belief_transition = transition.get("belief_transition") or {}
@@ -3673,6 +4445,13 @@ def _recommend_assets_for_transition(
 
         for channel_score, channel, channel_reasons, channel_segment_score in channel_candidates:
             impact_record = _lookup_impact(asset.get("id"), channel.get("id"), persona.get("id"))
+            learned_effect = _select_learned_effectiveness(
+                asset,
+                channel,
+                persona.get("id"),
+                transition_stage_tokens,
+                account_segments,
+            )
             expected_delta = _expected_delta_bp(
                 asset,
                 channel,
@@ -3687,12 +4466,37 @@ def _recommend_assets_for_transition(
                 segment_score=max(asset_segment_score, channel_segment_score),
                 belief_probability=belief_probability,
                 concern_strength=concern_strength,
+                learned_effect=learned_effect,
             )
+            calibration_meta = None
+            expected_source = None
+            if win_calibrator and account_id:
+                calibration = win_calibrator.estimate_delta_bp(
+                    account_id,
+                    stage_index=stage_index,
+                    stage_key=stage_key,
+                    asset_signal=_asset_signal_for_calibration(asset_payload, learned_effect),
+                    base_delta_bp=expected_delta,
+                )
+                if calibration:
+                    expected_delta = calibration["delta_bp"]
+                    calibration_meta = {
+                        "win_baseline": calibration["baseline_probability"],
+                        "win_simulated": calibration["simulated_probability"],
+                    }
+                    expected_source = "win_regression"
+            if expected_source is None:
+                expected_source = (
+                    "data"
+                    if (learned_effect or (impact_record and impact_record.get("evidence_count")))
+                    else "graph"
+                )
             confidence = _confidence_score(
                 asset_score,
                 channel_score,
                 persona,
                 path_probability=path_probability,
+                learned_effect=learned_effect,
             )
             if impact_record and impact_record.get("evidence_count"):
                 confidence = min(
@@ -3763,6 +4567,22 @@ def _recommend_assets_for_transition(
                 if value not in (None, [], {}, "")
             }
 
+            delta_meta = {
+                "source": expected_source,
+                "confidence": round(confidence, 4),
+                "learned": bool(learned_effect),
+                "impact_evidence": int((impact_record or {}).get("evidence_count", 0)),
+            }
+            if calibration_meta:
+                delta_meta.update(calibration_meta or {})
+
+            lift_asset_prob = max(0.0, expected_delta / 10000.0)
+            intervention_mode = choose_intervention_mode(
+                lift_asset=lift_asset_prob,
+                lift_subsidy=subsidy_lift_prob,
+                time_to_subsidy_peak_days=time_to_subsidy_peak_days,
+            )
+
             scored.append(
                 (
                     expected_delta,
@@ -3790,6 +4610,7 @@ def _recommend_assets_for_transition(
                         "expected_delta_bp": expected_delta,
                         "expected_delta_pct": expected_delta / 100.0,
                         "confidence": confidence,
+                        "expected_delta_bp_meta": delta_meta,
                         "asset_score": asset_score,
                         "channel_score": channel_score,
                         "exploration_weight": exploration_weight,
@@ -3813,6 +4634,16 @@ def _recommend_assets_for_transition(
                         else None,
                         "belief_probability": round(belief_probability, 4),
                         "evidence": evidence_payload or None,
+                        "lift_asset_prob": round(lift_asset_prob, 6),
+                        "lift_asset_bp": round(lift_asset_prob * 10000.0, 2),
+                        "lift_subsidy_prob": round(subsidy_lift_prob, 6)
+                        if subsidy_lift_prob
+                        else 0.0,
+                        "lift_subsidy_bp": round(subsidy_lift_prob * 10000.0, 2)
+                        if subsidy_lift_prob
+                        else 0.0,
+                        "intervention_mode": intervention_mode.value,
+                        "subsidy_time_to_peak_days": time_to_subsidy_peak_days,
                     },
                 )
             )
@@ -3863,6 +4694,12 @@ def _recommend_assets_for_transition(
                         "stage_tokens": list(transition_stage_tokens or []),
                     },
                 }
+                lift_asset_prob = max(0.0, expected_delta / 10000.0)
+                intervention_mode = choose_intervention_mode(
+                    lift_asset=lift_asset_prob,
+                    lift_subsidy=subsidy_lift_prob,
+                    time_to_subsidy_peak_days=time_to_subsidy_peak_days,
+                )
                 scored.append(
                     (
                         expected_delta,
@@ -3899,6 +4736,16 @@ def _recommend_assets_for_transition(
                             "target_stage": stage_label,
                             "target_concern": target_concern_label,
                             "belief_probability": round(belief_probability, 4),
+                            "lift_asset_prob": round(lift_asset_prob, 6),
+                            "lift_asset_bp": round(lift_asset_prob * 10000.0, 2),
+                            "lift_subsidy_prob": round(subsidy_lift_prob, 6)
+                            if subsidy_lift_prob
+                            else 0.0,
+                            "lift_subsidy_bp": round(subsidy_lift_prob * 10000.0, 2)
+                            if subsidy_lift_prob
+                            else 0.0,
+                            "intervention_mode": intervention_mode.value,
+                            "subsidy_time_to_peak_days": time_to_subsidy_peak_days,
                         },
                     )
                 )
@@ -4599,6 +5446,61 @@ def _randomization_policy(
 # Asset aggregation helpers
 # ---------------------------------------------------------------------------
 
+def _normalized_score(
+    value: Optional[float],
+    *,
+    max_value: float,
+    min_value: float = 0.0,
+) -> Optional[float]:
+    if value is None:
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    if max_value <= min_value:
+        return None
+    normalized = (numeric - min_value) / (max_value - min_value)
+    return float(min(1.0, max(0.0, normalized)))
+
+
+def _asset_fit_from_play(play: Dict[str, Any]) -> Optional[float]:
+    score = play.get("asset_score")
+    return _normalized_score(_safe_float(score), max_value=_ASSET_SCORE_NORMALIZER)
+
+
+def _channel_engagement_from_play(play: Dict[str, Any]) -> Optional[float]:
+    channel = play.get("channel") or {}
+    usage = channel.get("usage") or {}
+    candidates = [
+        _safe_float(usage.get("engagement_score")),
+        _safe_float(channel.get("engagement_score")),
+        _safe_float(channel.get("reach_score")),
+    ]
+    for candidate in candidates:
+        if candidate is not None:
+            return float(min(1.0, max(0.0, candidate)))
+    chan_score = _safe_float(play.get("channel_score"))
+    if chan_score is None:
+        return None
+    normalized = _normalized_score(
+        chan_score,
+        max_value=_CHANNEL_SCORE_NORMALIZER,
+        min_value=0.0,
+    )
+    return normalized
+
+
+def _concern_label_from_transition(bt: Optional[Dict[str, Any]]) -> Optional[str]:
+    if not bt:
+        return None
+    return (
+        _node_label(bt.get("pain"))
+        or _node_label(bt.get("problem"))
+        or _node_label(bt.get("resolution"))
+    )
+
+
 def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if not plays:
         return []
@@ -4638,6 +5540,8 @@ def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any
                 "belief_conversion_scores": [],
                 "confidence_scores": [],
                 "engagement_scores": [],
+                "asset_fit_values": [],
+                "channel_engagement_values": [],
                 "exploration_scores": [],
                 "evidence_counts": [],
                 "duration_days": [],
@@ -4650,6 +5554,8 @@ def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any
         )
         entry["confidence_scores"].append(play.get("confidence"))
         entry["engagement_scores"].append(play.get("channel", {}).get("engagement_score"))
+        entry["asset_fit_values"].append(_asset_fit_from_play(play))
+        entry["channel_engagement_values"].append(_channel_engagement_from_play(play))
         entry["exploration_scores"].append(play.get("exploration_weight"))
         entry["evidence_counts"].append(play.get("evidence_count"))
         entry["duration_days"].append(play.get("duration_days") or 14)
@@ -4664,6 +5570,10 @@ def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any
         avg_duration = _safe_mean(entry["duration_days"]) or 14.0
         engagement = _safe_mean(entry["engagement_scores"])
         exploration = _safe_mean(entry["exploration_scores"])
+        asset_fit = _safe_mean([val for val in entry["asset_fit_values"] if val is not None])
+        channel_engagement = _safe_mean(
+            [val for val in entry["channel_engagement_values"] if val is not None]
+        )
         evidence_total = sum(
             int(count or 0)
             for count in entry["evidence_counts"]
@@ -4675,7 +5585,7 @@ def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any
                 "asset": entry["asset"],
                 "asset_type": entry["asset_type"],
                 "asset_type_label": entry["asset_type_label"],
-                "asset_fit_score": None,
+                "asset_fit_score": asset_fit,
                 "asset_expected_delta_bp": avg_delta,
                 "channel": entry["channel"],
                 "channel_type": entry["channel_type"],
@@ -4685,7 +5595,7 @@ def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any
                 "confidence": avg_confidence,
                 "evidence_count": evidence_total,
                 "play_count": play_count,
-                "engagement_score": engagement,
+                "engagement_score": channel_engagement or engagement,
                 "exploration_weight": exploration,
                 "avg_duration_days": avg_duration,
             }
@@ -4693,6 +5603,759 @@ def _aggregate_asset_rows(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any
 
     asset_rows.sort(key=lambda row: row.get("expected_delta_bp", 0.0), reverse=True)
     return asset_rows
+
+
+def _build_account_execution_interventions(
+    conversion_sequence: Sequence[Dict[str, Any]],
+    *,
+    account_id: Optional[str],
+    account_name: Optional[str],
+    segment_context: Optional[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    if not conversion_sequence:
+        return []
+
+    cluster_keys = (segment_context or {}).get("keys") or []
+    cluster_key = cluster_keys[0] if cluster_keys else None
+    interventions: List[Dict[str, Any]] = []
+
+    for entry in conversion_sequence:
+        plays = entry.get("plays") or []
+        if not plays:
+            continue
+        best_play = max(
+            plays,
+            key=lambda play: _safe_float(play.get("expected_delta_bp"), 0.0) or 0.0,
+            default=None,
+        )
+        if not best_play:
+            continue
+        asset = best_play.get("asset") or {}
+        channel = best_play.get("channel") or {}
+        persona = entry.get("persona") or {}
+        timeline_days = entry.get("timeline_days")
+        quarter = best_play.get("quarter") or _quarter_from_day(timeline_days or 0)
+        concern_label = (
+            (entry.get("belief_transition_meta") or {}).get("pain")
+            or best_play.get("target_concern")
+            or (entry.get("belief_transition_meta") or {}).get("problem")
+        )
+        asset_type = (
+            best_play.get("asset_type_label")
+            or best_play.get("asset_type")
+            or asset.get("category_label")
+            or _title_case_value(asset.get("category"))
+            or (asset.get("format") or "Asset")
+        )
+        channel_label = (
+            best_play.get("channel_type_label")
+            or channel.get("channel_type_label")
+            or _title_case_value(channel.get("channel_type"))
+            or _title_case_value(channel.get("type"))
+            or channel.get("name")
+            or "Channel"
+        )
+        asset_fit = _safe_float(best_play.get("asset_fit_score"), None)
+        channel_engagement = _safe_float(best_play.get("engagement_score"), None)
+        fitness = None
+        if asset_fit is not None or channel_engagement is not None:
+            fitness = (asset_fit or 0.0) * (channel_engagement or 0.0)
+
+        wolves_score = _safe_float(persona.get("wolves_score"), None)
+        wolves_delta = _safe_float(persona.get("wolves_delta_bp"), None)
+        wolves_involvement = _safe_float(persona.get("wolves_involvement_rate"), None)
+        wolves_blocker = _safe_float(persona.get("wolves_blocker_rate"), None)
+        wolves_sample_size = persona.get("wolves_sample_size")
+        is_new_persona = bool(persona.get("is_new_persona"))
+        persona_source = persona.get("persona_source") or persona.get("persona_origin")
+
+        interventions.append(
+            {
+                "id": best_play.get("id"),
+                "account_id": account_id,
+                "account_name": account_name,
+                "cluster_key": cluster_key,
+                "quarter": quarter,
+                "time_label": entry.get("timeline_label") or best_play.get("timeline_label"),
+                "timeline_index": entry.get("timeline_index"),
+                "persona": persona.get("label")
+                or best_play.get("persona_label")
+                or "Target persona",
+                "persona_id": persona.get("id") or best_play.get("persona_id"),
+                "concern": concern_label,
+                "asset_type": asset_type,
+                "channel": channel_label,
+                "recommended_asset_id": asset.get("id"),
+                "recommended_asset_name": asset.get("name") or asset.get("title"),
+                "fitness": fitness,
+                "asset_fit_score": asset_fit,
+                "channel_engagement": channel_engagement,
+                "expected_delta_bp": _safe_float(best_play.get("expected_delta_bp"), 0.0)
+                or 0.0,
+                "accounts_impacted": 1,
+                "stage_label": (entry.get("belief_transition_meta") or {}).get(
+                    "stage_label"
+                ),
+                "wolves_persona_score": wolves_score,
+                "wolves_delta_bp": wolves_delta,
+                "wolves_involvement_rate": wolves_involvement,
+                "wolves_blocker_rate": wolves_blocker,
+                "wolves_sample_size": wolves_sample_size,
+                "is_new_persona": is_new_persona,
+                "persona_source": persona_source,
+            }
+        )
+
+    return interventions
+
+
+# ---------------------------------------------------------------------------
+# Intervention & gap helpers
+# ---------------------------------------------------------------------------
+
+_MIN_COVERAGE_THRESHOLD = 0.3
+_STEADY_COVERAGE_THRESHOLD = 0.4
+_STRONG_COVERAGE_THRESHOLD = 0.7
+
+
+def _normalize_key(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    normalized = str(value).strip().lower()
+    return normalized or None
+
+
+def _aggregate_execution_interventions(
+    accounts: Sequence[Dict[str, Any]],
+    *,
+    persona_chain_effects: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    for account in accounts:
+        exec_block = account.get("execution") or {}
+        items = exec_block.get("interventions") or []
+        if items:
+            candidates.extend(items)
+
+    if not candidates:
+        return []
+
+    groups: Dict[
+        Tuple[str, str, str, str, str],
+        Dict[str, Any],
+    ] = {}
+
+    for item in candidates:
+        quarter = item.get("quarter") or "Q1"
+        cluster_key = item.get("cluster_key") or ""
+        persona_label = item.get("persona") or "Target persona"
+        concern_label = item.get("concern") or "Priority concern"
+        asset_type = item.get("asset_type") or "Asset"
+        channel_label = item.get("channel") or "Channel"
+
+        key = (
+            quarter,
+            _normalize_key(persona_label) or persona_label.lower(),
+            _normalize_key(concern_label) or concern_label.lower(),
+            _normalize_key(asset_type) or asset_type.lower(),
+            _normalize_key(channel_label) or channel_label.lower(),
+        )
+        bucket = groups.setdefault(
+            key,
+            {
+                "quarter": quarter,
+                "persona": persona_label,
+                "concern": concern_label,
+                "asset_type": asset_type,
+                "channel": channel_label,
+                "time_label": item.get("time_label"),
+                "expected_delta_bp": 0.0,
+                "account_ids": set(),
+                "account_names": set(),
+                "best_fitness": None,
+                "best_asset_id": None,
+                "best_asset_name": None,
+                "cluster_keys": set(),
+                "wolves_persona_score": None,
+                "wolves_delta_bp": None,
+                "wolves_involvement_rate": None,
+                "wolves_blocker_rate": None,
+                "wolves_sample_size": None,
+                "is_new_persona": False,
+                "persona_source": item.get("persona_source"),
+            },
+        )
+        if not bucket.get("time_label") and item.get("time_label"):
+            bucket["time_label"] = item.get("time_label")
+        bucket["expected_delta_bp"] += float(item.get("expected_delta_bp") or 0.0)
+        account_id = item.get("account_id")
+        if account_id:
+            bucket["account_ids"].add(account_id)
+        account_name = item.get("account_name")
+        if account_name:
+            bucket["account_names"].add(account_name)
+        if cluster_key:
+            bucket["cluster_keys"].add(cluster_key)
+        fitness = item.get("fitness")
+        if fitness is not None:
+            current_best = bucket["best_fitness"]
+            if current_best is None or fitness > current_best:
+                bucket["best_fitness"] = fitness
+                bucket["best_asset_id"] = item.get("recommended_asset_id")
+                bucket["best_asset_name"] = item.get("recommended_asset_name")
+        wolves_score = item.get("wolves_persona_score")
+        if wolves_score is not None:
+            current_wolves = bucket.get("wolves_persona_score")
+            if current_wolves is None or wolves_score > current_wolves:
+                bucket["wolves_persona_score"] = wolves_score
+                bucket["wolves_delta_bp"] = item.get("wolves_delta_bp")
+                bucket["wolves_involvement_rate"] = item.get("wolves_involvement_rate")
+                bucket["wolves_blocker_rate"] = item.get("wolves_blocker_rate")
+                bucket["wolves_sample_size"] = item.get("wolves_sample_size")
+        if item.get("is_new_persona"):
+            bucket["is_new_persona"] = True
+        if item.get("persona_source"):
+            bucket["persona_source"] = item.get("persona_source")
+
+    def _quarter_key(value: str) -> Tuple[int, str]:
+        try:
+            if value.upper().startswith("Q"):
+                return (int(value[1:]), value)
+        except Exception:
+            pass
+        return (99, value)
+
+    aggregated: List[Dict[str, Any]] = []
+    for key, bucket in groups.items():
+        cluster_keys = sorted(bucket.get("cluster_keys") or [])
+        cluster_labels = [
+            label
+            for label in (_cluster_label_from_key(value) for value in cluster_keys)
+            if label
+        ]
+        aggregated.append(
+            {
+                "id": "|".join(key),
+                "quarter": bucket["quarter"],
+                "cluster_key": cluster_keys[0] if cluster_keys else None,
+                "cluster_keys": cluster_keys,
+                "cluster_labels": cluster_labels,
+                "persona": bucket["persona"],
+                "concern": bucket["concern"],
+                "asset_type": bucket["asset_type"],
+                "channel": bucket["channel"],
+                "time_label": bucket.get("time_label"),
+                "recommended_asset_id": bucket["best_asset_id"],
+                "recommended_asset_name": bucket["best_asset_name"],
+                "fitness": bucket["best_fitness"],
+                "expected_delta_bp": round(bucket["expected_delta_bp"], 2),
+                "accounts_impacted": len(bucket["account_ids"]),
+                "account_names": sorted(bucket["account_names"])[:5],
+                "wolves_persona_score": bucket.get("wolves_persona_score"),
+                "wolves_delta_bp": bucket.get("wolves_delta_bp"),
+                "wolves_involvement_rate": bucket.get("wolves_involvement_rate"),
+                "wolves_blocker_rate": bucket.get("wolves_blocker_rate"),
+                "wolves_sample_size": bucket.get("wolves_sample_size"),
+                "is_new_persona": bucket.get("is_new_persona"),
+                "persona_source": bucket.get("persona_source"),
+            }
+        )
+
+    effect_index = persona_chain_effects or {}
+    for row in aggregated:
+        persona_label = row.get("persona")
+        if not persona_label:
+            continue
+        effect = effect_index.get(persona_label.strip().lower())
+        if not effect:
+            continue
+        row["chain_effect"] = effect.get("description")
+        row["chain_targets"] = effect.get("next_personas")
+        row["chain_share"] = effect.get("share")
+
+    aggregated.sort(
+        key=lambda row: (
+            _quarter_key(row.get("quarter") or "Q1"),
+            -float(row.get("expected_delta_bp") or 0.0),
+        )
+    )
+    return aggregated
+
+
+def _build_persona_chain_effects(
+    accounts: Sequence[Dict[str, Any]]
+) -> Dict[str, Dict[str, Any]]:
+    follow_counter: Dict[str, Counter[str]] = defaultdict(Counter)
+    total_occurrences: Counter[str] = Counter()
+    sequence_samples: Dict[str, List[List[str]]] = defaultdict(list)
+
+    for account in accounts:
+        paths = (account.get("prediction") or {}).get("persona_paths") or []
+        if not paths:
+            continue
+        primary = paths[0].get("personas") or []
+        labels = [persona.get("label") for persona in primary if persona.get("label")]
+        if not labels:
+            continue
+        for idx, label in enumerate(labels):
+            if not label:
+                continue
+            total_occurrences[label] += 1
+            trailing = labels[idx + 1 : idx + 3]
+            if trailing:
+                key = " → ".join(trailing)
+                follow_counter[label][key] += 1
+                sequence_samples[label].append(labels[idx : idx + 4])
+
+    effect_index: Dict[str, Dict[str, Any]] = {}
+    for label, total in total_occurrences.items():
+        if total <= 0:
+            continue
+        normalized = label.strip().lower()
+        next_personas: List[str] = []
+        description = None
+        share_value = None
+        if follow_counter[label]:
+            top_sequence, count = follow_counter[label].most_common(1)[0]
+            share_value = count / total if total else None
+            next_personas = top_sequence.split(" → ")
+            description = (
+                f"Unlocks {top_sequence} in {_percent_label(share_value)} of modeled wins."
+                if share_value is not None
+                else None
+            )
+        effect_index[normalized] = {
+            "label": label,
+            "share": share_value,
+            "next_personas": next_personas,
+            "description": description,
+            "sample_sequence": (sequence_samples.get(label) or [None])[0],
+        }
+    return effect_index
+
+
+def _cluster_label_from_key(key: Optional[str]) -> Optional[str]:
+    if not key:
+        return None
+    parts = str(key).split(":")
+    if len(parts) == 3:
+        _, dimension, value = parts
+    elif len(parts) == 2:
+        dimension, value = parts
+    else:
+        return key.replace("_", " ").title()
+    dim_label = dimension.replace("_", " ").title()
+    value_label = value.replace("_", " ").title()
+    return f"{dim_label}: {value_label}"
+
+
+def _play_snapshot(play: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    asset = play.get("asset") or {}
+    channel = play.get("channel") or {}
+    format_label = (
+        asset.get("category_label")
+        or _title_case_value(asset.get("category"))
+        or _title_case_value(asset.get("format"))
+        or asset.get("name")
+    )
+    channel_label = (
+        channel.get("channel_type_label")
+        or _title_case_value(channel.get("channel_type"))
+        or _title_case_value(channel.get("type"))
+        or channel.get("name")
+    )
+    stage_label = play.get("stage_label") or play.get("target_stage")
+    stage_key = _normalize_key(stage_label)
+    if not format_label or not channel_label or not stage_key:
+        return None
+    persona_label = play.get("persona_label") or play.get("persona_descriptor")
+    persona_key = _normalize_key(persona_label)
+    belief_transition = play.get("belief_transition") or {}
+    concern_label = (
+        play.get("target_concern")
+        or _concern_label_from_transition(belief_transition)
+    )
+    concern_key = _normalize_key(concern_label)
+    format_fit = _asset_fit_from_play(play)
+    channel_engagement = _channel_engagement_from_play(play)
+    if format_fit is None and channel_engagement is None:
+        return None
+    coverage = (format_fit or 0.0) * (channel_engagement or 0.0)
+    return {
+        "format_label": format_label,
+        "channel_label": channel_label,
+        "asset_name": asset.get("name") or asset.get("title"),
+        "asset_id": asset.get("id"),
+        "channel_name": channel.get("name") or channel_label,
+        "channel_id": channel.get("id"),
+        "format_fitment": format_fit or 0.0,
+        "channel_engagement": channel_engagement or 0.0,
+        "coverage_score": coverage,
+        "persona_label": persona_label,
+        "persona_key": persona_key,
+        "stage_label": stage_label,
+        "stage_key": stage_key,
+        "concern_label": concern_label,
+        "concern_key": concern_key,
+        "expected_delta_bp": _safe_float(play.get("expected_delta_bp"), 0.0) or 0.0,
+        "confidence": _safe_float(play.get("confidence"), 0.0),
+        "source": "existing",
+    }
+
+
+class _ModalityStats:
+    def __init__(self) -> None:
+        self.by_signature: Dict[
+            Tuple[str, str, str], Dict[Tuple[str, str], Dict[str, Any]]
+        ] = defaultdict(dict)
+        self.by_persona_stage: Dict[
+            Tuple[str, str], Dict[Tuple[str, str], Dict[str, Any]]
+        ] = defaultdict(dict)
+        self.by_stage: Dict[Tuple[str], Dict[Tuple[str, str], Dict[str, Any]]] = defaultdict(dict)
+        self.global_combos: Dict[
+            Tuple[str], Dict[Tuple[str, str], Dict[str, Any]]
+        ] = defaultdict(dict)
+
+    def observe_play(self, play: Dict[str, Any]) -> None:
+        snapshot = _play_snapshot(play)
+        if not snapshot:
+            return
+        stage_key = snapshot["stage_key"]
+        persona_key = snapshot.get("persona_key")
+        concern_key = snapshot.get("concern_key")
+        if stage_key:
+            self._record(self.by_stage, (stage_key,), snapshot)
+        self._record(self.global_combos, ("global",), snapshot)
+        if persona_key and stage_key:
+            self._record(self.by_persona_stage, (persona_key, stage_key), snapshot)
+            if concern_key:
+                self._record(
+                    self.by_signature,
+                    (persona_key, stage_key, concern_key),
+                    snapshot,
+                )
+
+    def _record(
+        self,
+        bucket: Dict[Tuple[str, ...], Dict[Tuple[str, str], Dict[str, Any]]],
+        key: Tuple[str, ...],
+        snapshot: Dict[str, Any],
+    ) -> None:
+        if any(part is None for part in key):
+            return
+        combo_key = (snapshot["format_label"], snapshot["channel_label"])
+        combos = bucket.setdefault(key, {})
+        entry = combos.setdefault(
+            combo_key,
+            {
+                "count": 0,
+                "coverage_sum": 0.0,
+                "format_fit_sum": 0.0,
+                "channel_engagement_sum": 0.0,
+                "sample": snapshot,
+            },
+        )
+        entry["count"] += 1
+        entry["coverage_sum"] += snapshot["coverage_score"]
+        entry["format_fit_sum"] += snapshot["format_fitment"]
+        entry["channel_engagement_sum"] += snapshot["channel_engagement"]
+
+    @staticmethod
+    def _best_combo(
+        combos: Optional[Dict[Tuple[str, str], Dict[str, Any]]]
+    ) -> Optional[Dict[str, Any]]:
+        if not combos:
+            return None
+        items = []
+        for combo_key, payload in combos.items():
+            count = payload.get("count") or 1
+            avg_coverage = (payload.get("coverage_sum") or 0.0) / count
+            items.append((avg_coverage, combo_key, payload))
+        if not items:
+            return None
+        items.sort(key=lambda item: item[0], reverse=True)
+        _, combo_key, payload = items[0]
+        count = payload.get("count") or 1
+        sample = payload.get("sample") or {}
+        return {
+            "format_label": combo_key[0],
+            "channel_label": combo_key[1],
+            "coverage_score": (payload.get("coverage_sum") or 0.0) / count,
+            "format_fitment": (payload.get("format_fit_sum") or 0.0) / count,
+            "channel_engagement": (payload.get("channel_engagement_sum") or 0.0) / count,
+            "asset_name": sample.get("asset_name"),
+            "channel_name": sample.get("channel_name"),
+            "asset_id": sample.get("asset_id"),
+            "channel_id": sample.get("channel_id"),
+            "source": "reference",
+        }
+
+    def recommend(
+        self,
+        persona_label: Optional[str],
+        stage_label: Optional[str],
+        concern_label: Optional[str],
+    ) -> Optional[Dict[str, Any]]:
+        persona_key = _normalize_key(persona_label) or ""
+        stage_key = _normalize_key(stage_label) or ""
+        concern_key = _normalize_key(concern_label) or ""
+        lookups = [
+            (self.by_signature, (persona_key, stage_key, concern_key)),
+            (self.by_persona_stage, (persona_key, stage_key)),
+            (self.by_stage, (stage_key,)),
+            (self.global_combos, ("global",)),
+        ]
+        for table, key in lookups:
+            combo = self._best_combo(table.get(key))
+            if combo:
+                return combo
+        return None
+
+
+def _build_modality_stats(accounts: Sequence[Dict[str, Any]]) -> _ModalityStats:
+    stats = _ModalityStats()
+    for account in accounts:
+        plays = (account.get("execution") or {}).get("plays") or []
+        for play in plays:
+            stats.observe_play(play)
+    return stats
+
+
+def _play_candidates(plays: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    for play in plays:
+        snapshot = _play_snapshot(play)
+        if snapshot:
+            candidates.append(snapshot)
+    candidates.sort(
+        key=lambda snap: (
+            snap.get("coverage_score") or 0.0,
+            snap.get("expected_delta_bp") or 0.0,
+        ),
+        reverse=True,
+    )
+    return candidates
+
+
+def _build_intervention_from_seed(
+    seed: Dict[str, Any],
+    stats: _ModalityStats,
+) -> Optional[Dict[str, Any]]:
+    expected_delta = _safe_float(seed.get("expected_delta_bp"), 0.0) or 0.0
+    if expected_delta <= 0.0:
+        return None
+    persona = seed.get("persona") or {}
+    persona_label = seed.get("persona_label") or persona.get("label")
+    stage_label = (
+        seed.get("stage_label")
+        or (seed.get("belief_transition_meta") or {}).get("stage_label")
+    )
+    stage_key = _normalize_key(stage_label)
+    plays = seed.get("plays") or []
+    candidates = _play_candidates(plays)
+    best_current = candidates[0] if candidates else None
+    coverage_score = best_current["coverage_score"] if best_current else 0.0
+    coverage_score = float(min(1.0, max(0.0, coverage_score or 0.0)))
+    concern_label = (
+        seed.get("concern_label")
+        or (seed.get("belief_transition_meta") or {}).get("pain")
+        or (best_current or {}).get("concern_label")
+    )
+    fallback = stats.recommend(persona_label, stage_label, concern_label)
+    needs_fallback = coverage_score < _MIN_COVERAGE_THRESHOLD or not best_current
+    recommended_modality = fallback if needs_fallback else None
+    current_modality = None
+    if best_current:
+        current_modality = {
+            "format_label": best_current["format_label"],
+            "channel_label": best_current["channel_label"],
+            "format_fitment": best_current["format_fitment"],
+            "channel_engagement": best_current["channel_engagement"],
+            "coverage_score": best_current["coverage_score"],
+            "asset_name": best_current.get("asset_name"),
+            "channel_name": best_current.get("channel_name"),
+            "asset_id": best_current.get("asset_id"),
+            "channel_id": best_current.get("channel_id"),
+            "source": "existing",
+        }
+    elif fallback:
+        current_modality = {
+            **fallback,
+            "source": "reference",
+        }
+    gap_score = expected_delta * (1.0 - coverage_score)
+    coverage_state = (
+        "strong"
+        if coverage_score >= _STRONG_COVERAGE_THRESHOLD
+        else "steady"
+        if coverage_score >= _STEADY_COVERAGE_THRESHOLD
+        else "weak"
+    )
+    accounts = seed.get("accounts") or []
+    unique_accounts = []
+    seen_accounts: set = set()
+    for acc in accounts:
+        acc_id = acc.get("id") or acc.get("account_id")
+        key = acc_id or acc.get("name")
+        if key in seen_accounts:
+            continue
+        seen_accounts.add(key)
+        unique_accounts.append(
+            {
+                "id": acc_id,
+                "name": acc.get("name") or acc.get("account_name") or acc_id,
+            }
+        )
+    belief_transition = seed.get("belief_transition")
+    belief_meta = seed.get("belief_transition_meta") or {}
+    descriptor = seed.get("persona_descriptor") or persona.get("title")
+    intervention_id = "|".join(
+        filter(
+            None,
+            [
+                seed.get("scope") or "portfolio",
+                seed.get("account_id"),
+                _normalize_key(persona_label) or "persona",
+                stage_key or "stage",
+                _normalize_key(concern_label) or "concern",
+            ],
+        )
+    )
+    asset_options = [
+        {
+            "format_label": snap["format_label"],
+            "channel_label": snap["channel_label"],
+            "coverage_score": snap["coverage_score"],
+            "asset_name": snap.get("asset_name"),
+            "channel_name": snap.get("channel_name"),
+        }
+        for snap in candidates[:3]
+    ]
+    return {
+        "id": intervention_id,
+        "scope": seed.get("scope") or "portfolio",
+        "account_id": seed.get("account_id"),
+        "accounts": unique_accounts,
+        "expected_account_count": len(unique_accounts),
+        "persona_label": persona_label,
+        "persona_descriptor": descriptor,
+        "stage_label": stage_label,
+        "stage_key": stage_key,
+        "belief_transition": belief_transition,
+        "belief_transition_meta": belief_meta,
+        "belief_lift_bp": expected_delta,
+        "confidence": seed.get("confidence"),
+        "people": seed.get("people") or [],
+        "matched_people": seed.get("matched_people") or [],
+        "segment_summary": seed.get("segment_summary"),
+        "segment_filters": seed.get("segment_filters"),
+        "timeline_label": seed.get("timeline_label"),
+        "timeline_index": seed.get("timeline_index"),
+        "theme": seed.get("theme"),
+        "focus_label": seed.get("focus_label"),
+        "concern_theme": concern_label,
+        "messaging_hint": (
+            seed.get("messaging_hint")
+            or (belief_transition or {}).get("narrative")
+        ),
+        "current_modality": current_modality,
+        "recommended_modality": recommended_modality,
+        "coverage_score": coverage_score,
+        "coverage_state": coverage_state,
+        "gap_score": gap_score,
+        "needs_net_new": coverage_score < _MIN_COVERAGE_THRESHOLD,
+        "has_strong_assets": coverage_score >= _STRONG_COVERAGE_THRESHOLD,
+        "asset_options": asset_options,
+        "plays_considered": len(plays),
+        "no_play_data": not bool(plays),
+    }
+
+
+def _attach_account_interventions(
+    accounts: Sequence[Dict[str, Any]],
+    stats: _ModalityStats,
+) -> None:
+    for account in accounts:
+        seeds: List[Dict[str, Any]] = []
+        conversion_sequence = (account.get("execution") or {}).get("conversion_sequence") or []
+        for entry in conversion_sequence:
+            seeds.append(
+                {
+                    "scope": "account",
+                    "account_id": account.get("account_id"),
+                    "persona": entry.get("persona") or {},
+                    "persona_label": (entry.get("persona") or {}).get("label"),
+                    "persona_descriptor": entry.get("persona_descriptor"),
+                    "stage_label": (
+                        (entry.get("belief_transition_meta") or {}).get("stage_label")
+                        or entry.get("stage_label")
+                    ),
+                    "belief_transition": entry.get("belief_transition"),
+                    "belief_transition_meta": entry.get("belief_transition_meta"),
+                    "expected_delta_bp": entry.get("expected_delta_bp"),
+                    "confidence": entry.get("avg_confidence"),
+                    "plays": entry.get("plays"),
+                    "segment_summary": entry.get("segment_summary"),
+                    "segment_filters": entry.get("segment_filters"),
+                    "people": entry.get("people"),
+                    "matched_people": entry.get("matched_people"),
+                    "timeline_label": entry.get("timeline_label"),
+                    "timeline_index": entry.get("timeline_index"),
+                    "accounts": [
+                        {
+                            "id": account.get("account_id"),
+                            "name": account.get("account_name") or account.get("account_id"),
+                        }
+                    ],
+                    "concern_label": (entry.get("belief_transition_meta") or {}).get("pain"),
+                }
+            )
+        interventions: List[Dict[str, Any]] = []
+        for seed in seeds:
+            payload = _build_intervention_from_seed(seed, stats)
+            if payload:
+                interventions.append(payload)
+        interventions.sort(key=lambda item: item.get("gap_score", 0.0), reverse=True)
+        account["interventions"] = interventions
+
+
+def _build_portfolio_interventions(
+    focuses: Sequence[Dict[str, Any]],
+    stats: _ModalityStats,
+) -> List[Dict[str, Any]]:
+    interventions: List[Dict[str, Any]] = []
+    for focus in focuses:
+        seed = {
+            "scope": "portfolio",
+            "persona": focus.get("persona_meta") or {},
+            "persona_label": focus.get("persona_label") or focus.get("persona_focus"),
+            "persona_descriptor": focus.get("persona_descriptor"),
+            "stage_label": focus.get("stage_label"),
+            "belief_transition": focus.get("belief_transition"),
+            "belief_transition_meta": {
+                "stage_label": focus.get("stage_label"),
+                "pain": (focus.get("belief_transition") or {}).get("pain", {}).get("label"),
+            },
+            "expected_delta_bp": focus.get("expected_delta_bp"),
+            "confidence": focus.get("confidence"),
+            "plays": focus.get("plays"),
+            "segment_summary": focus.get("segment_summary"),
+            "segment_filters": focus.get("segment_filters"),
+            "people": focus.get("people"),
+            "accounts": focus.get("accounts"),
+            "timeline_label": focus.get("timeline_label"),
+            "timeline_index": focus.get("timeline_index"),
+            "theme": focus.get("campaign_theme") or focus.get("persona_focus"),
+            "focus_label": focus.get("focus_label") or focus.get("label"),
+            "concern_label": (
+                (focus.get("belief_transition") or {}).get("pain", {}) or {}
+            ).get("label"),
+        }
+        payload = _build_intervention_from_seed(seed, stats)
+        if payload:
+            interventions.append(payload)
+    interventions.sort(key=lambda item: item.get("gap_score", 0.0), reverse=True)
+    return interventions
 
 
 # ---------------------------------------------------------------------------
@@ -4705,14 +6368,42 @@ def build_account_marketing_blueprint(
     *,
     product_graph: Optional[nx.DiGraph] = None,
     canonical_persona_path: Optional[List[Dict[str, Any]]] = None,
+    segment_patterns: Optional[Dict[str, Any]] = None,
+    shm_metrics: Optional[Dict[str, Any]] = None,
+    journey_weights: Optional[Dict[str, Any]] = None,
+    win_regression: Optional[Dict[str, Any]] = None,
+    persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
+    persona_metrics_updated_at: Optional[str] = None,
 ) -> Dict[str, Any]:
     if product_graph is None:
         product_graph = build_product_graph(product_id)
+    segment_patterns = segment_patterns or {}
+    shm_metrics = shm_metrics or {}
+    persona_transition_stats = shm_metrics.get("persona") or {}
+    journey_weights = journey_weights or {}
+    win_calibrator = None
+    if win_regression:
+        try:
+            win_calibrator = WinProbabilityCalibrator.from_summary(win_regression)
+        except Exception as exc:  # pragma: no cover - calibration is best effort
+            print(f"⚠️ Unable to build win regression calibrator: {exc}")
+            win_calibrator = None
 
     account = get_account_by_id(product_id, account_id) or {"account_name": account_id}
     thesis = build_belief_thesis_for_account(product_id, account_id)
+    if persona_wolves_metrics is None:
+        persona_wolves_metrics, persona_metrics_updated_at = _load_persona_wolves_metrics(
+            product_id
+        )
 
-    if canonical_persona_path:
+    bgn_paths = _generate_persona_paths_from_weights(
+        journey_weights,
+        thesis,
+        persona_transition_stats=persona_transition_stats,
+    )
+    if bgn_paths:
+        paths = bgn_paths
+    elif canonical_persona_path:
         paths = [
             {
                 "id": "canonical",
@@ -4720,6 +6411,8 @@ def build_account_marketing_blueprint(
                 "score": 1.0,
                 "personas_prefab": [deepcopy(persona) for persona in canonical_persona_path],
                 "raw": {"source": "canonical"},
+                "source": "graph",
+                "confidence": 0.6,
             }
         ]
     else:
@@ -4781,12 +6474,23 @@ def build_account_marketing_blueprint(
     matches_by_persona = _load_persona_matches_lookup(product_id, account_id)
     engagement_buckets = _load_engagement_buckets(product_id, account_id)
     expected_next_probs: Dict[str, float] = {}
+    expected_next_meta: Dict[str, Dict[str, Any]] = {}
     fit_score = _safe_float((thesis.get("fit") or {}).get("overall"), None)
     for entry in thesis.get("current_expected_next") or []:
         persona_key = entry.get("persona")
         if not persona_key:
             continue
-        expected_next_probs[str(persona_key)] = float(entry.get("prob") or 0.0)
+        pid = str(persona_key)
+        prob_val = float(entry.get("prob") or 0.0)
+        expected_next_probs[pid] = prob_val
+        expected_next_meta[pid] = {
+            "prob": prob_val,
+            "prob_base": _safe_float(entry.get("prob_base"), None),
+            "subsidy_lift": _safe_float(entry.get("subsidy_lift"), None),
+            "persona_label": entry.get("persona_label"),
+            "journey_stage": entry.get("journey_stage"),
+            "reason": entry.get("reason"),
+        }
 
     assets = _load_assets(product_id)
     channels = _load_channels(product_id)
@@ -4808,6 +6512,7 @@ def build_account_marketing_blueprint(
     persona_lookup: Dict[str, Dict[str, Any]] = {}
     ordered_persona_ids: List[str] = []
     plays_by_persona: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    account_wolf_scores = thesis.get("persona_wolf_scores") or {}
 
     account_meta_detail = {
         key: account.get(key)
@@ -4830,6 +6535,8 @@ def build_account_marketing_blueprint(
         "deal_status": account.get("deal_status"),
         "attributes": account_meta_detail,
     }
+    segment_context = _build_segment_context(account_meta_detail, segment_patterns)
+    account_segment_pattern = segment_context.get("pattern")
 
     for path_index, path in enumerate(paths):
         prefab_personas = path.get("personas_prefab")
@@ -4840,9 +6547,20 @@ def build_account_marketing_blueprint(
                 product_graph,
                 path,
                 expected_next_probs=expected_next_probs,
+                expected_next_meta=expected_next_meta,
                 belief_posteriors=persona_belief_posteriors,
+                wolves_metrics=persona_wolves_metrics,
+                account_wolf_scores=account_wolf_scores,
             )
             persona_summaries = _prioritize_personas_for_path(persona_summaries)
+            if account_segment_pattern:
+                boost_map = _segment_priority_boost_map(account_segment_pattern)
+                if boost_map:
+                    for persona in persona_summaries:
+                        multiplier = boost_map.get(persona.get("id"))
+                        if multiplier:
+                            persona["segment_priority_multiplier"] = multiplier
+                            persona["priority_score"] = _persona_priority_score(persona)
         path_signal = _persona_path_signal(persona_summaries)
         for persona in persona_summaries:
             persona_id = persona.get("id")
@@ -5061,6 +6779,8 @@ def build_account_marketing_blueprint(
                 exploration_weight=exploration,
                 account_segments=account_segment_map,
                 account_segment_labels=account_segment_labels,
+                account_id=account_id,
+                win_calibrator=win_calibrator,
             )
 
             for combo in combos:
@@ -5081,6 +6801,13 @@ def build_account_marketing_blueprint(
                 pid = combo.get("persona_id")
                 if pid:
                     plays_by_persona[pid].append(combo)
+
+    entry_points = _apply_entry_point_scores(
+        persona_lookup=persona_lookup,
+        plays_by_persona=plays_by_persona,
+        ordered_persona_ids=ordered_persona_ids,
+    )
+    thesis["entry_points"] = entry_points
 
     persona_paths.sort(
         key=lambda row: (
@@ -5143,6 +6870,8 @@ def build_account_marketing_blueprint(
         if not persona_id:
             continue
         prob = _safe_float(entry.get("prob"), 0.0) or 0.0
+        prob_base = _safe_float(entry.get("prob_base"), None)
+        subsidy_lift = _safe_float(entry.get("subsidy_lift"), None)
         persona_info = persona_lookup.get(persona_id, {})
         label = (
             entry.get("persona_label")
@@ -5160,6 +6889,8 @@ def build_account_marketing_blueprint(
                 or persona_info.get("journey_phase"),
                 "reason": entry.get("reason") or entry.get("label"),
                 "top_people": persona_info.get("top_people") or [],
+                "prob_base": prob_base,
+                "subsidy_lift": subsidy_lift,
             }
         )
         seen_expected.add(persona_id)
@@ -5182,6 +6913,8 @@ def build_account_marketing_blueprint(
                     "band": _probability_band(prob),
                     "journey_stage": persona_info.get("journey_phase"),
                     "reason": "Predicted by persona journey model",
+                    "prob_base": None,
+                    "subsidy_lift": None,
                     "top_people": persona_info.get("top_people") or [],
                 }
             )
@@ -5335,6 +7068,13 @@ def build_account_marketing_blueprint(
                         "title": persona.get("title"),
                         "department": persona.get("department"),
                         "seniority": persona.get("seniority"),
+                        "wolves_score": persona.get("wolves_score"),
+                        "wolves_delta_bp": persona.get("wolves_delta_bp"),
+                        "wolves_involvement_rate": persona.get("wolves_involvement_rate"),
+                        "wolves_blocker_rate": persona.get("wolves_blocker_rate"),
+                        "wolves_sample_size": persona.get("wolves_sample_size"),
+                        "is_new_persona": persona.get("is_new_persona"),
+                        "persona_source": persona.get("persona_source"),
                     },
                     "belief_transition": {
                         "persona": {"id": pid, "label": persona.get("label"), "type": "persona"},
@@ -5377,13 +7117,24 @@ def build_account_marketing_blueprint(
         "persona_posteriors": persona_posteriors,
         "persona_committee_probs": persona_committee_probs,
         "persona_belief_posteriors": persona_belief_posteriors,
+        "entry_points": entry_points,
     }
+
+    account_execution_interventions = _build_account_execution_interventions(
+        conversion_sequence,
+        account_id=account_id,
+        account_name=account.get("account_name") or account_id,
+        segment_context=segment_context,
+    )
 
     return {
         "account_id": account_id,
         "account_name": account.get("account_name") or account_id,
         "deal_status": account.get("deal_status"),
         "meta": account_meta_detail,
+        "segment": segment_context,
+        "keystone_personas": _extract_keystone_personas(persona_lookup),
+        "wolves_metrics_updated_at": persona_metrics_updated_at,
         "prediction": {
             "persona_paths": persona_paths,
             "fit": thesis.get("fit") or {},
@@ -5406,6 +7157,7 @@ def build_account_marketing_blueprint(
                 "total_steps": len((thesis.get("journey") or {}).get("steps", [])),
             },
         },
+        "entry_points": entry_points,
         "transitions": transitions_all,
         "scatter": {"personas": scatter_personas},
         "execution": {
@@ -5416,6 +7168,7 @@ def build_account_marketing_blueprint(
                 campaigns,
                 total_persona_stages,
             ),
+            "interventions": account_execution_interventions,
         },
         "storyline": storyline,
         "campaigns": campaigns,
@@ -5918,8 +7671,16 @@ def _aggregate_portfolio(accounts: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def _summary_from_accounts(accounts: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def _summary_from_accounts(
+    accounts: Sequence[Dict[str, Any]],
+    *,
+    persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
+    persona_wolves_label_index: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
     account_count = len(accounts)
+    persona_wolves_metrics = persona_wolves_metrics or {}
+    persona_wolves_label_index = persona_wolves_label_index or {}
+    keystone_rollup: Dict[str, Dict[str, Any]] = {}
     prob_primary = []
     accuracies = []
     persona_counter: Counter[str] = Counter()
@@ -5935,6 +7696,34 @@ def _summary_from_accounts(accounts: Sequence[Dict[str, Any]]) -> Dict[str, Any]
         for account in accounts
         if account.get("account_id")
     }
+
+    def _init_keystone_entry(
+        persona_label: str,
+        persona_id: Optional[str],
+    ) -> Dict[str, Any]:
+        wolves_info = _lookup_wolves_metric(
+            persona_id,
+            persona_label,
+            persona_wolves_metrics,
+            persona_wolves_label_index,
+        )
+        return {
+            "persona_id": persona_id,
+            "persona_label": persona_label,
+            "wolves_score": _safe_float((wolves_info or {}).get("wolves_score"), None),
+            "wolves_delta_bp": _safe_float((wolves_info or {}).get("delta_win_bp"), None),
+            "wolves_involvement_rate": _safe_float(
+                (wolves_info or {}).get("involvement_rate"), None
+            ),
+            "wolves_blocker_rate": _safe_float(
+                (wolves_info or {}).get("blocker_rate"), None
+            ),
+            "wolves_sample_size": (wolves_info or {}).get("sample_size"),
+            "occurrences": 0,
+            "accounts": set(),
+            "clusters": set(),
+            "stories": [],
+        }
 
     for account in accounts:
         account_personas: set[str] = set()
@@ -6027,6 +7816,37 @@ def _summary_from_accounts(accounts: Sequence[Dict[str, Any]]) -> Dict[str, Any]
         if isinstance(required, (int, float)) and isinstance(matched, (int, float)):
             unmatched_total += max(0, int(required) - int(matched))
 
+        for kp in account.get("keystone_personas") or []:
+            label = kp.get("persona_label") or kp.get("persona") or kp.get("label")
+            if not label:
+                continue
+            persona_id = kp.get("persona_id")
+            key = (persona_id or label).strip()
+            if not key:
+                continue
+            entry = keystone_rollup.get(key)
+            if entry is None:
+                entry = _init_keystone_entry(label, persona_id)
+                keystone_rollup[key] = entry
+            wolves_score = kp.get("wolves_score")
+            if wolves_score is not None:
+                current = entry.get("wolves_score")
+                if current is None or wolves_score > current:
+                    entry["wolves_score"] = wolves_score
+            for field in (
+                "wolves_delta_bp",
+                "wolves_involvement_rate",
+                "wolves_blocker_rate",
+                "wolves_sample_size",
+            ):
+                value = kp.get(field)
+                if value is not None and entry.get(field) is None:
+                    entry[field] = value
+            entry["occurrences"] += 1
+            account_id = account.get("account_id")
+            if account_id:
+                entry["accounts"].add(account_id)
+
     def _top(counter: Counter[str]) -> List[Dict[str, Any]]:
         return [
             {"label": label, "count": count}
@@ -6038,7 +7858,39 @@ def _summary_from_accounts(accounts: Sequence[Dict[str, Any]]) -> Dict[str, Any]
         accounts_by_id,
         total_accounts=account_count,
         total_delta_bp=total_delta_bp,
+        persona_wolves_metrics=persona_wolves_metrics,
+        persona_wolves_label_index=persona_wolves_label_index,
     )
+
+    for cluster in account_clusters:
+        for kp in cluster.get("keystone_personas") or []:
+            label = kp.get("persona") or kp.get("persona_label")
+            if not label:
+                continue
+            persona_id = kp.get("persona_id")
+            key = (persona_id or label).strip()
+            if not key:
+                continue
+            entry = keystone_rollup.get(key)
+            if entry is None:
+                entry = _init_keystone_entry(label, persona_id)
+                keystone_rollup[key] = entry
+            for field in (
+                "wolves_score",
+                "wolves_delta_bp",
+                "wolves_involvement_rate",
+                "wolves_blocker_rate",
+                "wolves_sample_size",
+            ):
+                value = kp.get(field)
+                if value is not None and entry.get(field) is None:
+                    entry[field] = value
+            cluster_label = cluster.get("label")
+            if cluster_label:
+                entry["clusters"].add(cluster_label)
+            story = kp.get("coalition_story")
+            if story:
+                entry["stories"].append({"cluster": cluster_label, "story": story})
 
     return {
         "account_count": account_count,
@@ -6058,7 +7910,51 @@ def _summary_from_accounts(accounts: Sequence[Dict[str, Any]]) -> Dict[str, Any]
         "unmatched_persona_count": unmatched_total,
         "total_persona_requirements": required_total,
         "account_clusters": account_clusters,
+        "keystone_personas": _summarize_keystone_rollup(keystone_rollup),
     }
+
+
+def _summarize_keystone_rollup(
+    rollup: Dict[str, Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    if not rollup:
+        return []
+    total_occurrences = sum(entry.get("occurrences", 0) for entry in rollup.values())
+    rows: List[Dict[str, Any]] = []
+    for entry in rollup.values():
+        label = entry.get("persona_label")
+        if not label:
+            continue
+        share = (
+            entry.get("occurrences", 0) / total_occurrences
+            if total_occurrences
+            else None
+        )
+        rows.append(
+            {
+                "persona_id": entry.get("persona_id"),
+                "persona_label": label,
+                "wolves_score": entry.get("wolves_score"),
+                "wolves_delta_bp": entry.get("wolves_delta_bp"),
+                "wolves_involvement_rate": entry.get("wolves_involvement_rate"),
+                "wolves_blocker_rate": entry.get("wolves_blocker_rate"),
+                "wolves_sample_size": entry.get("wolves_sample_size"),
+                "accounts_covered": len(entry.get("accounts") or []),
+                "cluster_labels": sorted(entry.get("clusters") or []),
+                "share": share,
+                "sample_story": (entry.get("stories") or [None])[0],
+            }
+        )
+    rows.sort(
+        key=lambda row: (
+            1 if row.get("wolves_score") is not None else 0,
+            row.get("wolves_score") or 0.0,
+            row.get("share") or 0.0,
+            row.get("accounts_covered") or 0,
+        ),
+        reverse=True,
+    )
+    return rows[:5]
 
 
 # ---------------------------------------------------------------------------
@@ -6072,6 +7968,18 @@ def build_product_marketing_plan(
 ) -> Dict[str, Any]:
     product_graph = build_product_graph(product_id)
     canonical_product_id = get_product_id_from_subgraph(product_graph) or product_id
+    try:
+        shm_metrics = get_shm_transition_metrics(canonical_product_id)
+    except Exception as exc:  # pragma: no cover - diagnostic only
+        print(f"⚠️ Unable to load SHM metrics for {canonical_product_id}: {exc}")
+        shm_metrics = {}
+    if shm_metrics:
+        product_graph.graph["shm_metrics"] = shm_metrics
+    journey_weights = load_weights(canonical_product_id) or {}
+    persona_wolves_metrics, persona_metrics_updated_at = _load_persona_wolves_metrics(
+        canonical_product_id
+    )
+    persona_wolves_label_index = _build_wolves_label_index(persona_wolves_metrics)
 
     global_insights: Optional[Dict[str, Any]] = None
     product_insights: Optional[Dict[str, Any]] = None
@@ -6089,13 +7997,19 @@ def build_product_marketing_plan(
         )
         global_insights = None
 
+    segment_patterns: Optional[Dict[str, Any]] = None
+    win_regression_summary: Optional[Dict[str, Any]] = None
     if global_insights:
         product_insights = global_insights.get("product_insights")
+        segment_patterns = (
+            (product_insights or {}).get("segment_patterns") if product_insights else None
+        )
         canonical_journey = dict(product_insights.get("journey_structure") or {})
         canonical_persona_path = _canonical_persona_path_from_steps(
             product_graph,
             canonical_journey.get("typical_path"),
         )
+        win_regression_summary = global_insights.get("win_regression")
 
     if account_id:
         account_ids = [account_id]
@@ -6113,6 +8027,12 @@ def build_product_marketing_plan(
                 acc_id,
                 product_graph=product_graph,
                 canonical_persona_path=canonical_persona_path,
+                segment_patterns=segment_patterns,
+                shm_metrics=shm_metrics,
+                journey_weights=journey_weights,
+                win_regression=win_regression_summary,
+                persona_wolves_metrics=persona_wolves_metrics,
+                persona_metrics_updated_at=persona_metrics_updated_at,
             )
             accounts.append(plan)
         except Exception as exc:  # pragma: no cover - defensive
@@ -6124,8 +8044,25 @@ def build_product_marketing_plan(
                 }
             )
 
-    summary = _summary_from_accounts(accounts)
+    summary = _summary_from_accounts(
+        accounts,
+        persona_wolves_metrics=persona_wolves_metrics,
+        persona_wolves_label_index=persona_wolves_label_index,
+    )
+    summary["wolves_metrics_updated_at"] = persona_metrics_updated_at
+    modality_stats = _build_modality_stats(accounts)
+    _attach_account_interventions(accounts, modality_stats)
+    persona_chain_effects = _build_persona_chain_effects(accounts)
     portfolio_plan = _aggregate_portfolio(accounts)
+    portfolio_plan["wolves_metrics_updated_at"] = persona_metrics_updated_at
+    portfolio_plan["execution_interventions"] = _aggregate_execution_interventions(
+        accounts,
+        persona_chain_effects=persona_chain_effects,
+    )
+    portfolio_plan["interventions"] = _build_portfolio_interventions(
+        portfolio_plan.get("conversion_focuses") or [],
+        modality_stats,
+    )
     union_plays: List[Dict[str, Any]] = []
     portfolio_asset_cadence: List[Dict[str, Any]] = []
     for account in accounts:
@@ -6134,6 +8071,7 @@ def build_product_marketing_plan(
             account.get("execution", {}).get("asset_cadence") or []
         )
     portfolio_plan["asset_cadence"] = portfolio_asset_cadence
+    portfolio_plan["keystone_personas"] = summary.get("keystone_personas") or []
 
     portfolio_summary_report = _portfolio_summary_report(
         accounts,
@@ -6149,7 +8087,6 @@ def build_product_marketing_plan(
     summary["portfolio_summary_report"] = portfolio_summary_report
     summary["portfolio_thesis"] = portfolio_thesis
     portfolio_plan["arsenal_table"] = _portfolio_arsenal_rows(accounts)
-    portfolio_plan["execution_matrix"] = _portfolio_execution_matrix(accounts)
 
     if product_insights:
         canonical_journey = dict(product_insights.get("journey_structure") or {})
@@ -6181,6 +8118,7 @@ def build_product_marketing_plan(
         "canonical_journey": canonical_journey,
         "canonical_persona_path": canonical_persona_path,
         "product_insights": product_insights,
+        "wolves_metrics_updated_at": persona_metrics_updated_at,
     }
 
 

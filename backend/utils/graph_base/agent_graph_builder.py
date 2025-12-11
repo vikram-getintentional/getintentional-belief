@@ -27,6 +27,11 @@ from backend.utils.knowledge_base.canonicalizer import (
     canonicalize_archetypes,
 )
 from backend.utils.graph_base.icp_catalog import ICP_CATALOG
+from backend.utils.graph_base.persona_schema import (
+    CanonicalPersonaAttributes,
+    PersonaVariantAttributes,
+    DEFAULT_CANONICAL_INFLUENCE_SCALARS,
+)
 
 # -----------------------------------------------------------------------------
 # Helpers
@@ -204,6 +209,73 @@ def _persona(G, title: str, department: str, seniority: str, sample_profiles: Li
     return _upsert_node(G, "persona", [_slug(title), _slug(department), (seniority or "").lower()],
                         {"title": title, "department": department, "seniority": seniority, "sample_profiles": sample_profiles, "data_source": data_source})
 
+def _canonical_persona(
+    G,
+    payload: Dict[str, Any],
+    data_source: str = "llm",
+) -> str:
+    attrs = CanonicalPersonaAttributes(
+        canonical_persona_id=payload.get("canonical_persona_id") or payload.get("id") or "",
+        label=payload.get("label") or payload.get("title") or "",
+        description=payload.get("description") or payload.get("persona_description") or "",
+        core_jobs=payload.get("core_jobs") or [],
+        supporting_jobs=payload.get("supporting_jobs") or [],
+        core_pains=payload.get("core_pains") or payload.get("pains") or [],
+        example_titles=payload.get("example_titles") or payload.get("titles") or [],
+        typical_departments=payload.get("typical_departments") or payload.get("departments") or [],
+        typical_seniority_distribution=payload.get("typical_seniority_distribution") or {},
+        default_influence_scalars=payload.get("default_influence_scalars") or payload.get("influence_scalars") or {},
+        meta=payload.get("meta") or {},
+    )
+    node_attrs = attrs.to_node_attrs()
+    if not node_attrs.get("title"):
+        node_attrs["title"] = node_attrs.get("label")
+    if not node_attrs.get("department"):
+        departments = node_attrs.get("typical_departments") or []
+        if departments:
+            node_attrs["department"] = departments[0]
+    if not node_attrs.get("seniority"):
+        dist = node_attrs.get("typical_seniority_distribution") or {}
+        if dist:
+            node_attrs["seniority"] = max(dist.items(), key=lambda kv: kv[1])[0]
+    node_attrs["meta"]["source"] = node_attrs["meta"].get("source") or data_source
+    key_parts = [
+        attrs.canonical_persona_id or _slug(node_attrs["label"]),
+        node_attrs["label"].lower(),
+    ]
+    return _upsert_node(G, "canonical_persona", key_parts, node_attrs, data_source=data_source)
+
+def _persona_variant(
+    G,
+    payload: Dict[str, Any],
+    data_source: str = "llm",
+) -> str:
+    attrs = PersonaVariantAttributes(
+        persona_variant_id=payload.get("persona_variant_id") or payload.get("id") or "",
+        canonical_persona_id=payload.get("canonical_persona_id") or "",
+        title=payload.get("title") or payload.get("label") or "",
+        department=payload.get("department") or "",
+        seniority=(payload.get("seniority") or "").lower(),
+        team_context=payload.get("team_context") or payload.get("team") or "",
+        influence_scalars=payload.get("influence_scalars"),
+        crm_person_ids=payload.get("crm_person_ids") or payload.get("people") or [],
+        meta=payload.get("meta") or {},
+    )
+    canonical_scalars = (
+        payload.get("canonical_influence_scalars")
+        or payload.get("default_influence_scalars")
+        or DEFAULT_CANONICAL_INFLUENCE_SCALARS
+    )
+    node_attrs = attrs.to_node_attrs(canonical_influence=canonical_scalars)
+    node_attrs["meta"]["source"] = node_attrs["meta"].get("source") or data_source
+    key_parts = [
+        node_attrs["persona_variant_id"],
+        node_attrs["canonical_persona_id"],
+        node_attrs.get("title") or "",
+        node_attrs.get("seniority") or "",
+    ]
+    return _upsert_node(G, "persona_variant", key_parts, node_attrs, data_source=data_source)
+
 def _metric(G, metric: str, data_source = "llm") -> str:
     return _upsert_node(G, "perceived_metric", [_slug(metric)], {"metric": metric, "data_source": data_source})
 
@@ -255,6 +327,8 @@ CREATE_BY_TYPE = {
         title=r.get("title"), department=r.get("department"), seniority=r.get("seniority"),
         linkedin_profiles=r.get("linkedin_profiles"),
     ),
+    "canonical_persona": lambda G, r: _canonical_persona(G, r),
+    "persona_variant":  lambda G, r: _persona_variant(G, r),
     "perceived_metric": lambda G, r: _metric(G, canonical_label=(r.get("metric") or "")),
     "pain_trigger":     lambda G, r: _trigger(G, canonical_label=(r.get("attribute") or "")),
     "attribute_value":  lambda G, r: _attribute_value(G, canonical_label="{}:{}".format((r.get("dimension") or "").lower(), r.get("name") or "")),
@@ -275,7 +349,10 @@ RELATION_BY_PAIR = {
     ("zmot_event","observable_moment"): "observed_in",
     ("zmot_event","keyword"): "keyword",
     ("job","persona"): "performed_by",
+    ("job","canonical_persona"): "performed_by",
     ("job","pain"): "solves",
+    ("canonical_persona","persona_variant"): "has_variant",
+    ("persona_variant","canonical_persona"): "variant_of",
 }
 
 
@@ -714,12 +791,27 @@ class CanonManager:
                     self.buf["perceived_metric"].add(text)
                 
                 for j in p.get("felt_in_jobs", []) or []:
-                    self.buf["job"].add(j.get("job_to_be_done","").strip())
+                    job_text = j.get("job_to_be_done","").strip()
+                    self.buf["job"].add(job_text)
+                    job_related_pains: List[str] = []
+                    primary_pain = (p.get("pain") or "").strip()
+                    if primary_pain:
+                        job_related_pains.append(primary_pain)
+                    for sp in j.get("solving_pains", []) or []:
+                        sp_pain = (sp.get("pain") or "").strip()
+                        if sp_pain:
+                            job_related_pains.append(sp_pain)
+                    job_weight = label_to_float(j.get("relevance_label", ""), "relevance") or 1.0
                     for pr in j.get("personas", []) or []:
                         self.buf["persona"].append({
                             "title": pr.get("title",""),
                             "department": pr.get("department",""),
-                            "seniority": pr.get("seniority","")
+                            "seniority": pr.get("seniority",""),
+                            "job_to_be_done": job_text,
+                            "job_weight": job_weight,
+                            "pains": list(job_related_pains),
+                            "team_context": pr.get("team") or pr.get("team_context"),
+                            "source": "hop0",
                         })
                     for sp in j.get("solving_pains", []) or []:
                         self.buf["pain"].add(sp.get("pain","").strip())
@@ -738,11 +830,25 @@ class CanonManager:
         for item in gpt_outputs or []:
             for sj in item.get("felt_in_jobs", []) or []:
                 self.buf["job"].add(sj.get("job_to_be_done","").strip())
+                job_related_pains: List[str] = []
+                observed_pain = (item.get("pain") or "").strip()
+                if observed_pain:
+                    job_related_pains.append(observed_pain)
+                for sp in sj.get("solving_pains", []) or []:
+                    sp_pain = (sp.get("pain") or "").strip()
+                    if sp_pain:
+                        job_related_pains.append(sp_pain)
+                job_weight = label_to_float(sj.get("relevance_label", ""), "relevance") or 1.0
                 for pr in sj.get("personas", []) or []:
                     self.buf["persona"].append({
                             "title": pr.get("title",""),
                             "department": pr.get("department",""),
-                            "seniority": pr.get("seniority","")
+                            "seniority": pr.get("seniority",""),
+                            "job_to_be_done": sj.get("job_to_be_done","").strip(),
+                            "job_weight": job_weight,
+                            "pains": list(job_related_pains),
+                            "team_context": pr.get("team") or pr.get("team_context"),
+                            "source": "hop_plus",
                         })
                 for dp in sj.get("solving_pains", []) or []:
                     self.buf["pain"].add(dp.get("pain","").strip())
@@ -875,7 +981,11 @@ class CanonManager:
         if "job" in self.buf:
             self.canon["job"] = canonicalize_job(self.buf["job"])
         if "persona" in self.buf:
-            self.canon["persona"] = canonicalize_persona(self.buf["persona"])
+            self.canon["persona"] = canonicalize_persona(
+                self.buf["persona"],
+                job_map=self.canon.get("job"),
+                pain_map=self.canon.get("pain"),
+            )
         if "perceived_metric" in self.buf:
             self.canon["perceived_metric"] = canonicalize_perceived_metric(self.buf["perceived_metric"])
         if "pain_trigger" in self.buf:
@@ -888,6 +998,8 @@ class CanonManager:
             self.canon["keyword"] = canonicalize_keywords(self.buf["keyword"])
         if "archetype" in self.buf:
             self.canon["archetype"] = canonicalize_archetypes(self.buf["archetype"])
+
+        self._materialize_canonical_personas(G)
 
         # 2) resolve plan and write
         for op, payload in self.plan:
@@ -925,6 +1037,55 @@ class CanonManager:
         return list(dict.fromkeys(touched))  # unique
 
     # --------- internal emitters (canonicalized writes) ---------
+
+    def _materialize_canonical_personas(self, G: nx.DiGraph) -> None:
+        persona_result = self.canon.get("persona")
+        if not getattr(persona_result, "canonical_personas", None):
+            return
+
+        canonical_nodes = self.canon.setdefault("canonical_persona_nodes", {})
+        variant_nodes = self.canon.setdefault("persona_variant_nodes", {})
+
+        for node in persona_result.canonical_personas:
+            canonical_id = node.get("canonical_persona_id")
+            if not canonical_id:
+                continue
+            node_id = _canonical_persona(G, node, data_source=self.data_source)
+            canonical_nodes[canonical_id] = node_id
+
+        for variant in persona_result.persona_variants:
+            canonical_id = variant.get("canonical_persona_id")
+            if not canonical_id:
+                continue
+            canonical_node_id = canonical_nodes.get(canonical_id)
+            node_id = _persona_variant(
+                G,
+                variant,
+                data_source=self.data_source,
+            )
+            variant_nodes[variant.get("persona_variant_id")] = node_id
+            if canonical_node_id:
+                _upsert_edge(G, canonical_node_id, "has_variant", node_id, weight=1.0)
+                _upsert_edge(G, node_id, "variant_of", canonical_node_id, weight=1.0)
+
+    def _resolve_persona_nodes(self, persona_key: Dict[str, Any]) -> tuple[Optional[str], Optional[str], Dict[str, Any]]:
+        persona_result = self.canon.get("persona") or {}
+        canonical_entry = persona_result.get(str(persona_key), {}) if isinstance(persona_result, dict) else {}
+
+        canonical_persona_id = canonical_entry.get("canonical_persona_id")
+        variant_id = canonical_entry.get("persona_variant_id")
+
+        canonical_node_id = None
+        variant_node_id = None
+        if canonical_persona_id:
+            canonical_node_id = (
+                self.canon.get("canonical_persona_nodes", {}) or {}
+            ).get(canonical_persona_id)
+        if variant_id:
+            variant_node_id = (
+                self.canon.get("persona_variant_nodes", {}) or {}
+            ).get(variant_id)
+        return canonical_node_id, variant_node_id, canonical_entry
 
     def _emit_hop0(self, G: nx.DiGraph, payload: Dict[str, Any]) -> List[str]:
         print("Hop0 Emission started...")
@@ -999,12 +1160,15 @@ class CanonManager:
                             "department": pr.get("department",""),
                             "seniority": pr.get("seniority","")
                         }
-                        pr_can = self.canon["persona"].get(str(key), key)
-                        persona_id = _persona(G, pr_can["title"], pr_can["department"], pr_can["seniority"])
+                        canonical_node_id, variant_node_id, canonical_entry = self._resolve_persona_nodes(key)
+                        target_node_id = canonical_node_id or variant_node_id
+                        if not target_node_id:
+                            pr_can = canonical_entry or key
+                            target_node_id = _persona(G, pr_can.get("title",""), pr_can.get("department",""), pr_can.get("seniority",""))
                         relevance = label_to_float(pr.get("relevance_label", ""), "relevance") if isinstance(pr, dict) else 0.0
                         likelihood = label_to_float(pr.get("likelihood_label", ""), "likelihood") if isinstance(pr, dict) else 0.0
-                        _upsert_edge(G, job_id, "performed_by", persona_id, weight = relevance, attrs={"relevance": relevance, "likelihood": likelihood})
-                        touched.append(persona_id)
+                        _upsert_edge(G, job_id, "performed_by", target_node_id, weight = relevance, attrs={"relevance": relevance, "likelihood": likelihood})
+                        touched.append(target_node_id)
                     print("Persona nodes added")
                     
                     for sp in j.get("solving_pains", []) or []:
@@ -1089,8 +1253,11 @@ class CanonManager:
                         "department": pr.get("department",""),
                         "seniority": pr.get("seniority","")
                     }
-                    pr_can = self.canon["persona"].get(str(key), key)
-                    persona_id = _persona(G, pr_can["title"], pr_can["department"], pr_can["seniority"])
+                    canonical_node_id, variant_node_id, canonical_entry = self._resolve_persona_nodes(key)
+                    persona_id = canonical_node_id or variant_node_id
+                    if not persona_id:
+                        pr_can = canonical_entry or key
+                        persona_id = _persona(G, pr_can.get("title",""), pr_can.get("department",""), pr_can.get("seniority",""))
                     relevance = label_to_float(pr.get("relevance_label", ""), "relevance") if isinstance(pr, dict) else 0.0
                     likelihood = label_to_float(pr.get("likelihood_label", ""), "likelihood") if isinstance(pr, dict) else 0.0
                     touched.append(persona_id)
