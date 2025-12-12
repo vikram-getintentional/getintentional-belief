@@ -89,6 +89,22 @@ def _persona_parts(graph, persona_id: str) -> Tuple[str, str, str, str]:
     return label, title, department, seniority
 
 
+def _resolve_canonical_persona_id(graph, persona_id: str) -> str:
+    """
+    Map a persona node (variant or canonical) back to its canonical persona ID.
+    """
+    if not persona_id:
+        return persona_id
+    node = get_node_by_id(graph, persona_id) or {}
+    canonical_id = (node.get("canonical_persona_id") or "").strip()
+    if canonical_id:
+        return canonical_id
+    node_type = (node.get("node_type") or node.get("type") or "").strip().lower()
+    if node_type == "canonical_persona":
+        return persona_id
+    return persona_id
+
+
 def _split_candidate_label(label: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     parts = [segment.strip() for segment in label.split("·")]
     title = parts[0] if len(parts) > 0 else None
@@ -154,7 +170,7 @@ def _load_person_jobs(
 def _compute_persona_requirements(
     product_id: str,
     account_id: str,
-) -> Tuple[List[Dict[str, Any]], Dict[str, Dict[str, Any]], Any]:
+) -> Tuple[List[Dict[str, Any]], Dict[str, Dict[str, Any]], Any, Any]:
     blueprint = build_account_marketing_blueprint(product_id, account_id)
     persona_paths = list(blueprint.get("persona_paths") or [])
     if not persona_paths:
@@ -172,6 +188,8 @@ def _compute_persona_requirements(
             persona_id = persona.get("id")
             if not persona_id:
                 continue
+            persona_id = str(persona_id)
+            persona_id = _resolve_canonical_persona_id(graph, persona_id)
             bucket = stats.setdefault(
                 persona_id,
                 {
@@ -255,6 +273,8 @@ def _compute_persona_requirements(
             bucket["stage_sum"] += float(transition.get("stage_index", 0))
 
         for persona_id, bucket in fallback.items():
+            persona_id = str(persona_id)
+            persona_id = _resolve_canonical_persona_id(graph, persona_id)
             label, title, department, seniority = _persona_parts(graph, persona_id)
             count = max(bucket["count"], 1)
             stage_index = int(round(bucket["stage_sum"] / count))
@@ -284,7 +304,7 @@ def _compute_persona_requirements(
             )
 
     requirements.sort(key=lambda r: r["expected_in_deal"], reverse=True)
-    return requirements, stats, blueprint
+    return requirements, stats, blueprint, graph
 
 
 def serialize_match(
@@ -335,6 +355,21 @@ def _existing_matches(db: Session, product_id: str, account_id: str) -> Dict[str
     for match, person in matches:
         by_persona[match.persona_id].append(serialize_match(match, person))
     return by_persona
+
+
+def _merge_matches_by_canonical(
+    graph,
+    matches: Dict[str, List[Dict[str, Any]]],
+) -> Dict[str, List[Dict[str, Any]]]:
+    if not graph or not matches:
+        return matches
+    normalized: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for persona_id, entries in matches.items():
+        normalized[persona_id].extend(entries)
+        canonical_id = _resolve_canonical_persona_id(graph, persona_id)
+        if canonical_id and canonical_id != persona_id:
+            normalized[canonical_id].extend(entries)
+    return normalized
 
 
 def _person_signature(person: AccountPerson) -> Tuple[str, str, str]:
@@ -610,12 +645,13 @@ def build_account_enrichment(
     external_session = db is not None
     session = db or next(get_db())
     try:
-        requirements, stats_map, blueprint = _compute_persona_requirements(
+        requirements, stats_map, blueprint, persona_graph = _compute_persona_requirements(
             product_id, account_id
         )
         people = _load_account_people(session, product_id, account_id)
         jobs_by_person = _load_person_jobs(session, product_id, account_id)
         matches_by_persona = _existing_matches(session, product_id, account_id)
+        matches_by_persona = _merge_matches_by_canonical(persona_graph, matches_by_persona)
 
         rows: List[Dict[str, Any]] = []
         for persona in requirements:
@@ -681,18 +717,23 @@ def upsert_persona_match(
     """
     Create or update a persona → person match.
     """
+# NOTE: keep canonical matches consistent
     graph = None
     persona_label_from_graph = None
     persona_title = None
     persona_department = None
     persona_seniority = None
+    resolved_persona_id = persona_id
     try:
         graph = build_product_graph(product_id)
+        resolved_persona_id = _resolve_canonical_persona_id(graph, persona_id)
         persona_label_from_graph, persona_title, persona_department, persona_seniority = _persona_parts(
-            graph, persona_id
+            graph, resolved_persona_id
         )
     except Exception:
         graph = None
+
+    stored_persona_id = resolved_persona_id or persona_id
 
     if match_id:
         match = (
@@ -706,11 +747,12 @@ def upsert_persona_match(
         )
         if not match:
             raise ValueError(f"Persona match '{match_id}' not found.")
+        match.persona_id = stored_persona_id
     else:
         match = AccountPersonaMatch(
             product_id=product_id,
             account_id=account_id,
-            persona_id=persona_id,
+            persona_id=stored_persona_id,
         )
 
     created_person = None
@@ -734,7 +776,7 @@ def upsert_persona_match(
                 title=(person_title or "").strip() or None,
                 department=(person_department or "").strip() or None,
                 seniority=(person_seniority or "").strip() or None,
-                canonical_persona_id=persona_id if persona_id else None,
+                canonical_persona_id=stored_persona_id if stored_persona_id else None,
                 canonical_department=persona_department or None,
                 canonical_seniority=persona_seniority or None,
             )
@@ -747,8 +789,8 @@ def upsert_persona_match(
 
     if match.person_id:
         person_obj = db.get(AccountPerson, match.person_id)
-        if person_obj and persona_id:
-            person_obj.canonical_persona_id = persona_id
+        if person_obj and stored_persona_id:
+            person_obj.canonical_persona_id = stored_persona_id
             if persona_department:
                 person_obj.canonical_department = persona_department
             if persona_seniority:

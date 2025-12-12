@@ -38,6 +38,9 @@ import PersonaEngagementCadence, {
 import AssetCadenceTable, {
   type AssetCadenceRow,
 } from "../components/AssetCadenceTable";
+import AccountEnrichmentDialog, {
+  type EnrichmentAccount,
+} from "../components/AccountEnrichmentDialog";
 import type { AccountPlanContract } from "../types/apiContracts";
 
 type JourneyStep = {
@@ -399,7 +402,9 @@ const formatList = (items: string[], conjunction = "and") => {
   if (!safeItems.length) return "";
   if (safeItems.length === 1) return safeItems[0];
   if (safeItems.length === 2) return `${safeItems[0]} ${conjunction} ${safeItems[1]}`;
-  return `${safeItems.slice(0, -1).join(", ")}, ${conjunction} ${safeItems[safeItems.length - 1]}`;
+  return `${safeItems.slice(0, -1).join(", ")}, ${conjunction} ${
+    safeItems[safeItems.length - 1]
+  }`;
 };
 
 const TARGET_ACCOUNT_META_FIELDS: Array<
@@ -605,6 +610,12 @@ const renderTypicalPathSteps = (
   );
 };
 
+const isExpectedNextPersona = (
+  entry: ExpectedNextPersona | { persona?: string; persona_label?: string; prob?: number } | null
+) => {
+  return !!entry && typeof entry === "object" && "persona_id" in entry;
+};
+
 // ---------------------------------------------------------------------------
 // Belief pulse synthesis
 // ---------------------------------------------------------------------------
@@ -653,9 +664,12 @@ const buildBeliefPulse = (
     );
   };
   const getEngagementForPersona = (personaId?: string | null) =>
-    personaEngagements.find((entry) => entry.persona_id === personaId);
+    personaEngagements.find((entry) => (entry as any).persona_id === personaId);
+
   const keystoneList =
-    (keystonePersonas && keystonePersonas.length ? keystonePersonas : account.keystone_personas) ?? [];
+    (keystonePersonas && keystonePersonas.length
+      ? keystonePersonas
+      : account.keystone_personas) ?? [];
   const keystoneById = new Map<string, KeystonePersona>();
   const keystoneByLabel = new Map<string, KeystonePersona>();
   keystoneList.forEach((persona) => {
@@ -714,22 +728,31 @@ const buildBeliefPulse = (
     account.prediction?.expected_next_personas?.[0] ||
     account.prediction?.expected_next?.[0] ||
     null;
+
   const expectedNextProbability =
     typeof (expectedNext as any)?.probability === "number"
       ? (expectedNext as any).probability
       : typeof (expectedNext as any)?.prob === "number"
       ? (expectedNext as any).prob
       : null;
+
   const expectedNextLabel = describePersonaEntry(expectedNext);
   const expectedNextKeystone = getKeystoneFor(expectedNext);
   const expectedNextNarrative = describeKeystoneImpact(expectedNextKeystone);
-  const expectedNextReason = isExpectedNextPersona(expectedNext) ? expectedNext.reason : undefined;
+  const expectedNextReason = isExpectedNextPersona(expectedNext)
+    ? (expectedNext as ExpectedNextPersona).reason
+    : undefined;
   const expectedNextStage = isExpectedNextPersona(expectedNext)
-    ? expectedNext.journey_stage
+    ? (expectedNext as ExpectedNextPersona).journey_stage
     : undefined;
   const topRecommendedPlay = topPlay;
 
-  const progressBuckets = new Set(["on_path", "near_path", "jump_ahead", "skip_hit"]);
+  const progressBuckets = new Set([
+    "on_path",
+    "near_path",
+    "jump_ahead",
+    "skip_hit",
+  ]);
   const lastProgressIndex = (() => {
     for (let idx = steps.length - 1; idx >= 0; idx -= 1) {
       const bucket = (steps[idx].bucket || "").toLowerCase();
@@ -748,10 +771,12 @@ const buildBeliefPulse = (
   if (riskPersona) {
     const personaDisplay = labelForPersona(riskPersona.persona_id);
     const riskEngagement = getEngagementForPersona(riskPersona.persona_id);
-    const lastTouchDays = riskEngagement?.engagement_snapshot?.last_touch_days ?? null;
-    const touchDensity = riskEngagement?.engagement_snapshot?.touch_density_per_week ?? null;
+    const lastTouchDays = (riskEngagement as any)?.engagement_snapshot?.last_touch_days ?? null;
+    const touchDensity = (riskEngagement as any)?.engagement_snapshot?.touch_density_per_week ?? null;
     const riskWhyBits = [
-      lastTouchDays !== null && lastTouchDays !== undefined ? `Last touch ${fmtDays(lastTouchDays)} ago` : null,
+      lastTouchDays !== null && lastTouchDays !== undefined
+        ? `Last touch ${fmtDays(lastTouchDays)} ago`
+        : null,
       touchDensity ? `${touchDensity.toFixed(1)} touches/wk policy` : null,
     ].filter(Boolean);
     const riskKeystone = getKeystoneFor(riskPersona);
@@ -772,7 +797,9 @@ const buildBeliefPulse = (
       },
       {
         label: "Why",
-        value: riskWhyBits.length ? riskWhyBits.join(" · ") : "No engagement telemetry yet for this persona.",
+        value: riskWhyBits.length
+          ? riskWhyBits.join(" · ")
+          : "No engagement telemetry yet for this persona.",
       },
       {
         label: "Action",
@@ -812,7 +839,9 @@ const buildBeliefPulse = (
         },
         {
           label: "Trigger",
-          value: `${bucketLabel}${typeof accelerationStep.t === "number" ? ` at t=${accelerationStep.t}` : ""}`,
+          value: `${bucketLabel}${
+            typeof accelerationStep.t === "number" ? ` at t=${accelerationStep.t}` : ""
+          }`,
         },
         {
           label: "Impact",
@@ -872,9 +901,9 @@ const buildBeliefPulse = (
       },
       {
         label: "Expected Impact",
-        value: `${fmtBasisPoints(topRecommendedPlay.expected_delta_bp)} in ${fmtDays(
-          topRecommendedPlay.avg_duration_days
-        )}`,
+        value: `${fmtBasisPoints(
+          topRecommendedPlay.expected_delta_bp
+        )} in ${fmtDays(topRecommendedPlay.avg_duration_days)}`,
       },
     ];
     if (expectedNextLabel) {
@@ -952,73 +981,82 @@ const renderPlaysSummary = (plays: Play[] | undefined) => {
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined">
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Play</TableCell>
-            <TableCell>Channel</TableCell>
-            <TableCell align="right">Δ (bps)</TableCell>
-            <TableCell align="right">Confidence</TableCell>
-            <TableCell align="right">Avg Time</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {items.map((play) => {
-            const assetName = play.asset?.name || play.asset_label;
-            const channelName =
-              play.channel?.name || play.channel_label || play.channel?.channel_type_label;
-            const name = play.name || assetName || channelName || "Recommended play";
-            const tooltipLines: string[] = [];
-            if (play.asset_type_label) tooltipLines.push(`Asset: ${play.asset_type_label}`);
-            if (channelName) tooltipLines.push(`Channel: ${channelName}`);
-            const tooltip =
-              tooltipLines.length > 0 ? (
-                <Box>
-                  {tooltipLines.map((line, idx) => (
-                    <Typography key={`${name}-detail-${idx}`} variant="body2">
-                      {line}
-                    </Typography>
-                  ))}
-                </Box>
-              ) : null;
-            return (
-              <TableRow key={play.id || play.name || play.asset_label || name}>
-                <TableCell>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2" fontWeight={600}>
-                      {name}
-                    </Typography>
-                    {tooltip && (
-                      <Tooltip title={tooltip} arrow>
-                        <IconButton size="small">
-                          <InfoOutlinedIcon fontSize="inherit" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </Stack>
-                </TableCell>
-                <TableCell>{channelName || "—"}</TableCell>
-                <TableCell align="right">
-                  {typeof play.expected_delta_bp === "number"
-                    ? fmtBasisPoints(play.expected_delta_bp)
-                    : "—"}
-                </TableCell>
-                <TableCell align="right">{fmtPercent(play.avg_confidence, true)}</TableCell>
-                <TableCell align="right">
-                  {typeof play.avg_duration_days === "number" ? fmtDays(play.avg_duration_days) : "—"}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box sx={{ overflowX: "auto" }}>
+      <TableContainer component={Paper} variant="outlined">
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Play</TableCell>
+              <TableCell>Channel</TableCell>
+              <TableCell align="right">Δ (bps)</TableCell>
+              <TableCell align="right">Confidence</TableCell>
+              <TableCell align="right">Avg Time</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {items.map((play) => {
+              const assetName = play.asset?.name || play.asset_label;
+              const channelName =
+                play.channel?.name ||
+                play.channel_label ||
+                play.channel?.channel_type_label;
+              const name =
+                play.name || assetName || channelName || "Recommended play";
+              const tooltipLines: string[] = [];
+              if (play.asset_type_label) tooltipLines.push(`Asset: ${play.asset_type_label}`);
+              if (channelName) tooltipLines.push(`Channel: ${channelName}`);
+              const tooltip =
+                tooltipLines.length > 0 ? (
+                  <Box>
+                    {tooltipLines.map((line, idx) => (
+                      <Typography key={`${name}-detail-${idx}`} variant="body2">
+                        {line}
+                      </Typography>
+                    ))}
+                  </Box>
+                ) : null;
+              return (
+                <TableRow key={play.id || play.name || play.asset_label || name}>
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="body2" fontWeight={600}>
+                        {name}
+                      </Typography>
+                      {tooltip && (
+                        <Tooltip title={tooltip} arrow>
+                          <IconButton size="small">
+                            <InfoOutlinedIcon fontSize="inherit" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Stack>
+                  </TableCell>
+                  <TableCell>{channelName || "—"}</TableCell>
+                  <TableCell align="right">
+                    {typeof play.expected_delta_bp === "number"
+                      ? fmtBasisPoints(play.expected_delta_bp)
+                      : "—"}
+                  </TableCell>
+                  <TableCell align="right">
+                    {fmtPercent(play.avg_confidence, true)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {typeof play.avg_duration_days === "number"
+                      ? fmtDays(play.avg_duration_days)
+                      : "—"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 
-const renderConversionSequence = (entries: ConversionSequenceEntry[] | undefined) => {
-  if (!entries?.length) {
+const renderConversionSequence = (entries?: ConversionSequenceEntry[]) => {
+  if (!entries || entries.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
         Conversion sequence will populate once replay data is available for this account.
@@ -1030,101 +1068,129 @@ const renderConversionSequence = (entries: ConversionSequenceEntry[] | undefined
     <Stack spacing={1.5}>
       {entries.map((entry) => {
         const chips: Array<{ label: string; outlined?: boolean }> = [];
+
         if (typeof entry.expected_delta_bp === "number") {
           chips.push({ label: `Δ ${fmtBasisPoints(entry.expected_delta_bp)}` });
         }
+
         if (typeof entry.avg_confidence === "number") {
           chips.push({
             label: `Confidence ${fmtPercent(entry.avg_confidence, true)}`,
             outlined: true,
           });
         }
+
         if (typeof entry.avg_belief_conversion === "number") {
           chips.push({
             label: `Belief ${fmtPercent(entry.avg_belief_conversion, true)}`,
             outlined: true,
           });
         }
+
         if (typeof entry.effort_pct === "number") {
-          chips.push({ label: `Effort ${fmtPercent(entry.effort_pct, true)}`, outlined: true });
+          chips.push({
+            label: `Effort ${fmtPercent(entry.effort_pct, true)}`,
+            outlined: true,
+          });
         }
+
         if (typeof entry.time_to_effect_days === "number") {
-          chips.push({ label: `Time ${fmtDays(entry.time_to_effect_days)}`, outlined: true });
+          chips.push({
+            label: `Time ${fmtDays(entry.time_to_effect_days)}`,
+            outlined: true,
+          });
         }
+
         const description =
           entry.belief_transition_meta?.narrative ||
           entry.belief_transition_meta?.pain?.label ||
           entry.belief_transition_meta?.problem?.label ||
           entry.belief_transition_meta?.resolution?.label ||
           "Belief progression";
+
         const stageLabel = entry.belief_transition_meta?.stage_label
-          ? `${entry.belief_transition_meta?.stage_label}: `
+          ? `${entry.belief_transition_meta.stage_label}: `
           : "";
+
         const tooltipLines: string[] = [];
+
         if (entry.expected_outcome_summary) {
           tooltipLines.push(entry.expected_outcome_summary);
         }
+
         if (stageLabel || description) {
           tooltipLines.push(`${stageLabel}${description}`);
         }
+
         if (entry.segment_summary) {
           tooltipLines.push(entry.segment_summary);
         }
+
         segmentChipsFromFilters(entry.segment_filters).forEach(([key, value]) => {
           tooltipLines.push(`${titleize(key)}: ${value}`);
         });
+
         const tooltip =
           tooltipLines.length > 0 ? (
             <Box>
               {tooltipLines.map((line, idx) => (
-                <Typography key={`sequence-${entry.timeline_index}-detail-${idx}`} variant="body2">
+                <Typography
+                  key={`sequence-${entry.timeline_index}-detail-${idx}`}
+                  variant="body2"
+                >
                   {line}
                 </Typography>
               ))}
             </Box>
           ) : null;
+
+        const timelineLabel =
+          entry.timeline_label ??
+          (typeof entry.timeline_days === "number"
+            ? `T+${entry.timeline_days}`
+            : `Step ${entry.timeline_index + 1}`);
+
         return (
           <Paper key={`sequence-${entry.timeline_index}`} variant="outlined" sx={{ p: 2 }}>
             <Stack
               direction={{ xs: "column", md: "row" }}
               spacing={1}
               alignItems={{ xs: "flex-start", md: "center" }}
+              justifyContent="space-between"
             >
-              <Chip
-                size="small"
-                color="primary"
-                label={entry.timeline_label || `T+${entry.timeline_index}`}
-              />
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="subtitle2">
-                  Step {entry.timeline_index + 1}:{" "}
-                  {entry.persona_descriptor || "Target persona"}
+              <Stack spacing={0.5} sx={{ flexGrow: 1 }}>
+                <Typography variant="subtitle2">{timelineLabel}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {description}
                 </Typography>
-                {tooltip && (
-                  <Tooltip title={tooltip} arrow>
-                    <IconButton size="small">
-                      <InfoOutlinedIcon fontSize="inherit" />
-                    </IconButton>
-                  </Tooltip>
-                )}
               </Stack>
-            </Stack>
-            <Typography variant="body2" sx={{ mt: 0.5 }}>
-              {stageLabel}
-              {description}
-            </Typography>
-            {chips.length ? (
-              <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap", mt: 1 }}>
-                {chips.map((chip, idx) => (
+
+              <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{ flexWrap: "wrap", mt: { xs: 1, md: 0 } }}
+              >
+                {chips.map((chip) => (
                   <Chip
-                    key={`${entry.timeline_index}-chip-${idx}`}
-                    label={chip.label}
+                    key={`${entry.timeline_index}-${chip.label}`}
                     size="small"
+                    label={chip.label}
                     variant={chip.outlined ? "outlined" : "filled"}
                   />
                 ))}
               </Stack>
-            ) : null}
+
+              {tooltip && (
+                <Tooltip title={tooltip} arrow>
+                  <IconButton
+                    size="small"
+                    sx={{ ml: { xs: 0, md: 1 }, mt: { xs: 1, md: 0 } }}
+                  >
+                    <InfoOutlinedIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
           </Paper>
         );
       })}
@@ -1191,12 +1257,15 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
   const personaLikelihoods = thesis?.persona_likelihoods ?? [];
   const personLikelihoods = thesis?.person_likelihoods ?? [];
   const expectedNextPersonas =
-    thesis?.expected_next_personas ?? account.prediction?.expected_next_personas ?? [];
+    thesis?.expected_next_personas ??
+    account.prediction?.expected_next_personas ??
+    [];
   const personaCadence = account.execution?.persona_engagements || [];
   const entryPoints = useMemo(() => {
     const rows = account.entry_points ?? thesis?.entry_points ?? [];
     return rows.slice(0, 5);
   }, [account.entry_points, thesis?.entry_points]);
+
   const formatEntryPercent = (value?: number | null) =>
     value !== null && value !== undefined ? fmtPercent(value, true) : "—";
 
@@ -1208,8 +1277,10 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
       </Tooltip>
     </Stack>
   );
+
   const wolvesRefreshed = wolvesUpdatedAt ? formatRelativeTime(wolvesUpdatedAt) : null;
   const hasKeystone = keystonePersonas.length > 0;
+
   const keystoneLookup = useMemo(() => {
     const byId = new Map<string, KeystonePersona>();
     const byLabel = new Map<string, KeystonePersona>();
@@ -1226,6 +1297,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
     });
     return { byId, byLabel };
   }, [keystonePersonas]);
+
   const getKeystoneFor = useCallback(
     (personaId?: string | null, personaLabel?: string | null) => {
       if (personaId && keystoneLookup.byId.has(personaId)) {
@@ -1242,14 +1314,20 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
     [keystoneLookup]
   );
 
-  const keystoneColor = (score?: number | null): "default" | "primary" | "success" => {
+  const keystoneColor = (
+    score?: number | null
+  ): "default" | "primary" | "success" => {
     if (typeof score !== "number") return "default";
     if (score >= 0.7) return "success";
     if (score >= 0.55) return "primary";
     return "default";
   };
 
-  const formatChipLabel = (band?: string | null, label?: string | null, prob?: number | null) => {
+  const formatChipLabel = (
+    band?: string | null,
+    label?: string | null,
+    prob?: number | null
+  ) => {
     const parts: string[] = [];
     if (band) parts.push(titleize(band));
     parts.push(label || "Persona");
@@ -1258,14 +1336,33 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
     }
     return parts.join(" · ");
   };
+
+  const personaLabelLookup = useMemo(() => {
+    const lookup: Record<string, string> = {};
+    account.prediction?.persona_paths.forEach((path) => {
+      (path.personas || []).forEach((persona) => {
+        if (persona.id && persona.label) {
+          lookup[persona.id] = persona.label;
+        }
+      });
+    });
+    return lookup;
+  }, [account.prediction?.persona_paths]);
+
   const personaLikelihoodRows = useMemo(() => {
     if (!personaLikelihoods.length) return [];
     return personaLikelihoods
       .map((entry, idx) => {
         const keystone = getKeystoneFor(entry.persona_id, entry.persona_label);
+        const displayLabel =
+          entry.persona_label ||
+          (entry.persona_id ? personaLabelLookup[entry.persona_id] : undefined) ||
+          entry.persona_id ||
+          `Persona ${idx + 1}`;
         return {
           key: entry.persona_id || entry.persona_label || `persona-${idx}`,
           persona: entry,
+          displayLabel,
           keystone,
           roleLabel: classifyKeystoneRole(keystone?.journey_phase),
           wolvesNarrative: describeKeystoneImpact(keystone),
@@ -1273,16 +1370,21 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
       })
       .sort((a, b) => {
         const scoreA =
-          typeof a.keystone?.wolves_score === "number" ? (a.keystone.wolves_score as number) : -1;
+          typeof a.keystone?.wolves_score === "number"
+            ? (a.keystone.wolves_score as number)
+            : -1;
         const scoreB =
-          typeof b.keystone?.wolves_score === "number" ? (b.keystone.wolves_score as number) : -1;
+          typeof b.keystone?.wolves_score === "number"
+            ? (b.keystone.wolves_score as number)
+            : -1;
         if (scoreA !== scoreB) return scoreB - scoreA;
         return (
           (b.persona.committee_probability || b.persona.probability || 0) -
           (a.persona.committee_probability || a.persona.probability || 0)
         );
       });
-  }, [getKeystoneFor, personaLikelihoods]);
+  }, [getKeystoneFor, personaLikelihoods, personaLabelLookup]);
+
   const coalitionStory = useMemo(() => {
     if (!primaryPath?.personas?.length) return null;
     const entries = primaryPath.personas.slice(0, 4).map((persona, idx) => {
@@ -1296,11 +1398,11 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
     });
     if (!entries.length) return null;
     const segmentLabel =
-      (account.meta?.industry && titleize(account.meta?.industry)) ||
-      (account.meta?.segment && titleize(account.meta?.segment)) ||
+      (account.meta?.industry && titleize(account.meta?.industry as string)) ||
+      (account.meta?.segment && titleize(account.meta?.segment as string)) ||
       "peer accounts";
     return `Likely winning pattern (${segmentLabel}): ${entries.join(" → ")}`;
-  }, [account.meta?.industry, account.meta?.segment, getKeystoneFor, primaryPath]);
+  }, [account.meta, getKeystoneFor, primaryPath]);
 
   return (
     <Stack spacing={3}>
@@ -1314,79 +1416,86 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
             Combines belief graph signals with available people and plays. Higher entry score =
             faster path to influence.
           </Typography>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Persona</TableCell>
-                <TableCell align="right">Entry score</TableCell>
-                <TableCell>Signals</TableCell>
-                <TableCell>Intervention plan</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {entryPoints.map((entry, idx) => (
-                <TableRow key={`entry-point-${entry.persona_id}-${idx}`}>
-                  <TableCell>
-                    <Stack spacing={0.25}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {entry.persona_label || entry.persona_id}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Rank {entry.rank ?? idx + 1}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Stack spacing={0.25} alignItems="flex-end">
-                      <Typography variant="body2">
-                        {formatEntryPercent(entry.entry_score)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Combined perc {formatEntryPercent(entry.combined_perceptibility)} · prox{" "}
-                        {formatEntryPercent(entry.combined_proximity)}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Stack spacing={0.25}>
-                      <Typography variant="caption" color="text.secondary">
-                        Graph {formatEntryPercent(entry.graph_perceptibility)} perc /{" "}
-                        {formatEntryPercent(entry.graph_proximity)} prox
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Intervention reach {formatEntryPercent(entry.intervention_reach)}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-                      {(entry.top_people || []).slice(0, 2).map((person) => (
-                        <Chip
-                          key={`entry-point-${entry.persona_id}-person-${person.person_id || person.display_name}`}
-                          size="small"
-                          variant="outlined"
-                          label={`${person.display_name || "Person"} · ${formatEntryPercent(
-                            person.committee_probability
-                          )}`}
-                        />
-                      ))}
-                      {(entry.top_plays || []).slice(0, 2).map((play, playIdx) => (
-                        <Chip
-                          key={`entry-point-${entry.persona_id}-play-${play.play_id || playIdx}`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                          label={describeEntryPlay(play) || "Recommended play"}
-                        />
-                      ))}
-                    </Stack>
-                  </TableCell>
+          <Box sx={{ overflowX: "auto" }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Persona</TableCell>
+                  <TableCell align="right">Entry score</TableCell>
+                  <TableCell>Signals</TableCell>
+                  <TableCell>Intervention plan</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {entryPoints.map((entry, idx) => (
+                  <TableRow key={`entry-point-${entry.persona_id}-${idx}`}>
+                    <TableCell>
+                      <Stack spacing={0.25}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {entry.persona_label || entry.persona_id}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Rank {entry.rank ?? idx + 1}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack spacing={0.25} alignItems="flex-end">
+                        <Typography variant="body2">
+                          {formatEntryPercent(entry.entry_score)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Combined perc {formatEntryPercent(entry.combined_perceptibility)} · prox{" "}
+                          {formatEntryPercent(entry.combined_proximity)}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Stack spacing={0.25}>
+                        <Typography variant="caption" color="text.secondary">
+                          Graph {formatEntryPercent(entry.graph_perceptibility)} perc /{" "}
+                          {formatEntryPercent(entry.graph_proximity)} prox
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Intervention reach {formatEntryPercent(entry.intervention_reach)}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                        {(entry.top_people || []).slice(0, 2).map((person) => (
+                          <Chip
+                            key={`entry-point-${entry.persona_id}-person-${
+                              person.person_id || person.display_name
+                            }`}
+                            size="small"
+                            variant="outlined"
+                            label={`${person.display_name || "Person"} · ${formatEntryPercent(
+                              person.committee_probability
+                            )}`}
+                          />
+                        ))}
+                        {(entry.top_plays || []).slice(0, 2).map((play, playIdx) => (
+                          <Chip
+                            key={`entry-point-${entry.persona_id}-play-${
+                              play.play_id || playIdx
+                            }`}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            label={describeEntryPlay(play) || "Recommended play"}
+                          />
+                        ))}
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
         </Box>
       ) : null}
+
       {hasKeystone && (
         <Box>
           {heading(
@@ -1410,7 +1519,12 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                   </Typography>
                   <Stack direction="row" spacing={0.5}>
                     {persona.is_new_persona && (
-                      <Chip size="small" color="warning" variant="outlined" label="New persona" />
+                      <Chip
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                        label="New persona"
+                      />
                     )}
                     <Chip
                       size="small"
@@ -1428,7 +1542,11 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                     ? ` · Sample n=${persona.wolves_sample_size}`
                     : ""}
                 </Typography>
-                <Stack direction="row" spacing={0.75} sx={{ mt: 0.75, flexWrap: "wrap" }}>
+                <Stack
+                  direction="row"
+                  spacing={0.75}
+                  sx={{ mt: 0.75, flexWrap: "wrap" }}
+                >
                   {persona.journey_phase && (
                     <Chip size="small" label={persona.journey_phase} variant="outlined" />
                   )}
@@ -1450,10 +1568,16 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                   )}
                 </Stack>
                 {persona.top_people && persona.top_people.length > 0 && (
-                  <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", mt: 0.75 }}>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    sx={{ flexWrap: "wrap", mt: 0.75 }}
+                  >
                     {persona.top_people.slice(0, 3).map((person) => (
                       <Chip
-                        key={`keystone-${persona.persona_id}-${person.person_id || person.display_name}`}
+                        key={`keystone-${persona.persona_id}-${
+                          person.person_id || person.display_name
+                        }`}
                         size="small"
                         variant="outlined"
                         label={`${person.display_name || "Person"} · ${fmtPercent(
@@ -1469,6 +1593,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
           </Stack>
         </Box>
       )}
+
       <Box>
         {heading(
           "1. Who is likely to be involved?",
@@ -1479,85 +1604,112 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
         </Typography>
         {personaLikelihoodRows.length ? (
           <>
-            <Table size="small" sx={{ mb: 1 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Persona</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell align="right">Committee</TableCell>
-                  <TableCell align="right">Wolves</TableCell>
-                  <TableCell>Chain effect</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {personaLikelihoodRows.slice(0, 6).map((row) => {
-                  const committeeProb =
-                    row.persona.committee_probability ?? row.persona.probability ?? null;
-                  return (
-                    <TableRow key={`persona-likelihood-${row.key}`}>
-                      <TableCell>
-                        <Stack spacing={0.25}>
-                          <Stack direction="row" spacing={0.5} alignItems="center">
-                            <Typography variant="body2">
-                              {row.persona.persona_label || row.persona.persona_id || row.key}
-                            </Typography>
-                            {row.keystone ? (
-                              <Chip size="small" color="success" label="Keystone" />
+            <Box sx={{ overflowX: "auto" }}>
+              <Table size="small" sx={{ mb: 1 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Persona</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell align="right">Committee</TableCell>
+                    <TableCell align="right">Wolves</TableCell>
+                    <TableCell>Chain effect</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {personaLikelihoodRows.slice(0, 6).map((row) => {
+                    const committeeProb =
+                      row.persona.committee_probability ??
+                      row.persona.probability ??
+                      null;
+                    return (
+                      <TableRow key={`persona-likelihood-${row.key}`}>
+                        <TableCell>
+                          <Stack spacing={0.25}>
+                            <Stack direction="row" spacing={0.5} alignItems="center">
+                              <Typography variant="body2">
+                                {row.displayLabel}
+                              </Typography>
+                              {row.keystone ? (
+                                <Chip size="small" color="success" label="Keystone" />
+                              ) : null}
+                            </Stack>
+                            {row.persona.band ? (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {titleize(row.persona.band)}
+                              </Typography>
                             ) : null}
                           </Stack>
-                          {row.persona.band ? (
-                            <Typography variant="caption" color="text.secondary">
-                              {titleize(row.persona.band)}
-                            </Typography>
-                          ) : null}
-                        </Stack>
-                      </TableCell>
-                      <TableCell>{row.roleLabel || "—"}</TableCell>
-                      <TableCell align="right">
-                        {committeeProb !== null
-                          ? fmtPercent(committeeProb, true)
-                          : "—"}
-                      </TableCell>
-                      <TableCell align="right">
-                        {row.keystone?.wolves_score != null
-                          ? fmtPercent(row.keystone.wolves_score, true)
-                          : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          color={row.wolvesNarrative ? "success.main" : "text.secondary"}
-                        >
-                          {row.wolvesNarrative || "Model expects this persona to unlock the next gate."}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell>{row.roleLabel || "—"}</TableCell>
+                        <TableCell align="right">
+                          {committeeProb !== null
+                            ? fmtPercent(committeeProb, true)
+                            : "—"}
+                        </TableCell>
+                        <TableCell align="right">
+                          {row.keystone?.wolves_score != null
+                            ? fmtPercent(row.keystone.wolves_score, true)
+                            : "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            color={
+                              row.wolvesNarrative
+                                ? "success.main"
+                                : "text.secondary"
+                            }
+                          >
+                            {row.wolvesNarrative ||
+                              "Model expects this persona to unlock the next gate."}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </Box>
             {coalitionStory ? (
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mb: 1 }}
+              >
                 {coalitionStory}
               </Typography>
             ) : null}
           </>
         ) : (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Persona committee model will populate once this account accumulates more telemetry.
+            Persona committee model will populate once this account accumulates more
+            telemetry.
           </Typography>
         )}
         <Typography variant="body2" color="text.secondary">
           People mapped to these personas (highest probability first):
         </Typography>
         {personLikelihoods.length ? (
-          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", mt: 1 }}>
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{ flexWrap: "wrap", mt: 1 }}
+          >
             {personLikelihoods.slice(0, 10).map((person) => (
               <Chip
-                key={`person-likelihood-${person.person_id || person.display_name}`}
+                key={`person-likelihood-${
+                  person.person_id || person.display_name
+                }`}
                 variant="outlined"
                 size="small"
-                label={formatChipLabel(person.role_band, person.display_name, person.probability)}
+                label={formatChipLabel(
+                  person.role_band,
+                  person.display_name,
+                  person.probability
+                )}
               />
             ))}
           </Stack>
@@ -1568,11 +1720,28 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
               const people = personaMatches[pid] || [];
               if (!people.length) return null;
               return (
-                <Stack key={`${pid}-people`} direction="row" spacing={0.5} alignItems="center">
-                  <Chip label={persona.label || pid || "Persona"} size="small" />
-                  <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                <Stack
+                  key={`${pid}-people`}
+                  direction="row"
+                  spacing={0.5}
+                  alignItems="center"
+                >
+                  <Chip
+                    label={persona.label || pid || "Persona"}
+                    size="small"
+                  />
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    sx={{ flexWrap: "wrap" }}
+                  >
                     {people.map((name) => (
-                      <Chip key={`${pid}-${name}`} label={name} size="small" variant="outlined" />
+                      <Chip
+                        key={`${pid}-${name}`}
+                        label={name}
+                        size="small"
+                        variant="outlined"
+                      />
                     ))}
                   </Stack>
                 </Stack>
@@ -1583,7 +1752,11 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
         <Box sx={{ mt: 1.5 }}>
           {primaryPath ? (
             <>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 0.5 }}
+              >
                 Conversion path context:
               </Typography>
               {renderPersonaPath(primaryPath)}
@@ -1611,11 +1784,21 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
               </TableHead>
               <TableBody>
                 {expectedNextPersonas.slice(0, 6).map((entry) => (
-                  <TableRow key={`expected-next-${entry.persona_id}`}>
-                    <TableCell>{entry.persona_label || entry.persona_id}</TableCell>
-                    <TableCell align="right">{fmtPercent(entry.probability, true)}</TableCell>
-                    <TableCell>{entry.journey_stage || "Journey"}</TableCell>
-                    <TableCell>{entry.reason || "Belief graph projection"}</TableCell>
+                  <TableRow
+                    key={`expected-next-${entry.persona_id}`}
+                  >
+                    <TableCell>
+                      {entry.persona_label || entry.persona_id}
+                    </TableCell>
+                    <TableCell align="right">
+                      {fmtPercent(entry.probability, true)}
+                    </TableCell>
+                    <TableCell>
+                      {entry.journey_stage || "Journey"}
+                    </TableCell>
+                    <TableCell>
+                      {entry.reason || "Belief graph projection"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -1644,15 +1827,21 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
             </TableHead>
             <TableBody>
               {personaCadence.map((persona) => (
-                <TableRow key={persona.persona_id}>
-                  <TableCell>{persona.persona_label || persona.persona_id}</TableCell>
+                <TableRow key={(persona as any).persona_id}>
+                  <TableCell>
+                    {(persona as any).persona_label ||
+                      (persona as any).persona_id}
+                  </TableCell>
                   <TableCell align="right">
-                    {persona.belief_level != null ? (
+                    {(persona as any).belief_level != null ? (
                       <Chip
                         size="small"
                         variant="outlined"
-                        label={`${fmtPercent(persona.belief_level, true)} · ${titleize(
-                          persona.belief_band
+                        label={`${fmtPercent(
+                          (persona as any).belief_level,
+                          true
+                        )} · ${titleize(
+                          (persona as any).belief_band
                         )}`}
                       />
                     ) : (
@@ -1660,31 +1849,47 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                     )}
                   </TableCell>
                   <TableCell>
-                    {persona.dominant_phase ? (
+                    {(persona as any).dominant_phase ? (
                       <Tooltip
                         title={
-                          persona.phase_probs
-                            ? Object.entries(persona.phase_probs)
-                                .map(([phase, prob]) => `${phase}: ${fmtPercent(prob, true)}`)
+                          (persona as any).phase_probs
+                            ? Object.entries(
+                                (persona as any).phase_probs
+                              )
+                                .map(
+                                  ([phase, prob]) =>
+                                    `${phase}: ${fmtPercent(
+                                      prob,
+                                      true
+                                    )}`
+                                )
                                 .join(" · ")
                             : ""
                         }
                       >
-                        <Chip size="small" label={persona.dominant_phase} />
+                        <Chip
+                          size="small"
+                          label={(persona as any).dominant_phase}
+                        />
                       </Tooltip>
                     ) : (
                       "—"
                     )}
                   </TableCell>
                   <TableCell align="right">
-                    {persona.committee_probability != null
-                      ? fmtPercent(persona.committee_probability, true)
+                    {(persona as any).committee_probability != null
+                      ? fmtPercent(
+                          (persona as any).committee_probability,
+                          true
+                        )
                       : "—"}
                   </TableCell>
                   <TableCell align="right">
-                    {persona.engagement_state
-                      ? `${titleize(persona.engagement_state)} · ${formatFrequency(
-                          persona.base_frequency_per_week
+                    {(persona as any).engagement_state
+                      ? `${titleize(
+                          (persona as any).engagement_state
+                        )} · ${formatFrequency(
+                          (persona as any).base_frequency_per_week
                         )}`
                       : "—"}
                   </TableCell>
@@ -1740,17 +1945,21 @@ const AccountPlanPage: React.FC = () => {
   const { accountId } = useParams<{ accountId?: string }>();
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState<Array<{ id: string; name: string }>>([]);
+  const [products, setProducts] =
+    useState<Array<{ id: string; name: string }>>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [plan, setPlan] = useState<MarketingPlan | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [enrichmentLoading, setEnrichmentLoading] = useState<boolean>(false);
+  const [enrichmentLoading, setEnrichmentLoading] =
+    useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [enrichmentMap, setEnrichmentMap] = useState<
     Record<string, AccountEnrichmentPayload>
   >({});
   const [accountPlanContract, setAccountPlanContract] =
     useState<AccountPlanContract | null>(null);
+  const [enrichmentDialogAccount, setEnrichmentDialogAccount] =
+    useState<EnrichmentAccount | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [targetAccountLookup, setTargetAccountLookup] = useState<
     Record<string, TargetAccountLookupEntry>
@@ -1785,14 +1994,19 @@ const AccountPlanPage: React.FC = () => {
         const prodData = await prodRes.json();
         const list = prodData.products ?? [];
         if (!list.length) {
-          setError("No products found. Run Value Prop to create the first product.");
+          setError(
+            "No products found. Run Value Prop to create the first product."
+          );
           return;
         }
         setProducts(list);
         setSelectedProductId((prev) => prev || list[0].id);
       } catch (err: unknown) {
         console.error(err);
-        const message = err instanceof Error ? err.message : "Failed to load products.";
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to load products.";
         setError(message);
       }
     })();
@@ -1822,7 +2036,10 @@ const AccountPlanPage: React.FC = () => {
         setTargetAccountLookup(next);
       } catch (err) {
         if (!cancelled) {
-          console.warn("Failed to load target accounts for account plan", err);
+          console.warn(
+            "Failed to load target accounts for account plan",
+            err
+          );
           setTargetAccountLookup({});
         }
       }
@@ -1847,7 +2064,10 @@ const AccountPlanPage: React.FC = () => {
         setPlan(data);
       } catch (err: unknown) {
         console.error(err);
-        const message = err instanceof Error ? err.message : "Failed to load account plan.";
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to load account plan.";
         setError(message);
         setPlan(null);
       } finally {
@@ -1899,7 +2119,11 @@ const AccountPlanPage: React.FC = () => {
           const payload: AccountEnrichmentPayload = await res.json();
           return [account.account_id, payload] as const;
         } catch (err) {
-          console.warn("Failed to load enrichment for account", account.account_id, err);
+          console.warn(
+            "Failed to load enrichment for account",
+            account.account_id,
+            err
+          );
           return [account.account_id, undefined] as const;
         }
       })
@@ -1939,12 +2163,11 @@ const AccountPlanPage: React.FC = () => {
   );
 
   const topPlay =
-    activeAccount?.execution?.plays && activeAccount.execution.plays.length
-      ? dedupePlays(activeAccount.execution.plays)
-          .sort(
-            (a, b) =>
-              (b.expected_delta_bp || 0) - (a.expected_delta_bp || 0)
-          )[0]
+    activeAccount?.execution?.plays &&
+    activeAccount.execution.plays.length
+      ? dedupePlays(activeAccount.execution.plays).sort(
+          (a, b) => (b.expected_delta_bp || 0) - (a.expected_delta_bp || 0)
+        )[0]
       : null;
 
   const personaLabelLookup = useMemo(() => {
@@ -1967,7 +2190,10 @@ const AccountPlanPage: React.FC = () => {
 
   const personaMatches = useMemo(() => {
     const matches: Record<string, string[]> = {};
-    const pushName = (pid: string | undefined | null, name?: string | null) => {
+    const pushName = (
+      pid: string | undefined | null,
+      name?: string | null
+    ) => {
       if (!pid || !name) return;
       if (!matches[pid]) matches[pid] = [];
       if (!matches[pid].includes(name)) {
@@ -1990,6 +2216,7 @@ const AccountPlanPage: React.FC = () => {
     });
     return matches;
   }, [activeEnrichment, activeAccount]);
+
   const cadenceKeystoneResolver = useMemo(() => {
     const keystones = activeAccount?.keystone_personas ?? [];
     if (!keystones.length) return undefined;
@@ -2009,7 +2236,8 @@ const AccountPlanPage: React.FC = () => {
     return (row: AssetCadenceRow) => {
       const candidate =
         (row.persona_id && byId.get(row.persona_id)) ||
-        (row.persona_label && byLabel.get(normalizePersonaLabel(row.persona_label))) ||
+        (row.persona_label &&
+          byLabel.get(normalizePersonaLabel(row.persona_label))) ||
         null;
       if (!candidate) return null;
       return {
@@ -2030,7 +2258,13 @@ const AccountPlanPage: React.FC = () => {
         personaLabelLookup,
         activeAccount?.keystone_personas ?? []
       ),
-    [activeAccount, activeAccount?.keystone_personas, activeEnrichment, topPlay, personaLabelLookup]
+    [
+      activeAccount,
+      activeEnrichment,
+      topPlay,
+      personaLabelLookup,
+      activeAccount?.keystone_personas,
+    ]
   );
 
   const accountInterventions = useMemo(
@@ -2070,14 +2304,21 @@ const AccountPlanPage: React.FC = () => {
         <Typography variant="h5">Account Plan</Typography>
         {accountPlanContract?.account && (
           <Typography variant="caption" color="text.secondary">
-            Win probability {fmtPercent(accountPlanContract.account.predictedWinPct, true)} ·
-            Stall in {accountPlanContract.account.predictedStallInDays} days
+            Win probability{" "}
+            {fmtPercent(
+              accountPlanContract.account.predictedWinPct,
+              true
+            )}{" "}
+            · Stall in{" "}
+            {accountPlanContract.account.predictedStallInDays} days
           </Typography>
         )}
         <Box sx={{ flexGrow: 1 }} />
         {products.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 220 }}>
-            <InputLabel id="account-plan-product-label">Product</InputLabel>
+            <InputLabel id="account-plan-product-label">
+              Product
+            </InputLabel>
             <Select
               labelId="account-plan-product-label"
               label="Product"
@@ -2102,7 +2343,9 @@ const AccountPlanPage: React.FC = () => {
           <MUILink component={RouterLink} color="inherit" to="/account-plan">
             Account Plan
           </MUILink>
-          <Typography color="text.primary">{activeAccountDisplayName}</Typography>
+          <Typography color="text.primary">
+            {activeAccountDisplayName}
+          </Typography>
         </Breadcrumbs>
       )}
 
@@ -2140,7 +2383,13 @@ const AccountPlanPage: React.FC = () => {
           const isSelected = accountId === acct.account_id;
 
           return (
-            <Grid key={acct.account_id} size={{ xs: 12, md: 6, lg: 4 }}>
+            <Grid
+              key={acct.account_id}
+              item
+              xs={12}
+              md={6}
+              lg={4}
+            >
               <Card
                 variant="outlined"
                 sx={{
@@ -2149,21 +2398,41 @@ const AccountPlanPage: React.FC = () => {
                 }}
               >
                 <CardActionArea
-                  onClick={() => navigate(`/account-plan/${acct.account_id}`)}
+                  onClick={() =>
+                    navigate(`/account-plan/${acct.account_id}`)
+                  }
                   sx={{ alignItems: "stretch" }}
                 >
                   <CardContent>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: 600 }}
+                    >
                       {accountName}
                     </Typography>
-                    <Stack direction="row" spacing={0.75} sx={{ flexWrap: "wrap", mt: 1 }}>
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      sx={{ flexWrap: "wrap", mt: 1 }}
+                    >
                       {metaChips.slice(0, 5).map((chip) => (
-                        <Chip key={`${acct.account_id}-${chip}`} label={chip} size="small" />
+                        <Chip
+                          key={`${acct.account_id}-${chip}`}
+                          label={chip}
+                          size="small"
+                        />
                       ))}
                     </Stack>
-                    <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      sx={{ mt: 2 }}
+                    >
                       <Stack spacing={0.25}>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                        >
                           Enrichment
                         </Typography>
                         <Typography variant="body2">
@@ -2172,13 +2441,19 @@ const AccountPlanPage: React.FC = () => {
                             : fmtPercent(coverage)}
                         </Typography>
                         {required !== undefined ? (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
                             {matchedPeople}/{required} personas matched
                           </Typography>
                         ) : null}
                       </Stack>
                       <Stack spacing={0.25}>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                        >
                           Engagements
                         </Typography>
                         <Typography variant="body2">
@@ -2186,6 +2461,20 @@ const AccountPlanPage: React.FC = () => {
                         </Typography>
                       </Stack>
                     </Stack>
+                    <Button
+                      size="small"
+                      sx={{ mt: 1 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEnrichmentDialogAccount({
+                          id: acct.account_id,
+                          account_name: accountName,
+                        });
+                      }}
+                      disabled={!selectedProductId || !token}
+                    >
+                      View persona details
+                    </Button>
                   </CardContent>
                 </CardActionArea>
               </Card>
@@ -2194,10 +2483,10 @@ const AccountPlanPage: React.FC = () => {
         })}
 
         {!accounts.length && (
-          <Grid size={{ xs: 12 }}>
+          <Grid item xs={12}>
             <Alert severity="info">
-              No target accounts yet. Add accounts from the Target Accounts page to generate
-              Account Plans.
+              No target accounts yet. Add accounts from the Target Accounts page to
+              generate Account Plans.
             </Alert>
           </Grid>
         )}
@@ -2229,7 +2518,9 @@ const AccountPlanPage: React.FC = () => {
                   alignItems={{ xs: "flex-start", md: "center" }}
                   sx={{ mb: 1 }}
                 >
-                  <Typography variant="h6">Opportunities & gaps</Typography>
+                  <Typography variant="h6">
+                    Opportunities & gaps
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Top interventions that still need stronger assets
                   </Typography>
@@ -2248,25 +2539,43 @@ const AccountPlanPage: React.FC = () => {
                       <Paper
                         key={gap.id}
                         variant="outlined"
-                        sx={{ p: 1.25, borderColor: gap.needs_net_new ? "error.light" : "divider" }}
+                        sx={{
+                          p: 1.25,
+                          borderColor: gap.needs_net_new
+                            ? "error.light"
+                            : "divider",
+                        }}
                       >
                         <Stack spacing={0.5}>
                           <Stack
                             direction={{ xs: "column", sm: "row" }}
                             spacing={0.5}
                             justifyContent="space-between"
-                            alignItems={{ xs: "flex-start", sm: "center" }}
+                            alignItems={{
+                              xs: "flex-start",
+                              sm: "center",
+                            }}
                           >
                             <Typography variant="subtitle2">
-                              {gap.persona_label || gap.persona_descriptor || "Persona"} ·{" "}
-                              {gap.stage_label || "Stage"}
+                              {gap.persona_label ||
+                                gap.persona_descriptor ||
+                                "Persona"}{" "}
+                              · {gap.stage_label || "Stage"}
                             </Typography>
-                            <Chip size="small" color={coverageColor} label={fmtPercent(coverage)} />
+                            <Chip
+                              size="small"
+                              color={coverageColor}
+                              label={fmtPercent(coverage, true)}
+                            />
                           </Stack>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                          >
                             Need to prove:{" "}
-                            {gap.concern_theme || "Belief transition still being inferred"} (
-                            {fmtBasisPoints(gap.belief_lift_bp)} lift)
+                            {gap.concern_theme ||
+                              "Belief transition still being inferred"}{" "}
+                            ({fmtBasisPoints(gap.belief_lift_bp)} lift)
                           </Typography>
                           <LinearProgress
                             variant="determinate"
@@ -2274,14 +2583,22 @@ const AccountPlanPage: React.FC = () => {
                             color={coverageColor}
                             sx={{ height: 6, borderRadius: 3 }}
                           />
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
                             {gap.current_modality?.format_label
                               ? `${gap.current_modality.format_label} via ${
-                                  gap.current_modality.channel_label || "channel"
+                                  gap.current_modality.channel_label ||
+                                  "channel"
                                 }`
                               : "No mapped asset yet"}
                           </Typography>
-                          <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{ mt: 0.5 }}
+                          >
                             <Button
                               size="small"
                               variant="contained"
@@ -2291,7 +2608,11 @@ const AccountPlanPage: React.FC = () => {
                               Map in planner
                             </Button>
                             {gap.needs_net_new ? (
-                              <Button size="small" variant="outlined" color="error">
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                              >
                                 Design asset
                               </Button>
                             ) : null}
@@ -2304,6 +2625,7 @@ const AccountPlanPage: React.FC = () => {
               </CardContent>
             </Card>
           ) : null}
+
           <Card variant="outlined">
             <CardContent>
               <Stack
@@ -2341,7 +2663,9 @@ const AccountPlanPage: React.FC = () => {
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   Conversion Sequence Blueprint
                 </Typography>
-                {renderConversionSequence(activeAccount.execution?.conversion_sequence)}
+                {renderConversionSequence(
+                  activeAccount.execution?.conversion_sequence
+                )}
               </Box>
               <Divider sx={{ my: 3 }} />
               <Box>
@@ -2349,8 +2673,8 @@ const AccountPlanPage: React.FC = () => {
                   Asset Cadence Table
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Filterable mix of assets & channels aligned to funnel stages and campaign
-                  themes.
+                  Filterable mix of assets & channels aligned to funnel
+                  stages and campaign themes.
                 </Typography>
                 <Box sx={{ mt: 1.5 }}>
                   <AssetCadenceTable
@@ -2365,13 +2689,16 @@ const AccountPlanPage: React.FC = () => {
           </Card>
         </Stack>
       )}
+
+      <AccountEnrichmentDialog
+        open={Boolean(enrichmentDialogAccount)}
+        onClose={() => setEnrichmentDialogAccount(null)}
+        account={enrichmentDialogAccount}
+        productId={selectedProductId}
+        token={token}
+      />
     </Box>
   );
 };
 
 export default AccountPlanPage;
-const isExpectedNextPersona = (
-  entry: ExpectedNextPersona | { persona?: string; persona_label?: string; prob?: number } | null
-): entry is ExpectedNextPersona => {
-  return !!entry && typeof entry === "object" && "persona_id" in entry;
-};

@@ -373,6 +373,7 @@ async def get_products(company_id: str, request: Request):
     """
     Returns a list of products for the given company_id.
     """
+    print("Getting products for company_id: %s", company_id)
     try:
         # 🔐 Auth
         auth_header = request.headers.get("authorization")
@@ -401,12 +402,16 @@ async def get_products(company_id: str, request: Request):
                 "summary": product_node.get("summary", ""),
                 "url": product_node.get("url", ""),
             }]
-        else: products = []
+        else: 
+            print("No product id found for company_id: %s", company_id)
+            products = []
         
         LOGGER.debug("Products found: %s", products)
+        print("Products found: %s", products)
         return {"products": products}
     except Exception as e:
         LOGGER.exception("Get products error")
+        print("Get products error: %s", e)
         raise HTTPException(status_code=500, detail="Could not retrieve products")
 
 # GET /get-product-capabilities/{product_id}
