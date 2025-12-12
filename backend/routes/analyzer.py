@@ -47,8 +47,7 @@ from backend.utils.crm_management.enrichment_service import (
 from backend.utils.crm_management.hubspot_engagements_ingestion import ingest_hubspot_company
 from backend.utils.inference.belief_manager.belief_manager import build_belief_thesis_for_account, incremental_learnings_from_thesis
 from backend.utils.inference.belief_manager.cache import (
-    evaluate_belief_thesis_cache,
-    persist_belief_thesis_cache,
+    get_cached_belief_thesis,
 )
 from backend.utils.inference.belief_manager.journey.learn_service import (
     record_learning_updates_for_account,
@@ -96,13 +95,33 @@ def _log_route_output(route_name: str, payload: Any) -> Any:
     """
     Print the final payload returned by a route to the terminal for quick inspection.
     """
-    formatted = payload
+    log_payload = payload
     try:
-        formatted = json.dumps(payload, default=str, separators=(",", ":"))
+        # Case 1: the route returns a plain list
+        if isinstance(payload, list):
+            log_payload = payload[:1]
+
+        # Case 2: the route returns an object with a 'results' list
+        elif isinstance(payload, dict) and isinstance(payload.get("results"), list):
+            # shallow copy the dict, but truncate only for logging
+            log_payload = {
+                **payload,
+                "results": payload["results"][:1],
+                "_truncated_results": {
+                    "logged_count": min(len(payload["results"]), 1),
+                    "total_count": len(payload["results"]),
+                },
+            }
+
+        # You can add more patterns here if needed (e.g. 'items', 'data', etc.)
+
+        formatted = json.dumps(log_payload, default=str, separators=(",", ":"))
     except Exception:
+        # Fallback: just repr the original payload
         formatted = repr(payload)
+
     print(f"[{route_name}] response: {formatted}")
-    return payload
+    return payload  # important: always return the full original payload
 
 
 def _decode_request_token(request: Request) -> Dict[str, Any]:
@@ -1250,41 +1269,38 @@ async def get_persona_matches(product_id: str, account_id: str, request: Request
 
     try:
         account_record = get_account_by_id(product_id, account_id) or {}
-        (
-            should_rebuild,
-            cache_row,
-            graph_hash,
-            latest_engagement_ts,
-        ) = evaluate_belief_thesis_cache(db, product_id, account_id)
+        incremental: Optional[Dict[str, Any]] = None
 
-        if should_rebuild:
-            thesis = build_belief_thesis_for_account(product_id, account_id)
+        def _after_build(local_db: Session, thesis_payload: Dict[str, Any]) -> None:
+            nonlocal incremental
             write_meta_episode_from_thesis(
-                db,
+                local_db,
                 product_id=product_id,
                 account_id=account_id,
-                thesis=thesis,
+                thesis=thesis_payload,
             )
-            incremental = incremental_learnings_from_thesis(thesis)
+            incremental = incremental_learnings_from_thesis(thesis_payload)
             record_learning_updates_for_account(
-                db,
+                local_db,
                 product_id=product_id,
                 account_id=account_id,
                 incremental_learnings=incremental,
             )
-            persist_belief_thesis_cache(
-                db=db,
-                product_id=product_id,
-                account_id=account_id,
-                thesis=thesis,
-                graph_hash=graph_hash,
-                latest_engagement_ts=latest_engagement_ts,
-                existing_cache=cache_row,
-            )
-            db.commit()
-        else:
-            thesis = cache_row.thesis if cache_row and cache_row.thesis else {}
+
+        thesis, rebuilt = get_cached_belief_thesis(
+            product_id=product_id,
+            account_id=account_id,
+            build_fn=lambda: build_belief_thesis_for_account(
+                product_id, account_id
+            ),
+            db=db,
+            after_build=_after_build,
+        )
+
+        if not rebuilt:
             incremental = incremental_learnings_from_thesis(thesis)
+        else:
+            db.commit()
 
         global_insights = summarize_global_insights(db, product_id=product_id)
 

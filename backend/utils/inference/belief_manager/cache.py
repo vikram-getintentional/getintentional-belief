@@ -4,12 +4,12 @@ from datetime import datetime, timezone, timedelta
 import hashlib
 import os
 import uuid
-from typing import Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from sqlalchemy import Column, DateTime, JSON, String, UniqueConstraint, func
 from sqlalchemy.orm import Session
 
-from backend.database import Base
+from backend.database import Base, SessionLocal
 from backend.utils.crm_management.engagement_models import TargetAccountEngagement
 from backend.utils.graph_base.graph_utils.save_and_load_graph_as_json import GRAPH_JSON_DIR
 
@@ -100,12 +100,14 @@ def evaluate_belief_thesis_cache(
     if cache.graph_hash != graph_hash:
         return True, cache, graph_hash, latest_engagement
 
+    cache_last_engagement = _ensure_utc(cache.last_engagement_ts)
     if latest_engagement and (
-        cache.last_engagement_ts is None or latest_engagement > cache.last_engagement_ts
+        cache_last_engagement is None or latest_engagement > cache_last_engagement
     ):
         return True, cache, graph_hash, latest_engagement
 
-    if cache.last_computed_at is None or cache.last_computed_at + CACHE_TTL < now:
+    cache_last_computed = _ensure_utc(cache.last_computed_at)
+    if cache_last_computed is None or cache_last_computed + CACHE_TTL < now:
         return True, cache, graph_hash, latest_engagement
 
     return False, cache, graph_hash, latest_engagement
@@ -138,3 +140,42 @@ def persist_belief_thesis_cache(
     cache.last_engagement_ts = _ensure_utc(latest_engagement_ts)
     cache.last_computed_at = _now_utc()
     return cache
+
+
+def get_cached_belief_thesis(
+    product_id: str,
+    account_id: str,
+    build_fn: Callable[[], Dict[str, Any]],
+    *,
+    db: Optional[Session] = None,
+    after_build: Optional[Callable[[Session, Dict[str, Any]], None]] = None,
+) -> Tuple[Dict[str, Any], bool]:
+    """
+    Helper that reuses the belief-thesis cache and rebuilds the thesis only when
+    graph/engagement fingerprints or TTLs indicate stale data.
+    """
+    managed_session = db is None
+    session = db or SessionLocal()
+    try:
+        should_rebuild, cache_row, graph_hash, latest_engagement_ts = evaluate_belief_thesis_cache(
+            session, product_id, account_id
+        )
+        if should_rebuild:
+            thesis = build_fn()
+            if after_build:
+                after_build(session, thesis)
+            persist_belief_thesis_cache(
+                db=session,
+                product_id=product_id,
+                account_id=account_id,
+                thesis=thesis,
+                graph_hash=graph_hash,
+                latest_engagement_ts=latest_engagement_ts,
+                existing_cache=cache_row,
+            )
+        else:
+            thesis = cache_row.thesis if cache_row and cache_row.thesis else {}
+        return thesis, should_rebuild
+    finally:
+        if managed_session:
+            session.close()

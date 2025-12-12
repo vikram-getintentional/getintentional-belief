@@ -155,10 +155,8 @@ def get_target_account_ids(product_id: str, filters: dict = None):
         * dict form:  { "status": { "nin": ["Closed-won", "Closed-lost"] } }
     - Matching is case-insensitive.
     """
-    print("running tgt acct getter")
     db: Session = next(get_db())
     try:
-        print("Fetching target accounts for product_id:", product_id)
         q = db.query(TargetAccount).filter(TargetAccount.product_id == product_id)
         
 
@@ -194,7 +192,6 @@ def get_target_account_ids(product_id: str, filters: dict = None):
         rows = q.all()
         # serialize into ids (not ORM objects)
         target_account_ids = [r.id for r in rows]
-        print("Fetched target account IDs:", target_account_ids)
         return target_account_ids
     finally:
         db.close()
@@ -243,7 +240,6 @@ def map_account_meta_to_stable_ids(product_id: str, account_meta: Dict[str, Any]
       comp:stripe
       tech:snowflake
     """
-    print("Mapping account meta to stable IDs for product:", product_id)
     if account_meta is None:
         # If caller passed None, fetch from DB
         account_meta = get_account_by_id(product_id, account_meta)  # defensive; no-op pattern
@@ -281,6 +277,6 @@ def map_account_meta_to_stable_ids(product_id: str, account_meta: Dict[str, Any]
     # Tech stack
     for t in (account_meta.get("other_tech_stack") or []):
         ids.append(f"tech:{_norm_token(t)}")
-    print("Mapped account meta to stable IDs:", ids)
+    
 
     return ids

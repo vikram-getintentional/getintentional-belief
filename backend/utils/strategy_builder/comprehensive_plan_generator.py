@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import json
 import math
 import os
@@ -32,6 +33,9 @@ from backend.utils.inference.belief_manager.belief_manager import (
     build_belief_thesis_for_account,
     get_shm_transition_metrics,
 )
+from backend.utils.inference.belief_manager.cache import (
+    get_cached_belief_thesis,
+)
 from backend.utils.inference.belief_manager.journey.learn_service import (
     summarize_global_insights,
 )
@@ -45,6 +49,8 @@ from backend.utils.knowledge_base.arsenal import service as arsenal_service
 from backend.utils.embedding.embed_utils import get_embedding
 from backend.utils.segment_utils import segment_keys_from_meta, segment_label_from_key
 from backend.utils.inference.strategy.intervention_mode import choose_intervention_mode
+
+LOGGER = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -2513,7 +2519,7 @@ def _get_arsenal_library(product_id: str) -> Dict[str, Any]:
         with SessionLocal() as db:
             raw = arsenal_service.serialize_arsenal_library(db, product_id=product_id)
     except Exception as exc:  # pragma: no cover - defensive logging
-        print(f"⚠️ Unable to load arsenal library for {product_id}: {exc}")
+        LOGGER.warning("Unable to load arsenal library for %s: %s", product_id, exc)
         raw = None
 
     if raw:
@@ -2985,7 +2991,8 @@ def _summarize_entry_point_plays(
         belief_transition = play.get("belief_transition")
         pain_label = None
         if isinstance(belief_transition, dict):
-            pain_label = belief_transition.get("pain", {}).get("label")
+            pain_entry = belief_transition.get("pain") or {}
+            pain_label = pain_entry.get("label")
         rows.append(
             {
                 "play_id": play.get("play_id") or play.get("asset_id") or play.get("channel_id"),
@@ -4468,6 +4475,9 @@ def _recommend_assets_for_transition(
                 concern_strength=concern_strength,
                 learned_effect=learned_effect,
             )
+            asset_payload = _asset_payload(asset)
+            channel_payload = _channel_payload(channel)
+
             calibration_meta = None
             expected_source = None
             if win_calibrator and account_id:
@@ -4491,6 +4501,11 @@ def _recommend_assets_for_transition(
                     if (learned_effect or (impact_record and impact_record.get("evidence_count")))
                     else "graph"
                 )
+            channel_persona_alignment = _channel_persona_match(
+                channel_payload.get("target_personas") or [], persona.get("label")
+            )
+            channel_payload["persona_aligned"] = channel_persona_alignment
+
             confidence = _confidence_score(
                 asset_score,
                 channel_score,
@@ -4521,12 +4536,6 @@ def _recommend_assets_for_transition(
                 transition_stage_tokens=transition_stage_tokens,
                 belief_probability=belief_probability,
             )
-            asset_payload = _asset_payload(asset)
-            channel_payload = _channel_payload(channel)
-            channel_persona_alignment = _channel_persona_match(
-                channel_payload.get("target_personas") or [], persona.get("label")
-            )
-            channel_payload["persona_aligned"] = channel_persona_alignment
 
             asset_type = asset.get("category") or (asset.get("format") or "").lower() or None
             channel_type = channel_payload.get("channel_type")
@@ -6386,11 +6395,15 @@ def build_account_marketing_blueprint(
         try:
             win_calibrator = WinProbabilityCalibrator.from_summary(win_regression)
         except Exception as exc:  # pragma: no cover - calibration is best effort
-            print(f"⚠️ Unable to build win regression calibrator: {exc}")
+            LOGGER.warning("Unable to build win regression calibrator: %s", exc)
             win_calibrator = None
 
     account = get_account_by_id(product_id, account_id) or {"account_name": account_id}
-    thesis = build_belief_thesis_for_account(product_id, account_id)
+    thesis, _ = get_cached_belief_thesis(
+        product_id=product_id,
+        account_id=account_id,
+        build_fn=lambda: build_belief_thesis_for_account(product_id, account_id),
+    )
     if persona_wolves_metrics is None:
         persona_wolves_metrics, persona_metrics_updated_at = _load_persona_wolves_metrics(
             product_id
@@ -7971,7 +7984,7 @@ def build_product_marketing_plan(
     try:
         shm_metrics = get_shm_transition_metrics(canonical_product_id)
     except Exception as exc:  # pragma: no cover - diagnostic only
-        print(f"⚠️ Unable to load SHM metrics for {canonical_product_id}: {exc}")
+        LOGGER.warning("Unable to load SHM metrics for %s: %s", canonical_product_id, exc)
         shm_metrics = {}
     if shm_metrics:
         product_graph.graph["shm_metrics"] = shm_metrics
@@ -7992,8 +8005,8 @@ def build_product_marketing_plan(
                 product_id=canonical_product_id,
             )
     except Exception as exc:  # pragma: no cover - defensive logging
-        print(
-            f"⚠️ Unable to summarize product insights for {canonical_product_id}: {exc}"
+        LOGGER.warning(
+            "Unable to summarize product insights for %s: %s", canonical_product_id, exc
         )
         global_insights = None
 
@@ -8158,7 +8171,7 @@ def _filter_by_window(
 
 
 def _save_rcs_json(*args: Any, **kwargs: Any) -> None:
-    print("[marketing_plan] _save_rcs_json is deprecated; skipping legacy write.")
+    LOGGER.warning("[marketing_plan] _save_rcs_json is deprecated; skipping legacy write.")
 CADENCE_TEMPLATE: Tuple[Dict[str, Any], ...] = (
     {"phase": "probe", "frequency_multiplier": 0.4, "duration_days": 7, "preferred_mode": "broad"},
     {"phase": "ramp", "frequency_multiplier": 0.8, "duration_days": 10, "preferred_mode": "focused"},

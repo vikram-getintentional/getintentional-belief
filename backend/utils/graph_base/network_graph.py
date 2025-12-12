@@ -17,7 +17,6 @@ def build_product_graph(product_lookup_id: str):
     """
     Build a NetworkX DiGraph for the given product_id using your internal graph data.
     """
-    print("Building product graph for:", product_lookup_id)
     product_graph = load_graph_from_json(product_lookup_id)
     return product_graph
 

@@ -126,7 +126,6 @@ class PersonaGraph:
         PG = nx.DiGraph()
         details: Dict[Tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
         G = product_graph
-        print("Building PersonaGraph from product graph with Nodes:", G.number_of_nodes(), "Edges:", G.number_of_edges())
 
         personas = get_persona_node_ids(G)
         
@@ -231,7 +230,6 @@ class PersonaGraph:
         return cls(G=PG, product_graph=product_graph, original_graph=OG)
     
     def _mk_engaged_nodes(self, engaged_personas: List[str]) -> List[Dict[str, float]]:
-        print("Making engaged nodes from personas:", engaged_personas)
         return [{"id": pid, "occurrence": 1.0} for pid in engaged_personas]
     
     # persona_belief_engine.py (add)
@@ -247,7 +245,6 @@ class PersonaGraph:
         and stamp persona-level scores back onto self.G nodes.
         """
         engaged_nodes = engaged_nodes or []
-        print("Hydrating RCS scores for engaged nodes:", engaged_nodes)
 
 
         report = get_involvement_activation_report(
@@ -257,9 +254,7 @@ class PersonaGraph:
             alpha=alpha,
             attr_prior=attr_prior,
         )
-        print("Computed involvement/activation report in PersonaGraph")
         p_scores = report.get("persona_scores", {}) or {}
-        print("Persona scores computed")
 
 
         # Stamp persona-level scores back onto the reduced graph
@@ -496,22 +491,11 @@ def predict_snapshot(
       - metrics: graphwin, perceptibility, proximity
     """
     seed = engaged_personas if engaged_personas else _default_seed(PG)
-    print("Engaged personas for snapshot prediction:", seed)
     engaged_nodes = PG._mk_engaged_nodes(seed)
-    print("starting first hydrate")
 
     # >>> hydrate contextually before any metric reads
-    PG._hydrate_from_rcs_scores(engaged_nodes=engaged_nodes, attr_prior=attr_prior)
-    print("completed first hydrate with graph Nodes:", PG.G.number_of_nodes(), "Edges:", PG.G.number_of_edges())
-    print("Sample PersonaGraph nodes after hydrate:")
-    for n, d in list(PG.G.nodes(data=True))[:5]:
-        print(f"  Node: {n} Data: {d}")
-    print("Sample PersonaGraph edges after hydrate:")
-    for u, v, d in list(PG.G.edges(data=True))[:5]:
-        print(f"  Edge: {u} -> {v} Data: {d}")
-        
+    PG._hydrate_from_rcs_scores(engaged_nodes=engaged_nodes, attr_prior=attr_prior)    
     expected = PG.expected_next(seed, k=k_next)
-    print("Computed expected next personas:", expected)
     paths = PG.beam_paths(start_personas=seed, beam_width=beam_width, max_depth=max_depth, keep=8)
     metrics = {
         "graphwin": PG.graphwin(engaged_personas=seed),

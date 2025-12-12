@@ -2281,7 +2281,6 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
     Product-level SHM / belief insights across *all* accounts.
     Feeds the 'Global Insights' box in Engagements Setup.
     """
-    print("summarizing global insights for product:", product_id)
 
     meta_account_map: Dict[str, List[str]] = defaultdict(list)
     account_raw_meta: Dict[str, Dict[str, Any]] = {}
@@ -3282,8 +3281,6 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
             asset_metadata=asset_metadata,
         )
         win_regression_summary = build_win_regression_summary(account_feature_rows)
-
-        print("finished summarizing global insights for product:", product_id)
 
         total_step_events = len(steps)
         stability_score = (

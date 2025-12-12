@@ -7,6 +7,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 import json
+import logging
 import os
 from collections import Counter, defaultdict
 from collections.abc import Mapping
@@ -78,6 +79,8 @@ from backend.utils.inference.subsidies.subsidy_engine import (
     wolf_score_dynamic,
 )
 from backend.utils.segment_utils import segment_keys_from_meta
+
+LOGGER = logging.getLogger(__name__)
 
 from backend.utils.inference.belief_manager.learn.graph_learning import (
     GraphStore,
@@ -2226,7 +2229,7 @@ def compute_belief_thesis_core(
     It returns a `BeliefThesisCore` which can be re-used by different UIs.
     """
     if debug:
-        print("Starting belief thesis core build")
+        LOGGER.debug("Starting belief thesis core build")
 
     product_id = get_product_id_from_subgraph(product_graph)
     if not product_id:
@@ -2239,7 +2242,9 @@ def compute_belief_thesis_core(
     try:
         shm_metrics = get_shm_transition_metrics(product_id)
     except Exception as exc:  # pragma: no cover - diagnostic only
-        print(f"⚠️ Unable to load SHM transition metrics for {product_id}: {exc}")
+        LOGGER.warning(
+            "Unable to load SHM transition metrics for %s: %s", product_id, exc
+        )
         shm_metrics = {}
 
     # 1) resolver aware observed personas (reuse existing engagements if given)
@@ -2254,10 +2259,10 @@ def compute_belief_thesis_core(
             unique_persona_ids.append(pid)
 
     if debug:
-        print(
-            f"Observed personas for account {account_id}: {unique_persona_ids}"
+        LOGGER.debug(
+            "Observed personas for account %s: %s", account_id, unique_persona_ids
         )
-    print("Compute Belief Thesis Core: completed 1a")
+    LOGGER.debug("Compute Belief Thesis Core: completed 1a")
     # 1b) summarize how confident the resolver is about this account
     persona_resolution_stats = _persona_resolution_stats(
         observed_persona_matches
@@ -2273,7 +2278,7 @@ def compute_belief_thesis_core(
         for step in timeline
         if step.get("effective_persona_id")
     ]
-    print("Compute Belief Thesis Core: completed 1b")
+    LOGGER.debug("Compute Belief Thesis Core: completed 1b")
     # 2) build PersonaGraph (reduced graph)
     PG = PersonaGraph.from_product_graph(
         product_graph,
@@ -2286,13 +2291,12 @@ def compute_belief_thesis_core(
         _apply_shm_metrics_to_persona_graph(PG, shm_metrics)
 
     if debug:
-        print(
-            "Built PersonaGraph from product graph with Nodes:",
+        LOGGER.debug(
+            "Built PersonaGraph from product graph with Nodes: %s Edges: %s",
             PG.G.number_of_nodes(),
-            "Edges:",
             PG.G.number_of_edges(),
         )
-    print("Compute Belief Thesis Core: completed 3")
+    LOGGER.debug("Compute Belief Thesis Core: completed 3")
     # 3) baseline snapshot (zero evidence)
     baseline = predict_snapshot(PG, engaged_personas=[], k_next=5)
     def _annotate_paths_with_metrics(paths: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -2333,8 +2337,8 @@ def compute_belief_thesis_core(
     )
 
     if debug:
-        print("Computed baseline snapshot for belief thesis")
-    print("Compute Belief Thesis Core: completed 4")
+        LOGGER.debug("Computed baseline snapshot for belief thesis")
+    LOGGER.debug("Compute Belief Thesis Core: completed 4")
     # 4) Per-engagement prediction → observation → learning loop
     journey_steps: List[Dict[str, Any]] = []
     episodes: List[Episode] = []
@@ -2689,14 +2693,14 @@ def compute_belief_thesis_core(
     journey["episodes"] = [_json_safe(ep) for ep in episodes]
 
     observed_persona_ids = list(engaged_sequence)
-    print("Compute Belief Thesis Core: completed 4")
+    LOGGER.debug("Compute Belief Thesis Core: completed 4")
     # 5) current snapshot (after all observed) – note this uses the (possibly
     #    updated) PersonaGraph if online learning was enabled.
-    print("Compute Belief Thesis Core: Step 5: Starting Predict Snapshot")
+    LOGGER.debug("Compute Belief Thesis Core: Step 5: Starting Predict Snapshot")
     current = predict_snapshot(
         PG, engaged_personas=observed_persona_ids, k_next=5
     )
-    print("Compute Belief Thesis Core: Step 5: Predicted Snapshot")
+    LOGGER.debug("Compute Belief Thesis Core: Step 5: Predicted Snapshot")
     current_paths = _annotate_paths_with_metrics(current["walk_paths"])
     for pid, phase in _persona_phase_lookup(current_paths).items():
         persona_phase_lookup.setdefault(pid, phase)
@@ -2713,7 +2717,7 @@ def compute_belief_thesis_core(
         segment_keys=segment_keys,
         product_graph=product_graph,
     )
-    print("Compute Belief Thesis Core: completed 5")
+    LOGGER.debug("Compute Belief Thesis Core: completed 5")
     # 6) GraphStore-based learning (Bayesian) over the full product graph
     learning_summary: Optional[Dict[str, Any]] = None
     raw_diffs: Optional[Dict[str, Any]] = None
@@ -2844,7 +2848,7 @@ def compute_belief_thesis_core(
                 "account_id": account_id,
                 "product_id": product_id,
             }
-        print("Compute Belief Thesis Core: completed 6a")
+        LOGGER.debug("Compute Belief Thesis Core: completed 6a")
         # ---------------------------
         # 6b) Local Bayesian diffs (v3) from persona-path mismatch
         # ---------------------------
@@ -2979,7 +2983,7 @@ def compute_belief_thesis_core(
 
     except Exception as e:
         learning_apply_errors.append(str(e))
-    print("Compute Belief Thesis Core: completed 6b")
+    LOGGER.debug("Compute Belief Thesis Core: completed 6b")
     # -----------------------------------------------------------------
     # 6c) SHM + Bayesian journey learner (episodes + weights)
     # -----------------------------------------------------------------
@@ -3149,7 +3153,7 @@ def compute_belief_thesis_core(
     )
 
     if debug:
-        print("Completed belief thesis core build:", core)
+        LOGGER.debug("Completed belief thesis core build: %s", core)
 
     return core
 
@@ -3338,23 +3342,21 @@ def build_belief_thesis(
         learning_kappa=0.2,
     )
 
-    print("[belief_manager] Completed belief thesis core computation:")
+    LOGGER.debug("[belief_manager] Completed belief thesis core computation:")
 
     out = belief_thesis_to_ui_dict(core, product_graph)
-    print()
-    print("/n /n #####################################################################")
+    LOGGER.debug("#####################################################################")
 
-    print(
-        "[belief_manager] Converted belief thesis core to UI dict."
-    )
+    LOGGER.debug("[belief_manager] Converted belief thesis core to UI dict.")
 
     if debug:
-        print("Completed belief thesis build. UI dict:", out)
+        LOGGER.debug("Completed belief thesis build. UI dict: %s", out)
 
     bad_path = _scan_nonstring_keys(out)
     if bad_path:
-        print(
-            f"[belief_manager] WARNING: non-string mapping key detected at {bad_path}. Sanitizing…"
+        LOGGER.warning(
+            "[belief_manager] WARNING: non-string mapping key detected at %s. Sanitizing…",
+            bad_path,
         )
 
     return _json_safe(out)

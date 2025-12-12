@@ -24,10 +24,8 @@ def generate_embeddings(texts: list[str]) -> dict:
     if model is None:
         print("⚠️ Embedding model unavailable; skipping generation.")
         return {}
-    print(f"Generating embeddings  for texts")
     try:
         embeddings = model.encode(texts, convert_to_numpy=True)
-        print(f"Generated embeddings")
         return {text: embedding.tolist() for text, embedding in zip(texts, embeddings)}
     except Exception as e:
         print(f"❌ Embedding generation failed: {e}")
