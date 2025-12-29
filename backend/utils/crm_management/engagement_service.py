@@ -347,6 +347,7 @@ def _ensure_engagement_columns() -> None:
         "belief_stage_label": "ALTER TABLE target_account_engagements ADD COLUMN belief_stage_label VARCHAR",
         "account_meta": "ALTER TABLE target_account_engagements ADD COLUMN account_meta JSON",
         "segment_keys": "ALTER TABLE target_account_engagements ADD COLUMN segment_keys JSON",
+        "candidate_persona_label": "ALTER TABLE target_account_engagements ADD COLUMN candidate_persona_label VARCHAR",
         "derived_channel_id": "ALTER TABLE target_account_engagements ADD COLUMN derived_channel_id VARCHAR",
     }
     try:
@@ -371,6 +372,13 @@ def _ensure_engagement_columns() -> None:
 
 
 _ensure_engagement_columns()
+
+
+def ensure_engagement_columns() -> None:
+    """
+    Public wrapper so callers can trigger the migration after startup/login.
+    """
+    _ensure_engagement_columns()
 
 def _attach_arsenal_references(
     db: Session,

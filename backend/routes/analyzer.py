@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Body, Depends, Request, HTTPException, Query
@@ -8,13 +9,15 @@ from pydantic import BaseModel
 
 from backend.utils.crm_management.target_account_manager import get_account_by_id, get_target_account_ids, load_target_accounts_from_db, save_and_update_target_accounts, delete_target_account_handler
 from backend.utils.graph_base.graph_utils.graph_confidence import compute_graph_confidence
-from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph
+from backend.utils.graph_base.network_graph import build_product_graph, get_product_id_from_subgraph, update_graph
+from backend.utils.graph_base.agent_graph_builder import _capability, _upsert_edge
 from backend.utils.inference.crm_analysis.actual_win_estimator import generate_win_regression
 from backend.utils.inference.discovery_engine.agentic_engine.agentic_loop import run_agentic_loop, run_frontier_expansion
 
 from backend.auth.jwt_handler import decode_token
 from sqlalchemy.orm import Session
 from backend.database import get_db
+from backend.utils.inference.exceptions import InferenceHalt
 from backend.utils.inference.rcs_generators.rcs_simulator import simulate_rcs
 from backend.utils.knowledge_base.arsenal_generation import get_all_arsenals
 from backend.utils.knowledge_base.arsenal.service import (
@@ -72,8 +75,10 @@ from backend.utils.strategy_builder.comprehensive_plan_generator import (
     build_product_marketing_plan,
 )
 from backend.utils.api_contracts import (
+    _aggregate_planning_metrics,
+    _determine_planning_mode,
     build_comprehensive_execution_plan_contract,
-    build_account_plan_contract,
+    build_account_plan_contract_from_marketing_plan,
     build_insights_inbox_contract,
     build_personas_atlas_contract,
     build_icp_overview_contract,
@@ -443,6 +448,74 @@ async def get_product_capabilities(product_id: str, request: Request):
     except Exception:
         LOGGER.exception("Get capabilities error")
         raise HTTPException(status_code=500, detail="Could not retrieve capabilities")
+
+
+@router.post("/value-prop/update-summary/{product_id}")
+async def update_value_prop_summary(product_id: str, payload: dict, request: Request):
+    _decode_request_token(request)
+    summary = payload.get("summary")
+    if summary is None:
+        raise HTTPException(status_code=400, detail="Summary text is required.")
+    graph = build_product_graph(product_id)
+    product_node_id = get_product_id_from_subgraph(graph)
+    if not product_node_id or product_node_id not in graph.nodes:
+        raise HTTPException(status_code=404, detail="Product node not found.")
+    node = graph.nodes[product_node_id]
+    node["summary"] = summary
+    node["data_source"] = "user_input"
+    node["last_updated"] = datetime.utcnow().isoformat()
+    update_graph(graph)
+    return get_product_value_prop_capabilities(graph)
+
+
+@router.patch("/value-prop/capabilities/{product_id}/{capability_id}")
+async def update_value_prop_capability(product_id: str, capability_id: str, payload: dict, request: Request):
+    _decode_request_token(request)
+    if not capability_id:
+        raise HTTPException(status_code=400, detail="Capability ID is required.")
+    if "name" not in payload and "description" not in payload:
+        raise HTTPException(status_code=400, detail="At least one field must be provided.")
+    graph = build_product_graph(product_id)
+    if capability_id not in graph.nodes:
+        raise HTTPException(status_code=404, detail="Capability node not found.")
+    node = graph.nodes[capability_id]
+    name = payload.get("name")
+    description = payload.get("description")
+    if name is not None:
+        node["name"] = name
+    if description is not None:
+        node["description"] = description
+    node["data_source"] = "user_input"
+    node["last_updated"] = datetime.utcnow().isoformat()
+    update_graph(graph)
+    return get_product_value_prop_capabilities(graph)
+
+
+@router.post("/value-prop/capabilities/{product_id}")
+async def create_value_prop_capability(product_id: str, payload: dict, request: Request):
+    _decode_request_token(request)
+    name = payload.get("name")
+    if not name:
+        raise HTTPException(status_code=400, detail="Capability name is required.")
+    description = payload.get("description") or ""
+    graph = build_product_graph(product_id)
+    product_node_id = get_product_id_from_subgraph(graph)
+    if not product_node_id:
+        raise HTTPException(status_code=404, detail="Product node not found.")
+    cap_id = _capability(graph, name=name, description=description)
+    graph.nodes[cap_id]["data_source"] = "user_input"
+    graph.nodes[cap_id]["last_updated"] = datetime.utcnow().isoformat()
+    _upsert_edge(
+        graph,
+        product_node_id,
+        "offers",
+        cap_id,
+        weight=1.0,
+        attrs={"relation": "offers", "likelihood": 1.0, "relevance": 1.0},
+        data_source="user_input",
+    )
+    update_graph(graph)
+    return get_product_value_prop_capabilities(graph)
 
 
 #--------------------------
@@ -1334,6 +1407,17 @@ async def get_persona_matches(product_id: str, account_id: str, request: Request
             "thesis": thesis,
         }
         return _log_route_output("get_persona_matches", response)
+    except InferenceHalt as halt:
+        LOGGER.warning(
+            "Inference halted for %s/%s: %s",
+            product_id,
+            account_id,
+            halt.reason,
+        )
+        raise HTTPException(
+            status_code=422,
+            detail=halt.reason,
+        )
     except Exception as e:
         LOGGER.exception("Error in get_persona_matches: %s", e)
         raise HTTPException(status_code=500, detail=f"Persona match failed: {e}")
@@ -1447,6 +1531,10 @@ async def get_comprehensive_execution_plan(
 
     try:
         plan = build_product_marketing_plan(product_id, account_id=account_id)
+        accounts = plan.get("accounts") or []
+        plan["planning_mode"] = _determine_planning_mode(
+            *_aggregate_planning_metrics(accounts)
+        )
         return _log_route_output("get_comprehensive_execution_plan", plan)
     except HTTPException:
         raise
@@ -1479,8 +1567,28 @@ def account_plan(
 ):
     _decode_request_token(request)
     try:
-        plan = build_account_marketing_blueprint(product_id, account_id)
-        contract = build_account_plan_contract(plan, product_id)
+        plan = build_product_marketing_plan(product_id, account_id=account_id)
+        accounts = plan.get("accounts") or []
+        account_entry = next(
+            (
+                acct
+                for acct in accounts
+                if acct.get("account_id") == account_id and not acct.get("error")
+            ),
+            None,
+        )
+        if not account_entry and accounts:
+            account_entry = accounts[0]
+        if not account_entry:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Account plan not found for {account_id}",
+            )
+        contract = build_account_plan_contract_from_marketing_plan(
+            plan,
+            account_entry,
+            product_id=product_id,
+        )
         return _log_route_output("account_plan", contract)
     except Exception as exc:
         LOGGER.exception("account_plan error: %s", exc)

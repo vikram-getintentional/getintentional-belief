@@ -8,9 +8,12 @@ export type BeliefStage =
   | "Implementation"
   | "PromisedLand";
 
+export type PlanningMode = "graph_hypothesis" | "observed_signal" | "learned_strategy";
+
 export interface MetaWithBeliefScale {
   generatedAt: string;
   beliefScale: BeliefStage[];
+  planningMode?: PlanningMode;
   version?: string;
 }
 
@@ -126,6 +129,43 @@ export interface PortfolioTheme {
   campaigns: PortfolioCampaign[];
 }
 
+export interface RecommendedAction {
+  label: string;
+  route: string;
+}
+
+export interface QualityReadinessDimension {
+  id: string;
+  label: string;
+  score: number;
+  status: "ready" | "partial" | "missing" | string;
+  reason: string;
+  recommended_actions: RecommendedAction[];
+}
+
+export interface PlanReadiness {
+  score: number;
+  dimensions: QualityReadinessDimension[];
+}
+
+export interface PredictiveConfidenceComponent {
+  id: string;
+  score: number;
+  note: string;
+}
+
+export interface PlanPredictiveConfidence {
+  stars: number;
+  score: number;
+  components: PredictiveConfidenceComponent[];
+  explanation: string;
+}
+
+export interface PlanQuality {
+  readiness: PlanReadiness;
+  predictiveConfidence: PlanPredictiveConfidence;
+}
+
 export interface ComprehensiveExecutionPlan {
   meta: {
     version: string;
@@ -142,6 +182,7 @@ export interface ComprehensiveExecutionPlan {
     painThemes: PainTheme[];
   };
   themes: PortfolioTheme[];
+  quality: PlanQuality;
 }
 
 export interface AccountPlanPersona {
@@ -205,6 +246,83 @@ export interface OutcomeSimulator {
   };
 }
 
+export interface WinOutlookCoverage {
+  similar_deals: number;
+  wins: number;
+  losses: number;
+}
+
+export interface WinOutlookDriver {
+  feature: string;
+  direction: "+" | "-";
+  weight: number;
+}
+
+export interface WinOutlookDiagnostics {
+  graph_walk_reachability: number;
+  note?: string;
+}
+
+export interface WinOutlookRightToWin {
+  p: number | null;
+  ci: { low: number | null; high: number | null };
+  coverage: WinOutlookCoverage;
+  top_drivers: WinOutlookDriver[];
+  status: string;
+}
+
+export interface WinOutlookEvidence {
+  engagement_count: number;
+  summary: string;
+}
+
+export interface WinOutlookBaselineWin {
+  p: number | null;
+  ci: { low: number | null; high: number | null };
+  evidence: WinOutlookEvidence;
+  status: string;
+}
+
+export interface WinOutlookForecastAssumption {
+  action_id: string;
+  label: string;
+  p_engage: number;
+  expected_delta_log_odds: number;
+  history_note?: string;
+  history_engagements?: number | null;
+}
+
+export interface WinOutlookPredictedWin {
+  p: number | null;
+  ci: { low: number | null; high: number | null };
+  range: { low: number | null; high: number | null };
+  assumptions: WinOutlookForecastAssumption[];
+  lift_over_current: number;
+  status: string;
+  evidence: WinOutlookEvidence;
+}
+
+export interface WinOutlook {
+  diagnostics: WinOutlookDiagnostics;
+  right_to_win: WinOutlookRightToWin;
+  baseline_win: WinOutlookBaselineWin;
+  predicted_win: WinOutlookPredictedWin;
+}
+
+export interface EngagementSignals {
+  observed: number;
+  projected: number;
+  lastObservedAt?: string | null;
+}
+
+export interface DataAvailability {
+  graph: boolean;
+  historicDeals: number;
+  observedEngagements: number;
+  arsenalAssets: number;
+  peopleMapped: number;
+}
+
 export interface AccountPlanContract {
   meta: MetaWithBeliefScale;
   account: {
@@ -227,6 +345,10 @@ export interface AccountPlanContract {
   };
   nextBestActions: AccountPlanNextBestAction[];
   outcomeSimulator: OutcomeSimulator;
+  quality: PlanQuality;
+  winOutlook?: WinOutlook;
+  engagementSignals?: EngagementSignals;
+  dataAvailability?: DataAvailability;
 }
 
 export interface InsightEvidenceMetrics {
@@ -270,6 +392,7 @@ export interface InsightCard {
 export interface InsightsInbox {
   meta: {
     generatedAt: string;
+    planningMode?: PlanningMode;
   };
   insights: InsightCard[];
 }
@@ -334,4 +457,98 @@ export interface ICPOverview {
     generatedAt: string;
   };
   icps: ICPEntry[];
+}
+
+export type ThesisAttributeType = "numeric" | "categorical" | "boolean";
+
+export interface ThesisAttributeBin {
+  id: string;
+  label?: string | null;
+  min?: number | null;
+  max?: number | null;
+}
+
+export interface ThesisSegmentFeature {
+  id: string;
+  product_id: string;
+  name: string;
+  key: string;
+  type: ThesisAttributeType;
+  bins?: ThesisAttributeBin[];
+  categories?: string[];
+  created_at: string;
+}
+
+export type SegmentRuleConditionOperator = "IN" | "ANY";
+
+export interface SegmentRuleCondition {
+  feature_key: string;
+  op: SegmentRuleConditionOperator;
+  values?: string[];
+}
+
+export interface SegmentRules {
+  conditions: SegmentRuleCondition[];
+}
+
+export interface ThesisSegment {
+  id: string;
+  product_id: string;
+  name: string;
+  description?: string | null;
+  rules: SegmentRules;
+  prior_weight: number;
+  created_at: string;
+}
+
+export type DriftLevel = "stable" | "moderate" | "strong";
+
+export interface DistributionSummary {
+  prior: Record<string, number>;
+  posterior: Record<string, number>;
+  drift: number;
+  drift_level: DriftLevel;
+}
+
+export interface AttributeDistributionSummary extends DistributionSummary {
+  feature_key: string;
+}
+
+export interface PainDistributionSummary extends DistributionSummary {
+  parent_pain_id?: string | null;
+}
+
+export interface ZmotDistributionSummary extends DistributionSummary {
+  parent_pain_id: string;
+}
+
+export interface AspirationDistributionSummary extends DistributionSummary {
+  parent_pain_id: string;
+}
+
+export interface BeliefDistributionSummary extends DistributionSummary {
+  parent_pain_id: string;
+  parent_aspiration_id: string;
+}
+
+export interface ThesisDistributions {
+  attributes: AttributeDistributionSummary[];
+  pains: PainDistributionSummary[];
+  zmots: ZmotDistributionSummary[];
+  aspirations: AspirationDistributionSummary[];
+  beliefs: BeliefDistributionSummary[];
+}
+
+export interface SegmentThesisSummary {
+  segment: ThesisSegment;
+  distributions: ThesisDistributions;
+}
+
+export interface ThesisBuilderCall {
+  call_id: string;
+  account_id?: string | null;
+  external_call_id?: string | null;
+  attribute_bins: Record<string, string>;
+  segment_id?: string | null;
+  created_at: string;
 }

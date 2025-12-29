@@ -20,11 +20,15 @@ import TargetAccounts from './pages/TargetAccounts.tsx'
 import Models from './pages/models.tsx'
 import MarketingPlanner from './pages/MarketingPlanner.tsx'
 import PainsMap from './pages/PainsMap.tsx'
+import ThesisBuilder from './pages/ThesisBuilder.tsx'
 import EngagementsSetup from './pages/Engagements.tsx'
 import InsightsInbox from './pages/InsightsInbox'
 import AccountPlan from './pages/AccountPlan'
 
+import { initUnauthorizedRedirect } from './utils/unauthorizedRedirect';
 import './output.css';
+
+initUnauthorizedRedirect();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -44,6 +48,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/crm-upload" element={<CRMUpload />} />
           <Route path="/target-accounts" element={<TargetAccounts />} />
           <Route path="/models" element={<Models />} />
+          <Route path="/geek-out/thesis-builder" element={<ThesisBuilder />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/marketing-planner" element={<MarketingPlanner />} />
           <Route path="/account-plan" element={<AccountPlan />} />

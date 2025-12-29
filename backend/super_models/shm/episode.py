@@ -141,11 +141,17 @@ class ShmEpisodeStep(Base):
     # coarse bucket for analysis (on_path / early / late / off_path)
     bucket = Column(Enum(StepBucket), nullable=True, index=True)
 
+    belief_state = Column(String, nullable=True, index=True)
+
     # observed persona at this step (if any)
     observed_persona_id = Column(String, nullable=True)
 
     # top predicted persona id at this step (if any)
     predicted_top_persona_id = Column(String, nullable=True)
+
+    channel = Column(String, nullable=True, index=True)
+    asset_id = Column(String, nullable=True, index=True)
+    canonical_persona_id = Column(String, nullable=True, index=True)
 
     # raw prediction + walk data as JSON (opaque; mirrors journey["steps"][i])
     predicted_topK = Column(JSON, nullable=True)

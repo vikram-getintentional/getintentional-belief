@@ -175,13 +175,20 @@ const formatFrequency = (value?: number | null) => {
   return `${value.toFixed(precision)} / wk`;
 };
 
+const isSentinelPersona = (personaId?: string | null) =>
+  Boolean(personaId && personaId.includes("__STOP__"));
+
 const PersonaEngagementCadence: React.FC<Props> = ({
   engagements,
   personaMatches,
   maxAssetsPerPhase = 3,
   emptyCopy = "Cadence will populate once we map personas to this journey.",
 }) => {
-  if (!engagements || engagements.length === 0) {
+  const filteredEngagements = (engagements ?? []).filter(
+    (entry) => !isSentinelPersona(entry.persona_id)
+  );
+
+  if (!filteredEngagements.length) {
     return (
       <Typography variant="body2" color="text.secondary">
         {emptyCopy}
@@ -198,7 +205,7 @@ const PersonaEngagementCadence: React.FC<Props> = ({
 
   return (
     <Stack spacing={2}>
-      {engagements.map((persona, idx) => {
+      {filteredEngagements.map((persona, idx) => {
         const personaKey =
           persona.persona_id || persona.persona_label || `persona-${idx}`;
         const matches = persona.persona_id

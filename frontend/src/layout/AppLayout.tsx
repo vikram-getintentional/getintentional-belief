@@ -23,14 +23,15 @@ const navSections = [
         { name: 'Arsenal', path: '/arsenal' },
       ],
     },
-    {
-      title: 'Geek Out',
-      items: [
-        { name: 'Models', path: '/models' },
-        {name: 'Pains Map', path: '/pains-map' },
-        { name: 'Simulator', path: '/reverse-case-studies' },
-      ],
-    },
+        {
+          title: 'Geek Out',
+          items: [
+            { name: 'Models', path: '/models' },
+            {name: 'Pains Map', path: '/pains-map' },
+            { name: 'Thesis Builder', path: '/geek-out/thesis-builder' },
+            { name: 'Simulator', path: '/reverse-case-studies' },
+          ],
+        },
     {
       title: 'Setup',
       items: [

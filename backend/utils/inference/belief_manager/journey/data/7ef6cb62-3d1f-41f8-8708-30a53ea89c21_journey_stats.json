@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "updated_at": "2025-12-14T04:25:59Z",
+  "transition": {
+    "canonical_persona:44c0890b8ed00dfe": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:44c0890b8ed00dfe": 209,
+        "canonical_persona:c6aa6a9c55171e40": 17,
+        "canonical_persona:bc0b93a7c1b581e0": 13,
+        "canonical_persona:2bc4cbe448b611a0": 6,
+        "vp, engineering platform|engineering|executive": 6,
+        "persona:680bcbf403c42992": 2
+      }
+    },
+    "canonical_persona:c6aa6a9c55171e40": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:c6aa6a9c55171e40": 105,
+        "canonical_persona:44c0890b8ed00dfe": 17,
+        "vp, engineering platform|engineering|executive": 6,
+        "canonical_persona:2bc4cbe448b611a0": 6
+      }
+    },
+    "canonical_persona:bc0b93a7c1b581e0": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:bc0b93a7c1b581e0": 14,
+        "canonical_persona:2bc4cbe448b611a0": 14
+      }
+    },
+    "canonical_persona:2bc4cbe448b611a0": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:2bc4cbe448b611a0": 40,
+        "canonical_persona:44c0890b8ed00dfe": 13,
+        "canonical_persona:c6aa6a9c55171e40": 12,
+        "persona:a6d59b8195e30ba5": 1
+      }
+    },
+    "vp, engineering platform|engineering|executive": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:44c0890b8ed00dfe": 6
+      }
+    },
+    "persona:680bcbf403c42992": {
+      "inference_belief_thesis_v2": {
+        "persona:680bcbf403c42992": 21,
+        "canonical_persona:44c0890b8ed00dfe": 2,
+        "persona:a6d59b8195e30ba5": 1
+      }
+    },
+    "persona:a6d59b8195e30ba5": {
+      "inference_belief_thesis_v2": {
+        "persona:a6d59b8195e30ba5": 11,
+        "persona:680bcbf403c42992": 1,
+        "canonical_persona:bc0b93a7c1b581e0": 1
+      }
+    }
+  },
+  "emission": {
+    "canonical_persona:44c0890b8ed00dfe": {
+      "inference_belief_thesis_v2": 266
+    },
+    "canonical_persona:c6aa6a9c55171e40": {
+      "inference_belief_thesis_v2": 136
+    },
+    "canonical_persona:bc0b93a7c1b581e0": {
+      "inference_belief_thesis_v2": 28
+    },
+    "canonical_persona:2bc4cbe448b611a0": {
+      "inference_belief_thesis_v2": 66
+    },
+    "vp, engineering platform|engineering|executive": {
+      "inference_belief_thesis_v2": 12
+    },
+    "persona:680bcbf403c42992": {
+      "inference_belief_thesis_v2": 24
+    },
+    "persona:a6d59b8195e30ba5": {
+      "inference_belief_thesis_v2": 14
+    }
+  }
+}

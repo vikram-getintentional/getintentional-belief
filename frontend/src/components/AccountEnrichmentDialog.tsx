@@ -65,6 +65,7 @@ type PersonaRequirement = {
   stage_label: string;
   matched_people: MatchPayload[];
   suggested_people: CandidatePayload[];
+  persona_ids?: string[];
 };
 
 type PersonaCandidate = {
@@ -173,6 +174,7 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
   const [manualDepartment, setManualDepartment] = useState<string>("");
   const [manualSeniority, setManualSeniority] = useState<string>("");
   const [candidateActionLoading, setCandidateActionLoading] = useState<string | null>(null);
+  const [visiblePersonas, setVisiblePersonas] = useState(5);
 
   const authHeader = useMemo(() => ({
     Authorization: token ? `Bearer ${token}` : "",
@@ -225,6 +227,10 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
     setManualSeniority("");
     setError(null);
   };
+
+  useEffect(() => {
+    setVisiblePersonas(5);
+  }, [data?.persona_requirements?.length]);
 
   const handleOpenEditor = (
     persona: PersonaRequirement,
@@ -443,6 +449,15 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
     }
   };
 
+  const personaRequirements = data?.persona_requirements || [];
+  const visiblePersonaRequirements = personaRequirements.slice(0, visiblePersonas);
+  const remainingPersonas = Math.max(personaRequirements.length - visiblePersonas, 0);
+  const canLoadMorePersonas = remainingPersonas > 0;
+  const handleLoadMorePersonas = () =>
+    setVisiblePersonas((prev) =>
+      Math.min(prev + 5, personaRequirements.length)
+    );
+
   const coverageLabel = useMemo(() => {
     if (!data?.summary) return "";
     const { coverage_pct, personas_with_matches, required_personas } = data.summary;
@@ -604,7 +619,7 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {data.persona_requirements.map((persona) => (
+                  {visiblePersonaRequirements.map((persona) => (
                     <TableRow key={persona.persona_id} hover>
                       <TableCell>
                         <Typography variant="subtitle2">{persona.persona_label}</Typography>
@@ -705,6 +720,17 @@ const AccountEnrichmentDialog: React.FC<AccountEnrichmentDialogProps> = ({
                 </TableBody>
               </Table>
             </TableContainer>
+            {canLoadMorePersonas && (
+              <Box display="flex" justifyContent="center" mt={1}>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={handleLoadMorePersonas}
+                >
+                  Load more personas ({remainingPersonas} remaining)
+                </Button>
+              </Box>
+            )}
           </Stack>
         )}
       </DialogContent>

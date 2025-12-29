@@ -137,6 +137,7 @@ const PersonasPage: React.FC = () => {
           if (!r.ok) throw new Error(r.statusText);
           return r.json();
         });
+        console.log("Persona insights data:", data);
         const sorted = (data.personas || []).slice().sort((a, b) => {
           const aw = a.scores?.wolves_score ?? 0;
           const bw = b.scores?.wolves_score ?? 0;

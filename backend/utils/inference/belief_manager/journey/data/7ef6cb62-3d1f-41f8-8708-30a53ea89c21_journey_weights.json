@@ -1,0 +1,56 @@
+{
+  "transition": {
+    "canonical_persona:44c0890b8ed00dfe": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:2bc4cbe448b611a0": 0.023715415019762844,
+        "canonical_persona:c6aa6a9c55171e40": 0.06719367588932806,
+        "canonical_persona:bc0b93a7c1b581e0": 0.05138339920948617,
+        "vp, engineering platform|engineering|executive": 0.023715415019762844,
+        "persona:680bcbf403c42992": 0.007905138339920948,
+        "canonical_persona:44c0890b8ed00dfe": 0.8260869565217391
+      }
+    },
+    "canonical_persona:c6aa6a9c55171e40": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:2bc4cbe448b611a0": 0.04477611940298507,
+        "vp, engineering platform|engineering|executive": 0.04477611940298507,
+        "canonical_persona:c6aa6a9c55171e40": 0.7835820895522388,
+        "canonical_persona:44c0890b8ed00dfe": 0.12686567164179105
+      }
+    },
+    "canonical_persona:bc0b93a7c1b581e0": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:2bc4cbe448b611a0": 0.5,
+        "canonical_persona:bc0b93a7c1b581e0": 0.5
+      }
+    },
+    "canonical_persona:2bc4cbe448b611a0": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:2bc4cbe448b611a0": 0.6060606060606061,
+        "persona:a6d59b8195e30ba5": 0.015151515151515152,
+        "canonical_persona:c6aa6a9c55171e40": 0.18181818181818182,
+        "canonical_persona:44c0890b8ed00dfe": 0.19696969696969696
+      }
+    },
+    "vp, engineering platform|engineering|executive": {
+      "inference_belief_thesis_v2": {
+        "canonical_persona:44c0890b8ed00dfe": 1.0
+      }
+    },
+    "persona:680bcbf403c42992": {
+      "inference_belief_thesis_v2": {
+        "persona:a6d59b8195e30ba5": 0.041666666666666664,
+        "persona:680bcbf403c42992": 0.875,
+        "canonical_persona:44c0890b8ed00dfe": 0.08333333333333333
+      }
+    },
+    "persona:a6d59b8195e30ba5": {
+      "inference_belief_thesis_v2": {
+        "persona:680bcbf403c42992": 0.07692307692307693,
+        "canonical_persona:bc0b93a7c1b581e0": 0.07692307692307693,
+        "persona:a6d59b8195e30ba5": 0.8461538461538461
+      }
+    }
+  },
+  "updated_at": "2025-12-14T04:25:59Z"
+}

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import asc
+from sqlalchemy import asc, text
 
 from backend.utils.inference.belief_manager.journey.shm_models import SHMEpisode
 from backend.utils.crm_management.target_account_manager import (
@@ -17,6 +17,7 @@ from backend.super_models.shm.episode import (
     StepBucket,
     EpisodeOutcome,
 )
+from backend.database import engine
 
 def _json_clean(value: Any) -> Any:
     """
@@ -167,6 +168,54 @@ def _parse_ts(value: Any) -> datetime:
     return datetime.utcnow()
 
 
+def _ensure_shm_meta_columns() -> None:
+    ddl_by_table = {
+        "shm_episodes_meta": {
+            "candidate_personas": "ALTER TABLE shm_episodes_meta ADD COLUMN candidate_personas JSON",
+        },
+        "shm_episode_steps": {
+            "belief_state": "ALTER TABLE shm_episode_steps ADD COLUMN belief_state VARCHAR",
+            "channel": "ALTER TABLE shm_episode_steps ADD COLUMN channel VARCHAR",
+            "asset_id": "ALTER TABLE shm_episode_steps ADD COLUMN asset_id VARCHAR",
+            "canonical_persona_id": "ALTER TABLE shm_episode_steps ADD COLUMN canonical_persona_id VARCHAR",
+        },
+    }
+    try:
+        with engine.connect() as conn:
+            for table, statements in ddl_by_table.items():
+                existing = set()
+                try:
+                    pragma = conn.execute(text(f"PRAGMA table_info({table});"))
+                except Exception:
+                    continue
+                for row in pragma:
+                    try:
+                        name = row._mapping["name"]
+                    except AttributeError:
+                        name = row[1]
+                    existing.add(name)
+                missing = {
+                    col: stmt for col, stmt in statements.items() if col not in existing
+                }
+                if not missing:
+                    continue
+                with engine.begin() as trans:
+                    for statement in missing.values():
+                        try:
+                            trans.execute(text(statement))
+                        except Exception:
+                            pass
+    except Exception:
+        return
+
+
+def ensure_shm_meta_columns() -> None:
+    _ensure_shm_meta_columns()
+
+
+_ensure_shm_meta_columns()
+
+
 # ---- write ----
 def write_meta_episode_from_thesis(
     db: Session,
@@ -189,6 +238,7 @@ def write_meta_episode_from_thesis(
     journey = thesis.get("journey") or {}
     steps: List[Dict[str, Any]] = journey.get("steps") or []
     candidate_personas = journey.get("candidate_personas") or {}
+    is_censored_for_learning = bool(journey.get("learning_is_censored"))
     if not steps:
         return None
 
@@ -217,7 +267,7 @@ def write_meta_episode_from_thesis(
         account_id=account_id,
         journey_model_version=model_version,
         outcome=EpisodeOutcome.unknown,  # you can overwrite later from CRM
-        is_censored=False,
+        is_censored=is_censored_for_learning,
         started_at=first_ts,
         ended_at=last_ts,
         account_meta=_json_clean(resolved_meta),
@@ -338,6 +388,13 @@ def write_meta_episode_from_thesis(
                     bucket=bucket_enum,
                     observed_persona_id=observed_persona_id,
                     predicted_top_persona_id=predicted_top_persona_id,
+                    belief_state=step.get("belief_state"),
+                    channel=engagement_meta.get("channel")
+                    or step.get("channel"),
+                    asset_id=engagement_meta.get("asset_id")
+                    or step.get("asset_id"),
+                    canonical_persona_id=step.get("canonical_persona_id")
+                    or observed_persona_id,
                     predicted_topK=predicted_topK,
                     walk_paths=walk_paths,
                     metrics=metrics,

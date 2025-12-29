@@ -38,13 +38,46 @@ def _now_iso() -> str:
 
 def _empty_stats() -> Dict[str, Any]:
     return {
-        "version": 1,
+        "version": 2,
         "updated_at": _now_iso(),
-        # transition[from_persona][bucket][to_persona] = count
+        # transition[from_persona][bucket][to_persona] = stats dict
         "transition": {},
         # emission[persona][bucket] = count
         "emission": {},
     }
+
+
+def _normalize_transition_entries(
+    transition_data: Any,
+) -> Dict[str, Any]:
+    if not isinstance(transition_data, dict):
+        return {}
+    normalized: Dict[str, Any] = {}
+    for from_pid, buckets in transition_data.items():
+        if not isinstance(buckets, dict):
+            continue
+        normalized_buckets: Dict[str, Any] = {}
+        for bucket, tos in buckets.items():
+            if not isinstance(tos, dict):
+                continue
+            normalized_bucket: Dict[str, Any] = {}
+            for to_pid, entry in tos.items():
+                if isinstance(entry, (int, float)):
+                    normalized_bucket[to_pid] = {
+                        "count": float(entry),
+                        "support_events": 0,
+                        "contradict_events": 0,
+                        "wins": 0,
+                        "losses": 0,
+                        "by_state": {},
+                        "channels": {},
+                        "assets": {},
+                    }
+                else:
+                    normalized_bucket[to_pid] = entry
+            normalized_buckets[bucket] = normalized_bucket
+        normalized[from_pid] = normalized_buckets
+    return normalized
 
 def load_stats(product_id: str) -> Dict[str, Any]:
     path = _stats_path(product_id)
@@ -56,6 +89,8 @@ def load_stats(product_id: str) -> Dict[str, Any]:
     except Exception:
         # corrupt -> reset
         data = _empty_stats()
+    transition = data.get("transition", {})
+    data["transition"] = _normalize_transition_entries(transition)
     return data
 
 def save_stats(product_id: str, stats: Dict[str, Any]) -> None:

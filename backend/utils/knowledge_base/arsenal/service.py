@@ -135,6 +135,7 @@ def _ensure_engagement_columns() -> None:
         "belief_stage_label": "ALTER TABLE target_account_engagements ADD COLUMN belief_stage_label VARCHAR",
         "account_meta": "ALTER TABLE target_account_engagements ADD COLUMN account_meta JSON",
         "segment_keys": "ALTER TABLE target_account_engagements ADD COLUMN segment_keys JSON",
+        "candidate_persona_label": "ALTER TABLE target_account_engagements ADD COLUMN candidate_persona_label VARCHAR",
     }
     try:
         with engine.connect() as conn:

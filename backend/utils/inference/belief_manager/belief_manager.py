@@ -20,6 +20,7 @@ import math
 import networkx as nx
 import pydantic
 
+from backend.utils.inference.exceptions import InferenceHalt, is_stop_persona
 from backend.utils.inference.rcs_generators.persona_map.persona_belief_engine import (
     PersonaGraph,
     predict_snapshot,
@@ -1125,6 +1126,31 @@ def _map_step_bucket(raw: str) -> Optional[str]:
     return "unknown"
 
 
+_BELIEF_STATE_KEYWORDS: List[Tuple[str, set[str]]] = [
+    ("zmot", {"awareness", "problem", "pain", "zmot", "problem realization", "pain realization"}),
+    ("discovery", {"discovery", "qualify", "consideration", "evaluate", "evaluation"}),
+    ("evaluation", {"evaluation", "compare", "assessment"}),
+    ("pilot", {"pilot", "trial", "proof of concept", "poc"}),
+    ("close", {"close", "decision", "purchase", "buy", "contract"}),
+]
+
+
+def _map_stage_to_belief_state(stage_label: Optional[str]) -> str:
+    """
+    Coerce stage / funnel labels into the simplified belief_state vocabulary we
+    expose in episode events.
+    """
+    label = (stage_label or "").strip().lower()
+    if not label:
+        return "journey_replay"
+    for state, keywords in _BELIEF_STATE_KEYWORDS:
+        for keyword in keywords:
+            if keyword in label:
+                return state
+    cleaned = label.replace(" ", "_").replace(".", "").replace("-", "_")
+    return cleaned or "journey_replay"
+
+
 
 # ---------------------------
 # Adapters for GraphLearning
@@ -2068,17 +2094,8 @@ def _episode_events_from_journey(
     source: str = "belief_thesis_v2",
 ) -> List[Dict[str, Any]]:
     """
-    Turn the per-step journey replay into SHM-compatible 'episode events'
-    that the Bayesian journey learner understands.
-
-    Each event is a dict with:
-      - persona_id
-      - belief_state (coarse string)
-      - belief_score (0..1; simple proxy for now)
-      - engagement_type / source / channel
-      - effect_bucket (on_path / near_path / off_path / no_path)
-      - timestamp (best-effort; we let SHM default if missing)
-      - meta (full step blob for debugging)
+    Turn the per-step journey replay into SHM-compatible episode events with
+    richer metadata.
     """
     steps = list((journey or {}).get("steps", []) or [])
     events: List[Dict[str, Any]] = []
@@ -2086,20 +2103,34 @@ def _episode_events_from_journey(
     for step in steps:
         persona_id = step.get("observed_next")
         if not persona_id:
-            # nothing to learn from this step
             continue
 
+        engagement_meta = step.get("engagement_meta") or {}
         bucket_raw = step.get("bucket")
         effect_bucket = _map_step_bucket(bucket_raw) or "unknown"
+        stage_label = step.get("stage_label") or engagement_meta.get("stage") or engagement_meta.get("stage_label")
+        belief_state = _map_stage_to_belief_state(stage_label)
 
-        # Very simple belief_state for now – later we can map to your
-        # actual belief state machine (ZMOT, Discovery, Evaluation, ...)
-        belief_state = "journey_replay"
+        channel = (
+            engagement_meta.get("channel")
+            or step.get("channel")
+            or "unknown"
+        )
+        engagement_type = (
+            engagement_meta.get("type")
+            or engagement_meta.get("category")
+            or engagement_meta.get("engagement_type")
+            or source
+        )
+        asset_id = (
+            engagement_meta.get("asset_id")
+            or engagement_meta.get("id")
+            or step.get("asset_id")
+            or engagement_meta.get("asset")
+        )
 
-        # Lightweight proxy belief_score: 1.0 if hit@1, 0.7 if hit@3,
-        # otherwise 0.3. You can refine this later.
-        hit1 = bool(step.get("hit_at_1"))
-        hit3 = bool(step.get("hit_at_3"))
+        hit1 = bool((step.get("meta") or {}).get("hit_at_1") or step.get("hit_at_1"))
+        hit3 = bool((step.get("meta") or {}).get("hit_at_3") or step.get("hit_at_3"))
         if hit1:
             belief_score = 1.0
         elif hit3:
@@ -2107,20 +2138,29 @@ def _episode_events_from_journey(
         else:
             belief_score = 0.3
 
+        canonical_persona_id = (
+            step.get("canonical_persona_id")
+            or step.get("persona_id")
+            or step.get("observed_next")
+        )
+
         events.append(
             {
                 "product_id": product_id,
                 "account_id": account_id,
                 "persona_id": persona_id,
+                "canonical_persona_id": canonical_persona_id,
                 "belief_state": belief_state,
                 "belief_score": belief_score,
-                "engagement_type": source,  # treated as 'type' of episode
+                "engagement_type": engagement_type,
                 "source": source,
-                "channel": "inference",      # not a real channel; fine for stats
+                "channel": channel,
+                "asset_id": asset_id,
                 "effect_bucket": effect_bucket,
-                "timestamp": None,           # SHM service will fill utcnow()
+                "timestamp": step.get("timestamp"),
                 "meta": {
                     "t": step.get("t"),
+                    "stage_label": stage_label,
                     "state_personas": step.get("state_personas"),
                     "predicted_topK": step.get("predicted_topK"),
                     "walk_paths": step.get("walk_paths"),
@@ -2267,6 +2307,15 @@ def compute_belief_thesis_core(
     persona_resolution_stats = _persona_resolution_stats(
         observed_persona_matches
     )
+    total_personas = max(persona_resolution_stats.get("total_personas", 0) or 0, 1)
+    stable_personas = len(persona_resolution_stats.get("stable_persona_ids") or [])
+    persona_resolution_confidence = stable_personas / float(total_personas)
+    persona_resolution_stats["resolution_confidence"] = round(
+        persona_resolution_confidence, 3
+    )
+    account_record = get_account_by_id(product_id, account_id) or {}
+    deal_status = (account_record.get("deal_status") or "").strip().lower()
+    has_known_outcome = deal_status in {"closed-won", "closed-lost", "won", "lost"}
 
     # Build full engagement timeline (per engagement, not just first sightings)
     timeline = _engagement_timeline_with_personas(
@@ -2278,7 +2327,21 @@ def compute_belief_thesis_core(
         for step in timeline
         if step.get("effective_persona_id")
     ]
+    unique_resolved_personas: List[str] = []
+    seen_personas: set[str] = set()
+    for pid in observed_persona_ids:
+        if pid and pid not in seen_personas:
+            seen_personas.add(pid)
+            unique_resolved_personas.append(pid)
     LOGGER.debug("Compute Belief Thesis Core: completed 1b")
+    learning_skip_reasons: List[str] = []
+    if persona_resolution_confidence < 0.6:
+        learning_skip_reasons.append("low_resolver_confidence")
+    if len(unique_resolved_personas) < 2:
+        learning_skip_reasons.append("not_enough_personas")
+    if not has_known_outcome:
+        learning_skip_reasons.append("outcome_unknown")
+    should_update_bayesian = not learning_skip_reasons
     # 2) build PersonaGraph (reduced graph)
     PG = PersonaGraph.from_product_graph(
         product_graph,
@@ -2287,6 +2350,13 @@ def compute_belief_thesis_core(
         prior_offpath_rate=_estimate_offpath_rate(account_id, product_id),
         dirichlet_kappa=1.0,
     )
+    actionable_personas = [
+        pid for pid in PG._personas() if not is_stop_persona(pid)
+    ]
+    if not actionable_personas:
+        raise InferenceHalt(
+            reason="No actionable personas inferred from graph"
+        )
     if shm_metrics:
         _apply_shm_metrics_to_persona_graph(PG, shm_metrics)
 
@@ -2357,6 +2427,13 @@ def compute_belief_thesis_core(
         ts: datetime = event["timestamp"]
         engagement_obj = event["engagement"]
         actual_persona = event.get("effective_persona_id")
+        match = (event.get("match") or {})
+        resolution = (match.get("resolution") or {})
+        canonical_persona_id = (
+            resolution.get("resolved_persona_id")
+            or match.get("best")
+            or actual_persona
+        )
 
         snap = predict_snapshot(
             PG,
@@ -2587,10 +2664,19 @@ def compute_belief_thesis_core(
         )
         episodes.append(episode)
 
+        stage_label = (
+            _engagement_attr(engagement_obj, "stage_label")
+            or _engagement_attr(engagement_obj, "stage")
+            or _engagement_attr(engagement_obj, "belief_stage_label")
+        )
+
         engagement_meta = {
             "asset_id": _engagement_attr(engagement_obj, "asset_id"),
             "channel": _engagement_attr(engagement_obj, "channel")
             or _engagement_attr(engagement_obj, "source"),
+            "stage_label": stage_label,
+            "type": _engagement_attr(engagement_obj, "engagement_type")
+            or _engagement_attr(engagement_obj, "type"),
             "source": _engagement_attr(engagement_obj, "source"),
             "raw_activity": _engagement_attr(engagement_obj, "raw_activity"),
             "label": _engagement_attr(engagement_obj, "name")
@@ -2633,6 +2719,9 @@ def compute_belief_thesis_core(
                 if engagement_meta
                 else None,
                 "account_meta": _json_safe(account_meta) if account_meta else None,
+                "stage_label": stage_label,
+                "canonical_persona_id": canonical_persona_id,
+                "belief_state": _map_stage_to_belief_state(stage_label),
             }
         )
 
@@ -2686,6 +2775,11 @@ def compute_belief_thesis_core(
             ]
         },
     }
+    journey["persona_resolution_confidence"] = round(persona_resolution_confidence, 3)
+    journey["resolved_personas"] = unique_resolved_personas
+    journey["learning_is_censored"] = not should_update_bayesian
+    if learning_skip_reasons:
+        journey["learning_disabled_reasons"] = learning_skip_reasons
 
     if account_adjustment is not None:
         journey["account_adjustment"] = _json_safe(account_adjustment)
@@ -2988,28 +3082,33 @@ def compute_belief_thesis_core(
     # 6c) SHM + Bayesian journey learner (episodes + weights)
     # -----------------------------------------------------------------
     try:
-        # 1) Build SHM-compatible events from the persona journey
-        episode_events = _episode_events_from_journey(
-            product_id=product_id,
-            account_id=account_id,
-            journey=journey,
-            source="belief_thesis_v2",
-        )
-
-        if episode_events:
-            # 2) Update SHM episodes + edge stats + journey weights
-            #    This:
-            #      - appends SHM steps (SHMEpisode rows)
-            #      - loads stats/weights from storage
-            #      - calls update_edge_stats(...)
-            #      - recomputes weights via recompute_weights(...)
-            #      - saves stats + weights back to storage
-            #    and returns a per-run summary you can surface if needed.
-            journey_learning = update_bayesian_journey_for_account(
+        if should_update_bayesian:
+            episode_events = _episode_events_from_journey(
                 product_id=product_id,
                 account_id=account_id,
-                episode_events=episode_events,
-                base_neighbors=None,  # you can pass persona neighbors later
+                journey=journey,
+                source="belief_thesis_v2",
+            )
+            if episode_events:
+                journey_learning = update_bayesian_journey_for_account(
+                    product_id=product_id,
+                    account_id=account_id,
+                    episode_events=episode_events,
+                    base_neighbors=None,  # you can pass persona neighbors later
+                )
+        else:
+            journey_learning = {
+                "skipped": True,
+                "reasons": learning_skip_reasons,
+                "persona_resolution_confidence": round(
+                    persona_resolution_confidence, 3
+                ),
+                "resolved_personas": unique_resolved_personas,
+            }
+            LOGGER.debug(
+                "Skipping Bayesian journey update for %s: %s",
+                account_id,
+                learning_skip_reasons,
             )
     except Exception as e:
         learning_apply_errors.append(

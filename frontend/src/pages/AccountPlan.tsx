@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   CardActionArea,
+  CardActions,
   CardContent,
   Chip,
   CircularProgress,
@@ -41,7 +42,14 @@ import AssetCadenceTable, {
 import AccountEnrichmentDialog, {
   type EnrichmentAccount,
 } from "../components/AccountEnrichmentDialog";
-import type { AccountPlanContract } from "../types/apiContracts";
+import PlanQualityPanel from "../components/PlanQualityPanel";
+import type {
+  AccountPlanContract,
+  PlanningMode,
+  WinOutlook,
+  WinOutlookDriver,
+  PlanQuality,
+} from "../types/apiContracts";
 
 type JourneyStep = {
   bucket?: string | null;
@@ -104,6 +112,61 @@ type ExpectedNextPerson = {
   role_band?: string | null;
 };
 
+type PersonaDefinition = {
+  persona_id: string;
+  persona_label: string;
+  title?: string | null;
+  department?: string | null;
+  seniority?: string | null;
+  belief_level?: number | null;
+  belief_band?: string | null;
+  journey_phase?: string | null;
+  phase_probs?: Record<string, number> | null;
+  committee_probability?: number | null;
+  on_primary_path?: boolean;
+  display_group_key?: string;
+  stages_covered?: string[];
+};
+
+type CadenceTier = "primary" | "probe" | "projection";
+
+type PersonaStrategyEntry = {
+  persona_id: string;
+  persona_label?: string | null;
+  belief_level?: number | null;
+  belief_band?: string | null;
+  journey_phase?: string | null;
+  committee_probability?: number | null;
+  path_probability?: number | null;
+  recommended_action?: string | null;
+  cadence_tier?: CadenceTier | null;
+  role?: "primary_path" | "committee" | "projection";
+  on_primary_path?: boolean;
+  projection_probability?: number | null;
+  projection_note?: string | null;
+  engagement_state?: string | null;
+  display_group_key?: string | null;
+};
+
+type BeliefRow = PersonaStrategyEntry & {
+  display_group_key: string;
+  stagesCovered?: string[];
+};
+
+type PersonaStrategyBudgetSplit = {
+  primary_pct: number;
+  secondary_pct: number;
+  rationale?: string | null;
+  escalation_triggers?: string[];
+};
+
+type PersonaStrategy = {
+  primary_path_personas?: PersonaStrategyEntry[];
+  committee_personas?: PersonaStrategyEntry[];
+  projected_committee_members?: PersonaStrategyEntry[];
+  budget_split?: PersonaStrategyBudgetSplit;
+};
+
 type EntryPointPlay = {
   play_id?: string | null;
   stage?: string | null;
@@ -148,6 +211,40 @@ type KeystonePersona = {
   chain_share?: number | null;
   sample_story?: string | null;
 };
+
+type JobPhase =
+  | "account_context"
+  | "persona_matching"
+  | "journey_replay"
+  | "belief_state"
+  | "blockers_cascades"
+  | "intervention_plan"
+  | "done";
+
+type JobStatus = {
+  job_id: string;
+  type: string;
+  status: "queued" | "running" | "completed" | "failed";
+  phase: JobPhase;
+  message: string;
+  progress: number;
+  updated_at?: string | null;
+  result_location?: string | null;
+  error?: string | null;
+};
+
+const JOB_PHASE_LABELS: Record<JobPhase, string> = {
+  account_context: "Account context",
+  persona_matching: "Persona matching",
+  journey_replay: "Journey replay",
+  belief_state: "Belief state",
+  blockers_cascades: "Blockers & cascades",
+  intervention_plan: "Intervention plan",
+  done: "Done",
+};
+
+const friendlyPhaseLabel = (phase: string) =>
+  JOB_PHASE_LABELS[phase as JobPhase] || phase;
 
 type Play = {
   id?: string;
@@ -244,6 +341,8 @@ type AccountPlan = {
     expected_next_personas?: ExpectedNextPersona[];
     expected_next_people?: ExpectedNextPerson[];
     entry_points?: EntryPoint[];
+    persona_strategy?: PersonaStrategy;
+    personas_by_id?: Record<string, PersonaDefinition>;
   };
   enrichment?: {
     summary?: {
@@ -276,6 +375,7 @@ type MarketingPlan = {
       typical_path?: TypicalPathStep[];
     };
   };
+  planning_mode?: PlanningMode;
 };
 
 type PersonaRequirement = {
@@ -378,6 +478,37 @@ const fmtBasisPoints = (value?: number | null) => {
   return `${value.toFixed(1)} bp`;
 };
 
+const personaDisplayLabel = (
+  personaId?: string | null,
+  fallback?: string | null,
+  definitions?: Record<string, PersonaDefinition>
+) => {
+  if (personaId && definitions) {
+    const def = definitions[personaId];
+    if (def?.persona_label) return def.persona_label;
+  }
+  if (fallback) return fallback;
+  if (personaId) return personaId;
+  return "Persona";
+};
+
+const isSentinelPersona = (personaId?: string | null) =>
+  Boolean(personaId && personaId.includes("__STOP__"));
+
+const formatPlanningModeLabel = (mode?: PlanningMode) => {
+  if (!mode) return undefined;
+  switch (mode) {
+    case "graph_hypothesis":
+      return "Graph Hypothesis mode";
+    case "observed_signal":
+      return "Observed signal mode";
+    case "learned_strategy":
+      return "Learned strategy mode";
+    default:
+      return undefined;
+  }
+};
+
 const fmtDays = (value?: number | null) => {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
   if (value < 1) return "<1 day";
@@ -405,6 +536,149 @@ const formatList = (items: string[], conjunction = "and") => {
   return `${safeItems.slice(0, -1).join(", ")}, ${conjunction} ${
     safeItems[safeItems.length - 1]
   }`;
+};
+
+const formatWinRange = (
+  ci?: { low?: number | null; high?: number | null }
+): string | null => {
+  if (!ci) return null;
+  const { low, high } = ci;
+  if (low == null || high == null) return null;
+  return `${fmtPercent(low, true)}–${fmtPercent(high, true)}`;
+};
+
+const formatStatusLabel = (status?: string) => {
+  if (!status) return "Unknown";
+  return status
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map(
+      (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+    )
+    .join(" ");
+};
+
+const renderWinDrivers = (drivers?: WinOutlookDriver[]) => {
+  if (!drivers?.length) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No meta drivers yet.
+      </Typography>
+    );
+  }
+  return (
+    <Stack spacing={0.25}>
+      {drivers.map((driver) => (
+        <Typography
+          key={`${driver.feature}-${driver.direction}`}
+          variant="body2"
+          color="text.secondary"
+        >
+          {driver.feature} ·{" "}
+          {driver.direction === "+" ? "↑" : "↓"}{" "}
+          {fmtPercent(driver.weight, true)}
+        </Typography>
+      ))}
+    </Stack>
+  );
+};
+
+const DEFAULT_PLAN_QUALITY: PlanQuality = {
+  readiness: {
+    score: 0,
+    dimensions: [
+      {
+        id: "arsenal",
+        label: "Assets & Channels",
+        score: 0,
+        status: "missing",
+        reason: "No assets or channels configured yet.",
+        recommended_actions: [{ label: "Add Arsenal", route: "/arsenal" }],
+      },
+      {
+        id: "enrichment",
+        label: "Account Enrichment",
+        score: 0,
+        status: "missing",
+        reason: "No personas matched yet.",
+        recommended_actions: [{ label: "Enrich Account", route: "/account-enrichment" }],
+      },
+      {
+        id: "engagements",
+        label: "Engagement Signal",
+        score: 0,
+        status: "missing",
+        reason: "No observed engagement signals imported yet.",
+        recommended_actions: [{ label: "Import Engagements", route: "/engagements-setup" }],
+      },
+      {
+        id: "learning",
+        label: "Historical Learning",
+        score: 0,
+        status: "missing",
+        reason: "No won/lost journeys ingested yet.",
+        recommended_actions: [{ label: "Import CRM History", route: "/crm-setup" }],
+      },
+    ],
+  },
+  predictiveConfidence: {
+    stars: 1,
+    score: 0.0,
+    components: [
+      {
+        id: "graph_coverage",
+        score: 0.0,
+        note: "Graph coverage is still being established.",
+      },
+      {
+        id: "engagement_alignment",
+        score: 0.0,
+        note: "No engagement signals captured yet.",
+      },
+      {
+        id: "historical_similarity",
+        score: 0.0,
+        note: "No comparable closed outcomes yet.",
+      },
+    ],
+    explanation:
+      "GI is waiting on assets, engagement signals, and historical outcomes to calibrate confidence.",
+  },
+};
+
+const DEFAULT_WIN_OUTLOOK: WinOutlook = {
+  diagnostics: {
+    graph_walk_reachability: 1.0,
+    note: "Diagnostic only; not shown in UI",
+  },
+  right_to_win: {
+    p: null,
+    ci: { low: null, high: null },
+    coverage: { similar_deals: 0, wins: 0, losses: 0 },
+    top_drivers: [],
+    status: "no_historical_data",
+  },
+  baseline_win: {
+    p: 0.01,
+    ci: { low: null, high: null },
+    evidence: {
+      engagement_count: 0,
+      summary: "No engagement evidence yet.",
+    },
+    status: "no_engagements",
+  },
+  predicted_win: {
+    p: 0.015,
+    ci: { low: null, high: null },
+    range: { low: null, high: null },
+    assumptions: [],
+    lift_over_current: 0.0,
+    status: "uses_priors",
+    evidence: {
+      engagement_count: 0,
+      summary: "Forecast follows baseline until recommended plays run.",
+    },
+  },
 };
 
 const TARGET_ACCOUNT_META_FIELDS: Array<
@@ -525,7 +799,16 @@ const dedupePlays = (plays: Play[] = []) => {
   return Array.from(seen.values());
 };
 
-const renderPersonaPath = (path?: PersonaPathEntry) => {
+interface PersonaStageWeight {
+  personaId: string;
+  personaLabel: string;
+  stageWeights: Array<{ stage: string; weight: number }>;
+}
+
+const renderPersonaPath = (
+  path?: PersonaPathEntry,
+  stageDistribution?: PersonaStageWeight[]
+) => {
   if (!path || !path.personas.length) {
     return (
       <Typography variant="body2" color="text.secondary">
@@ -541,16 +824,31 @@ const renderPersonaPath = (path?: PersonaPathEntry) => {
         </Typography>
       </Stack>
       <Stack spacing={0.75}>
-        {path.personas.map((persona, idx) => (
-          <Paper key={`${path.id}-${idx}`} variant="outlined" sx={{ p: 1.25 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Chip size="small" label={`Step ${idx + 1}`} />
-              <Typography variant="subtitle2">
-                {persona.label || persona.id || "Belief persona"}
-              </Typography>
-            </Stack>
-          </Paper>
-        ))}
+        {(stageDistribution && stageDistribution.length ? stageDistribution : []).map(
+          (entry) => (
+            <Paper
+              key={`stage-summary-${entry.personaId}`}
+              variant="outlined"
+              sx={{ p: 1.25 }}
+            >
+              <Stack spacing={0.5}>
+                <Typography variant="subtitle2">
+                  {entry.personaLabel}
+                </Typography>
+                <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                  {entry.stageWeights.map((stage) => (
+                    <Chip
+                      key={`${entry.personaId}-${stage.stage}`}
+                      size="small"
+                      variant="outlined"
+                      label={`${stage.stage} ${fmtPercent(stage.weight, true)}`}
+                    />
+                  ))}
+                </Stack>
+              </Stack>
+            </Paper>
+          )
+        )}
       </Stack>
     </Stack>
   );
@@ -625,7 +923,8 @@ const buildBeliefPulse = (
   enrichment: AccountEnrichmentPayload | undefined,
   topPlay: Play | null,
   personaLabelLookup: Record<string, string>,
-  keystonePersonas: KeystonePersona[] = []
+  keystonePersonas: KeystonePersona[] = [],
+  planningMode?: PlanningMode
 ): PulseEntry[] => {
   if (!account) {
     return [
@@ -723,11 +1022,18 @@ const buildBeliefPulse = (
     );
   });
 
-  const expectedNext =
+  let expectedNext =
     account.thesis?.expected_next_personas?.[0] ||
     account.prediction?.expected_next_personas?.[0] ||
     account.prediction?.expected_next?.[0] ||
     null;
+  const expectedNextPersonaId =
+    (expectedNext as any)?.persona_id ||
+    (expectedNext as any)?.persona ||
+    (expectedNext as any)?.id;
+  if (isSentinelPersona(expectedNextPersonaId)) {
+    expectedNext = null;
+  }
 
   const expectedNextProbability =
     typeof (expectedNext as any)?.probability === "number"
@@ -788,12 +1094,8 @@ const buildBeliefPulse = (
       },
       {
         label: "Risk",
-        value: `High — ${fmtPercent(
-          typeof riskPersona.expected_in_deal === "number"
-            ? riskPersona.expected_in_deal
-            : (riskPersona.expected_in_deal_pct || 0) / 100,
-          true
-        )} of wins depend on this persona.`,
+        value:
+          "High — this persona anchors the current hypothesis. Without a mapped contact + first-touch owner, predicted progress stalls.",
       },
       {
         label: "Why",
@@ -925,6 +1227,23 @@ const buildBeliefPulse = (
     });
   }
 
+  const hasAssets = Boolean(
+    account?.execution?.asset_cadence &&
+      account.execution.asset_cadence.length > 0
+  );
+  const graphHypAction =
+    "Map a real Sales Manager contact to validate this belief path.";
+  const executionAction =
+    "Increase mid-funnel touches to reinforce belief progression.";
+  const recommendedActionValue = topRecommendedPlay
+    ? `Queue ${topRecommendedPlay.name || topRecommendedPlay.asset_label || "top play"} via ${
+        topRecommendedPlay.channel_label || "primary channel"
+      }.`
+    : !hasAssets
+    ? "No asset recommendations yet. Add assets and channels before increasing touches."
+    : planningMode === "graph_hypothesis"
+    ? graphHypAction
+    : executionAction;
   const stallLines: PulseLine[] = [
     {
       label: "Status",
@@ -938,15 +1257,7 @@ const buildBeliefPulse = (
     },
     {
       label: "Recommended",
-      value: topRecommendedPlay
-        ? `Queue ${topRecommendedPlay.name || topRecommendedPlay.asset_label || "top play"} via ${
-            topRecommendedPlay.channel_label || "primary channel"
-          }.`
-        : describePersonaEntry(expectedNext)
-        ? `Increase touches for ${describePersonaEntry(expectedNext)}${
-            expectedNextKeystone ? " (keystone)" : ""
-          }`
-        : "Increase touches for unmatched personas.",
+      value: recommendedActionValue,
     },
   ];
   if (!topRecommendedPlay && expectedNextNarrative) {
@@ -975,7 +1286,8 @@ const renderPlaysSummary = (plays: Play[] | undefined) => {
   if (!items.length) {
     return (
       <Typography variant="body2" color="text.secondary">
-        Plays will populate once engagements are processed for this account.
+        Plays populate once the arsenal is configured. Engagement history
+        will refine channel and asset attribution.
       </Typography>
     );
   }
@@ -1244,7 +1556,7 @@ type FourQuestionsAccountProps = {
   wolvesUpdatedAt?: string | null;
 };
 
-const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
+  const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
   account,
   personaMatches,
   canonicalTypicalPath,
@@ -1252,22 +1564,275 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
   wolvesUpdatedAt,
 }) => {
   const primaryPath = account.prediction?.persona_paths?.[0] || null;
+  const personaStageDistribution = useMemo<PersonaStageWeight[]>(() => {
+    if (!primaryPath?.personas?.length) return [];
+    const map = new Map<
+      string,
+      {
+        personaLabel: string;
+        stageCounts: Map<string, number>;
+        total: number;
+        order: number;
+      }
+    >();
+    primaryPath.personas.forEach((persona, index) => {
+      const personaId =
+        persona.id ||
+        persona.persona_id ||
+        persona.persona ||
+        `persona-${index}`;
+      if (!personaId) return;
+      const stage =
+        persona.journey_phase ||
+        persona.stage_label ||
+        persona.stage ||
+        persona.persona_stage ||
+        persona.stage_label ||
+        `Stage ${index + 1}`;
+      const entry =
+        map.get(personaId) ||
+        {
+          personaLabel: persona.label || persona.persona_label || personaId,
+          stageCounts: new Map<string, number>(),
+          total: 0,
+          order: index,
+        };
+      entry.stageCounts.set(stage, (entry.stageCounts.get(stage) ?? 0) + 1);
+      entry.total += 1;
+      map.set(personaId, entry);
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => a[1].order - b[1].order)
+      .map(([personaId, entry]) => ({
+        personaId,
+        personaLabel: entry.personaLabel,
+        stageWeights: Array.from(entry.stageCounts.entries()).map(
+          ([stage, count]) => ({
+            stage,
+            weight: count / (entry.total || 1),
+          })
+        ),
+      }));
+  }, [primaryPath]);
   const plays = account.execution?.plays || [];
   const thesis = account.thesis;
-  const personaLikelihoods = thesis?.persona_likelihoods ?? [];
-  const personLikelihoods = thesis?.person_likelihoods ?? [];
-  const expectedNextPersonas =
-    thesis?.expected_next_personas ??
-    account.prediction?.expected_next_personas ??
-    [];
-  const personaCadence = account.execution?.persona_engagements || [];
+  const personaLikelihoods = (
+    thesis?.persona_likelihoods ?? []
+  ).filter((entry) => !isSentinelPersona(entry.persona_id));
+  const personLikelihoods = (
+    thesis?.person_likelihoods ?? []
+  ).filter((entry) => !isSentinelPersona(entry.persona_id));
+  const rawPersonaCadence = (
+    account.execution?.persona_engagements ?? []
+  ).filter((persona) => !isSentinelPersona((persona as any).persona_id));
+  const personaDefinitions = (
+    account.thesis?.personas_by_id ?? {}
+  ) as Record<string, PersonaDefinition>;
   const entryPoints = useMemo(() => {
-    const rows = account.entry_points ?? thesis?.entry_points ?? [];
-    return rows.slice(0, 5);
+    return (account.entry_points ?? thesis?.entry_points ?? []).filter(
+      (entry) => !isSentinelPersona(entry.persona_id)
+    );
   }, [account.entry_points, thesis?.entry_points]);
+  const groupedEntryPoints = useMemo(() => {
+    const groups = new Map<
+      string,
+      (typeof entryPoints[number] & { displayGroupKey: string })
+    >();
+    entryPoints.forEach((entry) => {
+      const groupKey =
+        personaDefinitions[entry.persona_id || ""]?.display_group_key ||
+        entry.persona_label ||
+        entry.persona_id ||
+        "persona";
+      const existing = groups.get(groupKey);
+      const label =
+        personaDefinitions[entry.persona_id || ""]?.persona_label ||
+        entry.persona_label ||
+        entry.persona_id;
+      const candidate = {
+        ...entry,
+        persona_label: label,
+        displayGroupKey: groupKey,
+      };
+      if (!existing || (entry.entry_score || 0) > (existing.entry_score || 0)) {
+        groups.set(groupKey, candidate);
+      }
+    });
+    return Array.from(groups.values());
+  }, [entryPoints, personaDefinitions]);
+  const groupedEntryPointsDisplay = useMemo(
+    () => groupedEntryPoints.slice(0, 5),
+    [groupedEntryPoints]
+  );
+  const personaStrategy = account.thesis?.persona_strategy;
+  const primaryPathPersonas = personaStrategy?.primary_path_personas ?? [];
+  const committeePersonas = personaStrategy?.committee_personas ?? [];
+  const projectedCommitteeMembers = (
+    personaStrategy?.projected_committee_members ?? []
+  ).filter((entry) => !isSentinelPersona(entry.persona_id)) as PersonaStrategyEntry[];
+  const personaEntries = useMemo(
+    () => [...primaryPathPersonas, ...committeePersonas, ...projectedCommitteeMembers],
+    [primaryPathPersonas, committeePersonas, projectedCommitteeMembers]
+  );
+  const personaCadenceEntries = useMemo(() => {
+    const map = new Map<string, PersonaEngagementPlan>();
+    rawPersonaCadence.forEach((entry) => {
+      if (entry.persona_id && !isSentinelPersona(entry.persona_id)) {
+        map.set(entry.persona_id, entry);
+      }
+    });
+    personaEntries.forEach((entry) => {
+      const personaId = entry.persona_id;
+      if (
+        !personaId ||
+        map.has(personaId) ||
+        isSentinelPersona(personaId)
+      ) {
+        return;
+      }
+      map.set(personaId, {
+        persona_id: personaId,
+        persona_label: entry.persona_label,
+        journey_phase: entry.journey_phase,
+        belief_level: entry.belief_level,
+        belief_band: entry.belief_band,
+        committee_probability: entry.committee_probability,
+        cadence: [
+          {
+            phase: entry.cadence_tier || "probe",
+            frequency_per_week:
+              entry.cadence_tier === "primary" ? 1.0 : 0.5,
+            policy_note:
+              entry.recommended_action || "Graph hypothesis cadence",
+          },
+        ],
+      });
+    });
+    return Array.from(map.values());
+  }, [personaEntries, rawPersonaCadence]);
+  const groupedCadence = useMemo(() => {
+    const cadenceMap = new Map<string, PersonaEngagementPlan>();
+    personaCadenceEntries.forEach((entry) => {
+      const def = personaDefinitions[entry.persona_id || ""];
+      const groupKey =
+        def?.display_group_key ||
+        def?.persona_label ||
+        entry.persona_label ||
+        entry.persona_id ||
+        "persona";
+      const existing = cadenceMap.get(groupKey);
+      const targetCadence = existing ? [...existing.cadence] : [];
+      entry.cadence.forEach((row) => {
+        if (!targetCadence.some((existingRow) => existingRow.phase === row.phase)) {
+          targetCadence.push(row);
+        }
+      });
+      cadenceMap.set(groupKey, {
+        ...existing,
+        ...entry,
+        persona_label: def?.persona_label || entry.persona_label,
+        persona_id: existing?.persona_id || entry.persona_id,
+        cadence: targetCadence,
+      });
+    });
+    return Array.from(cadenceMap.values());
+  }, [personaCadenceEntries, personaDefinitions]);
 
-  const formatEntryPercent = (value?: number | null) =>
-    value !== null && value !== undefined ? fmtPercent(value, true) : "—";
+  const personaCadenceMap = useMemo(() => {
+    const map = new Map<string, PersonaEngagementPlan>();
+    groupedCadence.forEach((entry) => {
+      const pid =
+        entry.persona_id ||
+        entry.persona_label ||
+        (entry as any).persona?.id ||
+        (entry as any).persona?.persona_id;
+      if (pid && !isSentinelPersona(pid)) {
+        map.set(pid, entry);
+      }
+    });
+    return map;
+  }, [groupedCadence]);
+  const personaMap = useMemo(() => {
+    const map = new Map<string, PersonaStrategyEntry>();
+    personaEntries.forEach((entry) => {
+      if (!entry.persona_id) return;
+      const def = personaDefinitions[entry.persona_id];
+      const merged: PersonaStrategyEntry = {
+        ...entry,
+        persona_label: entry.persona_label || def?.persona_label,
+        belief_level: entry.belief_level ?? def?.belief_level,
+        belief_band: entry.belief_band ?? def?.belief_band,
+        journey_phase: entry.journey_phase ?? def?.journey_phase,
+        committee_probability:
+          entry.committee_probability ?? def?.committee_probability,
+        display_group_key:
+          entry.display_group_key || def?.display_group_key,
+      };
+      map.set(entry.persona_id, merged);
+    });
+    Object.entries(personaDefinitions).forEach(([pid, def]) => {
+      if (!pid || map.has(pid)) return;
+      map.set(pid, {
+        persona_id: pid,
+        persona_label: def.persona_label,
+        belief_level: def.belief_level,
+        belief_band: def.belief_band,
+        journey_phase: def.journey_phase,
+        committee_probability: def.committee_probability,
+        display_group_key: def.display_group_key,
+        cadence_tier: def.on_primary_path ? "primary" : "probe",
+        recommended_action: def.on_primary_path
+          ? "Invest heavily in this path"
+          : "Keep committee probes warm",
+        role: def.on_primary_path ? "primary_path" : "committee",
+        engagement_state: undefined,
+      });
+    });
+    return map;
+  }, [personaEntries, personaDefinitions]);
+  const allPersonas = useMemo(() => Array.from(personaMap.values()), [personaMap]);
+  const beliefRows = useMemo(() => {
+    const aggregated = new Map<string, BeliefRow>();
+    const stageCoverage = new Map<string, Set<string>>();
+    allPersonas.forEach((entry) => {
+      const key =
+        entry.display_group_key ||
+        entry.persona_label ||
+        entry.persona_id ||
+        "persona";
+      if (!aggregated.has(key)) {
+        aggregated.set(key, {
+          ...entry,
+          display_group_key: key,
+          stagesCovered: [],
+        });
+      }
+      const stage = entry.journey_phase || entry.dominant_phase;
+      if (stage) {
+        const set = stageCoverage.get(key) || new Set<string>();
+        set.add(stage);
+        stageCoverage.set(key, set);
+      }
+    });
+    return Array.from(aggregated.entries()).map(([key, row]) => ({
+      ...row,
+      stagesCovered: Array.from(stageCoverage.get(key) || []).filter(Boolean),
+    }));
+  }, [allPersonas]);
+  const budgetSplit = personaStrategy?.budget_split;
+
+  const formatEntryPercent = (value?: number | null) => {
+    if (value === null || value === undefined) return "—";
+    const pct = value * 100;
+    const rounded = Math.round(pct * 10) / 10;
+    return `${rounded.toFixed(1).replace(/\.0$/, "")}%`;
+  };
+  const formatGraphMetricCopy = (value?: number | null, label = "Graph") => {
+    if (value && value > 0) {
+      return `${label}: ${formatEntryPercent(value)}`;
+    }
+    return `${label}: Graph-only estimate (insufficient evidence)`;
+  };
 
   const heading = (label: string, helper: string) => (
     <Stack direction="row" spacing={0.75} alignItems="center">
@@ -1278,8 +1843,82 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
     </Stack>
   );
 
+  const getProjectedProbability = (
+    entry: PersonaStrategyEntry | ExpectedNextPersona
+  ) =>
+    (entry as PersonaStrategyEntry).projection_probability ??
+    entry.probability ??
+    (entry as PersonaStrategyEntry).path_probability ??
+    0;
+
+  const getProjectedStage = (
+    entry: PersonaStrategyEntry | ExpectedNextPersona
+  ) => entry.journey_stage || (entry as PersonaStrategyEntry).journey_phase || "Journey";
+
+  const getProjectedRecommendedAction = (
+    entry: PersonaStrategyEntry | ExpectedNextPersona
+  ) =>
+    (entry as PersonaStrategyEntry).recommended_action ??
+    (entry as ExpectedNextPersona).reason ??
+    "Belief graph projection";
+
+  const onProjectPrimaryPath = (
+    entry: PersonaStrategyEntry | ExpectedNextPersona
+  ) =>
+    (entry as PersonaStrategyEntry).on_primary_path ??
+    (entry as PersonaStrategyEntry).role === "primary_path";
+
+  const renderStrategyList = (
+    title: string,
+    personas: PersonaStrategyEntry[]
+  ) => {
+    if (!personas.length) return null;
+    return (
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+          {title}
+        </Typography>
+        <Stack spacing={0.75}>
+          {personas.map((entry) => (
+            <Stack
+              key={`strategy-${entry.persona_id}-${entry.journey_phase || entry.role}`}
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              flexWrap="wrap"
+            >
+              <Chip
+                size="small"
+                label={entry.cadence_tier?.toUpperCase() || "TRACK"}
+                color={entry.role === "primary_path" ? "primary" : "default"}
+              />
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {personaDisplayLabel(
+                    entry.persona_id,
+                    entry.persona_label,
+                    personaDefinitions
+                  )}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {entry.recommended_action || "Maintain belief probe."}
+              </Typography>
+              {entry.journey_phase ? (
+                <Typography variant="caption" color="text.secondary">
+                  Stage: {entry.journey_phase}
+                </Typography>
+              ) : null}
+            </Stack>
+          ))}
+        </Stack>
+      </Box>
+    );
+  };
+
   const wolvesRefreshed = wolvesUpdatedAt ? formatRelativeTime(wolvesUpdatedAt) : null;
   const hasKeystone = keystonePersonas.length > 0;
+  const hasAccountAssets =
+    Boolean(account.execution?.asset_cadence) &&
+    account.execution.asset_cadence.length > 0;
 
   const keystoneLookup = useMemo(() => {
     const byId = new Map<string, KeystonePersona>();
@@ -1351,7 +1990,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
 
   const personaLikelihoodRows = useMemo(() => {
     if (!personaLikelihoods.length) return [];
-    return personaLikelihoods
+    const rows = personaLikelihoods
       .map((entry, idx) => {
         const keystone = getKeystoneFor(entry.persona_id, entry.persona_label);
         const displayLabel =
@@ -1383,7 +2022,27 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
           (a.persona.committee_probability || a.persona.probability || 0)
         );
       });
+    return rows;
   }, [getKeystoneFor, personaLikelihoods, personaLabelLookup]);
+  const groupedPersonaLikelihoodRows = useMemo(() => {
+    const groups = new Map<
+      string,
+      typeof personaLikelihoodRows[number] & { displayGroupKey: string }
+    >();
+    personaLikelihoodRows.forEach((row) => {
+      const def = personaDefinitions[row.persona.persona_id || ""];
+      const groupKey =
+        def?.display_group_key ||
+        def?.persona_label ||
+        row.displayLabel ||
+        row.persona.persona_id ||
+        "persona";
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, { ...row, displayGroupKey: groupKey });
+      }
+    });
+    return Array.from(groups.values());
+  }, [personaLikelihoodRows, personaDefinitions]);
 
   const coalitionStory = useMemo(() => {
     if (!primaryPath?.personas?.length) return null;
@@ -1401,7 +2060,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
       (account.meta?.industry && titleize(account.meta?.industry as string)) ||
       (account.meta?.segment && titleize(account.meta?.segment as string)) ||
       "peer accounts";
-    return `Likely winning pattern (${segmentLabel}): ${entries.join(" → ")}`;
+    return `Typical pattern GI expects (unvalidated) (${segmentLabel}): ${entries.join(" → ")}`;
   }, [account.meta, getKeystoneFor, primaryPath]);
 
   return (
@@ -1427,69 +2086,108 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {entryPoints.map((entry, idx) => (
-                  <TableRow key={`entry-point-${entry.persona_id}-${idx}`}>
-                    <TableCell>
-                      <Stack spacing={0.25}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {entry.persona_label || entry.persona_id}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Rank {entry.rank ?? idx + 1}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Stack spacing={0.25} alignItems="flex-end">
-                        <Typography variant="body2">
-                          {formatEntryPercent(entry.entry_score)}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Combined perc {formatEntryPercent(entry.combined_perceptibility)} · prox{" "}
-                          {formatEntryPercent(entry.combined_proximity)}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Stack spacing={0.25}>
-                        <Typography variant="caption" color="text.secondary">
-                          Graph {formatEntryPercent(entry.graph_perceptibility)} perc /{" "}
-                          {formatEntryPercent(entry.graph_proximity)} prox
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Intervention reach {formatEntryPercent(entry.intervention_reach)}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-                        {(entry.top_people || []).slice(0, 2).map((person) => (
-                          <Chip
-                            key={`entry-point-${entry.persona_id}-person-${
-                              person.person_id || person.display_name
-                            }`}
-                            size="small"
-                            variant="outlined"
-                            label={`${person.display_name || "Person"} · ${formatEntryPercent(
-                              person.committee_probability
-                            )}`}
-                          />
-                        ))}
-                        {(entry.top_plays || []).slice(0, 2).map((play, playIdx) => (
-                          <Chip
-                            key={`entry-point-${entry.persona_id}-play-${
-                              play.play_id || playIdx
-                            }`}
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                            label={describeEntryPlay(play) || "Recommended play"}
-                          />
-                        ))}
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {groupedEntryPointsDisplay.map((entry, idx) => {
+                  const topPlay = entry.top_plays?.[0];
+                  const stageLabel = topPlay?.stage || "Belief progression";
+                  const concernLabel =
+                    topPlay?.concern || "Graph-inferred concern (no CRM signal yet)";
+                  const assetLabel = entry.top_plays?.[0]?.asset;
+                  const assetChannel = topPlay?.channel;
+                  return (
+                    <TableRow
+                      key={`entry-point-${entry.persona_id}-${stageLabel}-${idx}`}
+                    >
+                      <TableCell>
+                        <Stack spacing={0.25}>
+                          <Stack direction="row" spacing={0.5} alignItems="center">
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {personaDisplayLabel(
+                              entry.persona_id,
+                              entry.persona_label,
+                              personaDefinitions
+                            )}
+                            </Typography>
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label="🧠 Graph-inferred"
+                            />
+                          </Stack>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack spacing={0.25} alignItems="flex-end">
+                          <Typography variant="body2">
+                            {formatEntryPercent(entry.entry_score)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Combined perc {formatEntryPercent(entry.combined_perceptibility)} · prox{" "}
+                            {formatEntryPercent(entry.combined_proximity)}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <Stack spacing={0.25}>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatGraphMetricCopy(entry.graph_perceptibility, "Perceptibility")}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatGraphMetricCopy(entry.graph_proximity, "Proximity")}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatGraphMetricCopy(entry.intervention_reach, "Intervention reach")}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {graphConfidenceLabel}
+                            </Typography>
+                          </Stack>
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
+                            {(entry.top_people || []).slice(0, 2).map((person) => (
+                              <Chip
+                                key={`entry-point-${entry.persona_id}-person-${
+                                  person.person_id || person.display_name
+                                }`}
+                                size="small"
+                                variant="outlined"
+                                label={`${person.display_name || "Person"} · ${formatEntryPercent(
+                                  person.committee_probability
+                                )}`}
+                              />
+                            ))}
+                            {(entry.top_plays || []).slice(0, 2).map((play, playIdx) => (
+                              <Chip
+                                key={`entry-point-${entry.persona_id}-play-${
+                                  play.play_id || playIdx
+                                }`}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                label={describeEntryPlay(play) || "Recommended play"}
+                              />
+                            ))}
+                          </Stack>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.25}>
+                          <Typography variant="body2" color="text.secondary">
+                            Stage: {stageLabel}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Concern: {concernLabel}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Assets:{" "}
+                            {assetLabel
+                              ? `${assetLabel}${assetChannel ? ` via ${assetChannel}` : ""}`
+                              : "No asset recommendations yet — keep touches lightweight."}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Box>
@@ -1602,7 +2300,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           The personas most likely to participate in this account's win committee.
         </Typography>
-        {personaLikelihoodRows.length ? (
+        {groupedPersonaLikelihoodRows.length ? (
           <>
             <Box sx={{ overflowX: "auto" }}>
               <Table size="small" sx={{ mb: 1 }}>
@@ -1616,7 +2314,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {personaLikelihoodRows.slice(0, 6).map((row) => {
+                  {groupedPersonaLikelihoodRows.slice(0, 6).map((row) => {
                     const committeeProb =
                       row.persona.committee_probability ??
                       row.persona.probability ??
@@ -1674,13 +2372,18 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
               </Table>
             </Box>
             {coalitionStory ? (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mb: 1 }}
-              >
-                {coalitionStory}
-              </Typography>
+              <>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mb: 0.5 }}
+                >
+                  {coalitionStory}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+                  This pattern is inferred from the belief graph. It will change as real engagement and outcomes are observed.
+                </Typography>
+              </>
             ) : null}
           </>
         ) : (
@@ -1759,7 +2462,7 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
               >
                 Conversion path context:
               </Typography>
-              {renderPersonaPath(primaryPath)}
+              {renderPersonaPath(primaryPath, personaStageDistribution)}
             </>
           ) : (
             renderTypicalPathSteps(
@@ -1768,10 +2471,43 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
             )
           )}
         </Box>
-        {expectedNextPersonas.length ? (
+        {renderStrategyList("Primary path personas (A)", primaryPathPersonas)}
+        {renderStrategyList("Committee personas (B)", committeePersonas)}
+        {budgetSplit ? (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Invest {budgetSplit.primary_pct}% in primary tracks and{" "}
+              {budgetSplit.secondary_pct}% in committee probes.
+            </Typography>
+            {budgetSplit.rationale ? (
+              <Typography variant="caption" color="text.secondary">
+                {budgetSplit.rationale}
+              </Typography>
+            ) : null}
+            {budgetSplit.escalation_triggers?.length ? (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Escalation triggers:
+                </Typography>
+                <Stack spacing={0.5}>
+                  {budgetSplit.escalation_triggers.map((trigger, idx) => (
+                    <Typography
+                      key={`trigger-${idx}`}
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      • {trigger}
+                    </Typography>
+                  ))}
+                </Stack>
+              </Box>
+            ) : null}
+          </Box>
+        ) : null}
+        {projectedCommitteeMembers.length ? (
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-              Expected next personas to activate
+              Likely committee members to appear next (projection)
             </Typography>
             <Table size="small">
               <TableHead>
@@ -1779,25 +2515,32 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
                   <TableCell>Persona</TableCell>
                   <TableCell align="right">Probability</TableCell>
                   <TableCell>Stage</TableCell>
-                  <TableCell>Why</TableCell>
+                  <TableCell>On primary path?</TableCell>
+                  <TableCell>Recommended action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {expectedNextPersonas.slice(0, 6).map((entry) => (
+                {projectedCommitteeMembers.slice(0, 6).map((entry, idx) => (
                   <TableRow
-                    key={`expected-next-${entry.persona_id}`}
+                    key={`expected-next-${entry.persona_id}-${idx}`}
+                    hover
                   >
                     <TableCell>
-                      {entry.persona_label || entry.persona_id}
+                      {personaDisplayLabel(
+                        entry.persona_id,
+                        entry.persona_label,
+                        personaDefinitions
+                      )}
                     </TableCell>
                     <TableCell align="right">
-                      {fmtPercent(entry.probability, true)}
+                      {fmtPercent(getProjectedProbability(entry), true)}
+                    </TableCell>
+                    <TableCell>{getProjectedStage(entry)}</TableCell>
+                    <TableCell>
+                      {onProjectPrimaryPath(entry) ? "Yes" : "No"}
                     </TableCell>
                     <TableCell>
-                      {entry.journey_stage || "Journey"}
-                    </TableCell>
-                    <TableCell>
-                      {entry.reason || "Belief graph projection"}
+                      {getProjectedRecommendedAction(entry)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1814,92 +2557,95 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
           "2. What is their current belief level?",
           "Belief level, dominant phase, and committee probability per persona."
         )}
-        {personaCadence.length ? (
+        {beliefRows.length ? (
           <Table size="small" sx={{ mt: 1 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Persona</TableCell>
                 <TableCell align="right">Belief</TableCell>
-                <TableCell>Phase</TableCell>
+                <TableCell>Phase / Stages</TableCell>
                 <TableCell align="right">Committee</TableCell>
                 <TableCell align="right">Cadence</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {personaCadence.map((persona) => (
-                <TableRow key={(persona as any).persona_id}>
-                  <TableCell>
-                    {(persona as any).persona_label ||
-                      (persona as any).persona_id}
-                  </TableCell>
-                  <TableCell align="right">
-                    {(persona as any).belief_level != null ? (
-                      <Chip
-                        size="small"
-                        variant="outlined"
-                        label={`${fmtPercent(
-                          (persona as any).belief_level,
-                          true
-                        )} · ${titleize(
-                          (persona as any).belief_band
-                        )}`}
-                      />
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {(persona as any).dominant_phase ? (
-                      <Tooltip
-                        title={
-                          (persona as any).phase_probs
-                            ? Object.entries(
-                                (persona as any).phase_probs
-                              )
-                                .map(
-                                  ([phase, prob]) =>
-                                    `${phase}: ${fmtPercent(
-                                      prob,
-                                      true
-                                    )}`
-                                )
-                                .join(" · ")
-                            : ""
-                        }
-                      >
+              {beliefRows.map((row) => {
+                const cadenceEntry = personaCadenceMap.get(row.persona_id);
+                return (
+                  <TableRow key={`belief-${row.persona_id}`}>
+                    <TableCell>
+                      {personaDisplayLabel(
+                        row.persona_id,
+                        row.persona_label,
+                        personaDefinitions
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      {row.belief_level != null ? (
                         <Chip
                           size="small"
-                          label={(persona as any).dominant_phase}
+                          variant="outlined"
+                          label={
+                            row.belief_band
+                              ? `${fmtPercent(row.belief_level, true)} · ${titleize(
+                                  row.belief_band
+                                )}`
+                              : fmtPercent(row.belief_level, true)
+                          }
                         />
-                      </Tooltip>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    {(persona as any).committee_probability != null
-                      ? fmtPercent(
-                          (persona as any).committee_probability,
-                          true
-                        )
-                      : "—"}
-                  </TableCell>
-                  <TableCell align="right">
-                    {(persona as any).engagement_state
-                      ? `${titleize(
-                          (persona as any).engagement_state
-                        )} · ${formatFrequency(
-                          (persona as any).base_frequency_per_week
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {(row.dominant_phase || row.journey_phase || row.stagesCovered?.length) ? (
+                        <Tooltip
+                          title={
+                            row.phase_probs
+                              ? Object.entries(row.phase_probs)
+                                  .map(
+                                    ([phase, prob]) =>
+                                      `${phase}: ${fmtPercent(prob, true)}`
+                                  )
+                                  .join(" · ")
+                              : ""
+                          }
+                        >
+                          <Chip
+                            size="small"
+                            label={
+                              row.stagesCovered && row.stagesCovered.length
+                                ? row.stagesCovered.join(" · ")
+                                : row.dominant_phase || row.journey_phase
+                            }
+                          />
+                        </Tooltip>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      {row.committee_probability != null
+                        ? fmtPercent(row.committee_probability, true)
+                        : "—"}
+                    </TableCell>
+                    <TableCell align="right">
+                      {cadenceEntry && cadenceEntry.engagement_state ? (
+                        `${titleize(cadenceEntry.engagement_state)} · ${formatFrequency(
+                          cadenceEntry.base_frequency_per_week
                         )}`
-                      : "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         ) : (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Belief table will appear once persona cadences are generated for this account.
+            Belief table will appear once persona data is available.
           </Typography>
         )}
       </Box>
@@ -1912,11 +2658,13 @@ const FourQuestionsAccount: React.FC<FourQuestionsAccountProps> = ({
           "Cadence adapts using belief, fatigue, and observed responses."
         )}
         <Typography variant="body2" color="text.secondary">
-          U-shaped cadence tuned to each persona's belief state and fatigue level.
+          {hasAccountAssets
+            ? "U-shaped cadence tuned to each persona's belief state and fatigue level."
+            : "No asset recommendations yet. Cadence shown is exploratory and intentionally lightweight."}
         </Typography>
         <Box sx={{ mt: 1.5 }}>
           <PersonaEngagementCadence
-            engagements={account.execution?.persona_engagements}
+            engagements={groupedCadence}
             personaMatches={personaMatches}
           />
         </Box>
@@ -1958,6 +2706,10 @@ const AccountPlanPage: React.FC = () => {
   >({});
   const [accountPlanContract, setAccountPlanContract] =
     useState<AccountPlanContract | null>(null);
+  const [contractError, setContractError] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
+  const [lastFetchedJobId, setLastFetchedJobId] = useState<string | null>(null);
   const [enrichmentDialogAccount, setEnrichmentDialogAccount] =
     useState<EnrichmentAccount | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -2079,24 +2831,126 @@ const AccountPlanPage: React.FC = () => {
   useEffect(() => {
     if (!token || !selectedProductId || !accountId) {
       setAccountPlanContract(null);
+      setContractError(null);
+      setJobId(null);
+      setJobStatus(null);
+      setLastFetchedJobId(null);
       return;
     }
+    setAccountPlanContract(null);
+    setContractError(null);
+    setJobStatus(null);
+    setLastFetchedJobId(null);
+    setJobId(null);
+    let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(
-          `http://localhost:8000/accounts/${accountId}/plan?product_id=${encodeURIComponent(
-            selectedProductId
-          )}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch("http://localhost:8000/jobs/account-plan", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            account_id: accountId,
+            product_id: selectedProductId,
+          }),
+        });
         if (!res.ok) throw new Error(await res.text());
-        const data: AccountPlanContract = await res.json();
-        setAccountPlanContract(data);
+        const data = await res.json();
+        if (cancelled) return;
+        setJobId(data.job_id);
       } catch (err: unknown) {
-        console.warn("Failed to load account plan contract", err);
+        if (!cancelled) {
+          console.error("Failed to start account plan job", err);
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Unable to start account plan job.";
+          setContractError(message);
+        }
       }
     })();
-  }, [selectedProductId, token, accountId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId, selectedProductId, token]);
+
+  useEffect(() => {
+    if (!jobId || !token) {
+      return;
+    }
+    let cancelled = false;
+    let intervalHandle: ReturnType<typeof setInterval> | null = null;
+    const pollStatus = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/jobs/${jobId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const status: JobStatus = await res.json();
+        if (cancelled) return;
+        setJobStatus(status);
+        if (status.status === "completed" || status.status === "failed") {
+          if (intervalHandle) {
+            clearInterval(intervalHandle);
+            intervalHandle = null;
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to poll job status", jobId, err);
+      }
+    };
+    intervalHandle = setInterval(pollStatus, 1500);
+    pollStatus();
+    return () => {
+      cancelled = true;
+      if (intervalHandle) {
+        clearInterval(intervalHandle);
+      }
+    };
+  }, [jobId, token]);
+
+  useEffect(() => {
+    if (!jobStatus || jobStatus.status !== "completed" || !token) {
+      if (jobStatus?.status === "failed") {
+        setContractError(
+          jobStatus.error || "Account plan job failed. Click 'Show error' for details."
+        );
+        setAccountPlanContract(null);
+      }
+      return;
+    }
+    if (jobStatus.job_id === lastFetchedJobId) {
+      return;
+    }
+    let cancelled = false;
+    const fetchPath =
+      jobStatus.result_location ||
+      `/accounts/${accountId}/plan?product_id=${encodeURIComponent(selectedProductId)}`;
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:8000${fetchPath}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data: AccountPlanContract = await res.json();
+        if (cancelled) return;
+        setAccountPlanContract(data);
+        setContractError(null);
+        setLastFetchedJobId(jobStatus.job_id);
+      } catch (err) {
+        if (cancelled) return;
+        console.warn("Failed to load account plan contract", err);
+        setContractError(
+          "Account plan quality metrics unavailable — backend contract fetch failed."
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId, jobStatus, lastFetchedJobId, selectedProductId, token]);
 
   useEffect(() => {
     if (!plan || !token || !selectedProductId) {
@@ -2161,6 +3015,8 @@ const AccountPlanPage: React.FC = () => {
     activeAccount,
     activeLookupEntry
   );
+  const activePersonaDefinitions =
+    activeAccount?.thesis?.personas_by_id ?? {};
 
   const topPlay =
     activeAccount?.execution?.plays &&
@@ -2256,7 +3112,8 @@ const AccountPlanPage: React.FC = () => {
         activeEnrichment,
         topPlay,
         personaLabelLookup,
-        activeAccount?.keystone_personas ?? []
+        activeAccount?.keystone_personas ?? [],
+        accountPlanContract?.meta?.planningMode
       ),
     [
       activeAccount,
@@ -2264,6 +3121,7 @@ const AccountPlanPage: React.FC = () => {
       topPlay,
       personaLabelLookup,
       activeAccount?.keystone_personas,
+      accountPlanContract?.meta?.planningMode,
     ]
   );
 
@@ -2276,6 +3134,43 @@ const AccountPlanPage: React.FC = () => {
     activeEnrichment?.blueprint_generated_at ||
     plan?.summary.generated_at ||
     plan?.generated_at;
+  const planningMode = accountPlanContract?.meta?.planningMode;
+  const planningModeLabel = formatPlanningModeLabel(planningMode);
+  const isGraphHypothesisMode = planningMode === "graph_hypothesis";
+  const accountSummary = accountPlanContract?.account;
+  const accountStatusCopy = accountSummary
+    ? isGraphHypothesisMode
+      ? `No conflicting signals yet (graph-only estimate) · Stall in ${accountSummary.predictedStallInDays} days`
+      : `Win probability ${fmtPercent(accountSummary.predictedWinPct, true)} · Stall in ${accountSummary.predictedStallInDays} days`
+    : null;
+
+  const planQuality = accountPlanContract?.quality ?? DEFAULT_PLAN_QUALITY;
+  const winOutlook = accountPlanContract?.winOutlook ?? DEFAULT_WIN_OUTLOOK;
+  const rightToWin = winOutlook.right_to_win;
+  const baselineWin = winOutlook.baseline_win;
+  const predictedWin = winOutlook.predicted_win;
+  const rightToWinRange = formatWinRange(rightToWin?.ci);
+  const baselineWinRange = formatWinRange(baselineWin?.ci);
+  const predictedWinRange = formatWinRange(predictedWin?.range);
+  const diagnosticReachability = winOutlook.diagnostics?.graph_walk_reachability;
+  const diagnosticNote = winOutlook.diagnostics?.note;
+  const shouldShowContractMetrics = Boolean(
+    accountId && (accountPlanContract || contractError)
+  );
+  const engagementSignals = accountPlanContract?.engagementSignals;
+  const dataAvailability = accountPlanContract?.dataAvailability;
+  const coverageDeals =
+    (rightToWin?.coverage?.wins ?? 0) + (rightToWin?.coverage?.losses ?? 0);
+  const observedSignals =
+    dataAvailability?.observedEngagements ?? engagementSignals?.observed ?? 0;
+  const plannedSignals =
+    engagementSignals?.projected ??
+    predictedWin?.evidence?.planned_signals ??
+    0;
+  const priorOnlyEstimate = observedSignals === 0 && coverageDeals === 0;
+  const graphConfidenceLabel = priorOnlyEstimate
+    ? "Confidence: Low (graph-only estimate, no CRM or historical deals yet)"
+    : `Confidence: Moderate (${observedSignals} observed signal${observedSignals === 1 ? "" : "s"})`;
 
   if (loading) {
     return (
@@ -2301,18 +3196,45 @@ const AccountPlanPage: React.FC = () => {
         spacing={2}
         sx={{ mb: 3 }}
       >
-        <Typography variant="h5">Account Plan</Typography>
-        {accountPlanContract?.account && (
-          <Typography variant="caption" color="text.secondary">
-            Win probability{" "}
-            {fmtPercent(
-              accountPlanContract.account.predictedWinPct,
-              true
-            )}{" "}
-            · Stall in{" "}
-            {accountPlanContract.account.predictedStallInDays} days
-          </Typography>
-        )}
+        <Box>
+          <Typography variant="h5">Account Plan</Typography>
+          {planningModeLabel ? (
+            <Chip
+              size="small"
+              label={planningModeLabel}
+              variant="outlined"
+              sx={{ mt: 0.5 }}
+            />
+          ) : null}
+          {accountStatusCopy ? (
+            <Typography variant="caption" color="text.secondary">
+              {accountStatusCopy}
+            </Typography>
+          ) : null}
+          {engagementSignals ? (
+            <Typography variant="caption" color="text.secondary">
+              Observed signals: {observedSignals} · Planned signals: {plannedSignals}
+            </Typography>
+          ) : null}
+          {dataAvailability ? (
+            <Typography variant="caption" color="text.secondary">
+              Graph: {dataAvailability.graph ? "ready" : "missing"} · Historic
+              deals: {dataAvailability.historicDeals} · Arsenal assets:{" "}
+              {dataAvailability.arsenalAssets} · People mapped:{" "}
+              {dataAvailability.peopleMapped}
+            </Typography>
+          ) : null}
+          {priorOnlyEstimate ? (
+            <Typography variant="caption" color="text.secondary">
+              Evidence grade: Prior-only estimate (no CRM or historical deals yet).
+            </Typography>
+          ) : null}
+          {engagementSignals?.lastObservedAt ? (
+            <Typography variant="caption" color="text.secondary">
+              Last observed {formatRelativeTime(engagementSignals.lastObservedAt)}
+            </Typography>
+          ) : null}
+        </Box>
         <Box sx={{ flexGrow: 1 }} />
         {products.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 220 }}>
@@ -2337,6 +3259,208 @@ const AccountPlanPage: React.FC = () => {
           </FormControl>
         )}
       </Stack>
+
+      {jobStatus && jobStatus.status !== "completed" ? (
+        <Box
+          sx={{
+            mb: 3,
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            bgcolor: "background.paper",
+            borderRadius: 1,
+            boxShadow: 1,
+          }}
+        >
+          <CircularProgress size={20} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" fontWeight={600}>
+              {jobStatus.message}
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={Math.min(100, Math.max(0, jobStatus.progress ?? 0))}
+              sx={{ mt: 0.5 }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              Step: {friendlyPhaseLabel(jobStatus.phase)}
+            </Typography>
+          </Box>
+        </Box>
+      ) : null}
+
+      {jobStatus?.status === "failed" && jobStatus.error ? (
+        <Alert severity="error" variant="outlined" sx={{ mb: 3 }}>
+          {jobStatus.error}
+        </Alert>
+      ) : null}
+
+      {isGraphHypothesisMode ? (
+        <Alert severity="info" variant="outlined" sx={{ mb: 3 }}>
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Graph-only setup priority</Typography>
+            <Typography variant="body2">
+              Priority order: 1. Enrich account (map people). 2. Add assets & channels. 3. Import CRM history.
+              Execution tuning can wait until these inputs are ready.
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                component={RouterLink}
+                to="/account-enrichment"
+              >
+                Enrich account
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                component={RouterLink}
+                to="/arsenal"
+              >
+                Add assets & channels
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                component={RouterLink}
+                to="/crm-setup"
+              >
+                Import CRM history
+              </Button>
+            </Stack>
+          </Stack>
+        </Alert>
+      ) : null}
+
+      {shouldShowContractMetrics ? (
+        <>
+          {contractError ? (
+            <Alert severity="warning" variant="outlined" sx={{ mb: 3 }}>
+              {contractError}
+            </Alert>
+          ) : null}
+          <PlanQualityPanel quality={planQuality} sx={{ mb: 3 }} />
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Win outlook
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <Paper variant="outlined" sx={{ p: 2, height: "100%" }}>
+                  <Stack spacing={0.75}>
+                    <Typography variant="subtitle2">Right to win (meta)</Typography>
+                    <Typography variant="h5">
+                      {fmtPercent(rightToWin?.p, true)}
+                    </Typography>
+                    {rightToWinRange ? (
+                      <Typography variant="caption" color="text.secondary">
+                        Range {rightToWinRange}
+                      </Typography>
+                    ) : null}
+                    <Typography variant="body2" color="text.secondary">
+                      Coverage: {rightToWin?.coverage?.similar_deals ?? 0} deals ·{" "}
+                      {rightToWin?.coverage?.wins ?? 0} wins /{" "}
+                      {rightToWin?.coverage?.losses ?? 0} losses
+                    </Typography>
+                    {renderWinDrivers(rightToWin?.top_drivers)}
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={formatStatusLabel(rightToWin?.status)}
+                    />
+                  </Stack>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Paper variant="outlined" sx={{ p: 2, height: "100%" }}>
+                  <Stack spacing={0.75}>
+                    <Typography variant="subtitle2">
+                      {priorOnlyEstimate
+                        ? "Prior-only estimate (soft prior)"
+                        : "Baseline win (observed reality)"}
+                    </Typography>
+                    <Typography variant="h5">
+                      {fmtPercent(baselineWin?.p, true)}
+                    </Typography>
+                    {!priorOnlyEstimate && baselineWinRange ? (
+                      <Typography variant="caption" color="text.secondary">
+                        Range {baselineWinRange}
+                      </Typography>
+                    ) : null}
+                    <Typography variant="body2" color="text.secondary">
+                      {baselineWin?.evidence?.summary}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Observed signals:{" "}
+                      {baselineWin?.evidence?.observed_signals ??
+                        baselineWin?.evidence?.engagement_count ??
+                        0}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={formatStatusLabel(baselineWin?.status)}
+                    />
+                  </Stack>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Paper variant="outlined" sx={{ p: 2, height: "100%" }}>
+                  <Stack spacing={0.75}>
+                    <Typography variant="subtitle2">
+                      Predicted win (if plan executes) · Evidence-adjusted
+                    </Typography>
+                    <Typography variant="h5">
+                      {fmtPercent(predictedWin?.p, true)}
+                    </Typography>
+                    {predictedWinRange ? (
+                      <Typography variant="caption" color="text.secondary">
+                        Range {predictedWinRange}
+                      </Typography>
+                    ) : null}
+                    <Typography variant="body2" color="text.secondary">
+                      Forecasted lift {fmtPercent(predictedWin?.lift_over_current, true)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {predictedWin?.evidence?.summary}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Observed:{" "}
+                      {predictedWin?.evidence?.observed_signals ?? observedSignals}
+                      {" · "}Planned:{" "}
+                      {predictedWin?.evidence?.planned_signals ?? plannedSignals}
+                    </Typography>
+                    {(predictedWin?.assumptions || []).slice(0, 2).map((assumption, index) => (
+                      <Typography
+                        key={`forecast-${assumption.action_id}-${index}`}
+                        variant="body2"
+                        color="text.secondary"
+                      >
+                        {assumption.label} · Engagement {fmtPercent(assumption.p_engage, true)} · Δlog{" "}
+                        {assumption.expected_delta_log_odds.toFixed(3)}
+                        {assumption.history_note ? ` · ${assumption.history_note}` : ""}
+                      </Typography>
+                    ))}
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={formatStatusLabel(predictedWin?.status)}
+                    />
+                  </Stack>
+                </Paper>
+              </Grid>
+            </Grid>
+            {(diagnosticReachability != null || diagnosticNote) && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                Graph reachability {fmtPercent(diagnosticReachability, true)} ·{" "}
+                {diagnosticNote || "Diagnostic check only"}
+              </Typography>
+            )}
+          </Box>
+        </>
+      ) : null}
 
       {accountId && activeAccount && (
         <Breadcrumbs sx={{ mb: 2 }}>
@@ -2369,7 +3493,7 @@ const AccountPlanPage: React.FC = () => {
             acct.enrichment?.summary?.required_personas ??
             undefined;
           const hasEngagements =
-            (acct.prediction?.journey?.steps?.length || 0) > 0;
+            (acct.engagementSignals?.observed ?? 0) > 0;
           const lookupEntry = targetAccountLookup[acct.account_id];
           const accountName = getAccountDisplayName(acct, lookupEntry);
           const metaChips = uniqueStrings(
@@ -2390,80 +3514,82 @@ const AccountPlanPage: React.FC = () => {
               md={6}
               lg={4}
             >
-              <Card
-                variant="outlined"
-                sx={{
-                  borderColor: isSelected ? "primary.main" : undefined,
-                  boxShadow: isSelected ? 2 : undefined,
-                }}
-              >
-                <CardActionArea
-                  onClick={() =>
-                    navigate(`/account-plan/${acct.account_id}`)
-                  }
-                  sx={{ alignItems: "stretch" }}
+                <Card
+                  variant="outlined"
+                  sx={{
+                    borderColor: isSelected ? "primary.main" : undefined,
+                    boxShadow: isSelected ? 2 : undefined,
+                  }}
                 >
-                  <CardContent>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 600 }}
-                    >
-                      {accountName}
-                    </Typography>
-                    <Stack
-                      direction="row"
-                      spacing={0.75}
-                      sx={{ flexWrap: "wrap", mt: 1 }}
-                    >
-                      {metaChips.slice(0, 5).map((chip) => (
-                        <Chip
-                          key={`${acct.account_id}-${chip}`}
-                          label={chip}
-                          size="small"
-                        />
-                      ))}
-                    </Stack>
-                    <Stack
-                      direction="row"
-                      spacing={1.5}
-                      sx={{ mt: 2 }}
-                    >
-                      <Stack spacing={0.25}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                        >
-                          Enrichment
-                        </Typography>
-                        <Typography variant="body2">
-                          {enrichmentLoading && !enrichment
-                            ? "Loading…"
-                            : fmtPercent(coverage)}
-                        </Typography>
-                        {required !== undefined ? (
+                  <CardActionArea
+                    onClick={() =>
+                      navigate(`/account-plan/${acct.account_id}`)
+                    }
+                    sx={{ alignItems: "stretch" }}
+                  >
+                    <CardContent>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 600 }}
+                      >
+                        {accountName}
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        sx={{ flexWrap: "wrap", mt: 1 }}
+                      >
+                        {metaChips.slice(0, 5).map((chip) => (
+                          <Chip
+                            key={`${acct.account_id}-${chip}`}
+                            label={chip}
+                            size="small"
+                          />
+                        ))}
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={1.5}
+                        sx={{ mt: 2 }}
+                      >
+                        <Stack spacing={0.25}>
                           <Typography
                             variant="caption"
                             color="text.secondary"
                           >
-                            {matchedPeople}/{required} personas matched
+                            Enrichment
                           </Typography>
-                        ) : null}
+                          <Typography variant="body2">
+                            {enrichmentLoading && !enrichment
+                              ? "Loading…"
+                              : fmtPercent(coverage)}
+                          </Typography>
+                          {required !== undefined ? (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {matchedPeople}/{required} personas matched
+                            </Typography>
+                          ) : null}
+                        </Stack>
+                        <Stack spacing={0.25}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
+                            Engagements
+                          </Typography>
+                          <Typography variant="body2">
+                            {hasEngagements ? "Live" : "No engagements"}
+                          </Typography>
+                        </Stack>
                       </Stack>
-                      <Stack spacing={0.25}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                        >
-                          Engagements
-                        </Typography>
-                        <Typography variant="body2">
-                          {hasEngagements ? "Live" : "No engagements"}
-                        </Typography>
-                      </Stack>
-                    </Stack>
+                    </CardContent>
+                  </CardActionArea>
+                  <CardActions sx={{ p: 2 }}>
                     <Button
                       size="small"
-                      sx={{ mt: 1 }}
                       onClick={(e) => {
                         e.stopPropagation();
                         setEnrichmentDialogAccount({
@@ -2475,12 +3601,11 @@ const AccountPlanPage: React.FC = () => {
                     >
                       View persona details
                     </Button>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
-          );
-        })}
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
 
         {!accounts.length && (
           <Grid item xs={12}>
@@ -2556,12 +3681,15 @@ const AccountPlanPage: React.FC = () => {
                               sm: "center",
                             }}
                           >
-                            <Typography variant="subtitle2">
-                              {gap.persona_label ||
-                                gap.persona_descriptor ||
-                                "Persona"}{" "}
-                              · {gap.stage_label || "Stage"}
-                            </Typography>
+                    <Typography variant="subtitle2">
+                      {personaDisplayLabel(
+                        gap.persona_id,
+                        gap.persona_label || gap.persona_descriptor,
+                        activePersonaDefinitions
+                      )}
+                      {" · "}
+                      {gap.stage_label || "Stage"}
+                    </Typography>
                             <Chip
                               size="small"
                               color={coverageColor}
@@ -2574,6 +3702,7 @@ const AccountPlanPage: React.FC = () => {
                           >
                             Need to prove:{" "}
                             {gap.concern_theme ||
+                              gap.stage_label ||
                               "Belief transition still being inferred"}{" "}
                             ({fmtBasisPoints(gap.belief_lift_bp)} lift)
                           </Typography>

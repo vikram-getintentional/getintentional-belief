@@ -51,7 +51,8 @@ import ProvenanceChip, {
   type InsightSource,
   type ValueProvenance,
 } from "../components/ProvenanceChip";
-import type { ComprehensiveExecutionPlan } from "../types/apiContracts";
+import PlanQualityPanel from "../components/PlanQualityPanel";
+import type { ComprehensiveExecutionPlan, PlanningMode } from "../types/apiContracts";
 
 // ---------------------------------------------------------------------------
 // Types matching backend payload
@@ -710,7 +711,7 @@ type AccountEnrichment = {
 
 type PlanSummary = {
   account_count: number;
-  avg_best_path_probability: number;
+  graph_walk_reachability: number;
   avg_accuracy: number;
   top_personas: Array<{ label: string; count: number }>;
   top_pains: Array<{ label: string; count: number }>;
@@ -1244,6 +1245,24 @@ type MarketingPlan = {
   canonical_journey?: CanonicalJourney;
   canonical_persona_path?: TypicalPathStep[];
   product_insights?: ProductInsights;
+  planning_mode?: PlanningMode;
+};
+
+const isSentinelPersona = (personaId?: string | null) =>
+  Boolean(personaId && personaId.includes("__STOP__"));
+
+const formatMarketingPlanningModeLabel = (mode?: PlanningMode) => {
+  if (!mode) return undefined;
+  switch (mode) {
+    case "graph_hypothesis":
+      return "Graph Hypothesis mode";
+    case "observed_signal":
+      return "Observed signal mode";
+    case "learned_strategy":
+      return "Learned strategy mode";
+    default:
+      return undefined;
+  }
 };
 
 const COVERAGE_STRONG_THRESHOLD = 0.7;
@@ -3394,7 +3413,7 @@ const MarketingPlanner: React.FC = () => {
     selectedAccountPlan
       ? selectedAccountPlan.prediction?.persona_paths?.[0]?.probability ?? null
       : portfolioSummaryReport?.beliefScore ??
-        plan?.summary?.avg_best_path_probability ??
+        plan?.summary?.graph_walk_reachability ??
         null
   );
 
@@ -3457,12 +3476,20 @@ const MarketingPlanner: React.FC = () => {
   const accountCampaigns = selectedAccountPlan?.campaigns || [];
   const selectedEntryPoints = useMemo(() => {
     if (!selectedAccountPlan) return [];
-    const rows =
+    const rows = (
       selectedAccountPlan.entry_points ??
       selectedAccountPlan.thesis?.entry_points ??
-      [];
+      []
+    ).filter((entry) => !isSentinelPersona(entry.persona_id));
     return rows.slice(0, 4);
   }, [selectedAccountPlan]);
+
+  const formatEntryPointPercent = (value?: number | null) => {
+    if (value === null || value === undefined) return "—";
+    const pct = value * 100;
+    const rounded = Math.round(pct * 10) / 10;
+    return `${rounded.toFixed(1).replace(/\.0$/, "")}%`;
+  };
 
   const portfolioFocuses = useMemo<PortfolioConversionFocus[]>(() => {
     const focuses = plan?.portfolio_plan?.conversion_focuses ?? [];
@@ -6982,7 +7009,9 @@ const renderArsenalContent = () => {
                     )}
                   </Stack>
                   <Stack direction="row" spacing={2} sx={{ mt: 1, flexWrap: "wrap" }}>
-                    {path.personas.map((persona) => {
+                    {path.personas
+                      .filter((persona) => !isSentinelPersona(persona.id))
+                      .map((persona) => {
                       const committeeLikelihood =
                         persona.expected_in_deal_prob ??
                         (persona.expected_in_deal_pct !== undefined &&
@@ -7181,7 +7210,9 @@ const renderArsenalContent = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {(selectedAccountPlan.scatter?.personas || []).map((persona) => (
+                  {(selectedAccountPlan.scatter?.personas || [])
+                    .filter((persona) => !isSentinelPersona(persona.id))
+                    .map((persona) => (
                     <TableRow key={`${persona.id}-${persona.order}`}>
                       <TableCell>{persona.label}</TableCell>
                       <TableCell>
@@ -7370,10 +7401,24 @@ const renderArsenalContent = () => {
     );
   }
 
+  const executionPlanningModeLabel = formatMarketingPlanningModeLabel(
+    executionPlanContract?.meta?.planningMode
+  );
+
   return (
     <Box sx={{ p: 3 }}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "flex-start", md: "center" }} sx={{ mb: 2 }}>
-        <Typography variant="h5">Marketing Planner</Typography>
+        <Box>
+          <Typography variant="h5">Marketing Planner</Typography>
+          {executionPlanningModeLabel && (
+            <Chip
+              size="small"
+              variant="outlined"
+              label={executionPlanningModeLabel}
+              sx={{ mt: 0.5 }}
+            />
+          )}
+        </Box>
 
         <Box sx={{ display: "flex", gap: 1, alignItems: "center", ml: { xs: 0, md: "auto" }, flexWrap: "wrap" }}>
           {products.length > 0 && (
@@ -7423,6 +7468,10 @@ const renderArsenalContent = () => {
           </Button>
         </Box>
       </Stack>
+
+      {executionPlanContract?.quality && (
+        <PlanQualityPanel quality={executionPlanContract.quality} sx={{ mb: 2 }} />
+      )}
 
       {!!statusMsg && (
         <Alert severity="info" sx={{ mb: 2 }}>
@@ -7574,33 +7623,39 @@ const renderArsenalContent = () => {
                     <TableRow key={`selected-entry-${entry.persona_id}-${idx}`}>
                       <TableCell>
                         <Stack spacing={0.25}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {entry.persona_label || entry.persona_id}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Rank {entry.rank ?? idx + 1}
-                          </Typography>
+                          <Stack direction="row" spacing={0.5} alignItems="center">
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {entry.persona_label || entry.persona_id}
+                            </Typography>
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label="🧠 Graph-inferred"
+                            />
+                          </Stack>
                         </Stack>
                       </TableCell>
                       <TableCell align="right">
                         <Stack spacing={0.25} alignItems="flex-end">
                           <Typography variant="body2">
-                            {fmtPercent(entry.entry_score ?? null)}
+                            {formatEntryPointPercent(entry.entry_score ?? null)}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Combined perc {fmtPercent(entry.combined_perceptibility ?? null)} · prox{" "}
-                            {fmtPercent(entry.combined_proximity ?? null)}
+                            Combined perc{" "}
+                            {formatEntryPointPercent(entry.combined_perceptibility ?? null)} · prox{" "}
+                            {formatEntryPointPercent(entry.combined_proximity ?? null)}
                           </Typography>
                         </Stack>
                       </TableCell>
                       <TableCell>
                         <Stack spacing={0.25}>
                           <Typography variant="caption" color="text.secondary">
-                            Graph {fmtPercent(entry.graph_perceptibility ?? null)} /{" "}
-                            {fmtPercent(entry.graph_proximity ?? null)}
+                            Graph {formatEntryPointPercent(entry.graph_perceptibility ?? null)} /{" "}
+                            {formatEntryPointPercent(entry.graph_proximity ?? null)}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Intervention reach {fmtPercent(entry.intervention_reach ?? null)}
+                            Intervention reach{" "}
+                            {formatEntryPointPercent(entry.intervention_reach ?? null)}
                           </Typography>
                         </Stack>
                       </TableCell>

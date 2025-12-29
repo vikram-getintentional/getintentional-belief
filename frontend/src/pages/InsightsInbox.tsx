@@ -30,6 +30,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ProvenanceChip, {
   type TextInsight,
 } from "../components/ProvenanceChip";
+import type { PlanningMode } from "../types/apiContracts";
 
 type PersonaFieldSummary = {
   field?: string | null;
@@ -42,7 +43,11 @@ type PersonaFieldSummary = {
 type GlobalPersonaRecommendation = {
   persona_id: string;
   persona_label?: string | null;
+  reason?: string | null;
   observed_events: number;
+  accounts?: number | null;
+  hit_at_1_with?: number | null;
+  hit_at_1_without?: number | null;
   seen?: number;
   recommendation_events?: number;
   current_best_fit?: string | null;
@@ -50,6 +55,7 @@ type GlobalPersonaRecommendation = {
   avg_confidence?: number | null;
   avg_delta?: number | null;
   predicted_boost_pct?: number | null;
+  confidence?: number | null;
   reasons: string[];
   field_summaries: PersonaFieldSummary[];
   jobs: string[];
@@ -67,6 +73,12 @@ type GlobalEdgeRecommendation = {
   avg_confidence?: number | null;
   avg_delta?: number | null;
   predicted_boost_pct?: number | null;
+  confidence?: number | null;
+  count?: number | null;
+  accounts?: number | null;
+  impact_pct?: number | null;
+  ci_low?: number | null;
+  ci_high?: number | null;
   scope?: number | null;
   reason?: string | null;
   reasons: string[];
@@ -77,6 +89,10 @@ type GlobalEdgeRecommendation = {
   recommended_relevance?: number | null;
   recommendation_events?: number;
   account_meta?: string[];
+  personas?: string[];
+  from_persona?: string;
+  to_persona?: string;
+  proposed_likelihood?: number | null;
 };
 
 type GlobalEngagementInsight = {
@@ -94,6 +110,12 @@ type ArsenalImpactRow = {
   total_delta?: number | null;
   avg_delta?: number | null;
   avg_confidence?: number | null;
+  approx_delta_win_pct?: number | null;
+  effect_label?: string | null;
+  confidence?: number | null;
+  events?: number | null;
+  sample_accounts?: number | null;
+  personas_impacted?: string[];
   channels?: string[];
   account_meta?: string[];
   num_engagements: number;
@@ -317,6 +339,157 @@ function fmtBasisPoints(value?: number | null) {
   return `${Number(value).toFixed(1)} bps`;
 }
 
+type SignalTier = "high" | "medium" | "low";
+
+const SIGNAL_THRESHOLDS: Record<SignalTier, number> = {
+  high: 0.8,
+  medium: 0.6,
+  low: 0.0, // fallback
+};
+
+const SIGNAL_LABELS: Record<SignalTier, string> = {
+  high: "High signal",
+  medium: "Medium signal",
+  low: "Exploratory",
+};
+
+const SIGNAL_COLORS: Record<SignalTier, "success" | "warning" | "default"> = {
+  high: "success",
+  medium: "warning",
+  low: "default",
+};
+
+function getSignalTier(confidence?: number | null): SignalTier {
+  const score = confidence ?? 0;
+  if (score >= SIGNAL_THRESHOLDS.high) return "high";
+  if (score >= SIGNAL_THRESHOLDS.medium) return "medium";
+  return "low";
+}
+
+function signalBadgeProps(confidence?: number | null) {
+  const tier = getSignalTier(confidence);
+  return {
+    label: `${SIGNAL_LABELS[tier]}${typeof confidence === "number" ? ` · ${fmtPercent(confidence, { decimals: 0, inputIsFraction: true })}` : ""}`,
+    color: SIGNAL_COLORS[tier],
+  };
+}
+
+function shouldShowTypicalMetrics(value?: number | null) {
+  if (value === null || value === undefined) return false;
+  if (Number.isNaN(value)) return false;
+  return true;
+}
+
+function hasMeaningfulPathMetrics(
+  perc?: number | null,
+  prox?: number | null,
+  involvement?: number | null
+) {
+  if (
+    perfEqual(perc, 0) &&
+    perfEqual(prox, 1) &&
+    perfEqual(involvement, 0)
+  ) {
+    return false;
+  }
+  return (
+    shouldShowTypicalMetrics(perc) ||
+    shouldShowTypicalMetrics(prox) ||
+    shouldShowTypicalMetrics(involvement)
+  );
+}
+
+function perfEqual(value?: number | null, target?: number) {
+  if (value === null || value === undefined) return false;
+  if (target === undefined) return false;
+  return Math.abs(value - target) < 1e-6;
+}
+
+function formatArsenalEffect(row: ArsenalImpactRow) {
+  const delta = row.approx_delta_win_pct ?? row.avg_delta;
+  const label =
+    delta === null || delta === undefined
+      ? row.effect_label || "Effect unknown"
+      : delta > 0
+      ? "Helps"
+      : delta < 0
+      ? "Hurts"
+      : "Neutral";
+  const detail =
+    delta === null || delta === undefined
+      ? "Insufficient data"
+      : `${delta > 0 ? "+" : ""}${fmtPercent(delta, {
+          decimals: 1,
+          sign: true,
+        })} win prob`;
+  return { label, detail };
+}
+
+const MAX_PRIMARY_PERSONA_CARDS = 3;
+const MAX_MEDIUM_PERSONA_CARDS = 2;
+const MIN_EDGE_EVENT_THRESHOLD = 5;
+
+type InsightSupportProps = {
+  summary: string | null;
+  lowSignal: boolean;
+};
+
+function getInsightSupportProps(
+  support?: Record<string, any>,
+  signals?: number | null
+): InsightSupportProps {
+  const parts: string[] = [];
+  const accounts = support?.accounts;
+  const events = support?.events;
+  if (typeof accounts === "number" && accounts > 0) {
+    parts.push(`${fmtCount(accounts)} accounts`);
+  }
+  if (typeof events === "number" && events > 0) {
+    parts.push(`${fmtCount(events)} events`);
+  }
+  if (typeof signals === "number" && signals > 0) {
+    parts.push(`${fmtCount(signals)} signals`);
+  }
+  const summary = parts.length ? parts.join(" · ") : null;
+  const lowSignal =
+    support?.low_signal === true ||
+    (typeof events === "number" && events > 0 && events < 3) ||
+    (typeof accounts === "number" && accounts > 0 && accounts < 3);
+  return { summary, lowSignal };
+}
+
+function renderInsightListItems(items: InsightListItem[]) {
+  return items.map((item, idx) => {
+    const { summary, lowSignal } = getInsightSupportProps(
+      item.support,
+      item.signals ?? null
+    );
+    const key = item.text || item.label || `insight-${idx}`;
+    return (
+      <ListItem key={key} disablePadding sx={{ pl: 0 }}>
+        <Stack direction="row" spacing={1} alignItems="flex-start" width="100%">
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="body2"
+              color={lowSignal ? "text.secondary" : "text.primary"}
+            >
+              {item.text}
+            </Typography>
+            {summary && (
+              <Typography variant="caption" color="text.secondary">
+                {summary}
+              </Typography>
+            )}
+          </Box>
+          {lowSignal && (
+            <Chip size="small" variant="outlined" label="Low signal" />
+          )}
+        </Stack>
+      </ListItem>
+    );
+  });
+}
+
 const formatRelativeTime = (iso?: string | null) => {
   if (!iso) return null;
   const parsed = new Date(iso);
@@ -401,6 +574,17 @@ const parseMetaInsight = (text: string) => {
   return { chipLabel, chipValue, remainder, color };
 };
 
+const formatInsightsPlanningModeLabel = (mode?: PlanningMode) => {
+  switch (mode) {
+    case "observed_signal":
+      return "Observed signal mode";
+    case "learned_strategy":
+      return "Learned strategy mode";
+    default:
+      return "Graph Hypothesis mode";
+  }
+};
+
 const InsightsInbox = () => {
   const navigate = useNavigate();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -410,6 +594,11 @@ const InsightsInbox = () => {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("product");
   const [showAllEdgeRecs, setShowAllEdgeRecs] = useState(false);
+  const [showAllHighPersonas, setShowAllHighPersonas] = useState(false);
+  const [showMediumSignalPersonas, setShowMediumSignalPersonas] =
+    useState(false);
+  const [showExploratoryPersonas, setShowExploratoryPersonas] =
+    useState(false);
   const [arsenalMetaGaps, setArsenalMetaGaps] = useState<{
     assets: string[];
     channels: string[];
@@ -509,13 +698,82 @@ const InsightsInbox = () => {
     );
   }, [globalInsights]);
 
-  const edgesForDisplay = useMemo(() => {
-    if (!globalInsights) return [];
+  const edgeInsights = useMemo(() => {
+    if (!globalInsights) {
+      return {
+        display: [] as GlobalEdgeRecommendation[],
+        lowSignalCount: 0,
+        priorityCount: 0,
+        totalCount: 0,
+      };
+    }
     const all = globalInsights.edge_recommendations || [];
-    if (showAllEdgeRecs) return all;
-    const highScope = all.filter((edge) => (edge.scope ?? 0) >= 0.999);
-    return highScope.length > 0 ? highScope : all;
+    const priority = all.filter((edge) => {
+      const confidence = edge.confidence ?? edge.avg_confidence ?? 0;
+      const count = edge.count ?? edge.recommendation_events ?? edge.seen ?? 0;
+      return (
+        confidence >= SIGNAL_THRESHOLDS.medium && count >= MIN_EDGE_EVENT_THRESHOLD
+      );
+    });
+    const lowSignalCount = Math.max(0, all.length - priority.length);
+    return {
+      display: showAllEdgeRecs ? all : priority,
+      lowSignalCount,
+      priorityCount: priority.length,
+      totalCount: all.length,
+    };
   }, [globalInsights, showAllEdgeRecs]);
+
+  const personaRecommendations = globalInsights?.persona_recommendations ?? [];
+  const personaRecsSorted = useMemo(() => {
+    return [...personaRecommendations].sort((a, b) => {
+      const aScore = a.confidence ?? a.avg_confidence ?? 0;
+      const bScore = b.confidence ?? b.avg_confidence ?? 0;
+      return bScore - aScore;
+    });
+  }, [personaRecommendations]);
+  const personaHighSignal = useMemo(
+    () =>
+      personaRecsSorted.filter((rec) => {
+        const conf = rec.confidence ?? rec.avg_confidence ?? 0;
+        return getSignalTier(conf) === "high";
+      }),
+    [personaRecsSorted]
+  );
+  const personaMediumSignal = useMemo(
+    () =>
+      personaRecsSorted.filter((rec) => {
+        const conf = rec.confidence ?? rec.avg_confidence ?? 0;
+        return getSignalTier(conf) === "medium";
+      }),
+    [personaRecsSorted]
+  );
+  const personaLowSignal = useMemo(
+    () =>
+      personaRecsSorted.filter((rec) => {
+        const conf = rec.confidence ?? rec.avg_confidence ?? 0;
+        return getSignalTier(conf) === "low";
+      }),
+    [personaRecsSorted]
+  );
+  const personaHighDisplay = showAllHighPersonas
+    ? personaHighSignal
+    : personaHighSignal.slice(0, MAX_PRIMARY_PERSONA_CARDS);
+  const personaHighHiddenCount = Math.max(
+    0,
+    personaHighSignal.length - personaHighDisplay.length
+  );
+  const personaMediumDisplay = personaMediumSignal.slice(
+    0,
+    MAX_MEDIUM_PERSONA_CARDS
+  );
+  const personaMediumCount = personaMediumSignal.length;
+  const personaMediumHiddenCount = Math.max(
+    0,
+    personaMediumSignal.length - personaMediumDisplay.length
+  );
+  const personaLowCount = personaLowSignal.length;
+  const personaLowDisplay = showExploratoryPersonas ? personaLowSignal : [];
 
   const productInsights = globalInsights?.product_insights;
   const arsenalImpact = globalInsights?.arsenal_impact ?? [];
@@ -658,6 +916,127 @@ const InsightsInbox = () => {
     [selectedProductId, token, fetchInsights]
   );
 
+  const renderPersonaCard = (rec: GlobalPersonaRecommendation) => {
+    const label =
+      rec.persona_label || personaLabelFromId(rec.persona_id) || rec.persona_id;
+    const confidence = rec.confidence ?? rec.avg_confidence ?? null;
+    const { label: signalLabelText, color: signalColor } = signalBadgeProps(
+      confidence
+    );
+    const effectLabel = rec.predicted_boost_pct
+      ? `${fmtPercent(rec.predicted_boost_pct, { decimals: 1, sign: true })} next-step hit@1`
+      : "Effect data pending";
+    const confidenceTag =
+      typeof confidence === "number"
+        ? ` (confidence ${fmtPercent(confidence, {
+            decimals: 0,
+            inputIsFraction: true,
+          })})`
+        : "";
+    const evidenceParts: string[] = [];
+    if (rec.accounts) {
+      evidenceParts.push(`${fmtCount(rec.accounts)} accounts`);
+    }
+    const observedEvents = rec.observed_events ?? rec.recommendation_events ?? 0;
+    if (observedEvents) {
+      evidenceParts.push(`${fmtCount(observedEvents)} engagements`);
+    }
+    const evidenceText = evidenceParts.length
+      ? `Seen in ${evidenceParts.join(", ")}.`
+      : null;
+    const hitLine =
+      rec.hit_at_1_with != null && rec.hit_at_1_without != null
+        ? `Hit@1 ${fmtPercent(rec.hit_at_1_without, {
+            decimals: 0,
+            inputIsFraction: true,
+          })} → ${fmtPercent(rec.hit_at_1_with, {
+            decimals: 0,
+            inputIsFraction: true,
+          })}`
+        : null;
+    const reason =
+      rec.reason || (rec.reasons?.length ? rec.reasons.join(" • ") : null);
+    const jobLine =
+      rec.jobs && rec.jobs.length ? `Jobs: ${rec.jobs.slice(0, 3).join(", ")}` : null;
+    const painLine =
+      rec.pains && rec.pains.length ? `Pains: ${rec.pains.slice(0, 3).join(", ")}` : null;
+
+    return (
+      <Box
+        key={rec.persona_id}
+        sx={{
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 1,
+          p: 2,
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography variant="subtitle1">{label}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Effect: {effectLabel}
+              {confidenceTag}
+            </Typography>
+            {evidenceText && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5 }}
+              >
+                {evidenceText}
+              </Typography>
+            )}
+            {hitLine && (
+              <Typography variant="caption" color="text.secondary">
+                {hitLine}
+              </Typography>
+            )}
+          </Box>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
+            <Chip
+              size="small"
+              variant="outlined"
+              label={signalLabelText}
+              color={signalColor}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => handleApplyRecommendation("persona", rec)}
+            >
+              Approve & add persona
+            </Button>
+          </Stack>
+        </Stack>
+        {reason && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {reason}
+          </Typography>
+        )}
+        {jobLine && (
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+            {jobLine}
+          </Typography>
+        )}
+        {painLine && (
+          <Typography variant="caption" color="text.secondary">
+            {painLine}
+          </Typography>
+        )}
+      </Box>
+    );
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
@@ -676,9 +1055,16 @@ const InsightsInbox = () => {
 
   return (
     <Box sx={{ maxWidth: 1100, mx: "auto", p: { xs: 2, md: 3 } }}>
-      <Typography variant="h4" fontWeight={700} gutterBottom>
-        Insights Inbox
-      </Typography>
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+        <Typography variant="h4" fontWeight={700}>
+          Insights Inbox
+        </Typography>
+        <Chip
+          size="small"
+          variant="outlined"
+          label={formatInsightsPlanningModeLabel()}
+        />
+      </Stack>
       {(arsenalMetaGaps.assets.length > 0 ||
         arsenalMetaGaps.channels.length > 0) && (
         <Alert severity="warning" sx={{ mb: 2 }}>
@@ -889,7 +1275,13 @@ const InsightsInbox = () => {
                     typeof item.support?.meta_confidence === "number"
                       ? Math.round((item.support.meta_confidence ?? 0) * 100)
                       : null;
-                  const isLowSignal = item.support?.is_significant === false;
+                  const supportProps = getInsightSupportProps(
+                    item.support,
+                    item.signals ?? null
+                  );
+                  const isLowSignal =
+                    item.support?.is_significant === false ||
+                    supportProps.lowSignal;
                   return (
                   <ListItem
                     key={`sectionA-works-${item.text}`}
@@ -968,6 +1360,12 @@ const InsightsInbox = () => {
                           )}
                         </Stack>
                       }
+                      secondary={supportProps.summary ?? undefined}
+                      secondaryTypographyProps={{
+                        component: "span",
+                        variant: "caption",
+                        color: "text.secondary",
+                      }}
                     />
                   </ListItem>
                 );})}
@@ -983,7 +1381,13 @@ const InsightsInbox = () => {
                     typeof item.support?.meta_confidence === "number"
                       ? Math.round((item.support.meta_confidence ?? 0) * 100)
                       : null;
-                  const isLowSignal = item.support?.is_significant === false;
+                  const supportProps = getInsightSupportProps(
+                    item.support,
+                    item.signals ?? null
+                  );
+                  const isLowSignal =
+                    item.support?.is_significant === false ||
+                    supportProps.lowSignal;
                   return (
                   <ListItem
                     key={`sectionA-gaps-${item.text}`}
@@ -1062,6 +1466,12 @@ const InsightsInbox = () => {
                           )}
                         </Stack>
                       }
+                      secondary={supportProps.summary ?? undefined}
+                      secondaryTypographyProps={{
+                        component: "span",
+                        variant: "caption",
+                        color: "text.secondary",
+                      }}
                     />
                   </ListItem>
                 );})}
@@ -1184,32 +1594,55 @@ const InsightsInbox = () => {
                       typeof step.confidence === "number"
                         ? Math.round(step.confidence * 100)
                         : null;
+                    const supportProps = getInsightSupportProps(
+                      step.support,
+                      step.signals ?? null
+                    );
+                    const textColor = supportProps.lowSignal
+                      ? "text.secondary"
+                      : "text.primary";
                     return (
                       <Box key={step.step}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography variant="subtitle2">
-                        Step {step.step}: {step.persona}
-                      </Typography>
-                      {confidencePct !== null && (
-                        <Chip
-                          size="small"
-                          color={
-                            confidencePct >= 70
-                              ? "success"
-                              : confidencePct >= 40
-                              ? "warning"
-                              : "default"
-                          }
-                          label={`confidence ${confidencePct}%`}
-                        />
-                      )}
-                      <ProvenanceChip provenance={step} />
-                    </Stack>
-                        <Typography variant="body2">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="subtitle2" color={textColor}>
+                            Step {step.step}: {step.persona}
+                          </Typography>
+                          {confidencePct !== null && (
+                            <Chip
+                              size="small"
+                              color={
+                                confidencePct >= 70
+                                  ? "success"
+                                  : confidencePct >= 40
+                                  ? "warning"
+                                  : "default"
+                              }
+                              label={`confidence ${confidencePct}%`}
+                            />
+                          )}
+                          {supportProps.lowSignal && (
+                            <Chip
+                              size="small"
+                              variant="outlined"
+                              label="Low signal"
+                            />
+                          )}
+                          <ProvenanceChip provenance={step} />
+                        </Stack>
+                        <Typography variant="body2" color={textColor}>
                           {step.highlight && step.highlight.trim()
                             ? step.highlight
                             : "Key activation step"}
                         </Typography>
+                        {supportProps.summary && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block" }}
+                          >
+                            {supportProps.summary}
+                          </Typography>
+                        )}
                         {step.reason && step.reason.trim() && (
                           <Typography
                             variant="caption"
@@ -1222,13 +1655,26 @@ const InsightsInbox = () => {
                         <Typography variant="caption" color="text.secondary">
                           {step.impact || "—"}
                         </Typography>
-                        {(typeof step.perceptibility === "number" ||
-                          typeof step.proximity === "number" ||
-                          typeof step.involvement === "number") && (
-                          <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-                            {`Perc ${fmtDecimal(step.perceptibility)} · Prox ${fmtDecimal(
-                              step.proximity
-                            )} · Involvement ${fmtPercent(step.involvement ?? 0, true)}`}
+                        {hasMeaningfulPathMetrics(
+                          step.perceptibility,
+                          step.proximity,
+                          step.involvement
+                        ) && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block" }}
+                          >
+                            {`Perc ${fmtPercent(step.perceptibility, {
+                              decimals: 2,
+                              inputIsFraction: true,
+                            })} · Prox ${fmtPercent(step.proximity, {
+                              decimals: 2,
+                              inputIsFraction: true,
+                            })} · Involvement ${fmtPercent(
+                              step.involvement ?? 0,
+                              true
+                            )}`}
                           </Typography>
                         )}
                       </Box>
@@ -1261,6 +1707,10 @@ const InsightsInbox = () => {
                         : null;
                     const entityTooltip =
                       insight.label || insight.persona_id || null;
+                    const supportProps = getInsightSupportProps(insight.support);
+                    const textColor = supportProps.lowSignal
+                      ? "text.secondary"
+                      : "text.primary";
                     return (
                       <Stack
                         key={`global-pattern-${idx}`}
@@ -1268,9 +1718,23 @@ const InsightsInbox = () => {
                         spacing={1}
                         alignItems="center"
                       >
-                        <Typography variant="body2" sx={{ flex: 1 }}>
-                          {insight.text}
-                        </Typography>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" color={textColor}>
+                            {insight.text}
+                          </Typography>
+                          {supportProps.summary && (
+                            <Typography variant="caption" color="text.secondary">
+                              {supportProps.summary}
+                            </Typography>
+                          )}
+                        </Box>
+                        {supportProps.lowSignal && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label="Low signal"
+                          />
+                        )}
                         {entityLabel ? (
                           <Tooltip title={entityTooltip || entityLabel}>
                             <Chip size="small" variant="outlined" label={entityLabel} />
@@ -1331,70 +1795,70 @@ const InsightsInbox = () => {
                   <Card variant="outlined">
                     <CardHeader title="Persona recommendations" />
                     <CardContent>
-                      {globalInsights.persona_recommendations.length === 0 ? (
+                      {!personaRecsSorted.length ? (
                         <Typography variant="body2" color="text.secondary">
                           No persona recommendations yet. Save more engagements to surface
                           learning opportunities.
                         </Typography>
                       ) : (
                         <Stack spacing={2}>
-                          {globalInsights.persona_recommendations.map((rec) => {
-                            const label =
-                              rec.persona_label || personaLabelFromId(rec.persona_id);
-                            return (
-                              <Box
-                                key={rec.persona_id}
-                                sx={{
-                                  border: 1,
-                                  borderColor: "divider",
-                                  borderRadius: 1,
-                                  p: 2,
-                                }}
+                          {personaHighDisplay.length > 0 ? (
+                            personaHighDisplay.map((rec) => renderPersonaCard(rec))
+                          ) : (
+                            <Typography variant="body2">
+                              High-confidence personas will appear when journeys gather
+                              enough consistent signals.
+                            </Typography>
+                          )}
+                          {personaHighHiddenCount > 0 && (
+                            <Box>
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() =>
+                                  setShowAllHighPersonas((prev) => !prev)
+                                }
                               >
-                                <Stack
-                                  direction={{ xs: "column", sm: "row" }}
-                                  spacing={2}
-                                  justifyContent="space-between"
-                                >
-                                  <Box>
-                                    <Typography variant="subtitle1">{label}</Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                      Suggested boost:{" "}
-                                      {fmtPercent(rec.predicted_boost_pct, {
-                                        decimals: 1,
-                                        sign: true,
-                                      })}
-                                    </Typography>
-                                    {!!rec.account_meta?.length && (
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                      >
-                                        Most relevant for: {rec.account_meta.join(", ")}
-                                      </Typography>
-                                    )}
-                                  </Box>
-                                  <Button
-                                    variant="contained"
-                                    onClick={() =>
-                                      handleApplyRecommendation("persona", rec)
-                                    }
-                                  >
-                                    Approve update
-                                  </Button>
-                                </Stack>
-                                {!!rec.reasons.length && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ mt: 1 }}
-                                  >
-                                    {rec.reasons.join(" • ")}
-                                  </Typography>
-                                )}
-                              </Box>
-                            );
-                          })}
+                                {showAllHighPersonas
+                                  ? "Show fewer high-signal insights"
+                                  : `Show ${personaHighHiddenCount} more high-signal insights`}
+                              </Button>
+                            </Box>
+                          )}
+                          {personaMediumCount > 0 && (
+                            <Box>
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() =>
+                                  setShowMediumSignalPersonas((prev) => !prev)
+                                }
+                              >
+                                {showMediumSignalPersonas
+                                  ? "Hide medium signal insights"
+                                  : `Show medium signal insights (${personaMediumCount})`}
+                              </Button>
+                            </Box>
+                          )}
+                          {showMediumSignalPersonas &&
+                            personaMediumDisplay.map((rec) => renderPersonaCard(rec))}
+                          {personaLowCount > 0 && (
+                            <Box>
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() =>
+                                  setShowExploratoryPersonas((prev) => !prev)
+                                }
+                              >
+                                {showExploratoryPersonas
+                                  ? "Hide exploratory insights"
+                                  : `Show exploratory insights (${personaLowCount})`}
+                              </Button>
+                            </Box>
+                          )}
+                          {showExploratoryPersonas &&
+                            personaLowDisplay.map((rec) => renderPersonaCard(rec))}
                         </Stack>
                       )}
                     </CardContent>
@@ -1404,18 +1868,22 @@ const InsightsInbox = () => {
                     <CardHeader
                       title="Edge recommendations"
                       action={
-                        globalInsights.edge_recommendations.length > 3 && (
+                        edgeInsights.totalCount > 0 ? (
                           <Button
                             size="small"
                             onClick={() => setShowAllEdgeRecs((prev) => !prev)}
                           >
-                            {showAllEdgeRecs ? "Show priority only" : "Show all"}
+                            {showAllEdgeRecs
+                              ? "Show priority only"
+                              : edgeInsights.lowSignalCount > 0
+                              ? `Show exploratory edges (${edgeInsights.lowSignalCount} hidden)`
+                              : "Show all"}
                           </Button>
-                        )
+                        ) : null
                       }
                     />
                     <CardContent>
-                      {globalInsights.edge_recommendations.length === 0 ? (
+                      {edgeInsights.totalCount === 0 ? (
                         <Typography variant="body2" color="text.secondary">
                           No edge recommendations available yet.
                         </Typography>
@@ -1425,70 +1893,131 @@ const InsightsInbox = () => {
                             <TableHead>
                               <TableRow>
                                 <TableCell>Edge</TableCell>
+                                <TableCell align="right">Journeys</TableCell>
                                 <TableCell align="right">Current Lik.</TableCell>
-                                <TableCell align="right">Current Rel.</TableCell>
                                 <TableCell align="right">Proposed Lik.</TableCell>
-                                <TableCell align="right">Proposed Rel.</TableCell>
-                                <TableCell align="right">Impact</TableCell>
+                                <TableCell align="right">Δ Lik.</TableCell>
                                 <TableCell align="right">Confidence</TableCell>
                                 <TableCell align="center">Action</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {edgesForDisplay.map((edge) => {
+                              {edgeInsights.display.map((edge) => {
                                 const edgeLabel =
                                   (edge.pair_labels || [])
                                     .flat()
                                     .filter(Boolean)
                                     .join(" → ") ||
                                   `${edge.source_id} → ${edge.target_id}`;
+                                const journeys =
+                                  edge.count ??
+                                  edge.recommendation_events ??
+                                  edge.seen ??
+                                  0;
+                                const accounts = edge.accounts ?? 0;
+                                const currentLikelihood =
+                                  edge.current_likelihood ??
+                                  edge.current_relevance ??
+                                  0;
+                                const proposedLikelihood =
+                                  edge.proposed_likelihood ??
+                                  edge.recommended_likelihood ??
+                                  0;
+                                const deltaLikelihood =
+                                  proposedLikelihood - currentLikelihood;
+                                const deltaLabel =
+                                  deltaLikelihood === 0
+                                    ? "0pp"
+                                    : `${deltaLikelihood >= 0 ? "+" : ""}${(
+                                        deltaLikelihood * 100
+                                      ).toFixed(1)}pp`;
+                                const confidence =
+                                  edge.confidence ?? edge.avg_confidence ?? 0;
+                                const { label: signalLabelText, color: signalColor } =
+                                  signalBadgeProps(confidence);
+                                const reasonText =
+                                  edge.reason ||
+                                  (edge.reasons?.length
+                                    ? edge.reasons.slice(0, 2).join(" • ")
+                                    : null);
+                                const accountText = accounts
+                                  ? `${fmtCount(accounts)} accounts`
+                                  : null;
+                                const ciText =
+                                  edge.ci_low != null && edge.ci_high != null
+                                    ? `CI ${fmtPercent(edge.ci_low, {
+                                        decimals: 0,
+                                        inputIsFraction: true,
+                                      })}–${fmtPercent(edge.ci_high, {
+                                        decimals: 0,
+                                        inputIsFraction: true,
+                                      })}`
+                                    : null;
                                 return (
-                                  <TableRow key={`${edge.source_id}-${edge.target_id}`}>
+                                  <TableRow
+                                    key={`${edge.source_id}-${edge.target_id}`}
+                                  >
                                     <TableCell>
-                                      <Typography variant="body2" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={600}
+                                        gutterBottom
+                                      >
                                         {edgeLabel}
                                       </Typography>
-                                      {!!edge.reasons.length && (
-                                        <Typography variant="caption" color="text.secondary">
-                                          {edge.reasons.join(" • ")}
+                                      {reasonText && (
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                          display="block"
+                                        >
+                                          {reasonText}
+                                        </Typography>
+                                      )}
+                                      {accountText && (
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                          display="block"
+                                        >
+                                          {accountText}
+                                        </Typography>
+                                      )}
+                                      {ciText && (
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                          display="block"
+                                        >
+                                          {ciText}
                                         </Typography>
                                       )}
                                     </TableCell>
                                     <TableCell align="right">
-                                      {fmtPercent(edge.current_likelihood, {
+                                      {fmtCount(journeys)}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                      {fmtPercent(currentLikelihood, {
                                         inputIsFraction: true,
                                         decimals: 0,
                                       })}
                                     </TableCell>
                                     <TableCell align="right">
-                                      {fmtPercent(edge.current_relevance, {
+                                      {fmtPercent(proposedLikelihood, {
                                         inputIsFraction: true,
                                         decimals: 0,
                                       })}
                                     </TableCell>
                                     <TableCell align="right">
-                                      {fmtPercent(edge.recommended_likelihood, {
-                                        inputIsFraction: true,
-                                        decimals: 0,
-                                      })}
+                                      {deltaLabel}
                                     </TableCell>
                                     <TableCell align="right">
-                                      {fmtPercent(edge.recommended_relevance, {
-                                        inputIsFraction: true,
-                                        decimals: 0,
-                                      })}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                      {fmtPercent(edge.predicted_boost_pct, {
-                                        decimals: 1,
-                                        sign: true,
-                                      })}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                      {fmtPercent(edge.avg_confidence, {
-                                        inputIsFraction: true,
-                                        decimals: 0,
-                                      })}
+                                      <Chip
+                                        size="small"
+                                        variant="outlined"
+                                        label={signalLabelText}
+                                        color={signalColor}
+                                      />
                                     </TableCell>
                                     <TableCell align="center">
                                       <Button
@@ -1526,115 +2055,103 @@ const InsightsInbox = () => {
                               <TableRow>
                                 <TableCell>Asset</TableCell>
                                 <TableCell>Funnel stage</TableCell>
-                                <TableCell>Personas impacted</TableCell>
-                                <TableCell align="right">Total Δ log&nbsp;p</TableCell>
-                                <TableCell align="right">Avg confidence</TableCell>
+                                <TableCell align="right">Events</TableCell>
+                                <TableCell>Effect</TableCell>
+                                <TableCell align="right">Confidence</TableCell>
+                                <TableCell>Personas</TableCell>
                                 <TableCell>Channels</TableCell>
-                                <TableCell>Account meta</TableCell>
-                                <TableCell align="right">Engagements</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
                               {arsenalImpact.map((row) => {
-                                const personaLabels =
-                                  (row.persona_labels && row.persona_labels.length > 0
+                                const assetLabel = row.asset_label || row.asset_id;
+                                const stageLabel =
+                                  row.funnel_stage?.label ||
+                                  (typeof row.funnel_stage?.code === "string"
+                                    ? titleCase(row.funnel_stage.code)
+                                    : "—");
+                                const events = row.events ?? row.num_engagements;
+                                const confidence =
+                                  row.confidence ?? row.avg_confidence ?? null;
+                                const { label: signalLabelText, color: signalColor } =
+                                  signalBadgeProps(confidence);
+                                const effect = formatArsenalEffect(row);
+                                const personaCandidates =
+                                  row.personas_impacted?.length
+                                    ? row.personas_impacted
+                                    : row.persona_labels?.length
                                     ? row.persona_labels
                                     : (row.persona_ids || []).map((pid) =>
                                         personaLabelFromId(pid)
-                                      )) || [];
-                                const funnelStage = row.funnel_stage || null;
-                                const funnelLabel =
-                                  funnelStage?.label ||
-                                  (typeof funnelStage?.code === "string"
-                                    ? titleCase(funnelStage.code)
-                                    : null);
-                                const funnelMeta: string[] = [];
-                                if (
-                                  funnelStage?.avg_perceptibility !== undefined &&
-                                  funnelStage?.avg_perceptibility !== null
-                                ) {
-                                  funnelMeta.push(
-                                    `Perc ${fmtPercent(funnelStage.avg_perceptibility, {
-                                      inputIsFraction: true,
-                                      decimals: 0,
-                                    })}`
-                                  );
-                                }
-                                if (
-                                  funnelStage?.avg_proximity !== undefined &&
-                                  funnelStage?.avg_proximity !== null
-                                ) {
-                                  funnelMeta.push(
-                                    `Prox ${fmtPercent(funnelStage.avg_proximity, {
-                                      inputIsFraction: true,
-                                      decimals: 0,
-                                    })}`
-                                  );
-                                }
+                                      );
+                                const personaText = personaCandidates.length
+                                  ? personaCandidates.slice(0, 3).join(", ")
+                                  : "—";
+                                const channelCandidates =
+                                  row.channels && row.channels.length
+                                    ? row.channels
+                                    : row.account_meta || [];
+                                const channelText = channelCandidates.length
+                                  ? channelCandidates.join(", ")
+                                  : "—";
                                 return (
                                   <TableRow key={row.asset_id}>
-                                    <TableCell sx={{ maxWidth: 240 }}>
+                                    <TableCell>
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={600}
+                                      >
+                                        {assetLabel}
+                                      </Typography>
+                                      {row.sample_accounts ? (
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          Sample accounts:{" "}
+                                          {fmtCount(row.sample_accounts)}
+                                        </Typography>
+                                      ) : null}
+                                    </TableCell>
+                                    <TableCell>
                                       <Typography variant="body2">
-                                        {row.asset_label || row.asset_id}
+                                        {stageLabel}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                      {events ? fmtCount(events) : "—"}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Typography variant="body2" fontWeight={600}>
+                                        {effect.label}
                                       </Typography>
                                       <Typography
                                         variant="caption"
                                         color="text.secondary"
-                                        sx={{ display: "block" }}
                                       >
-                                        id: {row.asset_id}
+                                        {effect.detail}
                                       </Typography>
                                     </TableCell>
-                                    <TableCell sx={{ maxWidth: 160 }}>
-                                      {funnelLabel ? (
-                                        <Stack spacing={0.5}>
-                                          <Chip
-                                            size="small"
-                                            variant="outlined"
-                                            label={funnelLabel}
-                                          />
-                                          {funnelMeta.length > 0 && (
-                                            <Typography
-                                              variant="caption"
-                                              color="text.secondary"
-                                            >
-                                              {funnelMeta.join(" · ")}
-                                            </Typography>
-                                          )}
-                                        </Stack>
-                                      ) : (
-                                        "—"
-                                      )}
+                                    <TableCell align="right">
+                                      <Chip
+                                        size="small"
+                                        variant="outlined"
+                                        label={signalLabelText}
+                                        color={signalColor}
+                                      />
                                     </TableCell>
                                     <TableCell>
-                                      {personaLabels.length === 0
-                                        ? "—"
-                                        : personaLabels.join(", ")}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                      {row.total_delta === undefined ||
-                                      row.total_delta === null
-                                        ? "—"
-                                        : `${row.total_delta >= 0 ? "+" : ""}${row.total_delta.toFixed(3)}`}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                      {fmtPercent(row.avg_confidence, {
-                                        inputIsFraction: true,
-                                        decimals: 0,
-                                      })}
+                                      <Typography variant="body2">
+                                        {personaText}
+                                      </Typography>
                                     </TableCell>
                                     <TableCell>
-                                      {(row.channels || []).length === 0
-                                        ? "—"
-                                        : (row.channels || []).join(", ")}
-                                    </TableCell>
-                                    <TableCell>
-                                      {(row.account_meta || []).length === 0
-                                        ? "—"
-                                        : (row.account_meta || []).join(", ")}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                      {fmtCount(row.num_engagements)}
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        {channelText}
+                                      </Typography>
                                     </TableCell>
                                   </TableRow>
                                 );

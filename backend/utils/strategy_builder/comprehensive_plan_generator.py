@@ -7,9 +7,10 @@ import os
 import random
 import difflib
 from collections import Counter, defaultdict
+from itertools import chain
 from datetime import datetime, timezone, timedelta
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from copy import deepcopy
 
 import networkx as nx
@@ -27,6 +28,7 @@ from backend.utils.crm_management.target_account_manager import (
 from backend.utils.graph_base.network_graph import (
     build_product_graph,
     get_node_by_id,
+    get_persona_node_ids,
     get_product_id_from_subgraph,
 )
 from backend.utils.inference.belief_manager.belief_manager import (
@@ -42,15 +44,36 @@ from backend.utils.inference.belief_manager.journey.learn_service import (
 from backend.utils.inference.belief_manager.journey.win_regression import (
     WinProbabilityCalibrator,
 )
+from backend.utils.inference.win_model import build_win_outlook
 from backend.utils.inference.belief_manager.journey.storage import load_weights
 from backend.utils.inference.belief_manager.journey.activity_story import build_activity_story
 from backend.utils.inference.belief_manager.journey.storyline import compose_storyline
 from backend.utils.knowledge_base.arsenal import service as arsenal_service
 from backend.utils.embedding.embed_utils import get_embedding
 from backend.utils.segment_utils import segment_keys_from_meta, segment_label_from_key
+from backend.utils.engagement_touchpoint import flatten_touchpoints, stitch_touchpoints
 from backend.utils.inference.strategy.intervention_mode import choose_intervention_mode
 
 LOGGER = logging.getLogger(__name__)
+
+ACCOUNT_PLAN_PHASE_MESSAGES: Dict[str, str] = {
+    "account_context": "Loading account history and engagement signals…",
+    "persona_matching": "Mapping real stakeholders to canonical buying personas…",
+    "journey_replay": "Replaying the likely decision journey for this account…",
+    "belief_state": "Estimating belief, involvement, and proximity for each persona…",
+    "blockers_cascades": "Identifying blockers and downstream belief cascades…",
+    "intervention_plan": "Designing next-best actions to shift belief and momentum…",
+    "done": "Account plan ready with clear next steps.",
+}
+ACCOUNT_PLAN_PHASE_PROGRESS: Dict[str, float] = {
+    "account_context": 10.0,
+    "persona_matching": 25.0,
+    "journey_replay": 45.0,
+    "belief_state": 65.0,
+    "blockers_cascades": 80.0,
+    "intervention_plan": 95.0,
+    "done": 100.0,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -63,6 +86,217 @@ GRAPH_BASE_DIR = os.path.join(UTILS_DIR, "graph_base")
 ARSENAL_DIR = os.path.join(GRAPH_BASE_DIR, "graph_data", "arsenal_json")
 PERSONA_METRICS_DIR = os.path.join(GRAPH_BASE_DIR, "graph_data", "persona_metrics")
 _NEW_PERSONA_WINDOW_DAYS = 45
+STOP_PERSONA_IDS = {"persona:__STOP__"}
+
+
+def _is_actionable_persona(persona_id: Optional[str]) -> bool:
+    return bool(persona_id and persona_id not in STOP_PERSONA_IDS)
+
+
+def _extract_persona_ids_from_path(path: Dict[str, Any]) -> List[str]:
+    ids: List[str] = []
+    for key in ("persona_ids", "personas", "personas_prefab"):
+        raw = path.get(key)
+        if isinstance(raw, list):
+            for entry in raw:
+                if isinstance(entry, dict):
+                    pid = entry.get("id") or entry.get("persona_id")
+                else:
+                    pid = entry
+                if pid:
+                    ids.append(str(pid))
+            if ids:
+                break
+    return ids
+
+
+def _sanitize_persona_paths(
+    paths: Sequence[Dict[str, Any]]
+) -> Tuple[List[Dict[str, Any]], bool]:
+    sanitized: List[Dict[str, Any]] = []
+    removed_only_stop = False
+    for path in paths:
+        persona_ids = _extract_persona_ids_from_path(path)
+        actionable_ids = [pid for pid in persona_ids if _is_actionable_persona(pid)]
+        if persona_ids and not actionable_ids:
+            removed_only_stop = True
+            continue
+        if actionable_ids:
+            if path.get("persona_ids") is not None:
+                path["persona_ids"] = actionable_ids
+            prefab = path.get("personas_prefab")
+            if isinstance(prefab, list):
+                filtered = []
+                for persona in prefab:
+                    pid = (
+                        str(persona.get("id") or persona.get("persona_id"))
+                        if isinstance(persona, dict)
+                        else str(persona)
+                    )
+                    if pid and _is_actionable_persona(pid):
+                        filtered.append(persona)
+                if filtered:
+                    path["personas_prefab"] = filtered
+                else:
+                    path.pop("personas_prefab", None)
+            sanitized.append(path)
+        elif not persona_ids:
+            sanitized.append(path)
+    return sanitized, removed_only_stop
+
+
+def _validate_persona_paths(
+    paths: Sequence[Dict[str, Any]], persona_lookup: Dict[str, Dict[str, Any]]
+) -> Tuple[List[Dict[str, Any]], List[str]]:
+    warnings: List[str] = []
+    validated: List[Dict[str, Any]] = []
+    for path in paths:
+        personas: List[Dict[str, Any]] = []
+        seen: Set[str] = set()
+        for persona in path.get("personas") or []:
+            persona_id = (
+                persona.get("id")
+                or persona.get("persona_id")
+                or persona.get("persona")
+                or persona.get("canonical_persona_id")
+            )
+            if not persona_id or persona_id == "Persona" or persona_id in seen:
+                continue
+            if persona_id not in persona_lookup:
+                warnings.append(
+                    f"Removed persona {persona_id} from path {path.get('id')} – no metadata found."
+                )
+                continue
+            seen.add(persona_id)
+            personas.append(persona)
+        if not personas:
+            warnings.append(f"Path {path.get('id')} has no valid personas and will be discarded.")
+            continue
+        new_path = dict(path)
+        new_path["personas"] = personas
+        validated.append(new_path)
+    if not validated:
+        warnings.append("No valid persona paths after validation.")
+    return validated, warnings
+
+
+def _learning_summary_is_insufficient(thesis: Dict[str, Any]) -> bool:
+    graphstore = (thesis.get("learning_summary") or {}).get("graphstore_summary") or {}
+    return graphstore.get("note") == "insufficient_data_for_learning"
+
+
+def _count_pain_neighbors(graph: nx.DiGraph, persona_id: str) -> int:
+    pains: set[str] = set()
+    for job in graph.predecessors(persona_id):
+        job_data = graph.nodes.get(job) or {}
+        if job_data.get("node_type") != "job":
+            continue
+        for pain in graph.predecessors(job):
+            pain_data = graph.nodes.get(pain) or {}
+            if pain_data.get("node_type") == "pain":
+                pains.add(pain)
+    return len(pains)
+
+
+def _count_capability_neighbors(graph: nx.DiGraph, persona_id: str) -> int:
+    capabilities: set[str] = set()
+    for job in graph.predecessors(persona_id):
+        job_data = graph.nodes.get(job) or {}
+        if job_data.get("node_type") != "job":
+            continue
+        for pain in graph.predecessors(job):
+            pain_data = graph.nodes.get(pain) or {}
+            if pain_data.get("node_type") != "pain":
+                continue
+            for neighbor in chain(graph.predecessors(pain), graph.successors(pain)):
+                neighbor_data = graph.nodes.get(neighbor) or {}
+                if neighbor_data.get("node_type") == "capability":
+                    capabilities.add(neighbor)
+    return len(capabilities)
+
+
+def _graph_only_persona_candidates(
+    graph: nx.DiGraph,
+    *,
+    limit: int = 4,
+) -> List[str]:
+    persona_ids = [
+        pid for pid in get_persona_node_ids(graph) if _is_actionable_persona(pid)
+    ]
+    if not persona_ids:
+        return []
+    centrality_map = nx.degree_centrality(graph)
+    scored: List[Tuple[float, str]] = []
+    for pid in persona_ids:
+        data = get_node_by_id(graph, pid) or {}
+        centrality = _safe_float(data.get("centrality"), None)
+        if centrality is None:
+            centrality = centrality_map.get(pid, 0.0)
+        importance = _safe_float(data.get("importance"), 0.0) or 0.0
+        pain_links = _count_pain_neighbors(graph, pid)
+        capability_links = _count_capability_neighbors(graph, pid)
+        score = (
+            2.0 * centrality
+            + importance
+            + 0.5 * pain_links
+            + 0.35 * capability_links
+        )
+        scored.append((score, pid))
+    scored.sort(key=lambda row: row[0], reverse=True)
+    return [pid for _, pid in scored[:limit]]
+
+
+def _build_graph_persona_path(
+    persona_ids: List[str],
+    *,
+    source: str = "graph",
+    identifier: str = "graph_only_path",
+) -> Dict[str, Any]:
+    return {
+        "id": identifier,
+        "persona_ids": persona_ids,
+        "probability": 1.0,
+        "score": 1.0,
+        "raw": {"source": source},
+        "source": source,
+        "confidence": 0.6,
+    }
+
+
+def _predictive_persona_candidates(
+    thesis: Dict[str, Any],
+    *,
+    limit: int = 4,
+) -> List[str]:
+    candidates: List[str] = []
+    seen: set[str] = set()
+
+    def _add(pid: Optional[str]) -> bool:
+        if not pid:
+            return False
+        key = str(pid)
+        if key in seen or not _is_actionable_persona(key):
+            return False
+        seen.add(key)
+        candidates.append(key)
+        return True
+
+    fit_best = (thesis.get("fit") or {}).get("best_persona")
+    _add(fit_best)
+    posterior = thesis.get("persona_posteriors") or {}
+    for pid, _ in sorted(
+        posterior.items(),
+        key=lambda item: float(item[1] or 0.0),
+        reverse=True,
+    ):
+        if _add(str(pid)) and len(candidates) >= limit:
+            break
+    if len(candidates) < limit:
+        for entry in thesis.get("current_expected_next") or []:
+            _add(str(entry.get("persona")))
+            if len(candidates) >= limit:
+                break
+    return candidates[:limit]
 
 
 def _now_iso() -> str:
@@ -499,6 +733,7 @@ def _derive_account_clusters(
     max_clusters: int = 4,
     persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
     persona_wolves_label_index: Optional[Dict[str, Dict[str, Any]]] = None,
+    win_regression_sample_size: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
     if not entries:
         return []
@@ -507,6 +742,11 @@ def _derive_account_clusters(
         total_score = float(len(entries)) or 1.0
     persona_wolves_metrics = persona_wolves_metrics or {}
     persona_wolves_label_index = persona_wolves_label_index or {}
+    MIN_WIN_COVERAGE_FOR_CLAIMS = 10
+    has_win_history = (
+        bool(win_regression_sample_size)
+        and (win_regression_sample_size or 0) >= MIN_WIN_COVERAGE_FOR_CLAIMS
+    )
     token_scores: Counter[str] = Counter()
     token_accounts: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for entry in entries:
@@ -536,6 +776,8 @@ def _derive_account_clusters(
     def _persona_coalition_story(
         persona_label: Optional[str],
         coalitions: Sequence[Dict[str, Any]],
+        *,
+        has_win_history: bool,
     ) -> Optional[str]:
         if not persona_label or not coalitions:
             return None
@@ -551,13 +793,15 @@ def _derive_account_clusters(
             followers = sequence[idx + 1 : idx + 3]
             if followers:
                 follower_text = " and ".join(followers)
+                suffix = "wins" if has_win_history else "modeled wins"
                 return (
-                    f"Engaging here unlocks {follower_text} in {_percent_label(share)} of wins."
+                    f"Engaging here unlocks {follower_text} in {_percent_label(share)} of {suffix}."
                     if share is not None
                     else f"Engaging here unlocks {follower_text} in most modeled wins."
                 )
             if share is not None:
-                return f"Anchors {_percent_label(share)} of modeled wins."
+                suffix = "wins" if has_win_history else "modeled wins"
+                return f"Anchors {_percent_label(share)} of {suffix}."
         return None
 
     def _build_cluster_keystone_details(
@@ -582,7 +826,11 @@ def _derive_account_clusters(
         )
         keystones: List[Dict[str, Any]] = []
         for entry in sorted_entries[:3]:
-            story = _persona_coalition_story(entry.get("persona"), belief_coalitions)
+            story = _persona_coalition_story(
+                entry.get("persona"),
+                belief_coalitions,
+                has_win_history=has_win_history,
+            )
             keystones.append(
                 {
                     "persona": entry.get("persona"),
@@ -773,17 +1021,23 @@ def _derive_account_clusters(
                 probability = float(path.get("probability") or 0.0)
                 if probability <= 0:
                     continue
-                labels = tuple(
+                raw_labels = [
                     persona.get("label")
                     for persona in path.get("personas") or []
                     if persona.get("label")
-                )
+                ]
+                seen_personas: set[str] = set()
+                labels: List[str] = []
+                for label in raw_labels:
+                    if label and label not in seen_personas:
+                        seen_personas.add(label)
+                        labels.append(label)
                 if len(labels) < 2:
                     continue
                 contribution = probability * weight
                 if contribution <= 0:
                     continue
-                coalition_counter[labels] += contribution
+                coalition_counter[tuple(labels)] += contribution
                 total += contribution
         if not coalition_counter:
             return []
@@ -953,7 +1207,12 @@ def _derive_account_clusters(
                     bucket["reasons"].append(reason)
                 bucket["accounts"].add(account_name)
         fallback_items: List[Dict[str, Any]] = []
+        seen_fallbacks: set[Tuple[str, Any]] = set()
         for bucket in fallback_map.values():
+            key = (bucket.get("persona"), bucket.get("stage"))
+            if key in seen_fallbacks:
+                continue
+            seen_fallbacks.add(key)
             fallback_items.append(
                 {
                     "persona": bucket.get("persona"),
@@ -1379,18 +1638,23 @@ def _persona_engagement_snapshot(
         return None
 
     events.sort(key=lambda item: item["timestamp"])
+    journeys = stitch_touchpoints(events)
+    touchpoints = flatten_touchpoints(journeys)
     now_dt = datetime.now(timezone.utc)
-    total = len(events)
-    positive_count = sum(1 for event in events if event.get("is_positive"))
-    last_ts = events[-1]["timestamp"]
-    if last_ts.tzinfo is None:
+    total = len(touchpoints)
+    positive_count = sum(1 for tp in touchpoints if tp.get("is_positive"))
+    last_tp = touchpoints[-1] if touchpoints else None
+    last_ts = last_tp.get("timestamp") if last_tp else None
+    if isinstance(last_ts, datetime) and last_ts.tzinfo is None:
         last_ts = last_ts.replace(tzinfo=timezone.utc)
-    days_since_last = max(0.0, (now_dt - last_ts).total_seconds() / 86400.0)
+    days_since_last = (
+        max(0.0, (now_dt - last_ts).total_seconds() / 86400.0) if last_ts else 0.0
+    )
 
     last_positive_ts: Optional[datetime] = None
-    for event in reversed(events):
-        if event.get("is_positive"):
-            ts = event["timestamp"]
+    for tp in reversed(touchpoints):
+        if tp.get("is_positive"):
+            ts = tp.get("timestamp")
             if isinstance(ts, datetime) and ts.tzinfo is None:
                 ts = ts.replace(tzinfo=timezone.utc)
             last_positive_ts = ts
@@ -1405,15 +1669,15 @@ def _persona_engagement_snapshot(
 
     density_window = timedelta(days=_FATIGUE_DENSITY_WINDOW_DAYS)
     touches_recent = [
-        event
-        for event in events
-        if (now_dt - event["timestamp"]) <= density_window
+        tp
+        for tp in touchpoints
+        if tp.get("timestamp") and (now_dt - tp["timestamp"]) <= density_window
     ]
     channel_counter: Counter = Counter(
-        (event.get("channel") or "Unspecified") for event in events
+        (tp.get("channel") or "Unspecified") for tp in touchpoints
     )
     source_counter: Counter = Counter(
-        (event.get("source") or "Unspecified") for event in events
+        (tp.get("source") or "Unspecified") for tp in touchpoints
     )
 
     non_positive_ratio = (
@@ -1481,6 +1745,55 @@ def _persona_engagement_snapshot(
     }
 
 
+def _map_person_key_to_persona(
+    matches_by_persona: Dict[str, List[Dict[str, Any]]]
+) -> Dict[str, str]:
+    mapping: Dict[str, str] = {}
+    for persona_id, people in matches_by_persona.items():
+        if not _is_actionable_persona(persona_id):
+            continue
+        for person in people or []:
+            for attr in ("person_name", "display_name", "notes"):
+                key = _normalize_name_key(person.get(attr))
+                if key and key not in mapping:
+                    mapping[key] = persona_id
+    return mapping
+
+
+def _confidence_from_event(event: Dict[str, Any]) -> float:
+    payload = event.get("payload") or {}
+    raw_conf = payload.get("confidence")
+    if isinstance(raw_conf, (int, float)):
+        normalized = float(raw_conf)
+        if normalized > 1.0:
+            normalized = min(normalized / 100.0, 1.0)
+        return max(0.15, min(0.95, normalized))
+    return 0.65 if event.get("is_positive") else 0.35
+
+
+def _build_observed_engagement_evidence(
+    engagement_buckets: Dict[str, List[Dict[str, Any]]],
+    matches_by_persona: Dict[str, List[Dict[str, Any]]],
+    persona_stage_map: Dict[str, int],
+) -> List[Dict[str, Any]]:
+    entries: List[Dict[str, Any]] = []
+    key_to_persona = _map_person_key_to_persona(matches_by_persona)
+    for key, events in (engagement_buckets or {}).items():
+        persona_id = key_to_persona.get(key)
+        if persona_id and not _is_actionable_persona(persona_id):
+            persona_id = None
+        stage_index = persona_stage_map.get(persona_id or "", 0) if persona_id else 0
+        for event in events or []:
+            entries.append(
+                {
+                    "persona_id": persona_id,
+                    "confidence": _confidence_from_event(event),
+                    "stage_index": stage_index,
+                }
+            )
+    return entries
+
+
 def _load_persona_matches_lookup(
     product_id: str,
     account_id: str,
@@ -1527,7 +1840,12 @@ def _compute_person_enrichment_requirements(
     persona_paths: Sequence[Dict[str, Any]],
     matches_by_persona: Dict[str, List[Dict[str, Any]]],
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    stats: Dict[str, Dict[str, Any]] = {}
+    stats: Dict[Tuple[str, str, str], Dict[str, Any]] = {}
+
+    def _normalize_field(value: Optional[str]) -> str:
+        if value is None:
+            return ""
+        return value.strip().lower()
 
     for path in persona_paths:
         probability = float(path.get("probability") or 0.0)
@@ -1535,8 +1853,13 @@ def _compute_person_enrichment_requirements(
             persona_id = persona.get("id")
             if not persona_id:
                 continue
+            canonical_key = (
+                _normalize_field(persona.get("title")),
+                _normalize_field(persona.get("department")),
+                _normalize_field(persona.get("seniority")),
+            )
             bucket = stats.setdefault(
-                persona_id,
+                canonical_key,
                 {
                     "count": 0,
                     "order_sum": 0.0,
@@ -1545,11 +1868,13 @@ def _compute_person_enrichment_requirements(
                     "title": None,
                     "department": None,
                     "seniority": None,
+                    "persona_ids": set(),
                 },
             )
             bucket["count"] += 1
             bucket["order_sum"] += float(persona.get("order", 0))
             bucket["prob_sum"] += probability
+            bucket["persona_ids"].add(persona_id)
             for key in ("label", "title", "department", "seniority"):
                 if not bucket.get(key):
                     bucket[key] = persona.get(key)
@@ -1560,12 +1885,22 @@ def _compute_person_enrichment_requirements(
     total_people = 0
 
     for persona_id, bucket in stats.items():
+        persona_ids = bucket.get("persona_ids") or set()
         if not bucket["count"]:
             continue
         avg_order = bucket["order_sum"] / bucket["count"]
         stage_index, stage_label = _stage_from_average_order(avg_order)
         expected = min(1.0, bucket["prob_sum"])
-        matched_people = matches_by_persona.get(persona_id, [])
+        matched_people: List[Dict[str, Any]] = []
+        seen_people: set[str] = set()
+        for pid in persona_ids:
+            for entry in matches_by_persona.get(pid, []):
+                person_key = entry.get("person_id") or entry.get("display_name")
+                if person_key and person_key in seen_people:
+                    continue
+                if person_key:
+                    seen_people.add(person_key)
+                matched_people.append(entry)
         people_names = [
             entry.get("display_name")
             or entry.get("person_name")
@@ -1574,8 +1909,9 @@ def _compute_person_enrichment_requirements(
             for entry in matched_people
         ]
         people_names = [name for name in people_names if name]
+        canonical_persona_id = next(iter(persona_ids)) if persona_ids else persona_id
         requirement = {
-            "persona_id": persona_id,
+            "persona_id": canonical_persona_id,
             "persona_label": bucket.get("label"),
             "persona_title": bucket.get("title"),
             "persona_department": bucket.get("department"),
@@ -1588,6 +1924,8 @@ def _compute_person_enrichment_requirements(
             "people_names": people_names,
             "match_count": len(matched_people),
             "has_match": bool(matched_people),
+            "matched_people_count": len(matched_people),
+            "required": True,
         }
         requirements.append(requirement)
         required += 1
@@ -2569,7 +2907,13 @@ def _label_persona(node_id: str, data: Dict[str, Any]) -> str:
         data.get("seniority"),
     ]
     pretty = " | ".join([p for p in parts if p])
-    return pretty or data.get("name") or node_id
+    return (
+        pretty
+        or data.get("persona_label")
+        or data.get("label")
+        or data.get("name")
+        or node_id
+    )
 
 
 def _label_job(node_id: str, data: Dict[str, Any]) -> str:
@@ -2592,6 +2936,47 @@ def _label_pain(node_id: str, data: Dict[str, Any]) -> str:
 
 def _label_capability(node_id: str, data: Dict[str, Any]) -> str:
     return data.get("name") or data.get("title") or data.get("description") or node_id
+
+
+def _resolve_persona_label(
+    persona_id: str,
+    persona_info: Optional[Dict[str, Any]],
+    *,
+    graph: Optional[nx.DiGraph] = None,
+) -> str:
+    """Return the friendliest label available for a persona, even if we only have an ID."""
+    label = (
+        (persona_info or {}).get("label")
+        or (persona_info or {}).get("persona_label")
+    )
+    if label:
+        return label
+    if graph and persona_id:
+        node_data = get_node_by_id(graph, persona_id)
+        if node_data:
+            return _label_persona(persona_id, node_data)
+    fallback = _title_case_value(str(persona_id).replace("|", " "))
+    return fallback or persona_id
+
+
+def _cadence_tier_for_strategy_role(role: str) -> str:
+    if role == "primary_path":
+        return "primary"
+    if role == "committee":
+        return "probe"
+    return "projection"
+
+
+def _recommendation_for_strategy_role(
+    role: str, belief_level: Optional[float]
+) -> str:
+    if role == "primary_path":
+        return "Invest heavily in this path to unlock the ideal conversion sequence."
+    if role == "committee":
+        if belief_level is None or belief_level < 0.35:
+            return "Probe gently and keep this persona warm until path signals improve."
+        return "Maintain probe-level engagement and monitor for lift."
+    return "Projection — watch until an engagement signal emerges."
 
 
 def _norm_token(value: str) -> str:
@@ -3060,7 +3445,7 @@ def _apply_entry_point_scores(
     ordered_persona_ids: Sequence[str],
 ) -> List[Dict[str, Any]]:
     entry_points: List[Dict[str, Any]] = []
-    for persona_id in ordered_persona_ids:
+    for persona_id in _filter_actionable_persona_ids(ordered_persona_ids):
         persona = persona_lookup.get(persona_id)
         if not persona:
             continue
@@ -3070,6 +3455,8 @@ def _apply_entry_point_scores(
     # include any personas that were not part of ordered list but exist in lookup
     for persona_id, persona in persona_lookup.items():
         if persona_id in ordered_persona_ids:
+            continue
+        if not _is_actionable_persona(persona_id):
             continue
         persona_plays = plays_by_persona.get(persona_id) or []
         entry_points.append(_persona_entry_point(persona, persona_plays))
@@ -6151,8 +6538,6 @@ def _build_intervention_from_seed(
     stats: _ModalityStats,
 ) -> Optional[Dict[str, Any]]:
     expected_delta = _safe_float(seed.get("expected_delta_bp"), 0.0) or 0.0
-    if expected_delta <= 0.0:
-        return None
     persona = seed.get("persona") or {}
     persona_label = seed.get("persona_label") or persona.get("label")
     stage_label = (
@@ -6165,9 +6550,13 @@ def _build_intervention_from_seed(
     best_current = candidates[0] if candidates else None
     coverage_score = best_current["coverage_score"] if best_current else 0.0
     coverage_score = float(min(1.0, max(0.0, coverage_score or 0.0)))
+    belief_meta = seed.get("belief_transition_meta") or {}
     concern_label = (
         seed.get("concern_label")
-        or (seed.get("belief_transition_meta") or {}).get("pain")
+        or belief_meta.get("pain")
+        or belief_meta.get("problem")
+        or belief_meta.get("resolution")
+        or belief_meta.get("stage_label")
         or (best_current or {}).get("concern_label")
     )
     fallback = stats.recommend(persona_label, stage_label, concern_label)
@@ -6383,6 +6772,8 @@ def build_account_marketing_blueprint(
     win_regression: Optional[Dict[str, Any]] = None,
     persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
     persona_metrics_updated_at: Optional[str] = None,
+    global_insights: Optional[Dict[str, Any]] = None,
+    job_status_callback: Optional[Callable[[str, str, float], None]] = None,
 ) -> Dict[str, Any]:
     if product_graph is None:
         product_graph = build_product_graph(product_id)
@@ -6398,6 +6789,15 @@ def build_account_marketing_blueprint(
             LOGGER.warning("Unable to build win regression calibrator: %s", exc)
             win_calibrator = None
 
+    def _notify_phase(phase_key: str) -> None:
+        if not job_status_callback:
+            return
+        message = ACCOUNT_PLAN_PHASE_MESSAGES.get(phase_key)
+        if not message:
+            return
+        progress = ACCOUNT_PLAN_PHASE_PROGRESS.get(phase_key, 0.0)
+        job_status_callback(phase_key, message, progress)
+
     account = get_account_by_id(product_id, account_id) or {"account_name": account_id}
     thesis, _ = get_cached_belief_thesis(
         product_id=product_id,
@@ -6409,33 +6809,95 @@ def build_account_marketing_blueprint(
             product_id
         )
 
-    bgn_paths = _generate_persona_paths_from_weights(
-        journey_weights,
-        thesis,
-        persona_transition_stats=persona_transition_stats,
-    )
-    if bgn_paths:
-        paths = bgn_paths
-    elif canonical_persona_path:
-        paths = [
-            {
-                "id": "canonical",
-                "probability": 1.0,
-                "score": 1.0,
-                "personas_prefab": [deepcopy(persona) for persona in canonical_persona_path],
-                "raw": {"source": "canonical"},
-                "source": "graph",
-                "confidence": 0.6,
-            }
-        ]
-    else:
-        paths = _top_paths_from_thesis(thesis)
+    insufficient_learning = _learning_summary_is_insufficient(thesis)
+    paths: List[Dict[str, Any]] = []
+    if insufficient_learning:
+        graph_personas = _graph_only_persona_candidates(product_graph, limit=4)
+        if graph_personas:
+            paths = [
+                _build_graph_persona_path(
+                    graph_personas,
+                    source="graph_only",
+                    identifier="graph_only_personas",
+                )
+            ]
+        elif canonical_persona_path:
+            paths = [
+                {
+                    "id": "canonical",
+                    "probability": 1.0,
+                    "score": 1.0,
+                    "personas_prefab": [
+                        deepcopy(persona) for persona in canonical_persona_path
+                    ],
+                    "raw": {"source": "canonical"},
+                    "source": "graph",
+                    "confidence": 0.6,
+                }
+            ]
     if not paths:
+        if not insufficient_learning:
+            bgn_paths = _generate_persona_paths_from_weights(
+                journey_weights,
+                thesis,
+                persona_transition_stats=persona_transition_stats,
+            )
+            if bgn_paths:
+                paths = bgn_paths
+            elif canonical_persona_path:
+                paths = [
+                    {
+                        "id": "canonical",
+                        "probability": 1.0,
+                        "score": 1.0,
+                        "personas_prefab": [
+                            deepcopy(persona) for persona in canonical_persona_path
+                        ],
+                        "raw": {"source": "canonical"},
+                        "source": "graph",
+                        "confidence": 0.6,
+                    }
+                ]
+            else:
+                paths = _top_paths_from_thesis(thesis)
+        elif canonical_persona_path:
+            paths = [
+                {
+                    "id": "canonical",
+                    "probability": 1.0,
+                    "score": 1.0,
+                    "personas_prefab": [
+                        deepcopy(persona) for persona in canonical_persona_path
+                    ],
+                    "raw": {"source": "canonical"},
+                    "source": "graph",
+                    "confidence": 0.6,
+                }
+            ]
+        else:
+            paths = _top_paths_from_thesis(thesis)
+
+    filtered_persona_paths, had_stop_only = _sanitize_persona_paths(paths)
+    if not filtered_persona_paths and had_stop_only:
+        fallback_ids = _predictive_persona_candidates(thesis, limit=4)
+        if fallback_ids:
+            filtered_persona_paths = [
+                _build_graph_persona_path(
+                    fallback_ids,
+                    source="prediction_fallback",
+                    identifier="prediction_personas",
+                )
+            ]
+    if not filtered_persona_paths:
         return {
             "account_id": account_id,
             "account_name": account.get("account_name") or account_id,
             "error": "No persona paths available",
         }
+
+    raw_persona_paths = filtered_persona_paths
+    paths = raw_persona_paths
+    _notify_phase("persona_matching")
 
     persona_committee_probs = {
         str(pid): _safe_float(prob, 0.0)
@@ -6486,6 +6948,18 @@ def build_account_marketing_blueprint(
 
     matches_by_persona = _load_persona_matches_lookup(product_id, account_id)
     engagement_buckets = _load_engagement_buckets(product_id, account_id)
+    observed_engagement_count = sum(len(entries) for entries in engagement_buckets.values())
+    last_observed_ts = None
+    for entries in engagement_buckets.values():
+        for record in entries:
+            ts = record.get("timestamp")
+            if not ts:
+                continue
+            if last_observed_ts is None or ts > last_observed_ts:
+                last_observed_ts = ts
+    last_observed_at = (
+        last_observed_ts.isoformat() if isinstance(last_observed_ts, datetime) else None
+    )
     expected_next_probs: Dict[str, float] = {}
     expected_next_meta: Dict[str, Dict[str, Any]] = {}
     fit_score = _safe_float((thesis.get("fit") or {}).get("overall"), None)
@@ -6518,6 +6992,8 @@ def build_account_marketing_blueprint(
         if pid:
             zmot_by_persona[pid].append(entry)
 
+    _notify_phase("account_context")
+
     persona_paths = []
     scatter_personas: List[Dict[str, Any]] = []
     transitions_all: List[Dict[str, Any]] = []
@@ -6525,6 +7001,7 @@ def build_account_marketing_blueprint(
     persona_lookup: Dict[str, Dict[str, Any]] = {}
     ordered_persona_ids: List[str] = []
     plays_by_persona: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    persona_stage_index_map: Dict[str, int] = {}
     account_wolf_scores = thesis.get("persona_wolf_scores") or {}
 
     account_meta_detail = {
@@ -6763,6 +7240,9 @@ def build_account_marketing_blueprint(
         )
 
         for stage_index, persona in enumerate(persona_summaries):
+            persona_id = persona.get("id") or persona.get("persona_id")
+            if persona_id and _is_actionable_persona(persona_id):
+                persona_stage_index_map.setdefault(persona_id, stage_index)
             transition_items = _persona_transitions(
                 product_graph,
                 persona,
@@ -6821,6 +7301,7 @@ def build_account_marketing_blueprint(
         ordered_persona_ids=ordered_persona_ids,
     )
     thesis["entry_points"] = entry_points
+    _notify_phase("journey_replay")
 
     persona_paths.sort(
         key=lambda row: (
@@ -6829,6 +7310,14 @@ def build_account_marketing_blueprint(
         ),
         reverse=True,
     )
+    plan_warnings: List[str] = []
+    validated_persona_paths, path_validation_warnings = _validate_persona_paths(
+        persona_paths, persona_lookup
+    )
+    if path_validation_warnings:
+        plan_warnings.extend(path_validation_warnings)
+    if validated_persona_paths:
+        persona_paths = validated_persona_paths
     for idx, path in enumerate(persona_paths):
         path["is_primary"] = idx == 0
 
@@ -6837,6 +7326,11 @@ def build_account_marketing_blueprint(
     )
     if primary_personas is None:
         primary_personas = []
+    primary_personas = [
+        persona
+        for persona in primary_personas
+        if persona and _is_actionable_persona(persona.get("id") or persona.get("persona_id"))
+    ]
     total_persona_stages = len(primary_personas) or max(
         (len(path.get("personas") or []) for path in persona_paths),
         default=1,
@@ -6850,15 +7344,97 @@ def build_account_marketing_blueprint(
         )
         for persona in primary_personas
     ]
+    observed_engagements = _build_observed_engagement_evidence(
+        engagement_buckets,
+        matches_by_persona,
+        persona_stage_index_map,
+    )
+    observed_engagement_count = len(observed_engagements)
+
+    def _persona_info_with_beliefs(persona_id: str) -> Dict[str, Any]:
+        info: Dict[str, Any] = dict(persona_lookup.get(persona_id) or {})
+        belief_entry = persona_belief_posteriors.get(persona_id) or {}
+        belief_level = _safe_float(belief_entry.get("belief_level"), None)
+        if belief_level is not None and info.get("belief_level") is None:
+            info["belief_level"] = belief_level
+        belief_band = belief_entry.get("belief_band")
+        if info.get("belief_band") is None:
+            if belief_band:
+                info["belief_band"] = belief_band
+            elif belief_level is not None:
+                info["belief_band"] = _belief_band(belief_level)
+        journey_phase = belief_entry.get("journey_phase") or belief_entry.get(
+            "dominant_phase"
+        )
+        if journey_phase and not info.get("journey_phase"):
+            info["journey_phase"] = journey_phase
+        if belief_entry.get("phase_probs") and not info.get("phase_probs"):
+            info["phase_probs"] = belief_entry["phase_probs"]
+        title = info.get("title")
+        department = info.get("department")
+        seniority = info.get("seniority")
+        group_components = [comp for comp in (title, department, seniority) if comp]
+        if group_components:
+            info["display_group_key"] = " · ".join(group_components)
+        else:
+            info["display_group_key"] = (
+                info.get("persona_label") or info.get("label") or persona_id
+            )
+        raw_label = info.get("persona_label")
+        info["job_context"] = info.get("description") or raw_label
+        graph_node = (product_graph.nodes.get(persona_id) or {}) if product_graph else {}
+        for key in ("title", "department", "seniority", "persona_label", "label", "name", "description"):
+            if graph_node.get(key) and not info.get(key):
+                info[key] = graph_node.get(key)
+        info["persona_label"] = _label_persona(persona_id, info)
+        return info
+
+    def _build_persona_strategy_entry(
+        persona_id: str,
+        persona_label: str,
+        role: str,
+        *,
+        persona_info: Optional[Dict[str, Any]] = None,
+        committee_probability: Optional[float] = None,
+        path_probability: Optional[float] = None,
+        on_primary_path: Optional[bool] = None,
+        projection_probability: Optional[float] = None,
+        projection_note: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        persona_info = persona_info or _persona_info_with_beliefs(persona_id)
+        belief_level = _safe_float(persona_info.get("belief_level"), None)
+        entry: Dict[str, Any] = {
+            "persona_id": persona_id,
+            "persona_label": persona_label,
+            "belief_level": belief_level,
+            "belief_band": persona_info.get("belief_band"),
+            "journey_phase": persona_info.get("journey_phase"),
+            "committee_probability": committee_probability,
+            "path_probability": path_probability,
+            "cadence_tier": _cadence_tier_for_strategy_role(role),
+            "recommended_action": _recommendation_for_strategy_role(role, belief_level),
+            "role": role,
+            "engagement_state": persona_info.get("engagement_state"),
+            "display_group_key": persona_info.get("display_group_key"),
+        }
+        if on_primary_path is not None:
+            entry["on_primary_path"] = on_primary_path
+        if projection_probability is not None:
+            entry["projection_probability"] = projection_probability
+        if projection_note:
+            entry["projection_note"] = projection_note
+        return entry
 
     persona_likelihoods: List[Dict[str, Any]] = []
     for persona_id, probability in sorted(
         persona_posteriors.items(), key=lambda kv: kv[1], reverse=True
     ):
+        if not _is_actionable_persona(persona_id):
+            continue
         persona_info = persona_lookup.get(persona_id, {})
-        label = persona_info.get("label")
-        if not label:
-            label = _title_case_value(str(persona_id).replace("|", " ")) or persona_id
+        label = _resolve_persona_label(
+            persona_id, persona_info, graph=product_graph
+        )
         persona_likelihoods.append(
             {
                 "persona_id": persona_id,
@@ -6880,17 +7456,14 @@ def build_account_marketing_blueprint(
     seen_expected: set[str] = set()
     for entry in thesis.get("current_expected_next") or []:
         persona_id = str(entry.get("persona") or "")
-        if not persona_id:
+        if not _is_actionable_persona(persona_id):
             continue
         prob = _safe_float(entry.get("prob"), 0.0) or 0.0
         prob_base = _safe_float(entry.get("prob_base"), None)
         subsidy_lift = _safe_float(entry.get("subsidy_lift"), None)
         persona_info = persona_lookup.get(persona_id, {})
-        label = (
-            entry.get("persona_label")
-            or persona_info.get("label")
-            or _title_case_value(persona_id.replace("|", " "))
-            or persona_id
+        label = entry.get("persona_label") or _resolve_persona_label(
+            persona_id, persona_info, graph=product_graph
         )
         expected_next_personas.append(
             {
@@ -6912,12 +7485,12 @@ def build_account_marketing_blueprint(
         for persona_id, prob in sorted(
             expected_next_probs.items(), key=lambda kv: kv[1], reverse=True
         ):
-            if persona_id in seen_expected:
+            if not _is_actionable_persona(persona_id) or persona_id in seen_expected:
                 continue
             persona_info = persona_lookup.get(persona_id, {})
-            label = persona_info.get("label") or _title_case_value(
-                str(persona_id).replace("|", " ")
-            ) or persona_id
+            label = _resolve_persona_label(
+                persona_id, persona_info, graph=product_graph
+            )
             expected_next_personas.append(
                 {
                     "persona_id": persona_id,
@@ -6931,6 +7504,164 @@ def build_account_marketing_blueprint(
                     "top_people": persona_info.get("top_people") or [],
                 }
             )
+
+    primary_path_persona_ids: Set[str] = set()
+    primary_path_personas_strategy: List[Dict[str, Any]] = []
+    for persona in primary_personas:
+        persona_id = persona.get("id") or persona.get("persona_id")
+        if not persona_id or persona_id in primary_path_persona_ids:
+            continue
+        info = _persona_info_with_beliefs(persona_id)
+        label = (
+            persona.get("label")
+            or persona.get("persona_label")
+            or info.get("persona_label")
+            or _resolve_persona_label(persona_id, info, graph=product_graph)
+        )
+        entry = _build_persona_strategy_entry(
+            persona_id,
+            label,
+            "primary_path",
+            persona_info=info,
+            committee_probability=persona_committee_probs.get(persona_id),
+            path_probability=persona.get("path_probability")
+            or persona_posteriors.get(persona_id),
+        )
+        primary_path_personas_strategy.append(entry)
+        primary_path_persona_ids.add(persona_id)
+
+    committee_personas_strategy: List[Dict[str, Any]] = []
+    committee_persona_ids: Set[str] = set()
+    for persona in persona_likelihoods:
+        persona_id = persona.get("persona_id")
+        if not persona_id or persona_id in primary_path_persona_ids:
+            continue
+        if not _is_actionable_persona(persona_id):
+            continue
+        if persona_id in committee_persona_ids:
+            continue
+        info = _persona_info_with_beliefs(persona_id)
+        label = persona.get("persona_label") or info.get("persona_label") or persona_id
+        committee_personas_strategy.append(
+            _build_persona_strategy_entry(
+                persona_id,
+                label,
+                "committee",
+                persona_info=info,
+                committee_probability=persona.get("committee_probability"),
+                path_probability=persona.get("path_probability"),
+            )
+        )
+        committee_persona_ids.add(persona_id)
+        if len(committee_personas_strategy) >= 6:
+            break
+
+    projected_committee_members: List[Dict[str, Any]] = []
+    for entry in expected_next_personas:
+        persona_id = entry.get("persona_id")
+        if not persona_id or not _is_actionable_persona(persona_id):
+            continue
+        info = _persona_info_with_beliefs(persona_id)
+        label = entry.get("persona_label") or info.get("persona_label") or _resolve_persona_label(
+            persona_id, info, graph=product_graph
+        )
+        projected_committee_members.append(
+            _build_persona_strategy_entry(
+                persona_id,
+                label,
+                "projection",
+                persona_info=info,
+                committee_probability=persona_committee_probs.get(persona_id),
+                path_probability=persona_posteriors.get(persona_id),
+                on_primary_path=persona_id in primary_path_persona_ids,
+                projection_probability=_safe_float(entry.get("probability"), None),
+                projection_note=entry.get("reason") or entry.get("label"),
+            )
+        )
+        if len(projected_committee_members) >= 8:
+            break
+
+    primary_beliefs = [
+        entry.get("belief_level")
+        for entry in primary_path_personas_strategy
+        if entry.get("belief_level") is not None
+    ]
+    avg_primary_belief = (
+        sum(primary_beliefs) / len(primary_beliefs) if primary_beliefs else None
+    )
+    primary_pct = 80
+    rationale_parts: List[str] = [
+        "Default split keeps the primary path in focus while maintaining gentle committee probes."
+    ]
+    escalation_triggers: List[str] = []
+    if avg_primary_belief is not None and avg_primary_belief < 0.35:
+        primary_pct = max(55, primary_pct - 15)
+        escalation_triggers.append(
+            "Primary beliefs are weak (below 35%), so committee probes stay ready as a fallback."
+        )
+        rationale_parts.append(
+            "Primary belief momentum is low, so keep secondary focus in the mix."
+        )
+    if len(persona_engagements) == 0:
+        escalation_triggers.append(
+            "No observed engagements yet—keep committee level investments ready until A warms up."
+        )
+        rationale_parts.append(
+            "Lack of engagement signals increases reliance on committee awareness."
+        )
+    primary_pct = min(90, max(55, primary_pct))
+    secondary_pct = 100 - primary_pct
+    budget_split = {
+        "primary_pct": primary_pct,
+        "secondary_pct": secondary_pct,
+        "rationale": " ".join(rationale_parts),
+        "escalation_triggers": escalation_triggers,
+    }
+
+    persona_ids_for_dictionary: Set[str] = set()
+    def _add_persona_id(pid: Optional[str]) -> None:
+        if pid and _is_actionable_persona(pid):
+            persona_ids_for_dictionary.add(pid)
+
+    for pid in ordered_persona_ids:
+        _add_persona_id(pid)
+    for pid in primary_path_persona_ids:
+        _add_persona_id(pid)
+    for pid in persona_committee_probs.keys():
+        _add_persona_id(pid)
+    for entry in expected_next_personas:
+        _add_persona_id(entry.get("persona_id"))
+    for pid in persona_posteriors.keys():
+        _add_persona_id(pid)
+    personas_by_id: Dict[str, Dict[str, Any]] = {}
+    for persona_id in persona_ids_for_dictionary:
+        if not persona_id:
+            continue
+        info = _persona_info_with_beliefs(persona_id)
+        label = info.get("persona_label") or _resolve_persona_label(
+            persona_id, info, graph=product_graph
+        )
+        personas_by_id[persona_id] = {
+            "persona_id": persona_id,
+            "persona_label": label,
+            "job_context": info.get("job_context"),
+            "department": info.get("department"),
+            "seniority": info.get("seniority"),
+            "title": info.get("title"),
+            "belief_level": info.get("belief_level"),
+            "belief_band": info.get("belief_band"),
+            "journey_phase": info.get("journey_phase"),
+            "phase_probs": info.get("phase_probs"),
+            "committee_probability": persona_committee_probs.get(persona_id),
+            "on_primary_path": persona_id in primary_path_persona_ids,
+            "display_group_key": info.get("display_group_key"),
+            "stages_covered": (
+                [info.get("journey_phase")]
+                if info.get("journey_phase")
+                else []
+            ),
+            "path_probability": persona_posteriors.get(persona_id),
+        }
 
     expected_next_people: List[Dict[str, Any]] = []
     for persona_entry in expected_next_personas:
@@ -6953,6 +7684,7 @@ def build_account_marketing_blueprint(
         if len(expected_next_people) >= 8:
             break
     expected_next_people = expected_next_people[:8]
+    _notify_phase("belief_state")
 
     zmot_watchlist: List[Dict[str, Any]] = []
     unique_zmot_events: Dict[str, Dict[str, Any]] = {}
@@ -7041,6 +7773,8 @@ def build_account_marketing_blueprint(
         if not requirement.get("has_match")
     ]
 
+    _notify_phase("blockers_cascades")
+
     _schedule_plays(plays)
     _annotate_execution_layers(plays, persona_lookup, account_meta_payload)
     campaigns = _group_campaigns(plays)
@@ -7122,6 +7856,19 @@ def build_account_marketing_blueprint(
         product_id=product_id,
     )
 
+    persona_strategy_debug = {
+        "primary_path_personas": len(primary_path_personas_strategy),
+        "committee_personas": len(committee_personas_strategy),
+        "projected_committee_members": len(projected_committee_members),
+        "expected_next_personas": len(expected_next_personas),
+    }
+    LOGGER.debug(
+        "[account_plan] persona strategy summary %s | sample primary=%s committee=%s projected=%s",
+        persona_strategy_debug,
+        (primary_path_personas_strategy[0] if primary_path_personas_strategy else None),
+        (committee_personas_strategy[0] if committee_personas_strategy else None),
+        (projected_committee_members[0] if projected_committee_members else None),
+    )
     thesis_payload = {
         "persona_likelihoods": persona_likelihoods,
         "person_likelihoods": person_likelihoods,
@@ -7131,6 +7878,13 @@ def build_account_marketing_blueprint(
         "persona_committee_probs": persona_committee_probs,
         "persona_belief_posteriors": persona_belief_posteriors,
         "entry_points": entry_points,
+        "personas_by_id": personas_by_id,
+        "persona_strategy": {
+            "primary_path_personas": primary_path_personas_strategy,
+            "committee_personas": committee_personas_strategy,
+            "projected_committee_members": projected_committee_members,
+            "budget_split": budget_split,
+        },
     }
 
     account_execution_interventions = _build_account_execution_interventions(
@@ -7139,6 +7893,18 @@ def build_account_marketing_blueprint(
         account_name=account.get("account_name") or account_id,
         segment_context=segment_context,
     )
+
+    arsenal_impact = (global_insights or {}).get("arsenal_impact")
+    win_outlook = build_win_outlook(
+        account_meta=account_meta_payload,
+        win_regression=win_regression,
+        observed_engagements=observed_engagements,
+        projected_engagements=persona_engagements,
+        plays=plays,
+        arsenal_impact=arsenal_impact,
+    )
+
+    _notify_phase("intervention_plan")
 
     return {
         "account_id": account_id,
@@ -7170,6 +7936,7 @@ def build_account_marketing_blueprint(
                 "total_steps": len((thesis.get("journey") or {}).get("steps", [])),
             },
         },
+        "persona_paths": raw_persona_paths,
         "entry_points": entry_points,
         "transitions": transitions_all,
         "scatter": {"personas": scatter_personas},
@@ -7197,6 +7964,12 @@ def build_account_marketing_blueprint(
             "summary": enrichment_summary,
             "unmatched_personas": unmatched_personas,
         },
+        "engagement_summary": {
+            "observed": observed_engagement_count,
+            "last_observed_at": last_observed_at,
+        },
+        "warnings": plan_warnings,
+        "win_outlook": win_outlook,
     }
 
 
@@ -7689,6 +8462,7 @@ def _summary_from_accounts(
     *,
     persona_wolves_metrics: Optional[Dict[str, Dict[str, Any]]] = None,
     persona_wolves_label_index: Optional[Dict[str, Dict[str, Any]]] = None,
+    win_regression_sample_size: Optional[int] = None,
 ) -> Dict[str, Any]:
     account_count = len(accounts)
     persona_wolves_metrics = persona_wolves_metrics or {}
@@ -7873,6 +8647,7 @@ def _summary_from_accounts(
         total_delta_bp=total_delta_bp,
         persona_wolves_metrics=persona_wolves_metrics,
         persona_wolves_label_index=persona_wolves_label_index,
+        win_regression_sample_size=win_regression_sample_size,
     )
 
     for cluster in account_clusters:
@@ -7907,7 +8682,7 @@ def _summary_from_accounts(
 
     return {
         "account_count": account_count,
-        "avg_best_path_probability": (
+        "graph_walk_reachability": (
             sum(prob_primary) / len(prob_primary) if prob_primary else 0.0
         ),
         "avg_accuracy": (
@@ -7978,6 +8753,7 @@ def build_product_marketing_plan(
     product_id: str,
     *,
     account_id: Optional[str] = None,
+    job_status_callback: Optional[Callable[[str, str, float], None]] = None,
 ) -> Dict[str, Any]:
     product_graph = build_product_graph(product_id)
     canonical_product_id = get_product_id_from_subgraph(product_graph) or product_id
@@ -8035,6 +8811,11 @@ def build_product_marketing_plan(
     accounts: List[Dict[str, Any]] = []
     for acc_id in account_ids:
         try:
+            phase_callback = (
+                job_status_callback
+                if job_status_callback and account_id and acc_id == account_id
+                else None
+            )
             plan = build_account_marketing_blueprint(
                 canonical_product_id,
                 acc_id,
@@ -8046,6 +8827,8 @@ def build_product_marketing_plan(
                 win_regression=win_regression_summary,
                 persona_wolves_metrics=persona_wolves_metrics,
                 persona_metrics_updated_at=persona_metrics_updated_at,
+                global_insights=global_insights,
+                job_status_callback=phase_callback,
             )
             accounts.append(plan)
         except Exception as exc:  # pragma: no cover - defensive
@@ -8061,6 +8844,9 @@ def build_product_marketing_plan(
         accounts,
         persona_wolves_metrics=persona_wolves_metrics,
         persona_wolves_label_index=persona_wolves_label_index,
+        win_regression_sample_size=win_regression_summary.get("sample_size")
+        if win_regression_summary
+        else None,
     )
     summary["wolves_metrics_updated_at"] = persona_metrics_updated_at
     modality_stats = _build_modality_stats(accounts)
@@ -8461,3 +9247,5 @@ def _build_asset_cadence_table(
                 }
             )
     return rows
+def _filter_actionable_persona_ids(persona_ids: Sequence[str]) -> List[str]:
+    return [pid for pid in persona_ids if _is_actionable_persona(pid)]

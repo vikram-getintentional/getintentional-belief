@@ -21,6 +21,7 @@ from backend.utils.graph_base.persona_learning import (
     match_candidate_to_canonical_persona,
     add_persona_node_from_candidate,
     alias_persona_with_label,
+    _split_candidate_label,
 )
 from backend.utils.persona_normalization import normalize_persona_label
 
@@ -105,16 +106,13 @@ def _resolve_canonical_persona_id(graph, persona_id: str) -> str:
     return persona_id
 
 
-def _split_candidate_label(label: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    parts = [segment.strip() for segment in label.split("·")]
-    title = parts[0] if len(parts) > 0 else None
-    department = parts[1] if len(parts) > 1 else None
-    seniority = parts[2] if len(parts) > 2 else None
-    return title, department, seniority
-
-
 def _prettify_candidate_label(label: str) -> str:
     return " · ".join(segment.strip().title() for segment in label.split("·"))
+
+
+def _persona_bucket_key(label: Optional[str], fallback_id: str) -> str:
+    normalized = normalize_persona_label(label or "")
+    return normalized or fallback_id
 
 
 def _most_common(values: Iterable[str]) -> Optional[str]:
@@ -179,131 +177,141 @@ def _compute_persona_requirements(
     graph = build_product_graph(product_id)
 
     stats: Dict[str, Dict[str, Any]] = {}
-    for path in persona_paths:
-        path_prob = float(path.get("probability") or 0.0)
-        personas = path.get("personas") or []
-        if not personas and isinstance(path.get("path"), list):
-            personas = [{"id": pid, "order": idx} for idx, pid in enumerate(path["path"])]
-        for persona in personas:
-            persona_id = persona.get("id")
-            if not persona_id:
-                continue
-            persona_id = str(persona_id)
-            persona_id = _resolve_canonical_persona_id(graph, persona_id)
-            bucket = stats.setdefault(
-                persona_id,
-                {
-                    "count": 0,
-                    "order_sum": 0.0,
-                    "prob_sum": 0.0,
-                    "perceptibility": [],
-                    "proximity": [],
-                    "involvement": [],
-                    "label": None,
-                    "title": None,
-                    "department": None,
-                    "seniority": None,
-                },
-            )
-            bucket["count"] += 1
-            bucket["order_sum"] += float(persona.get("order", 0))
-            bucket["prob_sum"] += path_prob
-            for metric in ("perceptibility", "proximity", "involvement"):
-                value = persona.get(metric)
-                if isinstance(value, (int, float)):
-                    bucket[metric].append(float(value))
-            if not bucket["label"]:
-                label, title, department, seniority = _persona_parts(graph, persona_id)
-                bucket["label"] = label
-                bucket["title"] = title
-                bucket["department"] = department
-                bucket["seniority"] = seniority
 
-    requirements: List[Dict[str, Any]] = []
-    for persona_id, bucket in stats.items():
-        if not bucket["count"]:
-            continue
-        avg_order = bucket["order_sum"] / bucket["count"]
-        stage_index, stage_label = _stage_from_order(avg_order)
-        expected = min(1.0, bucket["prob_sum"])
-        requirements.append(
+    def _track_persona(persona_entry: Dict[str, Any], probability: float) -> None:
+        if probability <= 0:
+            return
+        raw_id = persona_entry.get("id") or persona_entry.get("persona_id") or persona_entry.get("persona")
+        if not raw_id:
+            return
+        persona_id = str(raw_id)
+        canonical_id = _resolve_canonical_persona_id(graph, persona_id)
+        key_persona_id = canonical_id or persona_id
+        label = persona_entry.get("label")
+        title = persona_entry.get("title")
+        department = persona_entry.get("department")
+        seniority = persona_entry.get("seniority")
+        if not all((label, title, department, seniority)):
+            fallback_label, fallback_title, fallback_department, fallback_seniority = _persona_parts(
+                graph,
+                key_persona_id,
+            )
+            label = label or fallback_label
+            title = title or fallback_title
+            department = department or fallback_department
+            seniority = seniority or fallback_seniority
+        bucket_key = _persona_bucket_key(label, key_persona_id)
+        bucket = stats.setdefault(
+            bucket_key,
             {
-                "persona_id": persona_id,
-                "persona_label": bucket["label"],
-                "persona_title": bucket["title"],
-                "persona_department": bucket["department"],
-                "persona_seniority": bucket["seniority"],
-                "expected_in_deal": expected,
-                "expected_in_deal_pct": round(expected * 100, 1),
-                "stage_index": stage_index,
-                "stage_label": stage_label,
-                "metrics": {
-                    "perceptibility": _average(bucket["perceptibility"]),
-                    "proximity": _average(bucket["proximity"]),
-                    "involvement": _average(bucket["involvement"]),
-                },
-            }
+                "bucket_key": bucket_key,
+                "count": 0,
+                "order_sum": 0.0,
+                "prob_sum": 0.0,
+                "perceptibility": [],
+                "proximity": [],
+                "involvement": [],
+                "label": label,
+                "title": title,
+                "department": department,
+                "seniority": seniority,
+                "persona_ids": set(),
+                "persona_contribs": defaultdict(float),
+                "primary_persona_id": key_persona_id,
+            },
         )
+        order_raw = persona_entry.get("order")
+        if order_raw is None:
+            order_raw = persona_entry.get("stage_index")
+        try:
+            order_value = float(order_raw) if order_raw is not None else 0.0
+        except (TypeError, ValueError):
+            order_value = 0.0
+        bucket["count"] += 1
+        bucket["order_sum"] += order_value
+        bucket["prob_sum"] += probability
+        for metric in ("perceptibility", "proximity", "involvement"):
+            value = persona_entry.get(metric)
+            if isinstance(value, (int, float)):
+                bucket[metric].append(float(value))
+        if label and not bucket.get("label"):
+            bucket["label"] = label
+        if title and not bucket.get("title"):
+            bucket["title"] = title
+        if department and not bucket.get("department"):
+            bucket["department"] = department
+        if seniority and not bucket.get("seniority"):
+            bucket["seniority"] = seniority
+        bucket["persona_ids"].add(key_persona_id)
+        contributions = bucket["persona_contribs"]
+        contributions[key_persona_id] += probability
+        primary_id = bucket.get("primary_persona_id")
+        primary_score = contributions.get(primary_id or "", 0.0)
+        if contributions[key_persona_id] >= primary_score:
+            bucket["primary_persona_id"] = key_persona_id
 
-    if not requirements:
-        fallback: Dict[str, Dict[str, Any]] = {}
-        for transition in blueprint.get("transitions") or []:
-            persona = (transition or {}).get("persona") or {}
-            persona_id = persona.get("id")
-            if not persona_id:
+    def _build_requirements() -> List[Dict[str, Any]]:
+        rows: List[Dict[str, Any]] = []
+        for bucket in stats.values():
+            if not bucket["count"]:
                 continue
-            bucket = fallback.setdefault(
-                persona_id,
-                {
-                    "count": 0,
-                    "prob_sum": 0.0,
-                    "stage_sum": 0.0,
-                    "label": persona.get("label"),
-                    "title": persona.get("title"),
-                    "department": persona.get("department"),
-                    "seniority": persona.get("seniority"),
-                },
-            )
-            bucket["count"] += 1
-            bucket["prob_sum"] += float(
-                transition.get("path_probability")
-                or persona.get("path_probability")
-                or 0.1
-            )
-            bucket["stage_sum"] += float(transition.get("stage_index", 0))
-
-        for persona_id, bucket in fallback.items():
-            persona_id = str(persona_id)
-            persona_id = _resolve_canonical_persona_id(graph, persona_id)
-            label, title, department, seniority = _persona_parts(graph, persona_id)
-            count = max(bucket["count"], 1)
-            stage_index = int(round(bucket["stage_sum"] / count))
-            stage_index = max(0, min(stage_index, len(STAGE_LABELS) - 1))
-            if not bucket.get("label"):
-                bucket["label"] = label
-            if not bucket.get("title"):
-                bucket["title"] = title
-            if not bucket.get("department"):
-                bucket["department"] = department
-            if not bucket.get("seniority"):
-                bucket["seniority"] = seniority
             expected = min(1.0, bucket["prob_sum"])
-            requirements.append(
+            if expected <= 0:
+                continue
+            avg_order = bucket["order_sum"] / bucket["count"]
+            stage_index, stage_label = _stage_from_order(avg_order)
+            persona_ids = sorted(bucket["persona_ids"])
+            primary_persona_id = bucket.get("primary_persona_id") or (
+                persona_ids[0] if persona_ids else bucket.get("bucket_key")
+            )
+            rows.append(
                 {
-                    "persona_id": persona_id,
-                    "persona_label": bucket.get("label"),
+                    "persona_id": primary_persona_id,
+                    "persona_label": bucket.get("label") or primary_persona_id,
                     "persona_title": bucket.get("title"),
                     "persona_department": bucket.get("department"),
                     "persona_seniority": bucket.get("seniority"),
                     "expected_in_deal": expected,
                     "expected_in_deal_pct": round(expected * 100, 1),
                     "stage_index": stage_index,
-                    "stage_label": STAGE_LABELS[stage_index],
-                    "metrics": {},
+                    "stage_label": stage_label,
+                    "metrics": {
+                        "perceptibility": _average(bucket["perceptibility"]),
+                        "proximity": _average(bucket["proximity"]),
+                        "involvement": _average(bucket["involvement"]),
+                    },
+                    "persona_ids": persona_ids,
                 }
             )
+        rows.sort(key=lambda r: r["expected_in_deal"], reverse=True)
+        return rows
 
-    requirements.sort(key=lambda r: r["expected_in_deal"], reverse=True)
+    for path in persona_paths:
+        path_prob = float(path.get("probability") or 0.0)
+        if path_prob <= 0:
+            continue
+        personas = path.get("personas") or []
+        if not personas and isinstance(path.get("path"), list):
+            personas = [{"id": pid, "order": idx} for idx, pid in enumerate(path["path"])]
+        for persona in personas:
+            _track_persona(persona, path_prob)
+
+    requirements = _build_requirements()
+    if not requirements:
+        for transition in blueprint.get("transitions") or []:
+            persona = (transition or {}).get("persona") or {}
+            persona_copy = {**persona}
+            stage_index = transition.get("stage_index")
+            if stage_index is not None:
+                persona_copy["order"] = stage_index
+            probability = float(
+                transition.get("path_probability")
+                or persona.get("path_probability")
+                or 0.1
+            )
+            _track_persona(persona_copy, probability)
+        requirements = _build_requirements()
+
     return requirements, stats, blueprint, graph
 
 
@@ -496,6 +504,7 @@ def _collect_account_candidate_personas(
     query = (
         session.query(
             TargetAccountEngagement.candidate_persona_label,
+            TargetAccountEngagement.actor_name,
             TargetAccountEngagement.actor_title,
             TargetAccountEngagement.actor_department,
             TargetAccountEngagement.actor_seniority,
@@ -526,6 +535,11 @@ def _collect_account_candidate_personas(
                 "occurrences": 0,
                 "first_seen": None,
                 "last_seen": None,
+                "sample_actor_name": None,
+                "sample_actor_title": None,
+                "sample_actor_department": None,
+                "sample_actor_seniority": None,
+                "sample_persona_id": None,
             },
         )
         bucket["titles"].append((row.actor_title or "").strip())
@@ -538,6 +552,16 @@ def _collect_account_candidate_personas(
                 bucket["first_seen"] = ts
             if not bucket["last_seen"] or ts > bucket["last_seen"]:
                 bucket["last_seen"] = ts
+        if row.actor_name and not bucket["sample_actor_name"]:
+            bucket["sample_actor_name"] = row.actor_name.strip()
+        if row.actor_title and not bucket["sample_actor_title"]:
+            bucket["sample_actor_title"] = row.actor_title.strip()
+        if row.actor_department and not bucket["sample_actor_department"]:
+            bucket["sample_actor_department"] = row.actor_department.strip()
+        if row.actor_seniority and not bucket["sample_actor_seniority"]:
+            bucket["sample_actor_seniority"] = row.actor_seniority.strip()
+        if row.persona_id and not bucket["sample_persona_id"]:
+            bucket["sample_persona_id"] = row.persona_id
 
     if not aggregates:
         return []
@@ -594,11 +618,149 @@ def _collect_account_candidate_personas(
                 "similarity": similarity if match_id else None,
                 "wolves_score": (wolves_info or {}).get("wolves_score"),
                 "wolves_delta_bp": (wolves_info or {}).get("delta_win_bp"),
+                "sample_actor_name": meta.get("sample_actor_name"),
+                "sample_actor_title": meta.get("sample_actor_title"),
+                "sample_actor_department": meta.get("sample_actor_department"),
+                "sample_actor_seniority": meta.get("sample_actor_seniority"),
+                "sample_persona_id": meta.get("sample_persona_id"),
             }
         )
 
     candidates.sort(key=lambda row: row["account_occurrences"], reverse=True)
     return candidates
+
+
+def _ensure_person_from_sample(
+    session: Session,
+    product_id: str,
+    account_id: str,
+    name: str,
+    title: Optional[str],
+    department: Optional[str],
+    seniority: Optional[str],
+    persona_id: str,
+    graph,
+) -> AccountPerson:
+    """
+    Insert or refresh an AccountPerson with the provided actor metadata.
+    """
+    trimmed_name = (name or "").strip()
+    if not trimmed_name:
+        raise ValueError("Actor name is required when creating a sample person.")
+    person = (
+        session.query(AccountPerson)
+        .filter(
+            AccountPerson.product_id == product_id,
+            AccountPerson.account_id == account_id,
+            AccountPerson.name == trimmed_name,
+        )
+        .first()
+    )
+    now = _utcnow()
+    if not person:
+        person = AccountPerson(
+            product_id=product_id,
+            account_id=account_id,
+            name=trimmed_name,
+            title=(title or "").strip() or None,
+            department=(department or "").strip() or None,
+            seniority=(seniority or "").strip() or None,
+            engagement_count=1,
+            last_seen_at=now,
+        )
+        session.add(person)
+        session.flush()
+    else:
+        if title and (not person.title or len(title or "") > len(person.title or "")):
+            person.title = title.strip()
+        if department and (not person.department or len(department or "") > len(person.department or "")):
+            person.department = department.strip()
+        if seniority and (not person.seniority or len(seniority or "") > len(person.seniority or "")):
+            person.seniority = seniority.strip()
+        person.engagement_count = max((person.engagement_count or 0), 1)
+        person.last_seen_at = now
+
+    canonical_label, canonical_title, canonical_department, canonical_seniority = _persona_parts(
+        graph, persona_id
+    )
+    person.canonical_persona_id = persona_id
+    if canonical_department:
+        person.canonical_department = canonical_department
+    if canonical_seniority:
+        person.canonical_seniority = canonical_seniority
+    session.flush()
+    return person
+
+
+def _auto_create_persona_matches_from_candidates(
+    product_id: str,
+    account_id: str,
+    persona_candidates: List[Dict[str, Any]],
+    graph,
+) -> None:
+    """
+    Persist matches derived from candidate personas whenever a persona requirement
+    lacks an existing match and we have actor data to seed a person row.
+    """
+    if not persona_candidates or not graph:
+        return
+
+    write_session = next(get_db())
+    created = False
+    try:
+        existing_matches = _merge_matches_by_canonical(
+            graph, _existing_matches(write_session, product_id, account_id)
+        )
+        for candidate in persona_candidates:
+            target_persona_id = candidate.get("suggested_persona_id") or candidate.get("sample_persona_id")
+            if not target_persona_id:
+                continue
+            canonical_persona_id = _resolve_canonical_persona_id(graph, target_persona_id)
+            if not canonical_persona_id:
+                continue
+            if existing_matches.get(canonical_persona_id):
+                continue
+            actor_name = candidate.get("sample_actor_name")
+            if not actor_name:
+                continue
+            person_title = candidate.get("sample_actor_title") or candidate.get("persona_title")
+            person_department = candidate.get("sample_actor_department") or candidate.get("persona_department")
+            person_seniority = candidate.get("sample_actor_seniority") or candidate.get("persona_seniority")
+            person = _ensure_person_from_sample(
+                write_session,
+                product_id,
+                account_id,
+                actor_name,
+                person_title,
+                person_department,
+                person_seniority,
+                canonical_persona_id,
+                graph,
+            )
+            persona_label = (
+                (get_node_by_id(graph, canonical_persona_id) or {}).get("label")
+                or candidate.get("label")
+            )
+            upsert_persona_match(
+                write_session,
+                product_id=product_id,
+                account_id=account_id,
+                persona_id=canonical_persona_id,
+                person_id=person.id,
+                persona_label=persona_label,
+                match_confidence=candidate.get("similarity"),
+                source="engagement",
+            )
+            existing_matches.setdefault(canonical_persona_id, []).append({"person_id": person.id})
+            created = True
+    except Exception:
+        write_session.rollback()
+        raise
+    else:
+        if created:
+            write_session.commit()
+    finally:
+        write_session.close()
 
 
 def add_candidate_persona(
@@ -648,6 +810,14 @@ def build_account_enrichment(
         requirements, stats_map, blueprint, persona_graph = _compute_persona_requirements(
             product_id, account_id
         )
+        persona_candidates = _collect_account_candidate_personas(session, product_id, account_id)
+        _auto_create_persona_matches_from_candidates(
+            product_id,
+            account_id,
+            persona_candidates,
+            persona_graph,
+        )
+        session.expire_all()
         people = _load_account_people(session, product_id, account_id)
         jobs_by_person = _load_person_jobs(session, product_id, account_id)
         matches_by_persona = _existing_matches(session, product_id, account_id)
@@ -655,8 +825,18 @@ def build_account_enrichment(
 
         rows: List[Dict[str, Any]] = []
         for persona in requirements:
-            persona_id = persona["persona_id"]
-            matched_people = matches_by_persona.get(persona_id, [])
+            persona_ids = persona.get("persona_ids") or [persona["persona_id"]]
+            matched_people: List[Dict[str, Any]] = []
+            seen_match_keys = set()
+            for pid in persona_ids:
+                for match in matches_by_persona.get(pid, []):
+                    match_key = match.get("match_id") or match.get("person_id")
+                    if match_key is not None:
+                        match_key = str(match_key)
+                        if match_key in seen_match_keys:
+                            continue
+                        seen_match_keys.add(match_key)
+                    matched_people.append(match)
             suggestions = _candidate_suggestions(
                 persona,
                 people,
@@ -674,8 +854,6 @@ def build_account_enrichment(
         required = len(rows)
         matched = sum(1 for row in rows if row["matched_people"])
         coverage = (matched / required) if required else 0.0
-        persona_candidates = _collect_account_candidate_personas(session, product_id, account_id)
-
         return {
             "account_id": account_id,
             "product_id": product_id,

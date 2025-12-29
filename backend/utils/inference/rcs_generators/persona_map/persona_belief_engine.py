@@ -14,6 +14,7 @@ from backend.utils.graph_base.network_graph import (
     get_target_nodes_by_source_and_type,
     is_persona_node,
 )
+from backend.utils.inference.exceptions import STOP_PERSONA_ID as STOP
 from backend.utils.inference.rcs_generators.graph_algorithms import _normalize_01, _ppr, get_involvement_activation_report
 from backend.utils.inference.rcs_generators.rcs_computations.graphwin_runtime import get_graphwin
 
@@ -55,8 +56,6 @@ def _default_seed(PG: PersonaGraph, k=1):
     cand.sort(reverse=True)
     return [pid for _, pid in cand[:k]] or persons[:1]
 
-
-STOP = "persona:__STOP__"
 
 def _attach_stop_edges(PG: nx.DiGraph, prior_offpath_rate: float):
     if STOP not in PG:

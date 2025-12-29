@@ -13,6 +13,10 @@ BELIEF_SCALE = [
     "PromisedLand",
 ]
 
+PLANNING_MODE_GRAPH = "graph_hypothesis"
+PLANNING_MODE_OBSERVED = "observed_signal"
+PLANNING_MODE_LEARNED = "learned_strategy"
+
 
 def _belief_stage_from_probability(prob: float) -> str:
     if prob is None:
@@ -118,6 +122,224 @@ def build_subsidy_map(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
         }
         for driver in drivers
     ]
+
+
+def _account_planning_metrics(account: Dict[str, Any]) -> Tuple[int, int, int]:
+    learning = (account.get("learning") or {}) or {}
+    journey_learning = learning.get("journey_learning") or {}
+    resolved_personas = journey_learning.get("resolved_personas") or []
+    closed_journeys = len(resolved_personas)
+    engagement_events = len(account.get("execution", {}).get("persona_engagements") or [])
+    enrichment_summary = (account.get("enrichment") or {}).get("summary") or {}
+    people_mapped = (
+        enrichment_summary.get("personas_with_matches")
+        or enrichment_summary.get("matched_people")
+        or 0
+    )
+    return closed_journeys, engagement_events, _safe_int(people_mapped)
+
+
+def _aggregate_planning_metrics(accounts: Sequence[Dict[str, Any]]) -> Tuple[int, int, int]:
+    total_closed = total_engagements = total_mapped = 0
+    for account in accounts:
+        closed, events, mapped = _account_planning_metrics(account)
+        total_closed += closed
+        total_engagements += events
+        total_mapped += mapped
+    return total_closed, total_engagements, total_mapped
+
+
+def _determine_planning_mode(
+    closed_journeys: int, engagement_events: int, people_mapped: int
+) -> str:
+    if closed_journeys > 0:
+        return PLANNING_MODE_LEARNED
+    if engagement_events > 0 and people_mapped > 0:
+        return PLANNING_MODE_OBSERVED
+    return PLANNING_MODE_GRAPH
+
+
+def _clamp_score(value: Any) -> float:
+    try:
+        numeric = float(value)
+    except Exception:  # noqa: BLE001
+        return 0.0
+    return max(0.0, min(numeric, 1.0))
+
+
+def _quality_status(score: float) -> str:
+    if score >= 0.8:
+        return "ready"
+    if score >= 0.3:
+        return "partial"
+    return "missing"
+
+
+def _build_plan_quality(
+    account_plan: Dict[str, Any], summary: Dict[str, Any]
+) -> Dict[str, Any]:
+    execution = account_plan.get("execution") or {}
+    intermediary = (account_plan.get("enrichment") or {}).get("summary") or {}
+    engagement_summary = account_plan.get("engagement_summary") or {}
+    learning_summary = (account_plan.get("learning") or {}).get("journey_learning") or {}
+
+    plays = execution.get("plays") or []
+    assets_score = _clamp_score(len(plays) / 5)
+    assets_reason = (
+        "No assets or channels configured."
+        if not plays
+        else f"{len(plays)} planned play(s) available."
+    )
+    coverage_ratio = intermediary.get("coverage_ratio") or 0.0
+    enrichment_score = _clamp_score(coverage_ratio)
+    enrichment_reason = (
+        "0% personas matched to real people."
+        if not enrichment_score
+        else f"Coverage at {round(enrichment_score * 100)}%."
+    )
+    observed_signals = engagement_summary.get("observed") or 0
+    engagement_score = _clamp_score(min(observed_signals / 5, 1.0))
+    engagement_reason = (
+        "No observed engagement events ingested for this account."
+        if not observed_signals
+        else f"{observed_signals} observed engagement signal(s)."
+    )
+    resolved_personas = learning_summary.get("resolved_personas") or []
+    learning_score = 1.0 if resolved_personas else 0.0
+    learning_reason = (
+        "Historical learning includes resolved personas."
+        if resolved_personas
+        else "No closed won/lost history yet."
+    )
+
+    dimensions = [
+        {
+            "id": "arsenal",
+            "label": "Assets & Channels",
+            "score": assets_score,
+            "status": _quality_status(assets_score),
+            "reason": assets_reason,
+            "recommended_actions": [
+                {
+                    "label": "Add Arsenal" if not plays else "Review Arsenal",
+                    "route": "/arsenal",
+                }
+            ],
+        },
+        {
+            "id": "enrichment",
+            "label": "Account Enrichment",
+            "score": enrichment_score,
+            "status": _quality_status(enrichment_score),
+            "reason": enrichment_reason,
+            "recommended_actions": [
+                {
+                    "label": "Enrich Account",
+                    "route": "/account-enrichment",
+                }
+            ],
+        },
+        {
+            "id": "engagements",
+            "label": "Engagement Signal",
+            "score": engagement_score,
+            "status": _quality_status(engagement_score),
+            "reason": engagement_reason,
+            "recommended_actions": [
+                {"label": "Import Engagements", "route": "/engagements-setup"}
+            ],
+        },
+        {
+            "id": "learning",
+            "label": "Historical Learning",
+            "score": learning_score,
+            "status": _quality_status(learning_score),
+            "reason": learning_reason,
+            "recommended_actions": [
+                {"label": "Import CRM History", "route": "/crm-setup"}
+            ],
+        },
+    ]
+
+    readiness_score = round(mean([dim["score"] for dim in dimensions]), 2)
+
+    graph_score = _clamp_score(summary.get("graph_walk_reachability") or 0.0)
+    historical_score = _clamp_score(summary.get("avg_accuracy") or 0.0)
+    predictive_components = [
+        {
+            "id": "graph_coverage",
+            "score": graph_score,
+            "note": (
+                "Graph coverage is still being established."
+                if not graph_score
+                else "Graph coverage has been established."
+            ),
+        },
+        {
+            "id": "engagement_alignment",
+            "score": engagement_score,
+            "note": (
+                "No engagement signals captured yet."
+                if not engagement_score
+                else f"{observed_signals} engagement signal(s) captured."
+            ),
+        },
+        {
+            "id": "historical_similarity",
+            "score": historical_score,
+            "note": (
+                "No comparable accounts with outcomes yet."
+                if not historical_score
+                else "Historical outcomes contribute to this score."
+            ),
+        },
+    ]
+    predictive_score = round(
+        mean([comp["score"] for comp in predictive_components]), 2
+    )
+    predictive_stars = max(
+        1, min(5, round(predictive_score * 5) or 1)  # ensure at least one star
+    )
+    predictive_confidence = {
+        "stars": predictive_stars,
+        "score": predictive_score,
+        "components": predictive_components,
+        "explanation": "Confidence derived from graph coverage, engagement signals, and historical similarity.",
+    }
+
+    return {
+        "readiness": {"score": readiness_score, "dimensions": dimensions},
+        "predictiveConfidence": predictive_confidence,
+    }
+
+
+def _build_data_availability(account_plan: Dict[str, Any]) -> Dict[str, Any]:
+    engagement_summary = account_plan.get("engagement_summary") or {}
+    learning_summary = (account_plan.get("learning") or {}).get("journey_learning") or {}
+    enrichment = (account_plan.get("enrichment") or {}).get("summary") or {}
+    execution = account_plan.get("execution") or {}
+    plays = execution.get("plays") or []
+    resolved_personas = learning_summary.get("resolved_personas") or []
+
+    return {
+        "graph": bool(account_plan.get("prediction")),
+        "historicDeals": len(resolved_personas),
+        "observedEngagements": engagement_summary.get("observed") or 0,
+        "arsenalAssets": len(plays),
+        "peopleMapped": enrichment.get("personas_with_matches") or 0,
+    }
+
+
+def _build_engagement_signals(account_plan: Dict[str, Any]) -> Dict[str, Any]:
+    engagement_summary = account_plan.get("engagement_summary") or {}
+    projected = len(
+        account_plan.get("execution", {}).get("persona_engagements") or []
+    )
+    return {
+        "observed": engagement_summary.get("observed") or 0,
+        "projected": projected,
+        "last_observed_at": engagement_summary.get("last_observed_at"),
+    }
 
 
 def build_pain_themes(summary: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -324,6 +546,29 @@ def build_account_plan_contract(
             },
         },
     }
+
+
+def build_account_plan_contract_from_marketing_plan(
+    plan: Dict[str, Any],
+    account_plan: Dict[str, Any],
+    product_id: str,
+) -> Dict[str, Any]:
+    contract = build_account_plan_contract(account_plan, product_id)
+    accounts = plan.get("accounts") or []
+    planning_mode = _determine_planning_mode(
+        *_aggregate_planning_metrics(accounts)
+    )
+    meta = contract.get("meta") or {}
+    meta["planningMode"] = planning_mode
+    meta["productId"] = plan.get("product_id") or product_id
+    contract["meta"] = meta
+    contract["winOutlook"] = account_plan.get("win_outlook") or {}
+    contract["dataAvailability"] = _build_data_availability(account_plan)
+    contract["engagementSignals"] = _build_engagement_signals(account_plan)
+    contract["quality"] = _build_plan_quality(
+        account_plan, plan.get("summary") or {}
+    )
+    return contract
 
 
 def build_insights_inbox_contract(

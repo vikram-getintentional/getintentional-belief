@@ -11,6 +11,7 @@ import re
 from copy import deepcopy
 import os
 import traceback
+from sqlalchemy import inspect
 
 import networkx as nx
 from sqlalchemy.orm import Session
@@ -170,114 +171,66 @@ def _build_pain_specs(G: Optional[nx.DiGraph], pain_ids: Sequence[str]) -> List[
 
 DEFAULT_PRODUCT_INSIGHTS = {
     "ideal_customer_patterns": {
-        "works_well": [
-            "SaaS companies with 1–5K employees and Series B–E funding convert 42% faster than average.",
-            "North American accounts in recurring revenue models show the highest belief momentum.",
-            "Companies with mature RevOps teams show twice the mid-stage acceleration.",
-        ],
-        "gaps": [
-            "Retail/eCommerce companies in APAC have the lowest conversion probability — primarily due to lack of urgency in billing consolidation.",
-            "Companies under 100 employees rarely complete evaluation — most stall at ‘Aware → Pain Realization.’",
-        ],
+        "works_well": ["Not enough data yet to identify strong-fit segments."],
+        "gaps": ["Not enough data yet to highlight underperforming segments."],
     },
     "persona_landscape": {
-        "frequency": [
-            "Billing Specialist → 82%",
-            "Manager Finance → 76%",
-            "RevOps Manager → 63%",
-            "Product Manager → 49%",
-            "CFO → 38%",
-        ],
-        "critical_leads": [
-            "Billing Specialist (Operator)",
-            "RevOps Manager",
-            "Finance Manager",
-        ],
-        "decision_personas": [
-            "VP Finance",
-            "CFO",
-            "Head of RevOps",
-        ],
-        "blockers": [
-            "IT Manager (Security)",
-            "Engineering Lead (API/Scaling concerns)",
-            "Procurement (Compliance friction)",
-        ],
-        "coalitions": [
-            "Operations Manager + Finance Manager activate together in 61% of accounts — usually within 3 days.",
-            "Product Manager + Engineering Lead form a technical coalition late in deals — they appear as a pair.",
-            "Billing Specialist + RevOps Manager have the strongest mid-stage acceleration effect.",
-        ],
+        "frequency": ["Insufficient journey data to surface persona frequency."],
+        "critical_leads": ["Insufficient data to recommend critical leads."],
+        "decision_personas": ["Insufficient data to highlight decision personas."],
+        "blockers": ["Insufficient signals to identify blockers."],
+        "coalitions": ["Not enough data to detect persona coalitions."],
     },
     "belief_transitions": {
         "hardest": _insight_text(
-            "Across all deals, the hardest jump is Pain Realization → Resolution. This is where 47% of deals stall.",
+            "We don't yet have enough observed journeys to identify the hardest transition.",
             source="default",
         ),
         "easiest": _insight_text(
-            "Once ‘Problem Realization → Execution Guidance’ begins, Finance personas accelerate belief faster than any other group.",
+            "We don't yet have enough data to call out the easiest transition.",
             source="default",
         ),
         "top_pains": [
-            _insight_text("Inconsistent billing cycles", source="default"),
-            _insight_text("Manual revenue recognition", source="default"),
-            _insight_text("Multi-entity complexity", source="default"),
-            _insight_text("Personalized pricing limitations", source="default"),
+            _insight_text(
+                "No reliable pain signals yet to highlight top concerns.",
+                source="default",
+            )
         ],
     },
     "asset_channel_effectiveness": {
-        "high_assets": [
-            "Case Study Decks consistently produce the highest belief lift (avg +8bps).",
-            "Scenario-based POC Kickoffs are the strongest late-stage accelerators.",
-        ],
-        "underperforming_channels": [
-            "LinkedIn Ads generate views but almost no belief progression for Product or Engineering personas.",
-            "Email newsletters show low conversion for executive personas.",
-        ],
-        "channel_persona_matches": [
-            "Webinars → RevOps & Finance Managers",
-            "Direct Sales Calls → Product & Engineering leads",
-            "Short audits/frameworks → Executives",
-        ],
+        "high_assets": ["Not enough data yet to score assets."],
+        "underperforming_channels": ["Not enough channel data to flag weak performers."],
+        "channel_persona_matches": ["Insufficient channel/persona co-activation data."],
     },
     "journey_structure": {
-        "common_paths": [
-            "Billing Specialist → Manager Finance → VP Finance",
-            "RevOps Manager → Product Manager → CFO",
-            "Ops Manager → RevOps → Finance",
-        ],
-        "deviations": "Engineering often activates before Finance in larger companies — a reverse pattern compared to your baseline model.",
-        "average_duration_days": 32.0,
+        "common_paths": ["Not enough journey data to describe common activation paths."],
+        "deviations": "Not enough data yet to describe journey deviations.",
+        "average_duration_days": None,
+        "typical_path": [],
     },
     "global_patterns": {
         "biggest_barrier": _insight_text(
-            "Most stalls originate from compliance complexity — not functional capability gaps.",
+            "No clear barrier has surfaced yet.",
             source="default",
         ),
         "hidden_blocker": _insight_text(
-            "API and integration concerns appear in mid-stage transcripts even when not surfaced explicitly.",
+            "Hidden blockers can't be identified without more signal.",
             source="default",
         ),
         "missed_opportunity": _insight_text(
-            "Product personas are under-engaged across 70% of accounts despite having strong belief influence.",
+            "Missed opportunities require more persona coverage to surface.",
             source="default",
         ),
     },
     "product_strengths": {
-        "strengths": [
-            "Strong finance automation story — Finance personas move fastest once engaged.",
-            "RevOps personas consistently show natural alignment with the value proposition.",
-        ],
-        "weaknesses": [
-            "Technical personas (IT/Eng) have the lowest belief momentum, indicating a potential messaging gap.",
-            "Pricing personalization story resonates poorly in EMEA.",
-        ],
+        "strengths": ["Not enough persona data to surface strengths."],
+        "weaknesses": ["Not enough persona data to surface weaknesses."],
     },
     "strategic_moves": {
-        "segment_priorities": "Prioritize: Mid-market SaaS (1K–5K employees), North America, Series C–E.",
-        "persona_priorities": "Invest early in Billing + RevOps coalition — they shape the earliest narratives.",
-        "asset_priorities": "Create more risk-framing content for CFOs to unlock late-stage belief transitions.",
-        "channel_priorities": "Shift technical content toward hands-on demos, away from whitepapers.",
+        "segment_priorities": "Not enough data to prioritize segments yet.",
+        "persona_priorities": "Gather more journeys before defining persona priorities.",
+        "asset_priorities": "Collect more activations before recommending asset priorities.",
+        "channel_priorities": "More channel evidence is needed before recommending shifts.",
     },
 }
 
@@ -2176,6 +2129,28 @@ def _iter_ordered_episode_pairs(
             yield steps[i], steps[i + 1]
 
 
+def _shm_steps_to_events(steps: List[SHMEpisode]) -> List[Dict[str, Any]]:
+    events: List[Dict[str, Any]] = []
+    for step in steps:
+        events.append(
+            {
+                "persona_id": step.persona_id,
+                "belief_state": step.belief_state,
+                "channel": step.channel,
+                "source": step.engagement_type,
+                "asset_id": step.asset_id,
+                "effect_bucket": step.effect_bucket,
+                "meta": step.meta or {},
+                "timestamp": (
+                    step.timestamp.isoformat()
+                    if step.timestamp is not None
+                    else None
+                ),
+            }
+        )
+    return events
+
+
 def rebuild_stats_from_shm(
     db: Session,
     *,
@@ -2191,33 +2166,12 @@ def rebuild_stats_from_shm(
     episodes = load_episodes_for_product(db, product_id=product_id)
     stats = {}  # start from scratch
 
-    for prev_step, curr_step in _iter_ordered_episode_pairs(episodes):
-        # Here we define what an "edge" means for learning.
-        # Simplest first: persona-level transitions.
-        from_persona = prev_step.persona_id
-        to_persona = curr_step.persona_id
-
-        # Optional: fold in belief_state transitions as well:
-        from_state = prev_step.belief_state
-        to_state = curr_step.belief_state
-
-        # Let learner map channel + engagement -> bucket.
-        bucket = bucket_channel(
-            curr_step.engagement_type,
-            curr_step.meta or {},
-        )
-
-        # This line depends on how you defined update_edge_stats.
-        # Common pattern: update_edge_stats(stats, from_persona, to_persona, bucket)
-        update_edge_stats(
-            stats,
-            from_persona,
-            to_persona,
-            from_state=from_state,
-            to_state=to_state,
-            bucket=bucket,
-            effect_bucket=curr_step.effect_bucket,
-        )
+    keyfunc = lambda e: (e.account_id, e.episode_id)
+    for _, group in itertools.groupby(episodes, key=keyfunc):
+        steps = list(group)
+        steps.sort(key=lambda e: e.step_index)
+        events = _shm_steps_to_events(steps)
+        stats = update_edge_stats(stats, events)
 
     save_stats(product_id, stats)
     weights = recompute_weights(stats)
@@ -2249,27 +2203,8 @@ def update_stats_from_new_steps(
     for _, group in itertools.groupby(new_steps, key=keyfunc):
         steps = list(group)
         steps.sort(key=lambda e: e.step_index)
-        for i in range(len(steps) - 1):
-            prev_step, curr_step = steps[i], steps[i + 1]
-
-            from_persona = prev_step.persona_id
-            to_persona = curr_step.persona_id
-            from_state = prev_step.belief_state
-            to_state = curr_step.belief_state
-            bucket = bucket_channel(
-                curr_step.engagement_type,
-                curr_step.meta or {},
-            )
-
-            update_edge_stats(
-                stats,
-                from_persona,
-                to_persona,
-                from_state=from_state,
-                to_state=to_state,
-                bucket=bucket,
-                effect_bucket=curr_step.effect_bucket,
-            )
+        events = _shm_steps_to_events(steps)
+        stats = update_edge_stats(stats, events)
 
     save_stats(product_id, stats)
     weights = recompute_weights(stats)
@@ -2293,11 +2228,21 @@ def summarize_global_insights(db: Session, product_id: str) -> dict:
 
     try:
         # --- episodes & counts ---
-        episodes = (
-            db.query(ShmEpisode)
-            .filter(ShmEpisode.product_id == product_id)
-            .all()
-        )
+        engine = db.get_bind()
+        columns = []
+        if engine is not None:
+            try:
+                columns = [col["name"] for col in inspect(engine).get_columns(ShmEpisode.__tablename__)]
+            except Exception:
+                columns = []
+        if "candidate_personas" not in columns:
+            episodes = []
+        else:
+            episodes = (
+                db.query(ShmEpisode)
+                .filter(ShmEpisode.product_id == product_id)
+                .all()
+            )
         print("loaded", len(episodes), "episodes for product:", product_id)
 
         account_ids = {e.account_id for e in episodes}

@@ -19,6 +19,9 @@ from difflib import SequenceMatcher
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 import os
 
+from backend.utils.knowledge_base.canonical_maps.canonical_loader import load_canonical_map
+from backend.utils.knowledge_base.canonicalizer import PATHS
+
 import networkx as nx
 
 from backend.utils.graph_base.agent_graph_builder import _persona, _upsert_edge
@@ -40,6 +43,45 @@ def _sequence_similarity(a: str, b: str) -> float:
 
 def _persona_label(data: Dict[str, any]) -> str:
     return data.get("label") or data.get("title") or data.get("name") or ""
+
+
+def _persona_canonical_key(title: Optional[str], department: Optional[str], seniority: Optional[str]) -> str:
+    """
+    Return a string key that mirrors the legacy persona map keys generated
+    during the job-based canonicalization pipeline.
+    """
+    return str(
+        {
+            "title": (title or "").strip(),
+            "department": (department or "").strip(),
+            "seniority": (seniority or "").strip(),
+        }
+    )
+
+
+def _load_persona_canonical_map() -> Dict[str, Dict[str, any]]:
+    return load_canonical_map(PATHS["persona"], {})
+
+
+def _canonicalize_persona_triplet(
+    title: Optional[str],
+    department: Optional[str],
+    seniority: Optional[str],
+) -> Tuple[str, str, str, Optional[str], Optional[str]]:
+    key = _persona_canonical_key(title, department, seniority)
+    entry = _load_persona_canonical_map().get(key) or {}
+    canonical_title = entry.get("title") or title or ""
+    canonical_department = entry.get("department") or department or ""
+    canonical_seniority = entry.get("seniority") or seniority or ""
+    canonical_persona_id = entry.get("canonical_persona_id")
+    persona_variant_id = entry.get("persona_variant_id")
+    return (
+        canonical_title,
+        canonical_department,
+        canonical_seniority,
+        canonical_persona_id,
+        persona_variant_id,
+    )
 
 
 def match_candidate_to_canonical_persona(
@@ -88,6 +130,17 @@ def _derive_title_department_seniority(stat: PersonaCandidateStat) -> Tuple[str,
     return title, department, seniority
 
 
+def _split_candidate_label(label: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """
+    Break a candidate label like "Title · Department · Seniority" into its pieces.
+    """
+    parts = [segment.strip() for segment in label.split("·")]
+    title = parts[0] if len(parts) > 0 else None
+    department = parts[1] if len(parts) > 1 else None
+    seniority = parts[2] if len(parts) > 2 else None
+    return title, department, seniority
+
+
 def auto_add_persona_nodes_from_candidates(
     G: nx.DiGraph,
     candidates: Iterable[PersonaCandidateStat],
@@ -132,17 +185,30 @@ def auto_add_persona_nodes_from_candidates(
             continue
 
         title, department, seniority = _derive_title_department_seniority(stat)
+        (
+            persona_title,
+            persona_department,
+            persona_seniority,
+            canonical_persona_id,
+            persona_variant_id,
+        ) = _canonicalize_persona_triplet(title, department, seniority)
+        persona_title = persona_title or title or stat.label.title()
+        persona_department = persona_department or department or ""
+        persona_seniority = persona_seniority or seniority or ""
         node_id = _persona(
             G,
-            title=title or stat.label.title(),
-            department=department or "",
-            seniority=seniority or "",
+            title=persona_title,
+            department=persona_department,
+            seniority=persona_seniority,
             sample_profiles=None,
             data_source="data_auto",
         )
         G.nodes[node_id].update(
             {
                 "label": stat.label,
+                "title": persona_title,
+                "department": persona_department,
+                "seniority": persona_seniority,
                 "source": "data_auto",
                 "confidence": 0.6,
                 "account_coverage": stat.account_count,
@@ -152,6 +218,8 @@ def auto_add_persona_nodes_from_candidates(
                 "first_seen_at": stat.first_seen_at.isoformat() if stat.first_seen_at else None,
                 "last_seen_at": stat.last_seen_at.isoformat() if stat.last_seen_at else None,
                 "created_at": datetime.utcnow().isoformat(),
+                "canonical_persona_id": canonical_persona_id,
+                "persona_variant_id": persona_variant_id,
             }
         )
 
@@ -293,11 +361,29 @@ def add_persona_node_from_candidate(
     Promote a candidate label into the product graph as a new persona node.
     """
     graph = build_product_graph(product_id)
+    title_guess, dept_guess, seniority_guess = _split_candidate_label(label)
+    persona_title_input = title or title_guess or label.title()
+    persona_dept_input = department or dept_guess or ""
+    persona_snr_input = seniority or seniority_guess or ""
+    (
+        persona_title,
+        persona_department,
+        persona_seniority,
+        canonical_persona_id,
+        persona_variant_id,
+    ) = _canonicalize_persona_triplet(
+        persona_title_input,
+        persona_dept_input,
+        persona_snr_input,
+    )
+    persona_title = persona_title or persona_title_input
+    persona_department = persona_department or persona_dept_input
+    persona_seniority = persona_seniority or persona_snr_input
     node_id = _persona(
         graph,
-        title or label,
-        department or "",
-        seniority or "",
+        title=persona_title,
+        department=persona_department,
+        seniority=persona_seniority,
         sample_profiles=None,
         data_source=source,
     )
@@ -305,14 +391,16 @@ def add_persona_node_from_candidate(
     node.update(
         {
             "label": label,
-            "title": title,
-            "department": department,
-            "seniority": seniority,
+            "title": persona_title,
+            "department": persona_department,
+            "seniority": persona_seniority,
             "confidence": confidence,
             "source": source,
             "data_source": source,
             "created_at": datetime.utcnow().isoformat(),
             "last_updated": datetime.utcnow().isoformat(),
+            "canonical_persona_id": canonical_persona_id,
+            "persona_variant_id": persona_variant_id,
         }
     )
     for peer_id in co_occurring_persona_ids or []:
